@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -55,14 +56,13 @@ func redactText(text, secret string) string {
 	if secret != "" {
 		text = strings.ReplaceAll(text, secret, "[REDACTED]")
 	}
-	lower := strings.ToLower(text)
-	for _, field := range []string{"apikey", "api-key", "password", "token", "secret", "credential", "environment", "buildarg", "buildsecret", "registry"} {
-		if strings.Contains(lower, field) {
-			return "[REDACTED]"
-		}
-	}
-	return text
+	return sensitiveKeyValuePattern.ReplaceAllStringFunc(text, func(match string) string {
+		parts := sensitiveKeyValuePattern.FindStringSubmatch(match)
+		return parts[1] + "[REDACTED]"
+	})
 }
+
+var sensitiveKeyValuePattern = regexp.MustCompile(`(?i)(["']?(?:apikey|api-key|password|token|secret|credential|environment|buildargs?|buildsecrets?|registry(?:password|credential)?)["']?\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;}]+)`)
 
 func IsNotFound(err error) bool {
 	var apiErr *APIError

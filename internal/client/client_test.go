@@ -88,15 +88,35 @@ func TestClientClassifiesErrorsWithoutSecrets(t *testing.T) {
 }
 
 func TestAPIErrorRedactsSensitiveCodeAndMessageValues(t *testing.T) {
-	for _, tc := range []struct{ code, message string }{
-		{"apiKey=super-secret", "denied"},
-		{"FORBIDDEN", "password=hunter2"},
-		{"token", "secret: database-password"},
+	for _, tc := range []struct {
+		code, message, secret string
+	}{
+		{"apiKey=super-secret", "denied", "super-secret"},
+		{"FORBIDDEN", "password=hunter2", ""},
+		{`{"token":"token-value"}`, "denied", ""},
 	} {
-		err := decodeError("project.one", 403, []byte(fmt.Sprintf(`{"code":%q,"message":%q}`, tc.code, tc.message)))
+		err := decodeErrorWithSecret("project.one", 403, []byte(fmt.Sprintf(`{"code":%q,"message":%q}`, tc.code, tc.message)), tc.secret)
 		require.NotContains(t, err.Error(), "super-secret")
 		require.NotContains(t, err.Error(), "hunter2")
-		require.NotContains(t, err.Error(), "database-password")
+		require.NotContains(t, err.Error(), "token-value")
+	}
+}
+
+func TestAPIErrorPreservesSafeSensitiveKeywordsInProse(t *testing.T) {
+	err := decodeError("project.one", 500, []byte(`{"code":"LOOKUP","message":"registry lookup failed in environment"}`))
+	require.Equal(t, "project.one: LOOKUP: registry lookup failed in environment", err.Error())
+}
+
+func TestAPIErrorRedactsSupportedSecretKeyValueSyntax(t *testing.T) {
+	for _, message := range []string{
+		`password=hunter2`, `apiKey: super-secret`, `{"token":"token-value"}`,
+		`'secret' = 'quoted-value'`,
+	} {
+		err := decodeErrorWithSecret("project.one", 403, []byte(fmt.Sprintf(`{"code":"FORBIDDEN","message":%q}`, message)), "super-secret")
+		require.NotContains(t, err.Error(), "hunter2")
+		require.NotContains(t, err.Error(), "super-secret")
+		require.NotContains(t, err.Error(), "token-value")
+		require.NotContains(t, err.Error(), "quoted-value")
 	}
 }
 
