@@ -1,5 +1,5 @@
-// Package provider implements the Dokploy Pulumi provider.
-package provider
+// Package dokploy implements the Dokploy Pulumi provider.
+package dokploy
 
 import (
 	p "github.com/pulumi/pulumi-go-provider"

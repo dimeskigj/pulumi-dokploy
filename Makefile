@@ -8,6 +8,7 @@ VERSION_GENERIC ?= 0.0.1-alpha.0+dev
 .PHONY: provider test test_provider lint
 
 provider:
+	mkdir -p bin
 	go build -ldflags "-X $(PROJECT)/provider.Version=$(VERSION_GENERIC)" -o bin/$(PROVIDER) ./provider/cmd/pulumi-resource-$(PACK)
 
 test_provider:
