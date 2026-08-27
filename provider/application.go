@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
@@ -116,18 +117,18 @@ func (r Application) Create(ctx context.Context, req infer.CreateRequest[Applica
 	state.ApplicationID = *response.JSON200.ApplicationId
 	failSetup := func(setupErr error) (infer.CreateResponse[ApplicationState], error) {
 		if _, cleanupErr := api.ApplicationDeleteWithResponse(ctx, generated.ApplicationDeleteJSONRequestBody{ApplicationId: state.ApplicationID}); cleanupErr != nil {
-			setupErr = fmt.Errorf("%w (cleanup failed: %v)", setupErr, cleanupErr)
+			p.GetLogger(ctx).Warningf("application cleanup failed for %s: %s", state.ApplicationID, sanitizeApplicationError(cleanupErr, req.Inputs))
 		}
 		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, setupErr
 	}
 	if err := configureApplicationSource(ctx, api, state.ApplicationID, req.Inputs.Source); err != nil {
-		return failSetup(err)
+		return failSetup(sanitizeApplicationError(err, req.Inputs))
 	}
 	if err := configureApplicationBuild(ctx, api, state.ApplicationID, req.Inputs.Source); err != nil {
-		return failSetup(err)
+		return failSetup(sanitizeApplicationError(err, req.Inputs))
 	}
 	if err := configureApplicationEnvironment(ctx, api, state.ApplicationID, req.Inputs); err != nil {
-		return failSetup(err)
+		return failSetup(sanitizeApplicationError(err, req.Inputs))
 	}
 	if _, err := api.ApplicationDeployWithResponse(ctx, generated.ApplicationDeployJSONRequestBody{ApplicationId: state.ApplicationID}); err != nil {
 		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, initFailed(err)
@@ -151,7 +152,24 @@ func configureApplicationEnvironment(ctx context.Context, api *client.Client, id
 		body.BuildSecrets = nullable.NewNullableWithValue(*args.BuildSecrets)
 	}
 	_, err := api.ApplicationSaveEnvironmentWithResponse(ctx, body)
-	return err
+	return sanitizeApplicationError(err, args)
+}
+
+func sanitizeApplicationError(err error, args ApplicationArgs) error {
+	secrets := []string{}
+	if args.Environment != nil {
+		secrets = append(secrets, *args.Environment)
+	}
+	if args.BuildArgs != nil {
+		secrets = append(secrets, *args.BuildArgs)
+	}
+	if args.BuildSecrets != nil {
+		secrets = append(secrets, *args.BuildSecrets)
+	}
+	if args.Source.Docker != nil && args.Source.Docker.Password != nil {
+		secrets = append(secrets, *args.Source.Docker.Password)
+	}
+	return sanitizeError(err, secrets...)
 }
 
 func applicationStatus(ctx context.Context, api *client.Client, id string) (string, error) {
@@ -180,20 +198,115 @@ func (r Application) Read(ctx context.Context, req infer.ReadRequest[Application
 	args := req.State.ApplicationArgs
 	args.Name, args.EnvironmentID = value(a.Name), value(a.EnvironmentId)
 	args.AppName, args.Description, args.ServerID = a.AppName, a.Description, a.ServerId
-	if a.Env != nil {
-		args.Environment = a.Env
-	}
-	if a.BuildArgs != nil {
-		args.BuildArgs = a.BuildArgs
-	}
-	if a.BuildSecrets != nil {
-		args.BuildSecrets = a.BuildSecrets
-	}
 	if a.CreateEnvFile != nil {
 		args.CreateEnvFile = *a.CreateEnvFile
 	}
+	decoded, err := decodeApplicationSource(a.Source, args.Source)
+	if err != nil {
+		return infer.ReadResponse[ApplicationArgs, ApplicationState]{}, err
+	}
+	args.Source = decoded
 	state := ApplicationState{ApplicationArgs: args, ApplicationID: *a.ApplicationId, Status: value(a.Status)}
 	return infer.ReadResponse[ApplicationArgs, ApplicationState]{ID: *a.ApplicationId, Inputs: args, State: state}, nil
+}
+
+func decodeApplicationSource(raw *map[string]interface{}, prior ApplicationSource) (ApplicationSource, error) {
+	if raw == nil {
+		return ApplicationSource{}, fmt.Errorf("application.one omitted source data required to reconstruct application source")
+	}
+	m := *raw
+	kind := stringValue(m, "type", "sourceType")
+	if kind == "" {
+		if prior.Type != "" {
+			kind = string(prior.Type)
+		} else {
+			return ApplicationSource{}, fmt.Errorf("application source data does not include source.type")
+		}
+	}
+	result := ApplicationSource{Type: ApplicationSourceType(kind)}
+	switch result.Type {
+	case SourceDocker:
+		image := stringValue(m, "image", "dockerImage")
+		if image == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required docker image")
+		}
+		d := &DockerSource{Image: image, RegistryURL: stringPointer(m, "registryUrl", "registryURL"), Username: stringPointer(m, "username")}
+		if prior.Type == SourceDocker && prior.Docker != nil {
+			d.Password = prior.Docker.Password
+		}
+		result.Docker = d
+	case SourceGit:
+		url := stringValue(m, "url", "customGitUrl")
+		branch := stringValue(m, "branch", "customGitBranch")
+		if url == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required git url or branch")
+		}
+		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: stringPointer(m, "buildPath", "customGitBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.Git.Build = decodeBuild(m)
+	case SourceGitLab:
+		integration := stringValue(m, "integrationId", "gitlabId")
+		owner, namespace, repo, branch := stringValue(m, "owner", "gitlabOwner"), stringValue(m, "namespace", "gitlabPathNamespace"), stringValue(m, "repository", "gitlabRepository"), stringValue(m, "branch", "gitlabBranch")
+		if integration == "" || owner == "" || namespace == "" || repo == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab source fields")
+		}
+		result.GitLab = &GitLabAppSource{IntegrationID: integration, ProjectID: int(numberValue(m, "projectId", "gitlabProjectId")), Owner: owner, Namespace: namespace, Repository: repo, Branch: branch, BuildPath: stringPointer(m, "buildPath", "gitlabBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		if result.GitLab.ProjectID == 0 {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab projectId")
+		}
+		result.GitLab.Build = decodeBuild(m)
+	default:
+		return ApplicationSource{}, fmt.Errorf("application source data has unsupported source.type %q", kind)
+	}
+	return result, nil
+}
+
+func decodeBuild(m map[string]interface{}) ApplicationBuild {
+	b := ApplicationBuild{Type: BuildType(stringValue(m, "buildType")), Dockerfile: stringPointer(m, "dockerfile"), DockerContextPath: stringPointer(m, "dockerContextPath"), DockerBuildStage: stringPointer(m, "dockerBuildStage")}
+	if b.Type == "" {
+		b.Type = BuildNixpacks
+	}
+	return b
+}
+func stringValue(m map[string]interface{}, keys ...string) string {
+	for _, k := range keys {
+		if v, ok := m[k].(string); ok {
+			return v
+		}
+	}
+	return ""
+}
+func stringPointer(m map[string]interface{}, keys ...string) *string {
+	v := stringValue(m, keys...)
+	if v == "" {
+		return nil
+	}
+	return &v
+}
+func numberValue(m map[string]interface{}, keys ...string) float64 {
+	for _, k := range keys {
+		switch v := m[k].(type) {
+		case float64:
+			return v
+		case jsonNumber:
+			n, _ := strconv.ParseFloat(string(v), 64)
+			return n
+		}
+	}
+	return 0
+}
+
+type jsonNumber string
+
+func boolValue(m map[string]interface{}, key string) bool { v, _ := m[key].(bool); return v }
+func stringSlice(m map[string]interface{}, key string) []string {
+	values, _ := m[key].([]interface{})
+	result := make([]string, 0, len(values))
+	for _, v := range values {
+		if s, ok := v.(string); ok {
+			result = append(result, s)
+		}
+	}
+	return result
 }
 
 func (r Application) Update(ctx context.Context, req infer.UpdateRequest[ApplicationArgs, ApplicationState]) (infer.UpdateResponse[ApplicationState], error) {
@@ -201,38 +314,37 @@ func (r Application) Update(ctx context.Context, req infer.UpdateRequest[Applica
 	if req.DryRun {
 		return infer.UpdateResponse[ApplicationState]{Output: state}, nil
 	}
-	body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID, AppName: req.Inputs.AppName, Name: &req.Inputs.Name, Description: nullable.NewNullNullable[string](), EnvironmentId: &req.Inputs.EnvironmentID, CreateEnvFile: &req.Inputs.CreateEnvFile, SourceType: sourceType(req.Inputs.Source.Type), Env: nullable.NewNullNullable[string](), BuildArgs: nullable.NewNullNullable[string](), BuildSecrets: nullable.NewNullNullable[string]()}
-	if req.Inputs.Description != nil {
-		body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
-	}
-	if req.Inputs.Environment != nil {
-		body.Env = nullable.NewNullableWithValue(*req.Inputs.Environment)
-	}
-	if req.Inputs.BuildArgs != nil {
-		body.BuildArgs = nullable.NewNullableWithValue(*req.Inputs.BuildArgs)
-	}
-	if req.Inputs.BuildSecrets != nil {
-		body.BuildSecrets = nullable.NewNullableWithValue(*req.Inputs.BuildSecrets)
-	}
-	if _, err := r.client(ctx).ApplicationUpdateWithResponse(ctx, body); err != nil {
-		return infer.UpdateResponse[ApplicationState]{}, err
-	}
+	metadataChanged := req.Inputs.Name != req.State.Name || !sameOptionalString(req.Inputs.AppName, req.State.AppName) || !sameOptionalString(req.Inputs.Description, req.State.Description)
 	runtimeChanged := !reflect.DeepEqual(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile
-	if runtimeChanged {
-		if _, err := r.client(ctx).ApplicationRedeployWithResponse(ctx, generated.ApplicationRedeployJSONRequestBody{ApplicationId: req.ID}); err != nil {
-			return infer.UpdateResponse[ApplicationState]{Output: state}, err
+	if metadataChanged {
+		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID, AppName: req.Inputs.AppName, Name: &req.Inputs.Name, Description: nullable.NewNullNullable[string]()}
+		if req.Inputs.Description != nil {
+			body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
 		}
-		if err := waitForDone(ctx, "application", req.ID, func(ctx context.Context) (string, error) { return applicationStatus(ctx, r.client(ctx), req.ID) }); err != nil {
-			return infer.UpdateResponse[ApplicationState]{Output: state}, err
+		if _, err := r.client(ctx).ApplicationUpdateWithResponse(ctx, body); err != nil {
+			return infer.UpdateResponse[ApplicationState]{}, sanitizeApplicationError(err, req.Inputs)
+		}
+	}
+	if runtimeChanged {
+		api := r.client(ctx)
+		if err := configureApplicationSource(ctx, api, req.ID, req.Inputs.Source); err != nil {
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+		}
+		if err := configureApplicationBuild(ctx, api, req.ID, req.Inputs.Source); err != nil {
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+		}
+		if err := configureApplicationEnvironment(ctx, api, req.ID, req.Inputs); err != nil {
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+		}
+		if _, err := api.ApplicationRedeployWithResponse(ctx, generated.ApplicationRedeployJSONRequestBody{ApplicationId: req.ID}); err != nil {
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+		}
+		if err := waitForDone(ctx, "application", req.ID, func(ctx context.Context) (string, error) { return applicationStatus(ctx, api, req.ID) }); err != nil {
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
 		}
 		state.Status = "done"
 	}
 	return infer.UpdateResponse[ApplicationState]{Output: state}, nil
-}
-
-func sourceType(t ApplicationSourceType) *generated.ApplicationUpdateJSONBodySourceType {
-	v := generated.ApplicationUpdateJSONBodySourceType(t)
-	return &v
 }
 
 func (r Application) Delete(ctx context.Context, req infer.DeleteRequest[ApplicationState]) (infer.DeleteResponse, error) {
@@ -244,6 +356,7 @@ func (r Application) Delete(ctx context.Context, req infer.DeleteRequest[Applica
 }
 
 func (r Application) WireDependencies(f infer.FieldSelector, args *ApplicationArgs, state *ApplicationState) {
-	f.OutputField(&state.ApplicationID).DependsOn(f.InputField(&args.Name), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.Source), f.InputField(&args.Environment), f.InputField(&args.BuildArgs), f.InputField(&args.BuildSecrets))
-	f.OutputField(&state.Status).DependsOn(f.InputField(&args.Name), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.Source), f.InputField(&args.Environment), f.InputField(&args.BuildArgs), f.InputField(&args.BuildSecrets))
+	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.Source), f.InputField(&args.Environment), f.InputField(&args.BuildArgs), f.InputField(&args.BuildSecrets), f.InputField(&args.CreateEnvFile)}
+	f.OutputField(&state.ApplicationID).DependsOn(deps...)
+	f.OutputField(&state.Status).DependsOn(deps...)
 }

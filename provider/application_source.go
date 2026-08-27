@@ -3,6 +3,7 @@ package dokploy
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
@@ -200,6 +201,9 @@ func configureApplicationSource(ctx context.Context, api *client.Client, id stri
 		}
 		_, err = api.ApplicationSaveGitlabProviderWithResponse(ctx, body)
 	}
+	if source.Docker != nil && source.Docker.Password != nil {
+		return sanitizeError(err, *source.Docker.Password)
+	}
 	return err
 }
 
@@ -225,4 +229,17 @@ func configureApplicationBuild(ctx context.Context, api *client.Client, id strin
 	}
 	_, err := api.ApplicationSaveBuildTypeWithResponse(ctx, body)
 	return err
+}
+
+func sanitizeError(err error, secrets ...string) error {
+	if err == nil {
+		return nil
+	}
+	message := err.Error()
+	for _, secret := range secrets {
+		if secret != "" {
+			message = strings.ReplaceAll(message, secret, "[REDACTED]")
+		}
+	}
+	return fmt.Errorf("%s", message)
 }
