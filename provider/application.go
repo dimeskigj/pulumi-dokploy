@@ -131,10 +131,10 @@ func (r Application) Create(ctx context.Context, req infer.CreateRequest[Applica
 		return failSetup(sanitizeApplicationError(err, req.Inputs))
 	}
 	if _, err := api.ApplicationDeployWithResponse(ctx, generated.ApplicationDeployJSONRequestBody{ApplicationId: state.ApplicationID}); err != nil {
-		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, initFailed(err)
+		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, initFailed(sanitizeApplicationError(err, req.Inputs))
 	}
 	if err := waitForDone(ctx, "application", state.ApplicationID, func(ctx context.Context) (string, error) { return applicationStatus(ctx, api, state.ApplicationID) }); err != nil {
-		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, initFailed(err)
+		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, initFailed(sanitizeApplicationError(err, req.Inputs))
 	}
 	state.Status = "done"
 	return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, nil
