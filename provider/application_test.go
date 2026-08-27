@@ -100,6 +100,69 @@ func TestApplicationRuntimeDockerImageUpdateRedeploysAfterEnvironment(t *testing
 	require.NoError(t, err)
 }
 
+func TestApplicationRuntimeGitLabUpdateOrdersProviderBuildEnvironmentAndRedeploy(t *testing.T) {
+	oldInterval := waitPollInterval
+	waitPollInterval = 0
+	t.Cleanup(func() { waitPollInterval = oldInterval })
+	s := newScriptedServer(t,
+		expectPOST("/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":true,"gitlabBranch":"main","gitlabBuildPath":"app","gitlabId":"integration","gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabProjectId":42,"gitlabRepository":"repo","watchPaths":["app/**"]}`, `true`),
+		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"dockerfile","dockerBuildStage":"prod","dockerContextPath":".","dockerfile":"Containerfile","herokuVersion":null,"railpackVersion":null}`, `true`),
+		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":true,"env":null}`, `true`),
+		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","status":"done"}`),
+	)
+	args := ApplicationArgs{Name: "demo", EnvironmentID: "e1", CreateEnvFile: true, Source: ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "integration", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "repo", Branch: "main", BuildPath: stringPtr("app"), WatchPaths: []string{"app/**"}, EnableSubmodules: true, Build: ApplicationBuild{Type: BuildDockerfile, Dockerfile: stringPtr("Containerfile"), DockerContextPath: stringPtr("."), DockerBuildStage: stringPtr("prod")}}}}
+	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: args, State: ApplicationState{ApplicationArgs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "integration", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "old", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}}}})
+	require.NoError(t, err)
+}
+
+func TestApplicationReadReconstructsGitAndGitLabSources(t *testing.T) {
+	tests := []struct {
+		name, response string
+		check          func(*testing.T, ApplicationSource)
+	}{
+		{"git", `{"applicationId":"a1","name":"demo","environmentId":"e1","source":{"type":"git","customGitUrl":"https://example.test/repo","customGitBranch":"main","customGitBuildPath":"app","watchPaths":["src/**"],"enableSubmodules":true,"buildType":"dockerfile","dockerfile":"Dockerfile","dockerContextPath":".","dockerBuildStage":"prod"}}`, func(t *testing.T, s ApplicationSource) {
+			require.Equal(t, "https://example.test/repo", s.Git.URL)
+			require.Equal(t, "Dockerfile", *s.Git.Build.Dockerfile)
+			require.True(t, s.Git.EnableSubmodules)
+		}},
+		{"gitlab", `{"applicationId":"a1","name":"demo","environmentId":"e1","source":{"type":"gitlab","gitlabId":"i1","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","gitlabBuildPath":"app","watchPaths":["src/**"],"enableSubmodules":true,"buildType":"nixpacks"}}`, func(t *testing.T, s ApplicationSource) {
+			require.Equal(t, 42, s.GitLab.ProjectID)
+			require.Equal(t, "namespace", s.GitLab.Namespace)
+			require.Equal(t, BuildNixpacks, s.GitLab.Build.Type)
+		}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, tc.response))
+			prior := ApplicationState{ApplicationArgs: ApplicationArgs{Environment: stringPtr("env-secret"), BuildArgs: stringPtr("args-secret"), BuildSecrets: stringPtr("build-secret")}}
+			got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1", State: prior})
+			require.NoError(t, err)
+			tc.check(t, got.Inputs.Source)
+			require.Equal(t, "env-secret", *got.Inputs.Environment)
+			require.Equal(t, "args-secret", *got.Inputs.BuildArgs)
+			require.Equal(t, "build-secret", *got.Inputs.BuildSecrets)
+		})
+	}
+}
+
+func TestApplicationImportReconstructsAllSourceVariants(t *testing.T) {
+	for _, tc := range []struct {
+		kind ApplicationSourceType
+		raw  map[string]interface{}
+	}{
+		{SourceDocker, map[string]interface{}{"type": "docker", "dockerImage": "nginx"}},
+		{SourceGit, map[string]interface{}{"type": "git", "customGitUrl": "u", "customGitBranch": "main"}},
+		{SourceGitLab, map[string]interface{}{"type": "gitlab", "gitlabId": "i", "gitlabProjectId": float64(1), "gitlabOwner": "o", "gitlabPathNamespace": "n", "gitlabRepository": "r", "gitlabBranch": "main"}},
+	} {
+		t.Run(string(tc.kind), func(t *testing.T) {
+			got, err := decodeApplicationSource(&tc.raw, ApplicationSource{})
+			require.NoError(t, err)
+			require.Equal(t, tc.kind, got.Type)
+		})
+	}
+}
+
 func TestApplicationCreateGitLabOrdersProviderBuildEnvironmentAndDeploy(t *testing.T) {
 	oldInterval := waitPollInterval
 	waitPollInterval = 0
@@ -179,6 +242,29 @@ func TestApplicationDiffMarksServerReplacement(t *testing.T) {
 	require.Equal(t, p.UpdateReplace, diff.DetailedDiff["serverId"].Kind)
 }
 
+func TestApplicationPerVariantDiffClassifiesReplacementAndRuntimeChanges(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		old, in     ApplicationSource
+		replacement bool
+	}{
+		{"git-to-gitlab", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, true},
+		{"gitlab-runtime", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "old", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "new", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{Inputs: ApplicationArgs{EnvironmentID: "e1", Source: tc.in}, State: ApplicationState{ApplicationArgs: ApplicationArgs{EnvironmentID: "e1", Source: tc.old}}})
+			require.NoError(t, err)
+			key := "source"
+			if tc.replacement {
+				key = "source.type"
+				require.Equal(t, p.UpdateReplace, diff.DetailedDiff[key].Kind)
+			} else {
+				require.Equal(t, p.Update, diff.DetailedDiff[key].Kind)
+			}
+		})
+	}
+}
+
 func TestApplicationSourceTypeJSON(t *testing.T) {
 	b, err := json.Marshal(ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}})
 	require.NoError(t, err)
@@ -192,31 +278,35 @@ func TestApplicationErrorsRedactAllSecrets(t *testing.T) {
 }
 
 func TestApplicationCreateDeployErrorRedactsEchoedSecrets(t *testing.T) {
-	password, env := "PASSWORD-SECRET", "ENV-SECRET"
+	password, env, buildArgs, buildSecrets := "PASSWORD-SECRET", "ENV-SECRET", "ARGS-SECRET", "BUILD-SECRET"
 	s := newScriptedServer(t,
 		expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"PASSWORD-SECRET","registryUrl":"","username":""}`, `true`),
-		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":"ENV-SECRET"}`, `true`),
+		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `{"code":"DEPLOY_FAILED","message":"PASSWORD-SECRET ENV-SECRET"}`),
 	)
-	got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &env, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx", Password: &password}}}})
+	got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &env, BuildArgs: &buildArgs, BuildSecrets: &buildSecrets, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx", Password: &password}}}})
 	require.Error(t, err)
 	require.Equal(t, "a1", got.ID)
 	require.NotContains(t, err.Error(), password)
 	require.NotContains(t, err.Error(), env)
+	require.NotContains(t, err.Error(), buildArgs)
+	require.NotContains(t, err.Error(), buildSecrets)
 }
 
 func TestApplicationCreatePollErrorRedactsEchoedSecrets(t *testing.T) {
-	password, env := "PASSWORD-SECRET", "ENV-SECRET"
+	password, env, buildArgs, buildSecrets := "PASSWORD-SECRET", "ENV-SECRET", "ARGS-SECRET", "BUILD-SECRET"
 	s := newScriptedServer(t,
 		expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"PASSWORD-SECRET","registryUrl":"","username":""}`, `true`),
-		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":"ENV-SECRET"}`, `true`),
+		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`),
 		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusBadRequest, `{"code":"POLL_FAILED","message":"PASSWORD-SECRET ENV-SECRET"}`),
 	)
-	_, err := (Application{client: fixedClient(s.API())}).Create(context.Background(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &env, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx", Password: &password}}}})
+	_, err := (Application{client: fixedClient(s.API())}).Create(context.Background(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &env, BuildArgs: &buildArgs, BuildSecrets: &buildSecrets, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx", Password: &password}}}})
 	require.Error(t, err)
 	require.NotContains(t, err.Error(), password)
 	require.NotContains(t, err.Error(), env)
+	require.NotContains(t, err.Error(), buildArgs)
+	require.NotContains(t, err.Error(), buildSecrets)
 }
