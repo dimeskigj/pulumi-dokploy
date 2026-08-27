@@ -4,7 +4,13 @@ import (
 	"testing"
 
 	p "github.com/pulumi/pulumi-go-provider"
+	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
+)
+
+var (
+	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]         = Project{}
+	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState] = Environment{}
 )
 
 func TestProviderSchema(t *testing.T) {
@@ -15,4 +21,15 @@ func TestProviderSchema(t *testing.T) {
 	require.True(t, spec.Config.Variables["apiKey"].Secret)
 	require.Equal(t, []string{"DOKPLOY_ENDPOINT"}, spec.Config.Variables["endpoint"].DefaultInfo.Environment)
 	require.Equal(t, []string{"DOKPLOY_API_KEY"}, spec.Config.Variables["apiKey"].DefaultInfo.Environment)
+}
+
+func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	var tokens []string
+	for token := range spec.Resources {
+		tokens = append(tokens, token)
+	}
+	require.Contains(t, tokens, "dokploy:index:Project")
+	require.Contains(t, tokens, "dokploy:index:Environment")
 }

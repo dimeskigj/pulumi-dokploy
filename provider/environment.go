@@ -1,6 +1,7 @@
 package dokploy
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
+	"github.com/oapi-codegen/nullable"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
@@ -42,8 +44,18 @@ func (r Environment) Check(ctx context.Context, req infer.CheckRequest) (infer.C
 	return infer.CheckResponse[EnvironmentArgs]{Inputs: inputs, Failures: failures}, nil
 }
 
-func (r Environment) Diff(context.Context, infer.DiffRequest[EnvironmentArgs, EnvironmentState]) (infer.DiffResponse, error) {
-	return infer.DiffResponse{HasChanges: true, DetailedDiff: map[string]p.PropertyDiff{"projectId": {Kind: p.UpdateReplace}, "name": {Kind: p.Update}, "description": {Kind: p.Update}}}, nil
+func (r Environment) Diff(_ context.Context, req infer.DiffRequest[EnvironmentArgs, EnvironmentState]) (infer.DiffResponse, error) {
+	diff := map[string]p.PropertyDiff{}
+	if req.Inputs.ProjectID != req.State.ProjectID {
+		diff["projectId"] = p.PropertyDiff{Kind: p.UpdateReplace}
+	}
+	if req.Inputs.Name != req.State.Name {
+		diff["name"] = p.PropertyDiff{Kind: p.Update}
+	}
+	if !sameOptionalString(req.Inputs.Description, req.State.Description) {
+		diff["description"] = p.PropertyDiff{Kind: p.Update}
+	}
+	return infer.DiffResponse{HasChanges: len(diff) != 0, DetailedDiff: diff}, nil
 }
 
 func (r Environment) Create(ctx context.Context, req infer.CreateRequest[EnvironmentArgs]) (infer.CreateResponse[EnvironmentState], error) {
@@ -97,8 +109,21 @@ func (r Environment) Update(ctx context.Context, req infer.UpdateRequest[Environ
 	if req.DryRun {
 		return infer.UpdateResponse[EnvironmentState]{Output: EnvironmentState{EnvironmentArgs: req.Inputs, EnvironmentID: req.State.EnvironmentID, IsDefault: req.State.IsDefault}}, nil
 	}
-	body := generated.EnvironmentUpdateJSONRequestBody{EnvironmentId: req.ID, Name: &req.Inputs.Name, Description: req.Inputs.Description}
-	if _, err := r.client(ctx).EnvironmentUpdateWithResponse(ctx, body); err != nil {
+	body := struct {
+		EnvironmentID string                    `json:"environmentId"`
+		Name          string                    `json:"name"`
+		Description   nullable.Nullable[string] `json:"description,omitempty"`
+	}{EnvironmentID: req.ID, Name: req.Inputs.Name}
+	if req.Inputs.Description != nil {
+		body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
+	} else {
+		body.Description = nullable.NewNullNullable[string]()
+	}
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		return infer.UpdateResponse[EnvironmentState]{}, err
+	}
+	if _, err := r.client(ctx).EnvironmentUpdateWithBodyWithResponse(ctx, "application/json", bytes.NewReader(encoded)); err != nil {
 		return infer.UpdateResponse[EnvironmentState]{}, err
 	}
 	return infer.UpdateResponse[EnvironmentState]{Output: EnvironmentState{EnvironmentArgs: req.Inputs, EnvironmentID: req.ID, IsDefault: req.State.IsDefault}}, nil

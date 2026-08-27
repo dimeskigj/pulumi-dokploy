@@ -1,7 +1,9 @@
 package dokploy
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
@@ -37,11 +39,15 @@ func (r Project) Check(ctx context.Context, req infer.CheckRequest) (infer.Check
 	return infer.CheckResponse[ProjectArgs]{Inputs: inputs, Failures: failures}, nil
 }
 
-func (r Project) Diff(context.Context, infer.DiffRequest[ProjectArgs, ProjectState]) (infer.DiffResponse, error) {
-	return infer.DiffResponse{HasChanges: true, DetailedDiff: map[string]p.PropertyDiff{
-		"name":        {Kind: p.Update},
-		"description": {Kind: p.Update},
-	}}, nil
+func (r Project) Diff(_ context.Context, req infer.DiffRequest[ProjectArgs, ProjectState]) (infer.DiffResponse, error) {
+	diff := map[string]p.PropertyDiff{}
+	if req.Inputs.Name != req.State.Name {
+		diff["name"] = p.PropertyDiff{Kind: p.Update}
+	}
+	if !sameOptionalString(req.Inputs.Description, req.State.Description) {
+		diff["description"] = p.PropertyDiff{Kind: p.Update}
+	}
+	return infer.DiffResponse{HasChanges: len(diff) != 0, DetailedDiff: diff}, nil
 }
 
 func (r Project) Create(ctx context.Context, req infer.CreateRequest[ProjectArgs]) (infer.CreateResponse[ProjectState], error) {
@@ -85,14 +91,31 @@ func (r Project) Update(ctx context.Context, req infer.UpdateRequest[ProjectArgs
 	if req.DryRun {
 		return infer.UpdateResponse[ProjectState]{Output: ProjectState{ProjectArgs: req.Inputs, ProjectID: req.State.ProjectID, DefaultEnvironmentID: req.State.DefaultEnvironmentID}}, nil
 	}
-	body := generated.ProjectUpdateJSONRequestBody{ProjectId: req.ID, Name: &req.Inputs.Name}
+	body := struct {
+		ProjectID   string                    `json:"projectId"`
+		Name        string                    `json:"name"`
+		Description nullable.Nullable[string] `json:"description,omitempty"`
+	}{ProjectID: req.ID, Name: req.Inputs.Name}
 	if req.Inputs.Description != nil {
 		body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
+	} else {
+		body.Description = nullable.NewNullNullable[string]()
 	}
-	if _, err := r.client(ctx).ProjectUpdateWithResponse(ctx, body); err != nil {
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		return infer.UpdateResponse[ProjectState]{}, err
+	}
+	if _, err := r.client(ctx).ProjectUpdateWithBodyWithResponse(ctx, "application/json", bytes.NewReader(encoded)); err != nil {
 		return infer.UpdateResponse[ProjectState]{}, err
 	}
 	return infer.UpdateResponse[ProjectState]{Output: ProjectState{ProjectArgs: req.Inputs, ProjectID: req.ID, DefaultEnvironmentID: req.State.DefaultEnvironmentID}}, nil
+}
+
+func sameOptionalString(a, b *string) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	return *a == *b
 }
 
 func (r Project) Delete(ctx context.Context, req infer.DeleteRequest[ProjectState]) (infer.DeleteResponse, error) {
