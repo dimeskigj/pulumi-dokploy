@@ -1,0 +1,16 @@
+version: "2"
+linters:
+  enable:
+    - goconst
+    - gosec
+    - lll
+    - misspell
+    - nakedret
+    - revive
+    - unconvert
+  exclusions:
+    generated: lax
+formatters:
+  enable:
+    - gci
+    - gofmt
