@@ -135,6 +135,27 @@ func TestAPIErrorRedactsEscapedQuotedSecretValues(t *testing.T) {
 	}
 }
 
+func TestAPIErrorRedactsBuildArgAliases(t *testing.T) {
+	for _, tc := range []struct {
+		name, message, value string
+	}{
+		{"camelCase buildArgs unquoted", `buildArgs=build-arg-value`, "build-arg-value"},
+		{"camelCase buildSecrets unquoted", `buildSecrets: build-secret-value`, "build-secret-value"},
+		{"case-insensitive buildArgs unquoted", `BUILDARGS=upper-build-arg-value`, "upper-build-arg-value"},
+		{"case-insensitive buildSecrets unquoted", `bUiLdSeCrEtS: mixed-build-secret-value`, "mixed-build-secret-value"},
+		{"camelCase buildArgs quoted", `"buildArgs":"quoted-build-arg-value"`, "quoted-build-arg-value"},
+		{"camelCase buildSecrets quoted", `"buildSecrets":"quoted-build-secret-value"`, "quoted-build-secret-value"},
+		{"case-insensitive buildArgs quoted", `"BUILDARGS":"upper-quoted-build-arg-value"`, "upper-quoted-build-arg-value"},
+		{"case-insensitive buildSecrets quoted", `"bUiLdSeCrEtS":"mixed-quoted-build-secret-value"`, "mixed-quoted-build-secret-value"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := decodeErrorWithSecret("project.one", 403, []byte(fmt.Sprintf(`{"code":"FORBIDDEN","message":%q}`, tc.message)), "known-key")
+			require.NotContains(t, err.Error(), tc.value)
+			require.Contains(t, err.Error(), "[REDACTED]")
+		})
+	}
+}
+
 func TestGeneratedOperationReturnsTypedAPIErrorForNonSuccess(t *testing.T) {
 	for _, status := range []int{http.StatusNotFound, http.StatusTooManyRequests, http.StatusInternalServerError} {
 		t.Run(fmt.Sprint(status), func(t *testing.T) {

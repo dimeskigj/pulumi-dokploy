@@ -127,7 +127,7 @@ func sensitiveValueStart(text string, start int) (int, bool) {
 
 func sensitiveKey(key string) bool {
 	key = strings.ToLower(strings.NewReplacer("-", "", "_", "").Replace(key))
-	for _, candidate := range []string{"apikey", "password", "token", "secret", "credential", "environment", "buildarg", "buildsecret", "registrypassword", "registrycredential"} {
+	for _, candidate := range []string{"apikey", "password", "token", "secret", "credential", "environment", "buildarg", "buildargs", "buildsecret", "buildsecrets", "registrypassword", "registrycredential"} {
 		if key == candidate {
 			return true
 		}
