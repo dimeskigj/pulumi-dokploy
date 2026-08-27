@@ -16,10 +16,11 @@ func normalizeFixture(t *testing.T) *Document {
 	d := &Document{OpenAPI: "3.1.0", Info: map[string]any{"title": "fixture"}, Paths: map[string]*PathItem{}, Components: &Components{Schemas: map[string]json.RawMessage{}}}
 	for _, n := range fixtureNames {
 		op := &Operation{OperationID: n, Raw: map[string]any{"responses": map[string]any{"200": map[string]any{}}}}
-		p := &PathItem{Post: op}
+		p := &PathItem{Post: op, Methods: map[string]*Operation{"post": op}}
 		if n == "application.one" || n == "application.reload" || n == "project.one" || n == "domain.one" || n == "environment.one" || n == "postgres.one" || n == "redis.one" || n == "compose.one" {
 			p.Post = nil
 			p.Get = op
+			p.Methods = map[string]*Operation{"get": op}
 		}
 		d.Paths["/"+n] = p
 	}
@@ -79,4 +80,54 @@ func TestNormalizeRejectsDuplicateOperationID(t *testing.T) {
 	c.Paths["/domain.one"].Get.OperationID = c.Paths["/project.one"].Get.OperationID
 	_, err := normalize(c, []string{"domain.one", "project.one"}, corrections())
 	require.ErrorContains(t, err, "duplicate operation ID")
+}
+
+func TestNormalizePreservesPathFieldsAndMethods(t *testing.T) {
+	c := contractWithout()
+	c.Paths["/project.create"].Raw = map[string]json.RawMessage{
+		"summary":    json.RawMessage(`"kept"`),
+		"parameters": json.RawMessage(`[{"name":"shared","in":"query"}]`),
+	}
+	c.Paths["/project.create"].Methods["patch"] = &Operation{OperationID: "project-create-patch", Raw: map[string]any{"responses": map[string]any{}}}
+	d, err := normalize(c, []string{"project.create"}, corrections())
+	require.NoError(t, err)
+	require.Contains(t, d.Paths["/project.create"].Methods, "patch")
+	require.Equal(t, `"kept"`, string(d.Paths["/project.create"].Raw["summary"]))
+}
+
+func TestNormalizeRejectsDuplicateIDsAcrossMethods(t *testing.T) {
+	c := contractWithout()
+	c.Paths["/project.create"].Methods["patch"] = &Operation{OperationID: c.Paths["/project.create"].Post.OperationID, Raw: map[string]any{}}
+	_, err := normalize(c, []string{"project.create"}, corrections())
+	require.ErrorContains(t, err, "duplicate operation ID")
+}
+
+func TestNormalizeRetainsCorrectionTransitiveReferences(t *testing.T) {
+	c := contractWithout()
+	c.Components.Schemas["UpstreamLeaf"] = json.RawMessage(`{"type":"string"}`)
+	corr := Corrections{
+		Responses: map[string]string{"project.create": "Corrected"},
+		Schemas: map[string]json.RawMessage{
+			"Corrected": json.RawMessage(`{"type":"object","properties":{"value":{"$ref":"#/components/schemas/UpstreamLeaf"}}}`),
+		},
+	}
+	d, err := normalize(c, []string{"project.create"}, corr)
+	require.NoError(t, err)
+	require.Contains(t, d.Components.Schemas, "Corrected")
+	require.Contains(t, d.Components.Schemas, "UpstreamLeaf")
+}
+
+func TestNormalizeUsesDefinedSecurityScheme(t *testing.T) {
+	c := normalizeFixture(t)
+	c.Components.SecuritySchemes = map[string]json.RawMessage{"apiKey": json.RawMessage(`{"type":"apiKey","in":"header","name":"x-api-key"}`)}
+	c.Paths["/project.create"].Post.Raw["security"] = []any{map[string]any{"Authorization": []any{}}}
+	d, err := normalize(c, []string{"project.create"}, corrections())
+	require.NoError(t, err)
+	require.Contains(t, d.Components.SecuritySchemes, "apiKey")
+	security := d.Paths["/project.create"].Post.Raw["security"].([]any)
+	for _, entry := range security {
+		for name := range entry.(map[string]any) {
+			require.Equal(t, "apiKey", name)
+		}
+	}
 }

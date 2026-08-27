@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Document struct {
@@ -19,8 +20,10 @@ type Components struct {
 	SecuritySchemes map[string]json.RawMessage `json:"securitySchemes,omitempty"`
 }
 type PathItem struct {
-	Get  *Operation `json:"get,omitempty"`
-	Post *Operation `json:"post,omitempty"`
+	Get     *Operation                 `json:"get,omitempty"`
+	Post    *Operation                 `json:"post,omitempty"`
+	Methods map[string]*Operation      `json:"-"`
+	Raw     map[string]json.RawMessage `json:"-"`
 }
 type Operation struct {
 	OperationID string         `json:"operationId"`
@@ -47,23 +50,57 @@ func (p *PathItem) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &m); err != nil {
 		return err
 	}
+	p.Methods = map[string]*Operation{}
+	p.Raw = map[string]json.RawMessage{}
 	for k, v := range m {
-		if k == "get" {
+		if isHTTPMethod(k) {
 			var x Operation
 			if err := json.Unmarshal(v, &x); err != nil {
 				return err
 			}
-			p.Get = &x
-		}
-		if k == "post" {
-			var x Operation
-			if err := json.Unmarshal(v, &x); err != nil {
-				return err
+			p.Methods[k] = &x
+			if k == "get" {
+				p.Get = &x
 			}
-			p.Post = &x
+			if k == "post" {
+				p.Post = &x
+			}
+		} else {
+			p.Raw[k] = v
 		}
 	}
 	return nil
+}
+func (p PathItem) MarshalJSON() ([]byte, error) {
+	m := map[string]json.RawMessage{}
+	for k, v := range p.Raw {
+		m[k] = v
+	}
+	methods := p.Methods
+	if methods == nil {
+		methods = map[string]*Operation{}
+	}
+	if p.Get != nil {
+		methods["get"] = p.Get
+	}
+	if p.Post != nil {
+		methods["post"] = p.Post
+	}
+	for k, v := range methods {
+		b, err := json.Marshal(v)
+		if err != nil {
+			return nil, err
+		}
+		m[k] = b
+	}
+	return json.Marshal(m)
+}
+func isHTTPMethod(s string) bool {
+	switch strings.ToLower(s) {
+	case "get", "put", "post", "delete", "options", "head", "patch", "trace":
+		return true
+	}
+	return false
 }
 
 type Corrections struct {
@@ -71,7 +108,26 @@ type Corrections struct {
 	Schemas   map[string]json.RawMessage `json:"schemas"`
 }
 
-func operationFor(p *PathItem) *Operation {
+func allOperations(p *PathItem) map[string]*Operation {
+	r := map[string]*Operation{}
+	for method, op := range p.Methods {
+		r[method] = op
+	}
+	if p.Get != nil {
+		r["get"] = p.Get
+	}
+	if p.Post != nil {
+		r["post"] = p.Post
+	}
+	return r
+}
+func operationFor(p *PathItem, name string) *Operation {
+	expected := strings.Replace(name, ".", "-", 1)
+	for _, op := range allOperations(p) {
+		if op.OperationID == expected {
+			return op
+		}
+	}
 	if p.Post != nil {
 		return p.Post
 	}
@@ -96,30 +152,38 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 		if !ok {
 			return nil, fmt.Errorf("allowed operation %s is absent", name)
 		}
-		op := operationFor(item)
+		op := operationFor(item, name)
 		if op == nil || op.OperationID == "" {
 			return nil, fmt.Errorf("allowed operation %s has no operation ID", name)
 		}
-		if prior, ok := seen[op.OperationID]; ok {
-			return nil, fmt.Errorf("duplicate operation ID %s at %s and %s", op.OperationID, prior, path)
+		for method, candidate := range allOperations(item) {
+			if candidate.OperationID == "" {
+				return nil, fmt.Errorf("allowed operation %s method %s has no operation ID", name, method)
+			}
+			if prior, ok := seen[candidate.OperationID]; ok {
+				return nil, fmt.Errorf("duplicate operation ID %s at %s and %s", candidate.OperationID, prior, path)
+			}
+			seen[candidate.OperationID] = path
 		}
-		seen[op.OperationID] = path
 		b := *item
-		if item.Get != nil {
-			x := *item.Get
-			x.Raw = cloneMap(x.Raw)
-			b.Get = &x
+		b.Raw = cloneRawMap(item.Raw)
+		b.Methods = map[string]*Operation{}
+		for method, candidate := range allOperations(item) {
+			x := *candidate
+			x.Raw = cloneMap(candidate.Raw)
+			b.Methods[method] = &x
+			if method == "get" {
+				b.Get = &x
+			}
+			if method == "post" {
+				b.Post = &x
+			}
 		}
-		if item.Post != nil {
-			x := *item.Post
-			x.Raw = cloneMap(x.Raw)
-			b.Post = &x
+		if op = operationFor(&b, name); op == nil {
+			return nil, fmt.Errorf("allowed operation %s has no operation", name)
 		}
 		if schema, ok := c.Responses[name]; ok {
-			target := b.Post
-			if target == nil {
-				target = b.Get
-			}
+			target := operationFor(&b, name)
 			responses, ok := target.Raw["responses"].(map[string]any)
 			if !ok {
 				responses = map[string]any{}
@@ -138,6 +202,16 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 		if sec, ok := op.Raw["security"].([]any); ok {
 			for _, entry := range sec {
 				if names, ok := entry.(map[string]any); ok {
+					if _, exists := names["Authorization"]; exists {
+						delete(names, "Authorization")
+						names["apiKey"] = []any{}
+					}
+				}
+			}
+			bOp := operationFor(&b, name)
+			bOp.Raw["security"] = sec
+			for _, entry := range sec {
+				if names, ok := entry.(map[string]any); ok {
 					for scheme := range names {
 						if raw, exists := in.Components.SecuritySchemes[scheme]; exists {
 							out.Components.SecuritySchemes[scheme] = raw
@@ -147,10 +221,12 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 			}
 		}
 	}
+	refs := map[string]bool{}
 	for n, b := range c.Schemas {
 		out.Components.Schemas[n] = b
+		refs[n] = true
+		visitBytes(b, refs)
 	}
-	refs := map[string]bool{}
 	var visit func(any)
 	visit = func(v any) {
 		switch x := v.(type) {
@@ -168,11 +244,8 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 		}
 	}
 	for _, p := range out.Paths {
-		if p.Get != nil {
-			visit(p.Get.Raw)
-		}
-		if p.Post != nil {
-			visit(p.Post.Raw)
+		for _, op := range allOperations(p) {
+			visit(op.Raw)
 		}
 	}
 	for {
@@ -224,6 +297,13 @@ func cloneMap(m map[string]any) map[string]any {
 	var x map[string]any
 	_ = json.Unmarshal(b, &x)
 	return x
+}
+func cloneRawMap(m map[string]json.RawMessage) map[string]json.RawMessage {
+	r := map[string]json.RawMessage{}
+	for k, v := range m {
+		r[k] = append(json.RawMessage(nil), v...)
+	}
+	return r
 }
 
 func main() {
