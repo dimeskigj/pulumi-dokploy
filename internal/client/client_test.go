@@ -120,6 +120,21 @@ func TestAPIErrorRedactsSupportedSecretKeyValueSyntax(t *testing.T) {
 	}
 }
 
+func TestAPIErrorRedactsEscapedQuotedSecretValues(t *testing.T) {
+	for _, tc := range []struct {
+		message string
+		want    string
+	}{
+		{`{"token":"abc\"secret"}`, `project.one: FORBIDDEN: {"token":"[REDACTED]"}`},
+		{`{"token":"abc\\secret"}`, `project.one: FORBIDDEN: {"token":"[REDACTED]"}`},
+		{`{"token":"abc\u0053ecret"}`, `project.one: FORBIDDEN: {"token":"[REDACTED]"}`},
+		{`{"token":"unterminated`, `project.one: FORBIDDEN: {"token":"[REDACTED]`},
+	} {
+		err := decodeErrorWithSecret("project.one", 403, []byte(fmt.Sprintf(`{"code":"FORBIDDEN","message":%q}`, tc.message)), "known-key")
+		require.Equal(t, tc.want, err.Error())
+	}
+}
+
 func TestGeneratedOperationReturnsTypedAPIErrorForNonSuccess(t *testing.T) {
 	for _, status := range []int{http.StatusNotFound, http.StatusTooManyRequests, http.StatusInternalServerError} {
 		t.Run(fmt.Sprint(status), func(t *testing.T) {
