@@ -179,9 +179,9 @@ Creation establishes the application, configures its source, build, and
 environment, deploys it, and waits for completion. Metadata updates do not
 redeploy. Source, build, image, or environment changes redeploy.
 
-Source-type changes update the existing resource only if contract tests prove
-Dokploy reliably clears stale source fields. Otherwise `source.type` is marked
-replacement-only before the first release.
+`source.type` is replacement-only in the MVP. This avoids stale source-provider
+fields and makes transitions deterministic even when Dokploy changes its
+source-disconnection behavior.
 
 ### Compose
 
@@ -211,7 +211,7 @@ fetches repository content when required, deploys, and waits for completion.
 Runtime-affecting source, Compose, or environment changes fetch when needed and
 redeploy. Metadata-only changes do not redeploy.
 
-Source-type changes follow the same contract-test rule as `Application`.
+`source.type` is replacement-only for the same reason as `Application`.
 
 ### Postgres
 
@@ -312,7 +312,9 @@ already absent object as success.
 Import accepts a raw Dokploy ID. It populates all observable inputs and leaves
 unavailable write-only secrets unknown. Imported resources can refresh
 immediately and become fully managed when required secret inputs are supplied
-in the Pulumi program.
+in the Pulumi program. Importing a project's default environment as a separate
+`Environment` resource is rejected because Dokploy cannot delete or rename it;
+it remains represented by the parent `Project.defaultEnvironmentId` output.
 
 ## Errors And Retries
 
