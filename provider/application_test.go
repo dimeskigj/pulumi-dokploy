@@ -59,6 +59,60 @@ func TestApplicationReadPreservesWriteOnlySecrets(t *testing.T) {
 	require.Equal(t, "nginx", got.Inputs.Source.Docker.Image)
 }
 
+func TestApplicationReadReconstructsObservableFieldsAndPreservesSecrets(t *testing.T) {
+	password := "prior-password"
+	tests := []struct {
+		name, source string
+		check        func(*testing.T, ApplicationSource)
+	}{
+		{"docker", `{"type":"docker","dockerImage":"nginx","registryUrl":"https://registry.test","username":"alice"}`, func(t *testing.T, source ApplicationSource) {
+			require.Equal(t, "nginx", source.Docker.Image)
+			require.Equal(t, "https://registry.test", *source.Docker.RegistryURL)
+			require.Equal(t, "alice", *source.Docker.Username)
+			require.Equal(t, "prior-password", *source.Docker.Password)
+		}},
+		{"git", `{"type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","customGitBuildPath":"src","watchPaths":["src/**","README.md"],"enableSubmodules":true,"buildType":"dockerfile","dockerfile":"Containerfile","dockerContextPath":"app","dockerBuildStage":"release"}`, func(t *testing.T, source ApplicationSource) {
+			require.Equal(t, "https://git.test/repo", source.Git.URL)
+			require.Equal(t, "main", source.Git.Branch)
+			require.Equal(t, "src", *source.Git.BuildPath)
+			require.Equal(t, []string{"src/**", "README.md"}, source.Git.WatchPaths)
+			require.True(t, source.Git.EnableSubmodules)
+			require.Equal(t, BuildDockerfile, source.Git.Build.Type)
+			require.Equal(t, "Containerfile", *source.Git.Build.Dockerfile)
+			require.Equal(t, "app", *source.Git.Build.DockerContextPath)
+			require.Equal(t, "release", *source.Git.Build.DockerBuildStage)
+		}},
+		{"gitlab", `{"type":"gitlab","gitlabId":"integration","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","gitlabBuildPath":"app","watchPaths":["app/**"],"enableSubmodules":true,"buildType":"nixpacks"}`, func(t *testing.T, source ApplicationSource) {
+			require.Equal(t, "integration", source.GitLab.IntegrationID)
+			require.Equal(t, 42, source.GitLab.ProjectID)
+			require.Equal(t, "owner", source.GitLab.Owner)
+			require.Equal(t, "namespace", source.GitLab.Namespace)
+			require.Equal(t, "repo", source.GitLab.Repository)
+			require.Equal(t, "main", source.GitLab.Branch)
+			require.Equal(t, "app", *source.GitLab.BuildPath)
+			require.Equal(t, []string{"app/**"}, source.GitLab.WatchPaths)
+			require.True(t, source.GitLab.EnableSubmodules)
+			require.Equal(t, BuildNixpacks, source.GitLab.Build.Type)
+			require.Nil(t, source.GitLab.Build.Dockerfile)
+		}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","name":"demo","appName":"app","description":"description","environmentId":"e1","serverId":"s1","createEnvFile":true,"status":"done","source":`+tc.source+`}`))
+			got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1", State: ApplicationState{ApplicationArgs: ApplicationArgs{Environment: &password, BuildArgs: &password, BuildSecrets: &password, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Password: &password}}}}})
+			require.NoError(t, err)
+			require.Equal(t, "app", *got.Inputs.AppName)
+			require.Equal(t, "description", *got.Inputs.Description)
+			require.Equal(t, "s1", *got.Inputs.ServerID)
+			require.Equal(t, "prior-password", *got.Inputs.Environment)
+			require.Equal(t, "prior-password", *got.Inputs.BuildArgs)
+			require.Equal(t, "prior-password", *got.Inputs.BuildSecrets)
+			require.True(t, got.Inputs.CreateEnvFile)
+			tc.check(t, got.Inputs.Source)
+		})
+	}
+}
+
 func TestApplicationMetadataUpdateDoesNotRedeploy(t *testing.T) {
 	s := newScriptedServer(t, expectPOST("/api/application.update", `{"applicationId":"a1","description":null,"name":"renamed"}`, `{}`))
 	r := Application{client: fixedClient(s.API())}
@@ -163,6 +217,29 @@ func TestApplicationImportReconstructsAllSourceVariants(t *testing.T) {
 	}
 }
 
+func TestApplicationImportReconstructsObservableFieldsWithoutInventingSecrets(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		raw  string
+		want ApplicationSource
+	}{
+		{"docker", `{"type":"docker","dockerImage":"nginx","registryUrl":"https://registry.test","username":"alice"}`, ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx", RegistryURL: stringPtr("https://registry.test"), Username: stringPtr("alice")}}},
+		{"git", `{"type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","customGitBuildPath":"src","watchPaths":["src/**"],"enableSubmodules":true,"buildType":"dockerfile","dockerfile":"Containerfile","dockerContextPath":"app","dockerBuildStage":"release"}`, ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", BuildPath: stringPtr("src"), WatchPaths: []string{"src/**"}, EnableSubmodules: true, Build: ApplicationBuild{Type: BuildDockerfile, Dockerfile: stringPtr("Containerfile"), DockerContextPath: stringPtr("app"), DockerBuildStage: stringPtr("release")}}}},
+		{"gitlab", `{"type":"gitlab","gitlabId":"integration","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","gitlabBuildPath":"app","watchPaths":["app/**"],"enableSubmodules":true,"buildType":"nixpacks"}`, ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "integration", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "repo", Branch: "main", BuildPath: stringPtr("app"), WatchPaths: []string{"app/**"}, EnableSubmodules: true, Build: ApplicationBuild{Type: BuildNixpacks}}}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var raw map[string]interface{}
+			require.NoError(t, json.Unmarshal([]byte(tc.raw), &raw))
+			got, err := decodeApplicationSource(&raw, ApplicationSource{})
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+			if got.Docker != nil {
+				require.Nil(t, got.Docker.Password)
+			}
+		})
+	}
+}
+
 func TestApplicationCreateGitLabOrdersProviderBuildEnvironmentAndDeploy(t *testing.T) {
 	oldInterval := waitPollInterval
 	waitPollInterval = 0
@@ -235,6 +312,75 @@ func TestApplicationCreateSetupCleanupFailureKeepsOriginalError(t *testing.T) {
 	require.NotContains(t, err.Error(), "CLEANUP_FAILED")
 }
 
+func TestApplicationCreateGitAndGitLabSetupFailuresCleanUp(t *testing.T) {
+	tests := []struct {
+		name   string
+		source ApplicationSource
+		path   string
+		body   string
+	}{
+		{"git", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"gitlab", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), scriptedRequest{Method: http.MethodPost, Path: tc.path, Body: json.RawMessage(tc.body), Status: http.StatusBadRequest, Response: []byte(`{"code":"SETUP_FAILED","message":"setup failed"}`)}, expectPOST("/api/application.delete", `{"applicationId":"a1"}`, `true`))
+			got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: tc.source}})
+			require.Error(t, err)
+			require.Equal(t, "a1", got.ID)
+		})
+	}
+}
+
+func TestApplicationCreateGitAndGitLabDeployFailuresReturnPartialStateWithoutSecrets(t *testing.T) {
+	secret := "TOP-SECRET"
+	tests := []struct {
+		name   string
+		source ApplicationSource
+		path   string
+		body   string
+	}{
+		{"git", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"gitlab", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			oldInterval := waitPollInterval
+			waitPollInterval = 0
+			t.Cleanup(func() { waitPollInterval = oldInterval })
+			s := newScriptedServer(t, expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), expectPOST(tc.path, tc.body, `true`), expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`), expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"TOP-SECRET","buildSecrets":"TOP-SECRET","createEnvFile":false,"env":"TOP-SECRET"}`, `true`), scriptedRequest{Method: http.MethodPost, Path: "/api/application.deploy", Body: json.RawMessage(`{"applicationId":"a1"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"DEPLOY_FAILED","message":"TOP-SECRET"}`)})
+			got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &secret, BuildArgs: &secret, BuildSecrets: &secret, Source: tc.source}})
+			require.Error(t, err)
+			require.Equal(t, "a1", got.ID)
+			require.NotContains(t, err.Error(), secret)
+		})
+	}
+}
+
+func TestApplicationCreateGitAndGitLabPollFailuresRedactEnvironmentAndBuildValues(t *testing.T) {
+	secret := "TOP-SECRET"
+	for _, tc := range []struct {
+		name   string
+		source ApplicationSource
+		path   string
+		body   string
+	}{
+		{"git", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"gitlab", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			oldInterval := waitPollInterval
+			waitPollInterval = 0
+			t.Cleanup(func() { waitPollInterval = oldInterval })
+			s := newScriptedServer(t, expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), expectPOST(tc.path, tc.body, `true`), expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`), expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"TOP-SECRET","buildSecrets":"TOP-SECRET","createEnvFile":false,"env":"TOP-SECRET"}`, `true`), expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`), scriptedRequest{Method: http.MethodGet, Path: "/api/application.one", Query: map[string][]string{"applicationId": {"a1"}}, Status: http.StatusBadRequest, Response: []byte(`{"code":"POLL_FAILED","message":"TOP-SECRET"}`)})
+			got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &secret, BuildArgs: &secret, BuildSecrets: &secret, Source: tc.source}})
+			require.Error(t, err)
+			require.Equal(t, "a1", got.ID)
+			require.NotContains(t, err.Error(), secret)
+		})
+	}
+}
+
 func TestApplicationDiffMarksServerReplacement(t *testing.T) {
 	oldServer, newServer := "s1", "s2"
 	diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{Inputs: ApplicationArgs{EnvironmentID: "e1", ServerID: &newServer, Source: ApplicationSource{Type: SourceDocker}}, State: ApplicationState{ApplicationArgs: ApplicationArgs{EnvironmentID: "e1", ServerID: &oldServer, Source: ApplicationSource{Type: SourceDocker}}}})
@@ -248,7 +394,10 @@ func TestApplicationPerVariantDiffClassifiesReplacementAndRuntimeChanges(t *test
 		old, in     ApplicationSource
 		replacement bool
 	}{
+		{"docker-to-git", ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}, ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, true},
 		{"git-to-gitlab", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, true},
+		{"gitlab-to-docker", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}, true},
+		{"docker-runtime", ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "old"}}, ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "new"}}, false},
 		{"gitlab-runtime", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "old", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "new", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -262,6 +411,20 @@ func TestApplicationPerVariantDiffClassifiesReplacementAndRuntimeChanges(t *test
 				require.Equal(t, p.Update, diff.DetailedDiff[key].Kind)
 			}
 		})
+	}
+}
+
+func TestApplicationDiffMarksEnvironmentAndServerReplacementForEverySourceType(t *testing.T) {
+	for _, source := range []ApplicationSource{
+		{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}},
+		{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}},
+		{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}},
+	} {
+		oldServer, newServer := "old", "new"
+		diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{Inputs: ApplicationArgs{EnvironmentID: "new-env", ServerID: &newServer, Source: source}, State: ApplicationState{ApplicationArgs: ApplicationArgs{EnvironmentID: "old-env", ServerID: &oldServer, Source: source}}})
+		require.NoError(t, err)
+		require.Equal(t, p.UpdateReplace, diff.DetailedDiff["environmentId"].Kind)
+		require.Equal(t, p.UpdateReplace, diff.DetailedDiff["serverId"].Kind)
 	}
 }
 
