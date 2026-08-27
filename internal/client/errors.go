@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // APIError is a safe representation of a Dokploy API failure.
@@ -15,25 +16,31 @@ type APIError struct {
 }
 
 func (e *APIError) Error() string {
+	code := redactText(e.Code, "")
+	message := redactText(e.Message, "")
 	if e.Operation == "" {
-		if e.Code != "" && e.Message != "" {
-			return fmt.Sprintf("%s: %s", e.Code, e.Message)
+		if code != "" && message != "" {
+			return fmt.Sprintf("%s: %s", code, message)
 		}
-		if e.Code != "" {
-			return e.Code
+		if code != "" {
+			return code
 		}
 		return fmt.Sprintf("HTTP %d", e.StatusCode)
 	}
-	if e.Code != "" && e.Message != "" {
-		return fmt.Sprintf("%s: %s: %s", e.Operation, e.Code, e.Message)
+	if code != "" && message != "" {
+		return fmt.Sprintf("%s: %s: %s", e.Operation, code, message)
 	}
-	if e.Code != "" {
-		return fmt.Sprintf("%s: %s", e.Operation, e.Code)
+	if code != "" {
+		return fmt.Sprintf("%s: %s", e.Operation, code)
 	}
 	return fmt.Sprintf("%s: HTTP %d", e.Operation, e.StatusCode)
 }
 
 func decodeError(operation string, status int, body []byte) error {
+	return decodeErrorWithSecret(operation, status, body, "")
+}
+
+func decodeErrorWithSecret(operation string, status int, body []byte, secret string) error {
 	var payload struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
@@ -41,7 +48,20 @@ func decodeError(operation string, status int, body []byte) error {
 	if json.Unmarshal(body, &payload) != nil {
 		return &APIError{StatusCode: status, Operation: operation}
 	}
-	return &APIError{StatusCode: status, Code: payload.Code, Message: payload.Message, Operation: operation}
+	return &APIError{StatusCode: status, Code: redactText(payload.Code, secret), Message: redactText(payload.Message, secret), Operation: operation}
+}
+
+func redactText(text, secret string) string {
+	if secret != "" {
+		text = strings.ReplaceAll(text, secret, "[REDACTED]")
+	}
+	lower := strings.ToLower(text)
+	for _, field := range []string{"apikey", "api-key", "password", "token", "secret", "credential", "environment", "buildarg", "buildsecret", "registry"} {
+		if strings.Contains(lower, field) {
+			return "[REDACTED]"
+		}
+	}
+	return text
 }
 
 func IsNotFound(err error) bool {

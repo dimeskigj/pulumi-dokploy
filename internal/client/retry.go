@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"errors"
+	"io"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -25,9 +26,10 @@ func defaultRetryPolicy() RetryPolicy {
 type retryTransport struct {
 	base   http.RoundTripper
 	policy RetryPolicy
+	secret string
 }
 
-func newRetryTransport(base http.RoundTripper, policy RetryPolicy) http.RoundTripper {
+func newRetryTransport(base http.RoundTripper, policy RetryPolicy, secret ...string) http.RoundTripper {
 	if policy.Attempts < 1 {
 		policy.Attempts = 1
 	}
@@ -40,7 +42,11 @@ func newRetryTransport(base http.RoundTripper, policy RetryPolicy) http.RoundTri
 	if policy.MaxDelay <= 0 {
 		policy.MaxDelay = 4 * time.Second
 	}
-	return &retryTransport{base: base, policy: policy}
+	knownSecret := ""
+	if len(secret) > 0 {
+		knownSecret = secret[0]
+	}
+	return &retryTransport{base: base, policy: policy, secret: knownSecret}
 }
 
 func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -50,6 +56,12 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 			!errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) &&
 			(err != nil || (resp != nil && retryStatus(resp.StatusCode)))
 		if !shouldRetry {
+			if err == nil && resp != nil && resp.StatusCode >= 300 {
+				return nil, t.apiError(resp, req)
+			}
+			return resp, err
+		}
+		if req.Body != nil && req.Body != http.NoBody && req.GetBody == nil {
 			return resp, err
 		}
 		retryAfter := ""
@@ -58,6 +70,14 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 		if resp != nil && resp.Body != nil {
 			resp.Body.Close()
+		}
+		if req.Body != nil && req.Body != http.NoBody {
+			body, bodyErr := req.GetBody()
+			if bodyErr != nil {
+				return nil, bodyErr
+			}
+			req = req.Clone(req.Context())
+			req.Body = body
 		}
 		delay := retryDelay(t.policy, attempt, retryAfter)
 		timer := time.NewTimer(delay)
@@ -68,6 +88,26 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		case <-timer.C:
 		}
 	}
+}
+
+func (t *retryTransport) apiError(resp *http.Response, req *http.Request) error {
+	if resp.Body == nil {
+		return &APIError{StatusCode: resp.StatusCode, Operation: operationName(req)}
+	}
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return &APIError{StatusCode: resp.StatusCode, Operation: operationName(req), Message: "response body unavailable"}
+	}
+	return decodeErrorWithSecret(operationName(req), resp.StatusCode, body, t.secret)
+}
+
+func operationName(req *http.Request) string {
+	path := strings.Trim(req.URL.Path, "/")
+	if i := strings.LastIndex(path, "/"); i >= 0 {
+		path = path[i+1:]
+	}
+	return path
 }
 
 func retryStatus(status int) bool {

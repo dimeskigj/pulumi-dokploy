@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
 	"github.com/stretchr/testify/require"
@@ -67,7 +68,7 @@ func TestNewNormalizesEndpointForms(t *testing.T) {
 }
 
 func TestNewRejectsInvalidEndpoints(t *testing.T) {
-	for _, endpoint := range []string{"", "example.test", "ftp://example.test", "https://example.test?token=secret", "https://example.test/path#secret"} {
+	for _, endpoint := range []string{"", "example.test", "ftp://example.test", "https://user:password@example.test", "https://example.test?token=secret", "https://example.test/path#secret"} {
 		t.Run(fmt.Sprintf("%q", endpoint), func(t *testing.T) {
 			_, err := New(endpoint, "key")
 			require.Error(t, err)
@@ -84,6 +85,46 @@ func TestClientClassifiesErrorsWithoutSecrets(t *testing.T) {
 	var apiErr *APIError
 	require.ErrorAs(t, err, &apiErr)
 	require.Equal(t, 403, apiErr.StatusCode)
+}
+
+func TestAPIErrorRedactsSensitiveCodeAndMessageValues(t *testing.T) {
+	for _, tc := range []struct{ code, message string }{
+		{"apiKey=super-secret", "denied"},
+		{"FORBIDDEN", "password=hunter2"},
+		{"token", "secret: database-password"},
+	} {
+		err := decodeError("project.one", 403, []byte(fmt.Sprintf(`{"code":%q,"message":%q}`, tc.code, tc.message)))
+		require.NotContains(t, err.Error(), "super-secret")
+		require.NotContains(t, err.Error(), "hunter2")
+		require.NotContains(t, err.Error(), "database-password")
+	}
+}
+
+func TestGeneratedOperationReturnsTypedAPIErrorForNonSuccess(t *testing.T) {
+	for _, status := range []int{http.StatusNotFound, http.StatusTooManyRequests, http.StatusInternalServerError} {
+		t.Run(fmt.Sprint(status), func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(status)
+				code := "TEMPORARY"
+				if status == http.StatusNotFound {
+					code = "NOT_FOUND"
+				}
+				_, _ = w.Write([]byte(fmt.Sprintf(`{"code":%q,"message":"missing"}`, code)))
+			}))
+			defer server.Close()
+			c, err := New(server.URL, "super-secret", WithRetryPolicy(RetryPolicy{Attempts: 1, InitialDelay: time.Millisecond}))
+			require.NoError(t, err)
+			_, err = c.ProjectOneWithResponse(t.Context(), &generated.ProjectOneParams{ProjectId: "p1"})
+			require.Error(t, err)
+			var apiErr *APIError
+			require.ErrorAs(t, err, &apiErr)
+			require.Equal(t, status, apiErr.StatusCode)
+			require.Equal(t, status == 404, IsNotFound(err))
+			require.Equal(t, status != 404, IsTransient(err))
+			require.NotContains(t, err.Error(), "super-secret")
+		})
+	}
 }
 
 func TestDecodeErrorHandlesMalformedBodies(t *testing.T) {

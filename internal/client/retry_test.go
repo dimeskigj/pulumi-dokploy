@@ -1,7 +1,9 @@
 package client
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -11,6 +13,41 @@ import (
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
 	"github.com/stretchr/testify/require"
 )
+
+type recordingRoundTripper struct {
+	bodies [][]byte
+	status int
+}
+
+func (r *recordingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	body, _ := io.ReadAll(req.Body)
+	r.bodies = append(r.bodies, body)
+	return &http.Response{StatusCode: r.status, Header: make(http.Header), Body: io.NopCloser(bytes.NewReader([]byte(`{"code":"TEMP"}`))), Request: req}, nil
+}
+
+func TestRetryReplaysGETBodyEqually(t *testing.T) {
+	base := &recordingRoundTripper{status: http.StatusServiceUnavailable}
+	policy := RetryPolicy{Attempts: 3, InitialDelay: time.Millisecond, MaxDelay: time.Millisecond, Jitter: 0}
+	req := httptest.NewRequest(http.MethodGet, "http://example.test", bytes.NewReader([]byte("body")))
+	req.GetBody = func() (io.ReadCloser, error) { return io.NopCloser(bytes.NewReader([]byte("body"))), nil }
+	resp, err := newRetryTransport(base, policy).RoundTrip(req)
+	var apiErr *APIError
+	require.ErrorAs(t, err, &apiErr)
+	require.Nil(t, resp)
+	require.Equal(t, http.StatusServiceUnavailable, apiErr.StatusCode)
+	require.Len(t, base.bodies, 3)
+	require.Equal(t, base.bodies[0], base.bodies[1])
+	require.Equal(t, base.bodies[1], base.bodies[2])
+}
+
+func TestRetryDoesNotReplayGETBodyWithoutGetBody(t *testing.T) {
+	base := &recordingRoundTripper{status: http.StatusServiceUnavailable}
+	req := httptest.NewRequest(http.MethodGet, "http://example.test", bytes.NewReader([]byte("body")))
+	resp, err := newRetryTransport(base, RetryPolicy{Attempts: 5, InitialDelay: time.Millisecond}).RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusServiceUnavailable, resp.StatusCode)
+	require.Len(t, base.bodies, 1)
+}
 
 func TestRetryRetriesTransientGETOnly(t *testing.T) {
 	var gets, posts atomic.Int32
@@ -48,7 +85,9 @@ func TestRetryDoesNotRetryPOST(t *testing.T) {
 	c, err := New(server.URL, "key", WithRetryPolicy(RetryPolicy{Attempts: 5, InitialDelay: time.Millisecond}))
 	require.NoError(t, err)
 	_, err = c.ProjectCreateWithResponse(t.Context(), generated.ProjectCreateJSONRequestBody{})
-	require.NoError(t, err)
+	var apiErr *APIError
+	require.ErrorAs(t, err, &apiErr)
+	require.Equal(t, http.StatusServiceUnavailable, apiErr.StatusCode)
 	require.Equal(t, int32(1), posts.Load())
 }
 

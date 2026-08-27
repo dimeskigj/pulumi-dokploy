@@ -66,7 +66,7 @@ func New(endpoint, apiKey string, options ...Option) (*Client, error) {
 	if httpClient.Transport == nil {
 		httpClient.Transport = http.DefaultTransport
 	}
-	httpClient.Transport = newRetryTransport(httpClient.Transport, opts.retryPolicy)
+	httpClient.Transport = newRetryTransport(httpClient.Transport, opts.retryPolicy, apiKey)
 	generatedClient, err := generated.NewClientWithResponses(normalized,
 		generated.WithHTTPClient(httpClient), generated.WithRequestEditorFn(apiKeyEditor(apiKey)))
 	if err != nil {
@@ -77,7 +77,7 @@ func New(endpoint, apiKey string, options ...Option) (*Client, error) {
 
 func normalizeEndpoint(endpoint string) (string, error) {
 	parsed, err := url.Parse(strings.TrimSpace(endpoint))
-	if err != nil || parsed.Scheme == "" || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.RawQuery != "" || parsed.Fragment != "" {
+	if err != nil || parsed.Scheme == "" || parsed.Host == "" || parsed.User != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.RawQuery != "" || parsed.Fragment != "" {
 		return "", errors.New("endpoint must be a valid HTTP(S) URL without query or fragment")
 	}
 	parsed.Path = strings.TrimRight(parsed.Path, "/")
