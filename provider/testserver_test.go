@@ -114,6 +114,7 @@ func (s *scriptedServer) handle(w http.ResponseWriter, r *http.Request) {
 		s.t.Errorf("request body mismatch: got %s, want empty", body)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(expectation.Status)
 	_, _ = w.Write(expectation.Response)
 }
@@ -129,6 +130,9 @@ func mustJSON(value any) []byte {
 func sameQuery(got, want url.Values) bool {
 	if len(got) != len(want) {
 		return false
+	}
+	if len(got) == 0 {
+		return true
 	}
 	return reflect.DeepEqual(got, want)
 }

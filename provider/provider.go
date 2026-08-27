@@ -25,7 +25,11 @@ func Provider() p.Provider {
 				"importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy",
 			}},
 		},
-		Config:    infer.Config(&Config{}),
+		Config: infer.Config(&Config{}),
+		Resources: []infer.InferredResource{
+			infer.Resource(Project{client: configuredClient}),
+			infer.Resource(Environment{client: configuredClient}),
+		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{"provider": "index"},
 	})
 }
