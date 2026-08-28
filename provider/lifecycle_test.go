@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -78,7 +80,6 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 			"source": property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("alpine")})}),
 		})})
 	require.NoError(t, err)
-	api.FailNextRedeploy()
 	_, err = provider.Update(p.UpdateRequest{ID: application.ID, Urn: lifecycleURN("Application", "application"), State: application.Properties,
 		OldInputs: application.Properties, Inputs: property.NewMap(map[string]property.Value{
 			"name": property.New("app"), "environmentId": property.New(environmentID),
@@ -117,136 +118,133 @@ func lifecycleURN(kind, name string) resource.URN {
 }
 
 type lifecycleAPI struct {
-	server           *httptest.Server
-	mu               sync.Mutex
-	requests         []string
-	bodies           []string
-	failNextRedeploy bool
+	server   *httptest.Server
+	mu       sync.Mutex
+	expected []lifecycleRequest
+	seen     int
+}
+
+type lifecycleRequest struct {
+	method   string
+	path     string
+	query    url.Values
+	body     json.RawMessage
+	status   int
+	response string
 }
 
 func newLifecycleAPI(t *testing.T) *lifecycleAPI {
 	api := &lifecycleAPI{}
+	api.expected = lifecycleTranscript()
 	api.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
 		api.mu.Lock()
-		api.requests = append(api.requests, r.Method+" "+r.URL.Path)
-		api.bodies = append(api.bodies, string(body))
-		api.mu.Unlock()
-		w.Header().Set("Content-Type", "application/json")
-		if strings.HasSuffix(r.URL.Path, ".redeploy") && api.consumeRedeployFailure() {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(`{"message":"redeploy failed ENV-SECRET ARGS-SECRET BUILD-SECRET"}`))
+		index := api.seen
+		api.seen++
+		if index >= len(api.expected) {
+			api.mu.Unlock()
+			t.Errorf("unexpected request %d: %s %s", index, r.Method, r.URL.RequestURI())
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(lifecycleResponse(r.URL.Path)))
+		expected := api.expected[index]
+		api.mu.Unlock()
+		queriesMatch := len(r.URL.Query()) == 0 && len(expected.query) == 0 || reflect.DeepEqual(r.URL.Query(), expected.query)
+		if r.Method != expected.method || r.URL.Path != expected.path || !queriesMatch {
+			t.Errorf("request %d mismatch: got %s %s?%s, want %s %s?%s", index, r.Method, r.URL.Path, r.URL.Query().Encode(), expected.method, expected.path, expected.query.Encode())
+		}
+		assertSemanticJSON(t, body, expected.body, index)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(expected.status)
+		_, _ = w.Write([]byte(expected.response))
 	}))
 	t.Cleanup(api.server.Close)
+	t.Cleanup(func() {
+		api.mu.Lock()
+		defer api.mu.Unlock()
+		if api.seen != len(api.expected) {
+			t.Errorf("request transcript incomplete: got %d requests, want %d", api.seen, len(api.expected))
+		}
+	})
 	return api
 }
 
 func (s *lifecycleAPI) URL() string { return s.server.URL }
 
-func (s *lifecycleAPI) FailNextRedeploy() {
-	s.mu.Lock()
-	s.failNextRedeploy = true
-	s.mu.Unlock()
-}
-
-func (s *lifecycleAPI) consumeRedeployFailure() bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	fail := s.failNextRedeploy
-	s.failNextRedeploy = false
-	return fail
-}
-
 func (s *lifecycleAPI) AssertRequests(t *testing.T) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	require.NotEmpty(t, s.requests)
-	createOrder := []string{"POST /api/project.create", "POST /api/environment.create", "POST /api/application.create", "POST /api/compose.create", "POST /api/postgres.create", "POST /api/redis.create", "POST /api/domain.create", "POST /api/domain.create"}
-	last := -1
-	for _, expected := range createOrder {
-		at := requestIndexAfter(s.requests, expected, last+1)
-		require.Greater(t, at, last, expected)
-		last = at
-	}
-	for _, expected := range []string{"POST /api/application.deploy", "POST /api/application.redeploy", "POST /api/compose.deploy", "POST /api/postgres.deploy", "POST /api/redis.deploy"} {
-		require.Contains(t, s.requests, expected)
-	}
-	deleteOrder := []string{"POST /api/domain.delete", "POST /api/domain.delete", "POST /api/application.delete", "POST /api/compose.delete", "POST /api/redis.remove", "POST /api/postgres.remove", "POST /api/environment.remove", "POST /api/project.remove"}
-	deleteStart := len(s.requests) - len(deleteOrder)
-	for i, expected := range deleteOrder {
-		require.Equal(t, expected, s.requests[deleteStart+i])
-	}
-	requireBody(t, s.bodies[requestIndex(s.requests, "POST /api/project.create")], map[string]any{"name": "demo"})
-	requireBody(t, s.bodies[requestIndex(s.requests, "POST /api/environment.create")], map[string]any{"projectId": "p1", "name": "staging"})
-	require.Contains(t, strings.Join(s.bodies, "\n"), "DB-PASSWORD")
-	require.Contains(t, strings.Join(s.bodies, "\n"), "REDIS-PASSWORD")
-	var decoded map[string]any
-	require.NoError(t, json.Unmarshal([]byte(s.bodies[0]), &decoded))
-	require.Equal(t, "demo", decoded["name"])
+	require.Equal(t, len(s.expected), s.seen)
 }
 
-func requestIndex(requests []string, expected string) int {
-	return requestIndexAfter(requests, expected, 0)
-}
-
-func requestIndexAfter(requests []string, expected string, start int) int {
-	for i := start; i < len(requests); i++ {
-		request := requests[i]
-		if request == expected {
-			return i
-		}
-	}
-	return -1
-}
-
-func requireBody(t *testing.T, raw string, expected map[string]any) {
+func assertSemanticJSON(t *testing.T, actual, expected []byte, index int) {
 	t.Helper()
-	var actual map[string]any
-	require.NoError(t, json.Unmarshal([]byte(raw), &actual))
-	require.Equal(t, expected, actual)
+	if len(expected) == 0 {
+		require.Empty(t, strings.TrimSpace(string(actual)), "request %d body", index)
+		return
+	}
+	var got, want any
+	require.NoError(t, json.Unmarshal(actual, &got), "request %d body", index)
+	require.NoError(t, json.Unmarshal(expected, &want), "expected request %d body", index)
+	require.Equal(t, want, got, "request %d semantic body", index)
 }
 
-func lifecycleResponse(path string) string {
-	switch {
-	case strings.HasSuffix(path, ".deploy"), strings.HasSuffix(path, ".redeploy"):
-		return `"running"`
-	case strings.HasSuffix(path, ".update"):
-		return `{}`
-	case strings.Contains(path, "save"), strings.HasSuffix(path, ".remove"), strings.HasSuffix(path, ".delete"):
-		return `true`
-	case strings.HasSuffix(path, "project.create"):
-		return `{"project":{"projectId":"p1","name":"demo"},"environment":{"environmentId":"e1","name":"production","isDefault":true}}`
-	case strings.HasSuffix(path, "environment.create"):
-		return `{"environmentId":"e2","projectId":"p1","name":"staging","isDefault":false}`
-	case strings.HasSuffix(path, "application.create"):
-		return `{"applicationId":"a1"}`
-	case strings.HasSuffix(path, "compose.create"):
-		return `{"composeId":"c1"}`
-	case strings.HasSuffix(path, "postgres.create"):
-		return `{"postgresId":"pg1"}`
-	case strings.HasSuffix(path, "redis.create"):
-		return `{"redisId":"r1"}`
-	case strings.HasSuffix(path, "domain.create"):
-		return `{"domainId":"d1"}`
-	case strings.HasSuffix(path, "project.one"):
-		return `{"projectId":"p1","name":"demo","defaultEnvironmentId":"e1"}`
-	case strings.HasSuffix(path, "environment.one"):
-		return `{"environmentId":"e2","projectId":"p1","name":"staging","isDefault":false}`
-	case strings.HasSuffix(path, "application.one"):
-		return `{"applicationId":"a1","name":"app","environmentId":"e1","status":"done","source":{"type":"docker","image":"nginx"}}`
-	case strings.HasSuffix(path, "compose.one"):
-		return `{"composeId":"c1","name":"stack","environmentId":"e1","composeType":"raw","source":{"type":"raw","composeFile":"services: {}"},"status":"done"}`
-	case strings.HasSuffix(path, "postgres.one"):
-		return `{"postgresId":"pg1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","databasePassword":"DB-PASSWORD","status":"done"}`
-	case strings.HasSuffix(path, "redis.one"):
-		return `{"redisId":"r1","name":"cache","environmentId":"e1","databasePassword":"REDIS-PASSWORD","status":"done"}`
-	case strings.HasSuffix(path, "domain.one"):
-		return `{"domainId":"d1","host":"app.example.com","applicationId":"a1","enabled":true,"https":true,"certificateType":"letsencrypt"}`
-	default:
-		return `{}`
+func lifecycleTranscript() []lifecycleRequest {
+	q := func(values ...string) url.Values {
+		if len(values) == 0 {
+			return nil
+		}
+		return url.Values{values[0]: {values[1]}}
+	}
+	r := func(method, path string, query url.Values, body, response string) lifecycleRequest {
+		return lifecycleRequest{method: method, path: path, query: query, body: json.RawMessage(body), status: http.StatusOK, response: response}
+	}
+	get := func(path, key, id, response string) lifecycleRequest {
+		return r(http.MethodGet, path, q(key, id), "", response)
+	}
+	trueResponse := `true`
+	appOne := `{"applicationId":"a1","name":"app","environmentId":"e1","status":"done","source":{"type":"docker","image":"nginx"}}`
+	composeOne := `{"composeId":"c1","name":"stack","environmentId":"e1","composeType":"raw","source":{"type":"raw","composeFile":"services: {}"},"status":"done"}`
+	postgresOne := `{"postgresId":"pg1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","databasePassword":"DB-PASSWORD","status":"done"}`
+	redisOne := `{"redisId":"r1","name":"cache","environmentId":"e1","databasePassword":"REDIS-PASSWORD","status":"done"}`
+	return []lifecycleRequest{
+		r(http.MethodPost, "/api/project.create", nil, `{"name":"demo"}`, `{"project":{"projectId":"p1","name":"demo"},"environment":{"environmentId":"e1","name":"production","isDefault":true}}`),
+		r(http.MethodPost, "/api/environment.create", nil, `{"name":"staging","projectId":"p1"}`, `{"environmentId":"e2","projectId":"p1","name":"staging","isDefault":false}`),
+		r(http.MethodPost, "/api/application.create", nil, `{"environmentId":"e1","name":"app"}`, `{"applicationId":"a1"}`),
+		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"nginx","password":"","registryUrl":"","username":""}`, trueResponse),
+		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, trueResponse),
+		r(http.MethodPost, "/api/application.deploy", nil, `{"applicationId":"a1"}`, `"running"`),
+		get("/api/application.one", "applicationId", "a1", appOne),
+		r(http.MethodPost, "/api/compose.create", nil, `{"composeFile":"services: {}","composeType":"docker-compose","environmentId":"e1","name":"stack"}`, `{"composeId":"c1"}`),
+		r(http.MethodPost, "/api/compose.saveEnvironment", nil, `{"composeId":"c1","env":null}`, trueResponse),
+		r(http.MethodPost, "/api/compose.deploy", nil, `{"composeId":"c1"}`, `"running"`),
+		get("/api/compose.one", "composeId", "c1", composeOne),
+		r(http.MethodPost, "/api/postgres.create", nil, `{"databaseName":"app","databasePassword":"DB-PASSWORD","databaseUser":"app","description":null,"dockerImage":"","environmentId":"e1","name":"db","serverId":null}`, `{"postgresId":"pg1"}`),
+		r(http.MethodPost, "/api/postgres.deploy", nil, `{"postgresId":"pg1"}`, `"running"`),
+		get("/api/postgres.one", "postgresId", "pg1", postgresOne),
+		r(http.MethodPost, "/api/redis.create", nil, `{"databasePassword":"REDIS-PASSWORD","description":null,"dockerImage":"","environmentId":"e1","name":"cache","serverId":null}`, `{"redisId":"r1"}`),
+		r(http.MethodPost, "/api/redis.deploy", nil, `{"redisId":"r1"}`, `"running"`),
+		get("/api/redis.one", "redisId", "r1", redisOne),
+		r(http.MethodPost, "/api/domain.create", nil, `{"applicationId":"a1","certificateType":"letsencrypt","domainType":"application","host":"app.example.com","https":false,"stripPath":false}`, `{"domainId":"d-app"}`),
+		r(http.MethodPost, "/api/domain.update", nil, `{"domainId":"d-app","enabled":false}`, trueResponse),
+		r(http.MethodPost, "/api/domain.create", nil, `{"certificateType":"letsencrypt","composeId":"c1","domainType":"compose","host":"stack.example.com","https":false,"serviceName":"web","stripPath":false}`, `{"domainId":"d-compose"}`),
+		r(http.MethodPost, "/api/domain.update", nil, `{"domainId":"d-compose","enabled":false}`, trueResponse),
+		get("/api/project.one", "projectId", "p1", `{"projectId":"p1","name":"demo","defaultEnvironmentId":"e1"}`),
+		get("/api/environment.one", "environmentId", "e2", `{"environmentId":"e2","projectId":"p1","name":"staging","isDefault":false}`),
+		get("/api/application.one", "applicationId", "a1", appOne), get("/api/compose.one", "composeId", "c1", composeOne), get("/api/postgres.one", "postgresId", "pg1", postgresOne), get("/api/redis.one", "redisId", "r1", redisOne),
+		get("/api/domain.one", "domainId", "d-app", `{"domainId":"d-app","host":"app.example.com","applicationId":"a1","enabled":false,"https":false,"certificateType":"letsencrypt"}`),
+		get("/api/domain.one", "domainId", "d-compose", `{"domainId":"d-compose","host":"stack.example.com","composeId":"c1","serviceName":"web","enabled":false,"https":false,"certificateType":"letsencrypt"}`),
+		r(http.MethodPost, "/api/project.update", nil, `{"projectId":"p1","name":"renamed","description":null}`, `{}`),
+		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"alpine","password":"","registryUrl":"","username":""}`, trueResponse),
+		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, trueResponse),
+		r(http.MethodPost, "/api/application.redeploy", nil, `{"applicationId":"a1"}`, `"running"`), get("/api/application.one", "applicationId", "a1", appOne),
+		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"broken","password":"","registryUrl":"","username":""}`, trueResponse),
+		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`, trueResponse),
+		{method: http.MethodPost, path: "/api/application.redeploy", body: json.RawMessage(`{"applicationId":"a1"}`), status: http.StatusBadRequest, response: `{"message":"redeploy failed ENV-SECRET ARGS-SECRET BUILD-SECRET"}`},
+		get("/api/postgres.one", "postgresId", "pg1", postgresOne),
+		r(http.MethodPost, "/api/domain.delete", nil, `{"domainId":"d-compose"}`, trueResponse), r(http.MethodPost, "/api/domain.delete", nil, `{"domainId":"d-app"}`, trueResponse),
+		r(http.MethodPost, "/api/application.delete", nil, `{"applicationId":"a1"}`, trueResponse), r(http.MethodPost, "/api/compose.delete", nil, `{"composeId":"c1","deleteVolumes":false}`, trueResponse),
+		r(http.MethodPost, "/api/redis.remove", nil, `{"redisId":"r1"}`, trueResponse), r(http.MethodPost, "/api/postgres.remove", nil, `{"postgresId":"pg1"}`, trueResponse),
+		r(http.MethodPost, "/api/environment.remove", nil, `{"environmentId":"e2"}`, trueResponse), r(http.MethodPost, "/api/project.remove", nil, `{"projectId":"p1"}`, trueResponse),
 	}
 }
