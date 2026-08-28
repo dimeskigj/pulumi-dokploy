@@ -66,11 +66,17 @@ export class Redis extends pulumi.CustomResource {
      * The database resource name.
      */
     declare public readonly name: pulumi.Output<string>;
+    /**
+     * The stable Dokploy Redis ID.
+     */
     declare public /*out*/ readonly redisId: pulumi.Output<string>;
     /**
      * The optional server ID.
      */
     declare public readonly serverId: pulumi.Output<string | undefined>;
+    /**
+     * The current Redis deployment status.
+     */
     declare public /*out*/ readonly status: pulumi.Output<string>;
 
     /**

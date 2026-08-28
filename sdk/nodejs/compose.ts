@@ -40,6 +40,9 @@ export class Compose extends pulumi.CustomResource {
      * The optional deployed stack name.
      */
     declare public readonly appName: pulumi.Output<string | undefined>;
+    /**
+     * The stable Dokploy Compose ID.
+     */
     declare public /*out*/ readonly composeId: pulumi.Output<string>;
     /**
      * The Compose deployment type.
@@ -77,6 +80,9 @@ export class Compose extends pulumi.CustomResource {
      * The Compose source configuration.
      */
     declare public readonly source: pulumi.Output<outputs.ComposeSource>;
+    /**
+     * The current Compose deployment status.
+     */
     declare public /*out*/ readonly status: pulumi.Output<string>;
 
     /**

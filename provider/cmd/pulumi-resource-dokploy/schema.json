@@ -5,8 +5,23 @@
   "homepage": "https://github.com/gjorgjidimeski/pulumi-dokploy",
   "namespace": "gjorgjidimeski",
   "language": {
+    "csharp": {
+      "packageName": "Pulumi.Dokploy",
+      "rootNamespace": "Pulumi.Dokploy"
+    },
     "go": {
       "importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"
+    },
+    "java": {
+      "basePackage": "dev.codechem.pulumi.dokploy",
+      "packageName": "dev.codechem.pulumi.dokploy"
+    },
+    "nodejs": {
+      "packageName": "@gjorgjidimeski/pulumi-dokploy"
+    },
+    "python": {
+      "moduleName": "pulumi_dokploy",
+      "packageName": "pulumi_dokploy"
     }
   },
   "config": {
@@ -399,7 +414,8 @@
           "description": "The optional deployed application name."
         },
         "applicationId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stable Dokploy application ID."
         },
         "buildArgs": {
           "type": "string",
@@ -443,7 +459,8 @@
           "description": "The application source configuration."
         },
         "status": {
-          "type": "string"
+          "type": "string",
+          "description": "The current application deployment status."
         }
       },
       "required": [
@@ -514,7 +531,8 @@
           "description": "The optional deployed stack name."
         },
         "composeId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stable Dokploy Compose ID."
         },
         "composeType": {
           "type": "string",
@@ -557,7 +575,8 @@
           "description": "The Compose source configuration."
         },
         "status": {
-          "type": "string"
+          "type": "string",
+          "description": "The current Compose deployment status."
         }
       },
       "required": [
@@ -643,7 +662,8 @@
           "description": "The custom certificate resolver."
         },
         "domainId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stable Dokploy domain ID."
         },
         "enabled": {
           "type": "boolean",
@@ -756,10 +776,12 @@
           "description": "An optional environment description."
         },
         "environmentId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stable Dokploy environment ID."
         },
         "isDefault": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Whether this is the default environment."
         },
         "name": {
           "type": "string",
@@ -843,7 +865,8 @@
           "description": "The database resource name."
         },
         "postgresId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stable Dokploy PostgreSQL ID."
         },
         "serverId": {
           "type": "string",
@@ -851,7 +874,8 @@
           "replaceOnChanges": true
         },
         "status": {
-          "type": "string"
+          "type": "string",
+          "description": "The current PostgreSQL deployment status."
         }
       },
       "required": [
@@ -927,7 +951,8 @@
       "description": "A Dokploy project.",
       "properties": {
         "defaultEnvironmentId": {
-          "type": "string"
+          "type": "string",
+          "description": "The project's default environment ID."
         },
         "description": {
           "type": "string",
@@ -938,7 +963,8 @@
           "description": "The project name."
         },
         "projectId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stable Dokploy project ID."
         }
       },
       "required": [
@@ -1000,7 +1026,8 @@
           "description": "The database resource name."
         },
         "redisId": {
-          "type": "string"
+          "type": "string",
+          "description": "The stable Dokploy Redis ID."
         },
         "serverId": {
           "type": "string",
@@ -1008,7 +1035,8 @@
           "replaceOnChanges": true
         },
         "status": {
-          "type": "string"
+          "type": "string",
+          "description": "The current Redis deployment status."
         }
       },
       "required": [

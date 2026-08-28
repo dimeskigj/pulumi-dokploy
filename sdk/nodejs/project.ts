@@ -34,6 +34,9 @@ export class Project extends pulumi.CustomResource {
         return obj['__pulumiType'] === Project.__pulumiType;
     }
 
+    /**
+     * The project's default environment ID.
+     */
     declare public /*out*/ readonly defaultEnvironmentId: pulumi.Output<string>;
     /**
      * An optional project description.
@@ -43,6 +46,9 @@ export class Project extends pulumi.CustomResource {
      * The project name.
      */
     declare public readonly name: pulumi.Output<string>;
+    /**
+     * The stable Dokploy project ID.
+     */
     declare public /*out*/ readonly projectId: pulumi.Output<string>;
 
     /**

@@ -41,6 +41,11 @@ type DomainState struct {
 	DomainArgs
 	DomainID string `pulumi:"domainId"`
 }
+
+func (s *DomainState) Annotate(a infer.Annotator) {
+	a.Describe(&s.DomainID, "The stable Dokploy domain ID.")
+}
+
 type Domain struct{ client clientFactory }
 
 func (r *Domain) Annotate(a infer.Annotator) {

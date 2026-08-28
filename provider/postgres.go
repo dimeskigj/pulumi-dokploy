@@ -30,6 +30,12 @@ type PostgresState struct {
 	PostgresID string `pulumi:"postgresId"`
 	Status     string `pulumi:"status"`
 }
+
+func (s *PostgresState) Annotate(a infer.Annotator) {
+	a.Describe(&s.PostgresID, "The stable Dokploy PostgreSQL ID.")
+	a.Describe(&s.Status, "The current PostgreSQL deployment status.")
+}
+
 type Postgres struct{ client clientFactory }
 
 func (r *Postgres) Annotate(a infer.Annotator) {

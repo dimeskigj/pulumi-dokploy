@@ -24,6 +24,11 @@ type ProjectState struct {
 	DefaultEnvironmentID string `pulumi:"defaultEnvironmentId"`
 }
 
+func (s *ProjectState) Annotate(a infer.Annotator) {
+	a.Describe(&s.ProjectID, "The stable Dokploy project ID.")
+	a.Describe(&s.DefaultEnvironmentID, "The project's default environment ID.")
+}
+
 type Project struct{ client clientFactory }
 
 func (r *Project) Annotate(a infer.Annotator) {

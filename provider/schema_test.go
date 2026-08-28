@@ -1,6 +1,7 @@
 package dokploy
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -19,6 +20,13 @@ func providerSchema(t *testing.T) schema.PackageSpec {
 func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	spec := providerSchema(t)
 	require.Empty(t, spec.Functions)
+	require.Equal(t, "@gjorgjidimeski/pulumi-dokploy", languageSetting(spec, "nodejs", "packageName"))
+	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "packageName"))
+	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "moduleName"))
+	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
+	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "rootNamespace"))
+	require.Equal(t, "dev.codechem.pulumi.dokploy", languageSetting(spec, "java", "basePackage"))
+	require.Equal(t, "dev.codechem.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
 	require.NotNil(t, spec.Resources)
 	require.ElementsMatch(t, []string{
 		"dokploy:index:Project", "dokploy:index:Environment", "dokploy:index:Application",
@@ -29,6 +37,12 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		for property, spec := range resource.InputProperties {
 			require.NotEmpty(t, spec.Description, token+"."+property)
 		}
+		for property, spec := range resource.Properties {
+			require.NotEmpty(t, spec.Description, token+" output "+property)
+		}
+	}
+	for property, variable := range spec.Config.Variables {
+		require.NotEmpty(t, variable.Description, "config."+property)
 	}
 }
 
@@ -99,3 +113,11 @@ func schemaProperty(spec schema.PackageSpec, resourceToken, property string) sch
 }
 
 func trimTypeRef(ref string) string { return strings.TrimPrefix(ref, "#/types/") }
+
+func languageSetting(spec schema.PackageSpec, language, key string) any {
+	settings := map[string]any{}
+	if err := json.Unmarshal(spec.Language[language], &settings); err != nil {
+		return nil
+	}
+	return settings[key]
+}

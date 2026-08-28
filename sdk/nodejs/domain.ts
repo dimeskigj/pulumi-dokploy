@@ -50,6 +50,9 @@ export class Domain extends pulumi.CustomResource {
      * The custom certificate resolver.
      */
     declare public readonly customCertResolver: pulumi.Output<string | undefined>;
+    /**
+     * The stable Dokploy domain ID.
+     */
     declare public /*out*/ readonly domainId: pulumi.Output<string>;
     /**
      * Whether the domain is enabled.

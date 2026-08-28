@@ -17,8 +17,9 @@ type Application struct {
 	pulumi.CustomResourceState
 
 	// The optional deployed application name.
-	AppName       pulumi.StringPtrOutput `pulumi:"appName"`
-	ApplicationId pulumi.StringOutput    `pulumi:"applicationId"`
+	AppName pulumi.StringPtrOutput `pulumi:"appName"`
+	// The stable Dokploy application ID.
+	ApplicationId pulumi.StringOutput `pulumi:"applicationId"`
 	// Build arguments for the application.
 	BuildArgs pulumi.StringPtrOutput `pulumi:"buildArgs"`
 	// Build secrets for the application.
@@ -37,7 +38,8 @@ type Application struct {
 	ServerId pulumi.StringPtrOutput `pulumi:"serverId"`
 	// The application source configuration.
 	Source ApplicationSourceOutput `pulumi:"source"`
-	Status pulumi.StringOutput     `pulumi:"status"`
+	// The current application deployment status.
+	Status pulumi.StringOutput `pulumi:"status"`
 }
 
 // NewApplication registers a new resource with the given unique name, arguments, and options.
@@ -197,6 +199,7 @@ func (o ApplicationOutput) AppName() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *Application) pulumi.StringPtrOutput { return v.AppName }).(pulumi.StringPtrOutput)
 }
 
+// The stable Dokploy application ID.
 func (o ApplicationOutput) ApplicationId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Application) pulumi.StringOutput { return v.ApplicationId }).(pulumi.StringOutput)
 }
@@ -246,6 +249,7 @@ func (o ApplicationOutput) Source() ApplicationSourceOutput {
 	return o.ApplyT(func(v *Application) ApplicationSourceOutput { return v.Source }).(ApplicationSourceOutput)
 }
 
+// The current application deployment status.
 func (o ApplicationOutput) Status() pulumi.StringOutput {
 	return o.ApplyT(func(v *Application) pulumi.StringOutput { return v.Status }).(pulumi.StringOutput)
 }

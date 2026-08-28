@@ -74,11 +74,17 @@ export class Postgres extends pulumi.CustomResource {
      * The database resource name.
      */
     declare public readonly name: pulumi.Output<string>;
+    /**
+     * The stable Dokploy PostgreSQL ID.
+     */
     declare public /*out*/ readonly postgresId: pulumi.Output<string>;
     /**
      * The optional server ID.
      */
     declare public readonly serverId: pulumi.Output<string | undefined>;
+    /**
+     * The current PostgreSQL deployment status.
+     */
     declare public /*out*/ readonly status: pulumi.Output<string>;
 
     /**

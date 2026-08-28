@@ -26,6 +26,12 @@ type EnvironmentState struct {
 	EnvironmentID string `pulumi:"environmentId"`
 	IsDefault     bool   `pulumi:"isDefault"`
 }
+
+func (s *EnvironmentState) Annotate(a infer.Annotator) {
+	a.Describe(&s.EnvironmentID, "The stable Dokploy environment ID.")
+	a.Describe(&s.IsDefault, "Whether this is the default environment.")
+}
+
 type Environment struct{ client clientFactory }
 
 func (r *Environment) Annotate(a infer.Annotator) {

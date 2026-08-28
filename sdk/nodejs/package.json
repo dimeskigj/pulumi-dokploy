@@ -1,5 +1,5 @@
 {
-    "name": "@gjorgjidimeski/dokploy",
+    "name": "@gjorgjidimeski/pulumi-dokploy",
     "version": "${VERSION}",
     "homepage": "https://github.com/gjorgjidimeski/pulumi-dokploy",
     "scripts": {

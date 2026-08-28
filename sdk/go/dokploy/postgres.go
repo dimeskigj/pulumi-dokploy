@@ -35,11 +35,13 @@ type Postgres struct {
 	// The optional externally exposed port.
 	ExternalPort pulumi.IntPtrOutput `pulumi:"externalPort"`
 	// The database resource name.
-	Name       pulumi.StringOutput `pulumi:"name"`
+	Name pulumi.StringOutput `pulumi:"name"`
+	// The stable Dokploy PostgreSQL ID.
 	PostgresId pulumi.StringOutput `pulumi:"postgresId"`
 	// The optional server ID.
 	ServerId pulumi.StringPtrOutput `pulumi:"serverId"`
-	Status   pulumi.StringOutput    `pulumi:"status"`
+	// The current PostgreSQL deployment status.
+	Status pulumi.StringOutput `pulumi:"status"`
 }
 
 // NewPostgres registers a new resource with the given unique name, arguments, and options.
@@ -253,6 +255,7 @@ func (o PostgresOutput) Name() pulumi.StringOutput {
 	return o.ApplyT(func(v *Postgres) pulumi.StringOutput { return v.Name }).(pulumi.StringOutput)
 }
 
+// The stable Dokploy PostgreSQL ID.
 func (o PostgresOutput) PostgresId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Postgres) pulumi.StringOutput { return v.PostgresId }).(pulumi.StringOutput)
 }
@@ -262,6 +265,7 @@ func (o PostgresOutput) ServerId() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *Postgres) pulumi.StringPtrOutput { return v.ServerId }).(pulumi.StringPtrOutput)
 }
 
+// The current PostgreSQL deployment status.
 func (o PostgresOutput) Status() pulumi.StringOutput {
 	return o.ApplyT(func(v *Postgres) pulumi.StringOutput { return v.Status }).(pulumi.StringOutput)
 }

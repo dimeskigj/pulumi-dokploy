@@ -10,4 +10,4 @@ pluginManagement {
   }
 }
 
-rootProject.name = "com.gjorgjidimeski.dokploy"
+rootProject.name = "dev.codechem.pulumi.dokploy.dokploy"

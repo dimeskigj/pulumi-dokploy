@@ -16,11 +16,13 @@ import (
 type Project struct {
 	pulumi.CustomResourceState
 
+	// The project's default environment ID.
 	DefaultEnvironmentId pulumi.StringOutput `pulumi:"defaultEnvironmentId"`
 	// An optional project description.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// The project name.
-	Name      pulumi.StringOutput `pulumi:"name"`
+	Name pulumi.StringOutput `pulumi:"name"`
+	// The stable Dokploy project ID.
 	ProjectId pulumi.StringOutput `pulumi:"projectId"`
 }
 
@@ -118,6 +120,7 @@ func (o ProjectOutput) ToProjectOutputWithContext(ctx context.Context) ProjectOu
 	return o
 }
 
+// The project's default environment ID.
 func (o ProjectOutput) DefaultEnvironmentId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Project) pulumi.StringOutput { return v.DefaultEnvironmentId }).(pulumi.StringOutput)
 }
@@ -132,6 +135,7 @@ func (o ProjectOutput) Name() pulumi.StringOutput {
 	return o.ApplyT(func(v *Project) pulumi.StringOutput { return v.Name }).(pulumi.StringOutput)
 }
 
+// The stable Dokploy project ID.
 func (o ProjectOutput) ProjectId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Project) pulumi.StringOutput { return v.ProjectId }).(pulumi.StringOutput)
 }

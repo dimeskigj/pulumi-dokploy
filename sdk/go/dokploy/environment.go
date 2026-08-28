@@ -17,9 +17,11 @@ type Environment struct {
 	pulumi.CustomResourceState
 
 	// An optional environment description.
-	Description   pulumi.StringPtrOutput `pulumi:"description"`
-	EnvironmentId pulumi.StringOutput    `pulumi:"environmentId"`
-	IsDefault     pulumi.BoolOutput      `pulumi:"isDefault"`
+	Description pulumi.StringPtrOutput `pulumi:"description"`
+	// The stable Dokploy environment ID.
+	EnvironmentId pulumi.StringOutput `pulumi:"environmentId"`
+	// Whether this is the default environment.
+	IsDefault pulumi.BoolOutput `pulumi:"isDefault"`
 	// The environment name.
 	Name pulumi.StringOutput `pulumi:"name"`
 	// The parent project ID.
@@ -132,10 +134,12 @@ func (o EnvironmentOutput) Description() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *Environment) pulumi.StringPtrOutput { return v.Description }).(pulumi.StringPtrOutput)
 }
 
+// The stable Dokploy environment ID.
 func (o EnvironmentOutput) EnvironmentId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Environment) pulumi.StringOutput { return v.EnvironmentId }).(pulumi.StringOutput)
 }
 
+// Whether this is the default environment.
 func (o EnvironmentOutput) IsDefault() pulumi.BoolOutput {
 	return o.ApplyT(func(v *Environment) pulumi.BoolOutput { return v.IsDefault }).(pulumi.BoolOutput)
 }

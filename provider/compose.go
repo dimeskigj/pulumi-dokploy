@@ -29,6 +29,12 @@ type ComposeState struct {
 	ComposeID string `pulumi:"composeId"`
 	Status    string `pulumi:"status"`
 }
+
+func (s *ComposeState) Annotate(a infer.Annotator) {
+	a.Describe(&s.ComposeID, "The stable Dokploy Compose ID.")
+	a.Describe(&s.Status, "The current Compose deployment status.")
+}
+
 type Compose struct{ client clientFactory }
 
 func (r *Compose) Annotate(a infer.Annotator) {

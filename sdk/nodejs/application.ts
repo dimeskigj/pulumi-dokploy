@@ -40,6 +40,9 @@ export class Application extends pulumi.CustomResource {
      * The optional deployed application name.
      */
     declare public readonly appName: pulumi.Output<string | undefined>;
+    /**
+     * The stable Dokploy application ID.
+     */
     declare public /*out*/ readonly applicationId: pulumi.Output<string>;
     /**
      * Build arguments for the application.
@@ -77,6 +80,9 @@ export class Application extends pulumi.CustomResource {
      * The application source configuration.
      */
     declare public readonly source: pulumi.Output<outputs.ApplicationSource>;
+    /**
+     * The current application deployment status.
+     */
     declare public /*out*/ readonly status: pulumi.Output<string>;
 
     /**

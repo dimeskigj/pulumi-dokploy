@@ -29,6 +29,11 @@ type RedisState struct {
 	Status  string `pulumi:"status"`
 }
 
+func (s *RedisState) Annotate(a infer.Annotator) {
+	a.Describe(&s.RedisID, "The stable Dokploy Redis ID.")
+	a.Describe(&s.Status, "The current Redis deployment status.")
+}
+
 type Redis struct{ client clientFactory }
 
 func (r *Redis) Annotate(a infer.Annotator) {

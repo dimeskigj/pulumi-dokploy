@@ -17,8 +17,9 @@ type Compose struct {
 	pulumi.CustomResourceState
 
 	// The optional deployed stack name.
-	AppName   pulumi.StringPtrOutput `pulumi:"appName"`
-	ComposeId pulumi.StringOutput    `pulumi:"composeId"`
+	AppName pulumi.StringPtrOutput `pulumi:"appName"`
+	// The stable Dokploy Compose ID.
+	ComposeId pulumi.StringOutput `pulumi:"composeId"`
 	// The Compose deployment type.
 	ComposeType pulumi.StringOutput `pulumi:"composeType"`
 	// Whether to create an environment file.
@@ -37,6 +38,7 @@ type Compose struct {
 	ServerId pulumi.StringPtrOutput `pulumi:"serverId"`
 	// The Compose source configuration.
 	Source ComposeSourceOutput `pulumi:"source"`
+	// The current Compose deployment status.
 	Status pulumi.StringOutput `pulumi:"status"`
 }
 
@@ -192,6 +194,7 @@ func (o ComposeOutput) AppName() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *Compose) pulumi.StringPtrOutput { return v.AppName }).(pulumi.StringPtrOutput)
 }
 
+// The stable Dokploy Compose ID.
 func (o ComposeOutput) ComposeId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Compose) pulumi.StringOutput { return v.ComposeId }).(pulumi.StringOutput)
 }
@@ -241,6 +244,7 @@ func (o ComposeOutput) Source() ComposeSourceOutput {
 	return o.ApplyT(func(v *Compose) ComposeSourceOutput { return v.Source }).(ComposeSourceOutput)
 }
 
+// The current Compose deployment status.
 func (o ComposeOutput) Status() pulumi.StringOutput {
 	return o.ApplyT(func(v *Compose) pulumi.StringOutput { return v.Status }).(pulumi.StringOutput)
 }

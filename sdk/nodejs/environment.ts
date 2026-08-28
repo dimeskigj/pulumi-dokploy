@@ -38,7 +38,13 @@ export class Environment extends pulumi.CustomResource {
      * An optional environment description.
      */
     declare public readonly description: pulumi.Output<string | undefined>;
+    /**
+     * The stable Dokploy environment ID.
+     */
     declare public /*out*/ readonly environmentId: pulumi.Output<string>;
+    /**
+     * Whether this is the default environment.
+     */
     declare public /*out*/ readonly isDefault: pulumi.Output<boolean>;
     /**
      * The environment name.

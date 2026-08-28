@@ -18,7 +18,7 @@ def readme():
         return "dokploy Pulumi Package - Development Version"
 
 
-setup(name='gjorgjidimeski_dokploy',
+setup(name='pulumi_dokploy',
       python_requires='>=3.9',
       version=VERSION,
       long_description=readme(),
@@ -26,7 +26,7 @@ setup(name='gjorgjidimeski_dokploy',
       url='https://github.com/gjorgjidimeski/pulumi-dokploy',
       packages=find_packages(),
       package_data={
-          'gjorgjidimeski_dokploy': [
+          'pulumi_dokploy': [
               'py.typed',
               'pulumi-plugin.json',
           ]

@@ -24,7 +24,8 @@ type Domain struct {
 	ComposeId pulumi.StringPtrOutput `pulumi:"composeId"`
 	// The custom certificate resolver.
 	CustomCertResolver pulumi.StringPtrOutput `pulumi:"customCertResolver"`
-	DomainId           pulumi.StringOutput    `pulumi:"domainId"`
+	// The stable Dokploy domain ID.
+	DomainId pulumi.StringOutput `pulumi:"domainId"`
 	// Whether the domain is enabled.
 	Enabled pulumi.BoolOutput `pulumi:"enabled"`
 	// The domain hostname.
@@ -212,6 +213,7 @@ func (o DomainOutput) CustomCertResolver() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *Domain) pulumi.StringPtrOutput { return v.CustomCertResolver }).(pulumi.StringPtrOutput)
 }
 
+// The stable Dokploy domain ID.
 func (o DomainOutput) DomainId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Domain) pulumi.StringOutput { return v.DomainId }).(pulumi.StringOutput)
 }

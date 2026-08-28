@@ -21,9 +21,13 @@ func Provider() p.Provider {
 			DisplayName: "Dokploy",
 			Namespace:   "gjorgjidimeski",
 			Homepage:    "https://github.com/gjorgjidimeski/pulumi-dokploy",
-			LanguageMap: map[string]any{"go": map[string]any{
-				"importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy",
-			}},
+			LanguageMap: map[string]any{
+				"go":     map[string]any{"importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"},
+				"nodejs": map[string]any{"packageName": "@gjorgjidimeski/pulumi-dokploy"},
+				"python": map[string]any{"packageName": "pulumi_dokploy", "moduleName": "pulumi_dokploy"},
+				"csharp": map[string]any{"packageName": "Pulumi.Dokploy", "rootNamespace": "Pulumi.Dokploy"},
+				"java":   map[string]any{"packageName": "dev.codechem.pulumi.dokploy", "basePackage": "dev.codechem.pulumi.dokploy"},
+			},
 		},
 		Config: infer.Config(&Config{}),
 		Resources: []infer.InferredResource{

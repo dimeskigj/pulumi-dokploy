@@ -32,6 +32,11 @@ type ApplicationState struct {
 	Status        string `pulumi:"status"`
 }
 
+func (s *ApplicationState) Annotate(a infer.Annotator) {
+	a.Describe(&s.ApplicationID, "The stable Dokploy application ID.")
+	a.Describe(&s.Status, "The current application deployment status.")
+}
+
 type Application struct{ client clientFactory }
 
 func (r *Application) Annotate(a infer.Annotator) {
