@@ -36,7 +36,21 @@ func TestComposeSourceDefaults(t *testing.T) {
 	if err != nil || len(got.Failures) != 0 {
 		t.Fatalf("Check() = %#v, %v", got.Failures, err)
 	}
-	if got.Inputs.ComposeType != ComposeDocker || got.Inputs.Source.Raw.ComposePath != "" {
+	if got.Inputs.ComposeType != ComposeDocker {
 		t.Fatalf("defaults = %#v", got.Inputs)
+	}
+}
+
+func TestComposeGitSourceDefaultsComposePath(t *testing.T) {
+	source := property.New(map[string]property.Value{
+		"type": property.New("git"),
+		"git":  property.New(map[string]property.Value{"url": property.New("https://example.test/repo"), "branch": property.New("main")}),
+	})
+	got, err := (Compose{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{"name": property.New("demo"), "environmentId": property.New("e1"), "source": source})})
+	if err != nil || len(got.Failures) != 0 {
+		t.Fatalf("Check() = %#v, %v", got.Failures, err)
+	}
+	if got.Inputs.Source.Git.ComposePath != "./docker-compose.yml" {
+		t.Fatalf("compose path = %q", got.Inputs.Source.Git.ComposePath)
 	}
 }

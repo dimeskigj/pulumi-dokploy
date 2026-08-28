@@ -29,7 +29,6 @@ type ComposeSource struct {
 
 type RawComposeSource struct {
 	ComposeFile string `pulumi:"composeFile"`
-	ComposePath string `pulumi:"composePath,optional"`
 }
 
 type GitComposeSource struct {
@@ -120,7 +119,7 @@ func composePath(path string) string {
 
 func configureComposeSource(ctx context.Context, api *client.Client, id string, source ComposeSource) error {
 	if source.Type == ComposeSourceRaw {
-		_, err := api.ComposeUpdateWithResponse(ctx, generated.ComposeUpdateJSONRequestBody{ComposeId: id, ComposeFile: ptr(source.Raw.ComposeFile), ComposePath: ptr(composeSourcePath(source))})
+		_, err := api.ComposeUpdateWithResponse(ctx, generated.ComposeUpdateJSONRequestBody{ComposeId: id, ComposeFile: ptr(source.Raw.ComposeFile)})
 		return err
 	}
 	b := generated.ComposeUpdateJSONRequestBody{ComposeId: id, SourceType: ptr(generated.ComposeUpdateJSONBodySourceType(source.Type)), ComposePath: ptr(composeSourcePath(source))}
@@ -133,6 +132,8 @@ func configureComposeSource(ctx context.Context, api *client.Client, id string, 
 		b.EnableSubmodules = &s.EnableSubmodules
 		if s.SSHKeyID != nil {
 			b.CustomGitSSHKeyId = nullable.NewNullableWithValue(*s.SSHKeyID)
+		} else {
+			b.CustomGitSSHKeyId = nullable.NewNullNullable[string]()
 		}
 	case ComposeSourceGitLab:
 		s := source.GitLab
@@ -164,7 +165,7 @@ func composeSourcePath(s ComposeSource) string {
 	if s.Type == ComposeSourceGitLab {
 		return composePath(s.GitLab.ComposePath)
 	}
-	return composePath(s.Raw.ComposePath)
+	return ""
 }
 
 func ptr[T any](v T) *T { return &v }

@@ -179,12 +179,22 @@ func composeStatus(ctx context.Context, api *client.Client, id string) (string, 
 	if r.JSON200 == nil {
 		return "", fmt.Errorf("compose.one returned incomplete compose")
 	}
-	if r.JSON200.AdditionalProperties != nil {
-		if s, ok := r.JSON200.AdditionalProperties["status"].(string); ok {
-			return s, nil
-		}
+	return composeStatusValue(r.JSON200)
+}
+
+func composeStatusValue(c *generated.Compose) (string, error) {
+	if c.AdditionalProperties == nil {
+		return "", fmt.Errorf("compose.one returned compose without a status")
 	}
-	return "done", nil
+	v, ok := c.AdditionalProperties["status"]
+	if !ok {
+		return "", fmt.Errorf("compose.one returned compose without a status")
+	}
+	s, ok := v.(string)
+	if !ok || s == "" {
+		return "", fmt.Errorf("compose.one returned invalid status %v", v)
+	}
+	return s, nil
 }
 
 func (r Compose) Read(ctx context.Context, req infer.ReadRequest[ComposeArgs, ComposeState]) (infer.ReadResponse[ComposeArgs, ComposeState], error) {
@@ -216,7 +226,11 @@ func (r Compose) Read(ctx context.Context, req infer.ReadRequest[ComposeArgs, Co
 		return infer.ReadResponse[ComposeArgs, ComposeState]{}, e
 	}
 	a.Source = src
-	st := ComposeState{ComposeArgs: a, ComposeID: *c.ComposeId, Status: "done"}
+	status, e := composeStatusValue(c)
+	if e != nil {
+		return infer.ReadResponse[ComposeArgs, ComposeState]{}, e
+	}
+	st := ComposeState{ComposeArgs: a, ComposeID: *c.ComposeId, Status: status}
 	return infer.ReadResponse[ComposeArgs, ComposeState]{ID: *c.ComposeId, Inputs: a, State: st}, nil
 }
 
@@ -232,7 +246,7 @@ func decodeComposeSource(raw *map[string]interface{}, prior ComposeSource) (Comp
 	s := ComposeSource{Type: ComposeSourceType(k)}
 	switch s.Type {
 	case ComposeSourceRaw:
-		s.Raw = &RawComposeSource{ComposeFile: stringValue(m, "composeFile", "rawComposeFile"), ComposePath: composePath(stringValue(m, "composePath"))}
+		s.Raw = &RawComposeSource{ComposeFile: stringValue(m, "composeFile", "rawComposeFile")}
 	case ComposeSourceGit:
 		s.Git = &GitComposeSource{URL: stringValue(m, "url", "customGitUrl"), Branch: stringValue(m, "branch", "customGitBranch"), ComposePath: composePath(stringValue(m, "composePath")), SSHKeyID: stringPointer(m, "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
 	case ComposeSourceGitLab:
