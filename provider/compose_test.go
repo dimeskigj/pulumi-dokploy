@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
 )
@@ -186,4 +187,25 @@ func TestComposeUpdateErrorStatusReturnsError(t *testing.T) {
 	oldArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "old"}}}
 	_, err := (Compose{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ComposeArgs, ComposeState]{ID: "c1", Inputs: newArgs, State: ComposeState{ComposeArgs: oldArgs}})
 	require.Error(t, err)
+}
+
+func TestComposeDiffMarksSourceEnvironmentAndServerReplacements(t *testing.T) {
+	oldServer, newServer := "s1", "s2"
+	old := ComposeArgs{EnvironmentID: "e1", ServerID: &oldServer, Source: ComposeSource{Type: ComposeSourceGit, Git: &GitComposeSource{URL: "u", Branch: "main"}}}
+	in := ComposeArgs{EnvironmentID: "e2", ServerID: &newServer, Source: ComposeSource{Type: ComposeSourceGitLab, GitLab: &GitLabComposeSource{IntegrationID: "i", ProjectID: 1, Owner: "o", Namespace: "n", Repository: "r", Branch: "main"}}}
+	diff, err := (Compose{}).Diff(t.Context(), infer.DiffRequest[ComposeArgs, ComposeState]{Inputs: in, State: ComposeState{ComposeArgs: old}})
+	require.NoError(t, err)
+	require.Equal(t, p.UpdateReplace, diff.DetailedDiff["environmentId"].Kind)
+	require.Equal(t, p.UpdateReplace, diff.DetailedDiff["serverId"].Kind)
+	require.Equal(t, p.UpdateReplace, diff.DetailedDiff["source.type"].Kind)
+}
+
+func TestComposeReadReconstructsGitAndPreservesEnvironmentSecret(t *testing.T) {
+	secret := "ENV-SECRET"
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","name":"demo","environmentId":"e1","status":"done","source":{"type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","composePath":"app.yml","watchPaths":["app/**"],"enableSubmodules":true}}`))
+	got, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1", State: ComposeState{ComposeArgs: ComposeArgs{Environment: &secret}}})
+	require.NoError(t, err)
+	require.Equal(t, secret, *got.Inputs.Environment)
+	require.Equal(t, "https://git.test/repo", got.Inputs.Source.Git.URL)
+	require.Equal(t, "app.yml", got.Inputs.Source.Git.ComposePath)
 }

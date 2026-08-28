@@ -1,8 +1,10 @@
 package dokploy
 
 import (
+	"strings"
 	"testing"
 
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
 )
@@ -52,5 +54,29 @@ func TestComposeGitSourceDefaultsComposePath(t *testing.T) {
 	}
 	if got.Inputs.Source.Git.ComposePath != "./docker-compose.yml" {
 		t.Fatalf("compose path = %q", got.Inputs.Source.Git.ComposePath)
+	}
+}
+
+func TestComposeInferredSchemaHasVariantSpecificComposePaths(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	if err != nil {
+		t.Fatal(err)
+	}
+	compose := spec.Resources["dokploy:index:Compose"]
+	sourceRef := strings.TrimPrefix(compose.InputProperties["source"].Ref, "#/types/")
+	source := spec.Types[sourceRef]
+	rawRef := strings.TrimPrefix(source.Properties["raw"].Ref, "#/types/")
+	gitRef := strings.TrimPrefix(source.Properties["git"].Ref, "#/types/")
+	gitlabRef := strings.TrimPrefix(source.Properties["gitlab"].Ref, "#/types/")
+	if _, ok := spec.Types[rawRef].Properties["composeFile"]; !ok {
+		t.Fatal("raw schema lacks composeFile")
+	}
+	if _, ok := spec.Types[rawRef].Properties["composePath"]; ok {
+		t.Fatal("raw schema unexpectedly exposes composePath")
+	}
+	for _, ref := range []string{gitRef, gitlabRef} {
+		if _, ok := spec.Types[ref].Properties["composePath"]; !ok {
+			t.Fatalf("repository schema %q lacks composePath", ref)
+		}
 	}
 }
