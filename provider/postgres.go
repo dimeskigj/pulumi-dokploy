@@ -161,10 +161,16 @@ func savePostgresPort(ctx context.Context, api *client.Client, id string, port *
 	_, err := api.PostgresSaveExternalPortWithResponse(ctx, generated.PostgresSaveExternalPortJSONRequestBody{PostgresId: id, ExternalPort: p})
 	return err
 }
-func sanitizePostgresError(err error, args PostgresArgs) error {
+func sanitizePostgresError(err error, args PostgresArgs, prior ...PostgresArgs) error {
 	secrets := []string{args.DatabasePassword}
 	if args.Environment != nil {
 		secrets = append(secrets, *args.Environment)
+	}
+	for _, old := range prior {
+		secrets = append(secrets, old.DatabasePassword)
+		if old.Environment != nil {
+			secrets = append(secrets, *old.Environment)
+		}
 	}
 	return sanitizeError(err, secrets...)
 }
@@ -215,6 +221,12 @@ func (r Postgres) Read(ctx context.Context, req infer.ReadRequest[PostgresArgs, 
 	if v.Env != nil {
 		a.Environment = v.Env
 	}
+	if password := stringValue(v.AdditionalProperties, "databasePassword"); password != "" {
+		a.DatabasePassword = password
+	}
+	if a.DatabasePassword == "" {
+		return infer.ReadResponse[PostgresArgs, PostgresState]{}, fmt.Errorf("postgres.one omitted required databasePassword; import requires an observable password or prior state")
+	}
 	status, err := postgresStatusValue(v)
 	if err != nil {
 		return infer.ReadResponse[PostgresArgs, PostgresState]{}, err
@@ -243,27 +255,27 @@ func (r Postgres) Update(ctx context.Context, req infer.UpdateRequest[PostgresAr
 			b.DockerImage = &req.Inputs.DockerImage
 		}
 		if _, err := api.PostgresUpdateWithResponse(ctx, b); err != nil {
-			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs)
+			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs, req.State.PostgresArgs)
 		}
 	}
 	if !sameOptionalString(req.Inputs.Environment, req.State.Environment) {
 		if err := savePostgresEnvironment(ctx, api, req.ID, req.Inputs.Environment); err != nil {
-			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs)
+			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs, req.State.PostgresArgs)
 		}
 		runtime = true
 	}
 	if !sameOptionalInt(req.Inputs.ExternalPort, req.State.ExternalPort) {
 		if err := savePostgresPort(ctx, api, req.ID, req.Inputs.ExternalPort); err != nil {
-			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs)
+			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs, req.State.PostgresArgs)
 		}
 		runtime = true
 	}
 	if runtime {
 		if _, err := api.PostgresDeployWithResponse(ctx, generated.PostgresDeployJSONRequestBody{PostgresId: req.ID}); err != nil {
-			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs)
+			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs, req.State.PostgresArgs)
 		}
 		if err := waitForDone(ctx, "postgres", req.ID, func(c context.Context) (string, error) { return postgresStatus(c, api, req.ID) }); err != nil {
-			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs)
+			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs, req.State.PostgresArgs)
 		}
 		state.Status = "done"
 	}
