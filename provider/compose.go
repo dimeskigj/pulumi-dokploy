@@ -16,8 +16,8 @@ type ComposeArgs struct {
 	Name                   string        `pulumi:"name"`
 	AppName                *string       `pulumi:"appName,optional"`
 	Description            *string       `pulumi:"description,optional"`
-	EnvironmentID          string        `pulumi:"environmentId"`
-	ServerID               *string       `pulumi:"serverId,optional"`
+	EnvironmentID          string        `pulumi:"environmentId" provider:"replaceOnChanges"`
+	ServerID               *string       `pulumi:"serverId,optional" provider:"replaceOnChanges"`
 	ComposeType            ComposeType   `pulumi:"composeType,optional"`
 	Source                 ComposeSource `pulumi:"source"`
 	Environment            *string       `pulumi:"environment,optional" provider:"secret"`
@@ -31,7 +31,23 @@ type ComposeState struct {
 }
 type Compose struct{ client clientFactory }
 
-func (r Compose) Annotate(a infer.Annotator) { a.SetToken("index", "Compose") }
+func (r *Compose) Annotate(a infer.Annotator) {
+	a.SetToken("index", "Compose")
+	a.Describe(&r, "A Dokploy Compose stack.")
+}
+func (a *ComposeArgs) Annotate(annotator infer.Annotator) {
+	annotator.Describe(&a.Name, "The Compose stack name.")
+	annotator.Describe(&a.AppName, "The optional deployed stack name.")
+	annotator.Describe(&a.Description, "An optional stack description.")
+	annotator.Describe(&a.EnvironmentID, "The target environment ID.")
+	annotator.Describe(&a.ServerID, "The optional server ID.")
+	annotator.Describe(&a.ComposeType, "The Compose deployment type.")
+	annotator.Describe(&a.Source, "The Compose source configuration.")
+	annotator.Describe(&a.Environment, "Environment variables for the stack.")
+	annotator.Describe(&a.CreateEnvFile, "Whether to create an environment file.")
+	annotator.Describe(&a.DeleteVolumesOnDestroy, "Whether to delete volumes on destroy.")
+	annotator.SetDefault(&a.ComposeType, string(ComposeDocker))
+}
 func (r Compose) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ComposeArgs], error) {
 	in, failures, err := infer.DefaultCheck[ComposeArgs](ctx, req.NewInputs)
 	if err != nil || len(failures) != 0 {
@@ -302,7 +318,8 @@ func (r Compose) Delete(ctx context.Context, req infer.DeleteRequest[ComposeStat
 	return infer.DeleteResponse{}, e
 }
 func (r Compose) WireDependencies(f infer.FieldSelector, args *ComposeArgs, state *ComposeState) {
-	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.ComposeType), f.InputField(&args.Source), f.InputField(&args.Environment), f.InputField(&args.CreateEnvFile), f.InputField(&args.DeleteVolumesOnDestroy)}
+	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.ComposeType), f.InputField(&args.Source), f.InputField(&args.CreateEnvFile), f.InputField(&args.DeleteVolumesOnDestroy)}
 	f.OutputField(&state.ComposeID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
+	f.OutputField(&state.Environment).DependsOn(f.InputField(&args.Environment).Secret())
 }

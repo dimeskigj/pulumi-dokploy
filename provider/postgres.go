@@ -15,8 +15,8 @@ type PostgresArgs struct {
 	Name             string  `pulumi:"name"`
 	AppName          *string `pulumi:"appName,optional"`
 	Description      *string `pulumi:"description,optional"`
-	EnvironmentID    string  `pulumi:"environmentId"`
-	ServerID         *string `pulumi:"serverId,optional"`
+	EnvironmentID    string  `pulumi:"environmentId" provider:"replaceOnChanges"`
+	ServerID         *string `pulumi:"serverId,optional" provider:"replaceOnChanges"`
 	DatabaseName     string  `pulumi:"databaseName"`
 	DatabaseUser     string  `pulumi:"databaseUser"`
 	DatabasePassword string  `pulumi:"databasePassword" provider:"secret"`
@@ -32,7 +32,24 @@ type PostgresState struct {
 }
 type Postgres struct{ client clientFactory }
 
-func (r Postgres) Annotate(a infer.Annotator) { a.SetToken("index", "Postgres") }
+func (r *Postgres) Annotate(a infer.Annotator) {
+	a.SetToken("index", "Postgres")
+	a.Describe(&r, "A Dokploy PostgreSQL database.")
+}
+func (a *PostgresArgs) Annotate(annotator infer.Annotator) {
+	annotator.Describe(&a.Name, "The database resource name.")
+	annotator.Describe(&a.AppName, "The optional deployed database name.")
+	annotator.Describe(&a.Description, "An optional database description.")
+	annotator.Describe(&a.EnvironmentID, "The target environment ID.")
+	annotator.Describe(&a.ServerID, "The optional server ID.")
+	annotator.Describe(&a.DatabaseName, "The PostgreSQL database name.")
+	annotator.Describe(&a.DatabaseUser, "The PostgreSQL database user.")
+	annotator.Describe(&a.DatabasePassword, "The PostgreSQL database password.")
+	annotator.Describe(&a.DockerImage, "The PostgreSQL Docker image.")
+	annotator.Describe(&a.Environment, "Environment variables for PostgreSQL.")
+	annotator.Describe(&a.ExternalPort, "The optional externally exposed port.")
+	annotator.SetDefault(&a.DockerImage, "postgres:18")
+}
 func (r Postgres) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[PostgresArgs], error) {
 	in, failures, err := infer.DefaultCheck[PostgresArgs](ctx, req.NewInputs)
 	if err != nil || len(failures) != 0 {
@@ -289,7 +306,10 @@ func (r Postgres) Delete(ctx context.Context, req infer.DeleteRequest[PostgresSt
 	return infer.DeleteResponse{}, err
 }
 func (r Postgres) WireDependencies(f infer.FieldSelector, args *PostgresArgs, state *PostgresState) {
-	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.DatabaseName), f.InputField(&args.DatabaseUser), f.InputField(&args.DatabasePassword), f.InputField(&args.DockerImage), f.InputField(&args.Environment), f.InputField(&args.ExternalPort)}
+	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.DatabaseName), f.InputField(&args.DockerImage), f.InputField(&args.ExternalPort)}
 	f.OutputField(&state.PostgresID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
+	f.OutputField(&state.DatabasePassword).DependsOn(f.InputField(&args.DatabasePassword).Secret())
+	f.OutputField(&state.Environment).DependsOn(f.InputField(&args.Environment).Secret())
+	f.OutputField(&state.DatabaseUser).DependsOn(f.InputField(&args.DatabaseUser))
 }

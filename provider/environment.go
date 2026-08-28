@@ -28,7 +28,15 @@ type EnvironmentState struct {
 }
 type Environment struct{ client clientFactory }
 
-func (r Environment) Annotate(a infer.Annotator) { a.SetToken("index", "Environment") }
+func (r *Environment) Annotate(a infer.Annotator) {
+	a.SetToken("index", "Environment")
+	a.Describe(&r, "A Dokploy environment.")
+}
+func (a *EnvironmentArgs) Annotate(annotator infer.Annotator) {
+	annotator.Describe(&a.ProjectID, "The parent project ID.")
+	annotator.Describe(&a.Name, "The environment name.")
+	annotator.Describe(&a.Description, "An optional environment description.")
+}
 
 func (r Environment) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[EnvironmentArgs], error) {
 	inputs, failures, err := infer.DefaultCheck[EnvironmentArgs](ctx, req.NewInputs)

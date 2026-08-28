@@ -17,8 +17,8 @@ type ApplicationArgs struct {
 	Name          string            `pulumi:"name"`
 	AppName       *string           `pulumi:"appName,optional"`
 	Description   *string           `pulumi:"description,optional"`
-	EnvironmentID string            `pulumi:"environmentId"`
-	ServerID      *string           `pulumi:"serverId,optional"`
+	EnvironmentID string            `pulumi:"environmentId" provider:"replaceOnChanges"`
+	ServerID      *string           `pulumi:"serverId,optional" provider:"replaceOnChanges"`
 	Source        ApplicationSource `pulumi:"source"`
 	Environment   *string           `pulumi:"environment,optional" provider:"secret"`
 	BuildArgs     *string           `pulumi:"buildArgs,optional" provider:"secret"`
@@ -34,7 +34,22 @@ type ApplicationState struct {
 
 type Application struct{ client clientFactory }
 
-func (r Application) Annotate(a infer.Annotator) { a.SetToken("index", "Application") }
+func (r *Application) Annotate(a infer.Annotator) {
+	a.SetToken("index", "Application")
+	a.Describe(&r, "A Dokploy application.")
+}
+func (a *ApplicationArgs) Annotate(annotator infer.Annotator) {
+	annotator.Describe(&a.Name, "The application name.")
+	annotator.Describe(&a.AppName, "The optional deployed application name.")
+	annotator.Describe(&a.Description, "An optional application description.")
+	annotator.Describe(&a.EnvironmentID, "The target environment ID.")
+	annotator.Describe(&a.ServerID, "The optional server ID.")
+	annotator.Describe(&a.Source, "The application source configuration.")
+	annotator.Describe(&a.Environment, "Environment variables for the application.")
+	annotator.Describe(&a.BuildArgs, "Build arguments for the application.")
+	annotator.Describe(&a.BuildSecrets, "Build secrets for the application.")
+	annotator.Describe(&a.CreateEnvFile, "Whether to create an environment file.")
+}
 
 func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ApplicationArgs], error) {
 	inputs, failures, err := infer.DefaultCheck[ApplicationArgs](ctx, req.NewInputs)

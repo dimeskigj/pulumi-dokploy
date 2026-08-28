@@ -23,9 +23,9 @@ const (
 )
 
 type DomainArgs struct {
-	ApplicationID      *string         `pulumi:"applicationId,optional"`
-	ComposeID          *string         `pulumi:"composeId,optional"`
-	ServiceName        *string         `pulumi:"serviceName,optional"`
+	ApplicationID      *string         `pulumi:"applicationId,optional" provider:"replaceOnChanges"`
+	ComposeID          *string         `pulumi:"composeId,optional" provider:"replaceOnChanges"`
+	ServiceName        *string         `pulumi:"serviceName,optional" provider:"replaceOnChanges"`
 	Host               string          `pulumi:"host"`
 	Path               *string         `pulumi:"path,optional"`
 	InternalPath       *string         `pulumi:"internalPath,optional"`
@@ -43,7 +43,27 @@ type DomainState struct {
 }
 type Domain struct{ client clientFactory }
 
-func (r Domain) Annotate(a infer.Annotator) { a.SetToken("index", "Domain") }
+func (r *Domain) Annotate(a infer.Annotator) {
+	a.SetToken("index", "Domain")
+	a.Describe(&r, "A Dokploy domain routing rule.")
+}
+func (a *DomainArgs) Annotate(annotator infer.Annotator) {
+	annotator.Describe(&a.ApplicationID, "The optional application ID target.")
+	annotator.Describe(&a.ComposeID, "The optional Compose ID target.")
+	annotator.Describe(&a.ServiceName, "The Compose service name.")
+	annotator.Describe(&a.Host, "The domain hostname.")
+	annotator.Describe(&a.Path, "The public URL path.")
+	annotator.Describe(&a.InternalPath, "The internal URL path.")
+	annotator.Describe(&a.Port, "The target port.")
+	annotator.Describe(&a.HTTPS, "Whether HTTPS is enabled.")
+	annotator.Describe(&a.CertificateType, "The certificate resolver type.")
+	annotator.Describe(&a.CustomCertResolver, "The custom certificate resolver.")
+	annotator.Describe(&a.StripPath, "Whether to strip the public path.")
+	annotator.Describe(&a.Enabled, "Whether the domain is enabled.")
+	annotator.SetDefault(&a.HTTPS, true)
+	annotator.SetDefault(&a.CertificateType, string(CertificateLetsencrypt))
+	annotator.SetDefault(&a.Enabled, true)
+}
 
 func (a DomainArgs) validate() error {
 	hasApp := a.ApplicationID != nil && *a.ApplicationID != ""
@@ -65,18 +85,31 @@ func (a DomainArgs) validate() error {
 }
 
 func (r Domain) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[DomainArgs], error) {
+	_, explicitHTTPS := req.NewInputs.AsMap()["https"]
+	_, explicitEnabled := req.NewInputs.AsMap()["enabled"]
+	var explicitHTTPSValue, explicitEnabledValue bool
+	if explicitHTTPS {
+		explicitHTTPSValue = req.NewInputs.Get("https").AsBool()
+	}
+	if explicitEnabled {
+		explicitEnabledValue = req.NewInputs.Get("enabled").AsBool()
+	}
 	in, failures, err := infer.DefaultCheck[DomainArgs](ctx, req.NewInputs)
 	if err != nil || len(failures) != 0 {
 		return infer.CheckResponse[DomainArgs]{Inputs: in, Failures: failures}, err
 	}
-	if _, ok := req.NewInputs.GetOk("https"); !ok {
+	if !explicitHTTPS {
 		in.HTTPS = true
+	} else {
+		in.HTTPS = explicitHTTPSValue
 	}
 	if in.CertificateType == "" {
 		in.CertificateType = CertificateLetsencrypt
 	}
-	if _, ok := req.NewInputs.GetOk("enabled"); !ok {
+	if !explicitEnabled {
 		in.Enabled = true
+	} else {
+		in.Enabled = explicitEnabledValue
 	}
 	if in.Host == "" {
 		failures = append(failures, p.CheckFailure{Property: "host", Reason: "host must not be empty"})

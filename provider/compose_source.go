@@ -7,6 +7,7 @@ import (
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
 	"github.com/oapi-codegen/nullable"
+	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
 type ComposeSourceType string
@@ -27,8 +28,21 @@ type ComposeSource struct {
 	GitLab *GitLabComposeSource `pulumi:"gitlab,optional"`
 }
 
+func (s *ComposeSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Compose source configuration.")
+	a.Describe(&s.Type, "The Compose source type.")
+	a.Describe(&s.Raw, "Raw Compose source.")
+	a.Describe(&s.Git, "Git Compose source.")
+	a.Describe(&s.GitLab, "GitLab Compose source.")
+}
+
 type RawComposeSource struct {
 	ComposeFile string `pulumi:"composeFile"`
+}
+
+func (s *RawComposeSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Raw Compose source configuration.")
+	a.Describe(&s.ComposeFile, "The raw Compose file.")
 }
 
 type GitComposeSource struct {
@@ -38,6 +52,16 @@ type GitComposeSource struct {
 	SSHKeyID         *string  `pulumi:"sshKeyId,optional"`
 	WatchPaths       []string `pulumi:"watchPaths,optional"`
 	EnableSubmodules bool     `pulumi:"enableSubmodules,optional"`
+}
+
+func (s *GitComposeSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Git Compose source configuration.")
+	a.Describe(&s.URL, "The Git repository URL.")
+	a.Describe(&s.Branch, "The Git branch.")
+	a.Describe(&s.ComposePath, "The Compose file path.")
+	a.Describe(&s.SSHKeyID, "The SSH key ID.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
 }
 
 type GitLabComposeSource struct {
@@ -50,6 +74,19 @@ type GitLabComposeSource struct {
 	ComposePath      string   `pulumi:"composePath,optional"`
 	WatchPaths       []string `pulumi:"watchPaths,optional"`
 	EnableSubmodules bool     `pulumi:"enableSubmodules,optional"`
+}
+
+func (s *GitLabComposeSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "GitLab Compose source configuration.")
+	a.Describe(&s.IntegrationID, "The GitLab integration ID.")
+	a.Describe(&s.ProjectID, "The GitLab project ID.")
+	a.Describe(&s.Owner, "The GitLab owner.")
+	a.Describe(&s.Namespace, "The GitLab namespace.")
+	a.Describe(&s.Repository, "The GitLab repository.")
+	a.Describe(&s.Branch, "The GitLab branch.")
+	a.Describe(&s.ComposePath, "The Compose file path.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
 }
 
 func (s ComposeSource) validate() error {

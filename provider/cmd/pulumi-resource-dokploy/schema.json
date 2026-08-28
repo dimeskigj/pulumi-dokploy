@@ -1,0 +1,1072 @@
+{
+  "name": "dokploy",
+  "displayName": "Dokploy",
+  "version": "0.0.1-alpha.0+dev",
+  "homepage": "https://github.com/gjorgjidimeski/pulumi-dokploy",
+  "namespace": "gjorgjidimeski",
+  "language": {
+    "go": {
+      "importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"
+    }
+  },
+  "config": {
+    "variables": {
+      "apiKey": {
+        "type": "string",
+        "description": "Dokploy API key sent through x-api-key.",
+        "defaultInfo": {
+          "environment": [
+            "DOKPLOY_API_KEY"
+          ]
+        },
+        "secret": true
+      },
+      "endpoint": {
+        "type": "string",
+        "description": "Base URL of the Dokploy instance.",
+        "defaultInfo": {
+          "environment": [
+            "DOKPLOY_ENDPOINT"
+          ]
+        }
+      }
+    },
+    "defaults": [
+      "endpoint",
+      "apiKey"
+    ]
+  },
+  "types": {
+    "dokploy:index:ApplicationBuild": {
+      "description": "Application build configuration.",
+      "properties": {
+        "dockerBuildStage": {
+          "type": "string",
+          "description": "The Docker build stage."
+        },
+        "dockerContextPath": {
+          "type": "string",
+          "description": "The Docker build context."
+        },
+        "dockerfile": {
+          "type": "string",
+          "description": "The Dockerfile path."
+        },
+        "type": {
+          "type": "string",
+          "description": "The build type."
+        }
+      },
+      "type": "object",
+      "required": [
+        "type"
+      ]
+    },
+    "dokploy:index:ApplicationSource": {
+      "description": "Application source configuration.",
+      "properties": {
+        "docker": {
+          "$ref": "#/types/dokploy:index:DockerSource",
+          "description": "Docker source configuration."
+        },
+        "git": {
+          "$ref": "#/types/dokploy:index:GitApplicationSource",
+          "description": "Git source configuration."
+        },
+        "gitlab": {
+          "$ref": "#/types/dokploy:index:GitLabAppSource",
+          "description": "GitLab source configuration."
+        },
+        "type": {
+          "type": "string",
+          "description": "The application source type."
+        }
+      },
+      "type": "object",
+      "required": [
+        "type"
+      ]
+    },
+    "dokploy:index:ComposeSource": {
+      "description": "Compose source configuration.",
+      "properties": {
+        "git": {
+          "$ref": "#/types/dokploy:index:GitComposeSource",
+          "description": "Git Compose source."
+        },
+        "gitlab": {
+          "$ref": "#/types/dokploy:index:GitLabComposeSource",
+          "description": "GitLab Compose source."
+        },
+        "raw": {
+          "$ref": "#/types/dokploy:index:RawComposeSource",
+          "description": "Raw Compose source."
+        },
+        "type": {
+          "type": "string",
+          "description": "The Compose source type."
+        }
+      },
+      "type": "object",
+      "required": [
+        "type"
+      ]
+    },
+    "dokploy:index:DockerSource": {
+      "description": "Docker source configuration.",
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The Docker image."
+        },
+        "password": {
+          "type": "string",
+          "description": "The registry password.",
+          "secret": true
+        },
+        "registryUrl": {
+          "type": "string",
+          "description": "The registry URL."
+        },
+        "username": {
+          "type": "string",
+          "description": "The registry username."
+        }
+      },
+      "type": "object",
+      "required": [
+        "image"
+      ]
+    },
+    "dokploy:index:GitApplicationSource": {
+      "description": "Git source configuration.",
+      "properties": {
+        "branch": {
+          "type": "string",
+          "description": "The Git branch."
+        },
+        "build": {
+          "$ref": "#/types/dokploy:index:ApplicationBuild",
+          "description": "The build configuration."
+        },
+        "buildPath": {
+          "type": "string",
+          "description": "The build path."
+        },
+        "enableSubmodules": {
+          "type": "boolean",
+          "description": "Whether to enable submodules."
+        },
+        "url": {
+          "type": "string",
+          "description": "The Git repository URL."
+        },
+        "watchPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Paths to watch."
+        }
+      },
+      "type": "object",
+      "required": [
+        "url",
+        "branch",
+        "build"
+      ]
+    },
+    "dokploy:index:GitComposeSource": {
+      "description": "Git Compose source configuration.",
+      "properties": {
+        "branch": {
+          "type": "string",
+          "description": "The Git branch."
+        },
+        "composePath": {
+          "type": "string",
+          "description": "The Compose file path."
+        },
+        "enableSubmodules": {
+          "type": "boolean",
+          "description": "Whether to enable submodules."
+        },
+        "sshKeyId": {
+          "type": "string",
+          "description": "The SSH key ID."
+        },
+        "url": {
+          "type": "string",
+          "description": "The Git repository URL."
+        },
+        "watchPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Paths to watch."
+        }
+      },
+      "type": "object",
+      "required": [
+        "url",
+        "branch"
+      ]
+    },
+    "dokploy:index:GitLabAppSource": {
+      "description": "GitLab source configuration.",
+      "properties": {
+        "branch": {
+          "type": "string",
+          "description": "The GitLab branch."
+        },
+        "build": {
+          "$ref": "#/types/dokploy:index:ApplicationBuild",
+          "description": "The build configuration."
+        },
+        "buildPath": {
+          "type": "string",
+          "description": "The build path."
+        },
+        "enableSubmodules": {
+          "type": "boolean",
+          "description": "Whether to enable submodules."
+        },
+        "integrationId": {
+          "type": "string",
+          "description": "The GitLab integration ID."
+        },
+        "namespace": {
+          "type": "string",
+          "description": "The GitLab namespace."
+        },
+        "owner": {
+          "type": "string",
+          "description": "The GitLab owner."
+        },
+        "projectId": {
+          "type": "integer",
+          "description": "The GitLab project ID."
+        },
+        "repository": {
+          "type": "string",
+          "description": "The GitLab repository."
+        },
+        "watchPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Paths to watch."
+        }
+      },
+      "type": "object",
+      "required": [
+        "integrationId",
+        "projectId",
+        "owner",
+        "namespace",
+        "repository",
+        "branch",
+        "build"
+      ]
+    },
+    "dokploy:index:GitLabComposeSource": {
+      "description": "GitLab Compose source configuration.",
+      "properties": {
+        "branch": {
+          "type": "string",
+          "description": "The GitLab branch."
+        },
+        "composePath": {
+          "type": "string",
+          "description": "The Compose file path."
+        },
+        "enableSubmodules": {
+          "type": "boolean",
+          "description": "Whether to enable submodules."
+        },
+        "integrationId": {
+          "type": "string",
+          "description": "The GitLab integration ID."
+        },
+        "namespace": {
+          "type": "string",
+          "description": "The GitLab namespace."
+        },
+        "owner": {
+          "type": "string",
+          "description": "The GitLab owner."
+        },
+        "projectId": {
+          "type": "integer",
+          "description": "The GitLab project ID."
+        },
+        "repository": {
+          "type": "string",
+          "description": "The GitLab repository."
+        },
+        "watchPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Paths to watch."
+        }
+      },
+      "type": "object",
+      "required": [
+        "integrationId",
+        "projectId",
+        "owner",
+        "namespace",
+        "repository",
+        "branch"
+      ]
+    },
+    "dokploy:index:RawComposeSource": {
+      "description": "Raw Compose source configuration.",
+      "properties": {
+        "composeFile": {
+          "type": "string",
+          "description": "The raw Compose file."
+        }
+      },
+      "type": "object",
+      "required": [
+        "composeFile"
+      ]
+    }
+  },
+  "provider": {
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "Dokploy API key sent through x-api-key.",
+        "defaultInfo": {
+          "environment": [
+            "DOKPLOY_API_KEY"
+          ]
+        },
+        "secret": true
+      },
+      "endpoint": {
+        "type": "string",
+        "description": "Base URL of the Dokploy instance.",
+        "defaultInfo": {
+          "environment": [
+            "DOKPLOY_ENDPOINT"
+          ]
+        }
+      }
+    },
+    "required": [
+      "endpoint",
+      "apiKey"
+    ],
+    "inputProperties": {
+      "apiKey": {
+        "type": "string",
+        "description": "Dokploy API key sent through x-api-key.",
+        "defaultInfo": {
+          "environment": [
+            "DOKPLOY_API_KEY"
+          ]
+        },
+        "secret": true
+      },
+      "endpoint": {
+        "type": "string",
+        "description": "Base URL of the Dokploy instance.",
+        "defaultInfo": {
+          "environment": [
+            "DOKPLOY_ENDPOINT"
+          ]
+        }
+      }
+    },
+    "requiredInputs": [
+      "endpoint",
+      "apiKey"
+    ]
+  },
+  "resources": {
+    "dokploy:index:Application": {
+      "description": "A Dokploy application.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed application name."
+        },
+        "applicationId": {
+          "type": "string"
+        },
+        "buildArgs": {
+          "type": "string",
+          "description": "Build arguments for the application.",
+          "secret": true
+        },
+        "buildSecrets": {
+          "type": "string",
+          "description": "Build secrets for the application.",
+          "secret": true
+        },
+        "createEnvFile": {
+          "type": "boolean",
+          "description": "Whether to create an environment file."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional application description."
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for the application.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "name": {
+          "type": "string",
+          "description": "The application name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "source": {
+          "$ref": "#/types/dokploy:index:ApplicationSource",
+          "description": "The application source configuration."
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "environmentId",
+        "source",
+        "applicationId",
+        "status"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed application name."
+        },
+        "buildArgs": {
+          "type": "string",
+          "description": "Build arguments for the application.",
+          "secret": true
+        },
+        "buildSecrets": {
+          "type": "string",
+          "description": "Build secrets for the application.",
+          "secret": true
+        },
+        "createEnvFile": {
+          "type": "boolean",
+          "description": "Whether to create an environment file."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional application description."
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for the application.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "name": {
+          "type": "string",
+          "description": "The application name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "source": {
+          "$ref": "#/types/dokploy:index:ApplicationSource",
+          "description": "The application source configuration."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "environmentId",
+        "source"
+      ]
+    },
+    "dokploy:index:Compose": {
+      "description": "A Dokploy Compose stack.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed stack name."
+        },
+        "composeId": {
+          "type": "string"
+        },
+        "composeType": {
+          "type": "string",
+          "description": "The Compose deployment type.",
+          "default": "docker-compose"
+        },
+        "createEnvFile": {
+          "type": "boolean",
+          "description": "Whether to create an environment file."
+        },
+        "deleteVolumesOnDestroy": {
+          "type": "boolean",
+          "description": "Whether to delete volumes on destroy."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional stack description."
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for the stack.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "name": {
+          "type": "string",
+          "description": "The Compose stack name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "source": {
+          "$ref": "#/types/dokploy:index:ComposeSource",
+          "description": "The Compose source configuration."
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "environmentId",
+        "composeType",
+        "source",
+        "composeId",
+        "status"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed stack name."
+        },
+        "composeType": {
+          "type": "string",
+          "description": "The Compose deployment type.",
+          "default": "docker-compose"
+        },
+        "createEnvFile": {
+          "type": "boolean",
+          "description": "Whether to create an environment file."
+        },
+        "deleteVolumesOnDestroy": {
+          "type": "boolean",
+          "description": "Whether to delete volumes on destroy."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional stack description."
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for the stack.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "name": {
+          "type": "string",
+          "description": "The Compose stack name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "source": {
+          "$ref": "#/types/dokploy:index:ComposeSource",
+          "description": "The Compose source configuration."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "environmentId",
+        "source"
+      ]
+    },
+    "dokploy:index:Domain": {
+      "description": "A Dokploy domain routing rule.",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The optional application ID target.",
+          "replaceOnChanges": true
+        },
+        "certificateType": {
+          "type": "string",
+          "description": "The certificate resolver type.",
+          "default": "letsencrypt"
+        },
+        "composeId": {
+          "type": "string",
+          "description": "The optional Compose ID target.",
+          "replaceOnChanges": true
+        },
+        "customCertResolver": {
+          "type": "string",
+          "description": "The custom certificate resolver."
+        },
+        "domainId": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the domain is enabled.",
+          "default": true
+        },
+        "host": {
+          "type": "string",
+          "description": "The domain hostname."
+        },
+        "https": {
+          "type": "boolean",
+          "description": "Whether HTTPS is enabled.",
+          "default": true
+        },
+        "internalPath": {
+          "type": "string",
+          "description": "The internal URL path."
+        },
+        "path": {
+          "type": "string",
+          "description": "The public URL path."
+        },
+        "port": {
+          "type": "integer",
+          "description": "The target port."
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "The Compose service name.",
+          "replaceOnChanges": true
+        },
+        "stripPath": {
+          "type": "boolean",
+          "description": "Whether to strip the public path."
+        }
+      },
+      "required": [
+        "host",
+        "https",
+        "certificateType",
+        "enabled",
+        "domainId"
+      ],
+      "inputProperties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The optional application ID target.",
+          "replaceOnChanges": true
+        },
+        "certificateType": {
+          "type": "string",
+          "description": "The certificate resolver type.",
+          "default": "letsencrypt"
+        },
+        "composeId": {
+          "type": "string",
+          "description": "The optional Compose ID target.",
+          "replaceOnChanges": true
+        },
+        "customCertResolver": {
+          "type": "string",
+          "description": "The custom certificate resolver."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the domain is enabled.",
+          "default": true
+        },
+        "host": {
+          "type": "string",
+          "description": "The domain hostname."
+        },
+        "https": {
+          "type": "boolean",
+          "description": "Whether HTTPS is enabled.",
+          "default": true
+        },
+        "internalPath": {
+          "type": "string",
+          "description": "The internal URL path."
+        },
+        "path": {
+          "type": "string",
+          "description": "The public URL path."
+        },
+        "port": {
+          "type": "integer",
+          "description": "The target port."
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "The Compose service name.",
+          "replaceOnChanges": true
+        },
+        "stripPath": {
+          "type": "boolean",
+          "description": "Whether to strip the public path."
+        }
+      },
+      "requiredInputs": [
+        "host"
+      ]
+    },
+    "dokploy:index:Environment": {
+      "description": "A Dokploy environment.",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "An optional environment description."
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "isDefault": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "description": "The environment name."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "The parent project ID."
+        }
+      },
+      "required": [
+        "projectId",
+        "name",
+        "environmentId",
+        "isDefault"
+      ],
+      "inputProperties": {
+        "description": {
+          "type": "string",
+          "description": "An optional environment description."
+        },
+        "name": {
+          "type": "string",
+          "description": "The environment name."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "The parent project ID."
+        }
+      },
+      "requiredInputs": [
+        "projectId",
+        "name"
+      ]
+    },
+    "dokploy:index:Postgres": {
+      "description": "A Dokploy PostgreSQL database.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databaseName": {
+          "type": "string",
+          "description": "The PostgreSQL database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The PostgreSQL database password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The PostgreSQL database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The PostgreSQL Docker image.",
+          "default": "postgres:18"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for PostgreSQL.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "postgresId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "environmentId",
+        "databaseName",
+        "databaseUser",
+        "databasePassword",
+        "dockerImage",
+        "postgresId",
+        "status"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databaseName": {
+          "type": "string",
+          "description": "The PostgreSQL database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The PostgreSQL database password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The PostgreSQL database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The PostgreSQL Docker image.",
+          "default": "postgres:18"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for PostgreSQL.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "environmentId",
+        "databaseName",
+        "databaseUser",
+        "databasePassword"
+      ]
+    },
+    "dokploy:index:Project": {
+      "description": "A Dokploy project.",
+      "properties": {
+        "defaultEnvironmentId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional project description."
+        },
+        "name": {
+          "type": "string",
+          "description": "The project name."
+        },
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "projectId",
+        "defaultEnvironmentId"
+      ],
+      "inputProperties": {
+        "description": {
+          "type": "string",
+          "description": "An optional project description."
+        },
+        "name": {
+          "type": "string",
+          "description": "The project name."
+        }
+      },
+      "requiredInputs": [
+        "name"
+      ]
+    },
+    "dokploy:index:Redis": {
+      "description": "A Dokploy Redis database.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The Redis database password.",
+          "secret": true
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The Redis Docker image.",
+          "default": "redis:8"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for Redis.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "redisId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "environmentId",
+        "databasePassword",
+        "dockerImage",
+        "redisId",
+        "status"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The Redis database password.",
+          "secret": true
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The Redis Docker image.",
+          "default": "redis:8"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for Redis.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "environmentId",
+        "databasePassword"
+      ]
+    }
+  }
+}

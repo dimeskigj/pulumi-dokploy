@@ -15,8 +15,8 @@ type RedisArgs struct {
 	Name             string  `pulumi:"name"`
 	AppName          *string `pulumi:"appName,optional"`
 	Description      *string `pulumi:"description,optional"`
-	EnvironmentID    string  `pulumi:"environmentId"`
-	ServerID         *string `pulumi:"serverId,optional"`
+	EnvironmentID    string  `pulumi:"environmentId" provider:"replaceOnChanges"`
+	ServerID         *string `pulumi:"serverId,optional" provider:"replaceOnChanges"`
 	DatabasePassword string  `pulumi:"databasePassword" provider:"secret"`
 	DockerImage      string  `pulumi:"dockerImage,optional"`
 	Environment      *string `pulumi:"environment,optional" provider:"secret"`
@@ -31,7 +31,22 @@ type RedisState struct {
 
 type Redis struct{ client clientFactory }
 
-func (r Redis) Annotate(a infer.Annotator) { a.SetToken("index", "Redis") }
+func (r *Redis) Annotate(a infer.Annotator) {
+	a.SetToken("index", "Redis")
+	a.Describe(&r, "A Dokploy Redis database.")
+}
+func (a *RedisArgs) Annotate(annotator infer.Annotator) {
+	annotator.Describe(&a.Name, "The database resource name.")
+	annotator.Describe(&a.AppName, "The optional deployed database name.")
+	annotator.Describe(&a.Description, "An optional database description.")
+	annotator.Describe(&a.EnvironmentID, "The target environment ID.")
+	annotator.Describe(&a.ServerID, "The optional server ID.")
+	annotator.Describe(&a.DatabasePassword, "The Redis database password.")
+	annotator.Describe(&a.DockerImage, "The Redis Docker image.")
+	annotator.Describe(&a.Environment, "Environment variables for Redis.")
+	annotator.Describe(&a.ExternalPort, "The optional externally exposed port.")
+	annotator.SetDefault(&a.DockerImage, "redis:8")
+}
 
 func (r Redis) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[RedisArgs], error) {
 	in, failures, err := infer.DefaultCheck[RedisArgs](ctx, req.NewInputs)
@@ -273,7 +288,9 @@ func (r Redis) Delete(ctx context.Context, req infer.DeleteRequest[RedisState]) 
 	return infer.DeleteResponse{}, err
 }
 func (r Redis) WireDependencies(f infer.FieldSelector, args *RedisArgs, state *RedisState) {
-	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.DatabasePassword), f.InputField(&args.DockerImage), f.InputField(&args.Environment), f.InputField(&args.ExternalPort)}
+	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.DockerImage), f.InputField(&args.ExternalPort)}
 	f.OutputField(&state.RedisID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
+	f.OutputField(&state.DatabasePassword).DependsOn(f.InputField(&args.DatabasePassword).Secret())
+	f.OutputField(&state.Environment).DependsOn(f.InputField(&args.Environment).Secret())
 }

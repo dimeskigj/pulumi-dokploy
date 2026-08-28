@@ -26,7 +26,14 @@ type ProjectState struct {
 
 type Project struct{ client clientFactory }
 
-func (r Project) Annotate(a infer.Annotator) { a.SetToken("index", "Project") }
+func (r *Project) Annotate(a infer.Annotator) {
+	a.SetToken("index", "Project")
+	a.Describe(&r, "A Dokploy project.")
+}
+func (a *ProjectArgs) Annotate(annotator infer.Annotator) {
+	annotator.Describe(&a.Name, "The project name.")
+	annotator.Describe(&a.Description, "An optional project description.")
+}
 
 func (r Project) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ProjectArgs], error) {
 	inputs, failures, err := infer.DefaultCheck[ProjectArgs](ctx, req.NewInputs)

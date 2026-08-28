@@ -8,6 +8,7 @@ import (
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
 	"github.com/oapi-codegen/nullable"
+	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
 type ApplicationSourceType string
@@ -28,11 +29,27 @@ type ApplicationSource struct {
 	GitLab *GitLabAppSource      `pulumi:"gitlab,optional"`
 }
 
+func (s *ApplicationSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Application source configuration.")
+	a.Describe(&s.Type, "The application source type.")
+	a.Describe(&s.Docker, "Docker source configuration.")
+	a.Describe(&s.Git, "Git source configuration.")
+	a.Describe(&s.GitLab, "GitLab source configuration.")
+}
+
 type DockerSource struct {
 	Image       string  `pulumi:"image"`
 	RegistryURL *string `pulumi:"registryUrl,optional"`
 	Username    *string `pulumi:"username,optional"`
 	Password    *string `pulumi:"password,optional" provider:"secret"`
+}
+
+func (s *DockerSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Docker source configuration.")
+	a.Describe(&s.Image, "The Docker image.")
+	a.Describe(&s.RegistryURL, "The registry URL.")
+	a.Describe(&s.Username, "The registry username.")
+	a.Describe(&s.Password, "The registry password.")
 }
 
 type GitApplicationSource struct {
@@ -42,6 +59,16 @@ type GitApplicationSource struct {
 	WatchPaths       []string         `pulumi:"watchPaths,optional"`
 	EnableSubmodules bool             `pulumi:"enableSubmodules,optional"`
 	Build            ApplicationBuild `pulumi:"build"`
+}
+
+func (s *GitApplicationSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Git source configuration.")
+	a.Describe(&s.URL, "The Git repository URL.")
+	a.Describe(&s.Branch, "The Git branch.")
+	a.Describe(&s.BuildPath, "The build path.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
+	a.Describe(&s.Build, "The build configuration.")
 }
 
 type GitLabAppSource struct {
@@ -57,11 +84,33 @@ type GitLabAppSource struct {
 	Build            ApplicationBuild `pulumi:"build"`
 }
 
+func (s *GitLabAppSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "GitLab source configuration.")
+	a.Describe(&s.IntegrationID, "The GitLab integration ID.")
+	a.Describe(&s.ProjectID, "The GitLab project ID.")
+	a.Describe(&s.Owner, "The GitLab owner.")
+	a.Describe(&s.Namespace, "The GitLab namespace.")
+	a.Describe(&s.Repository, "The GitLab repository.")
+	a.Describe(&s.Branch, "The GitLab branch.")
+	a.Describe(&s.BuildPath, "The build path.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
+	a.Describe(&s.Build, "The build configuration.")
+}
+
 type ApplicationBuild struct {
 	Type              BuildType `pulumi:"type"`
 	Dockerfile        *string   `pulumi:"dockerfile,optional"`
 	DockerContextPath *string   `pulumi:"dockerContextPath,optional"`
 	DockerBuildStage  *string   `pulumi:"dockerBuildStage,optional"`
+}
+
+func (b *ApplicationBuild) Annotate(a infer.Annotator) {
+	a.Describe(&b, "Application build configuration.")
+	a.Describe(&b.Type, "The build type.")
+	a.Describe(&b.Dockerfile, "The Dockerfile path.")
+	a.Describe(&b.DockerContextPath, "The Docker build context.")
+	a.Describe(&b.DockerBuildStage, "The Docker build stage.")
 }
 
 func (s ApplicationSource) validate() error {

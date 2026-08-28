@@ -33,3 +33,12 @@ func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {
 	require.Contains(t, tokens, "dokploy:index:Project")
 	require.Contains(t, tokens, "dokploy:index:Environment")
 }
+
+func TestProviderHasNoSampleFunctionsOrComponents(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	require.Empty(t, spec.Functions)
+	for token, resource := range spec.Resources {
+		require.False(t, resource.IsComponent, token)
+	}
+}
