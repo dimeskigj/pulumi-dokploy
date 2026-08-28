@@ -21,7 +21,11 @@ import (
 )
 
 func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
-	api := newLifecycleAPI(t)
+	expectedSecrets := []string{
+		"ENV-SECRET", "ARGS-SECRET", "BUILD-SECRET", "APP-DOCKER-PASSWORD",
+		"COMPOSE-ENV-SECRET", "DB-PASSWORD", "REDIS-PASSWORD",
+	}
+	api := newLifecycleAPI(t, expectedSecrets)
 	oldPoll := waitPollInterval
 	waitPollInterval = 0
 	t.Cleanup(func() { waitPollInterval = oldPoll })
@@ -42,7 +46,7 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 
 	application := lifecycleCreate(t, provider, "dokploy:index:Application", "application", map[string]property.Value{
 		"name": property.New("app"), "environmentId": property.New(environmentID),
-		"source": property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("nginx")})}),
+		"source": property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("nginx"), "password": property.New("APP-DOCKER-PASSWORD")})}),
 	})
 	compose := lifecycleCreate(t, provider, "dokploy:index:Compose", "compose", map[string]property.Value{
 		"name": property.New("stack"), "environmentId": property.New(environmentID),
@@ -85,10 +89,10 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 		OldInputs: application.Properties, Inputs: property.NewMap(map[string]property.Value{
 			"name": property.New("app"), "environmentId": property.New(environmentID),
 			"environment": property.New("ENV-SECRET"), "buildArgs": property.New("ARGS-SECRET"), "buildSecrets": property.New("BUILD-SECRET"),
-			"source": property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("broken")})}),
+			"source": property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("broken"), "password": property.New("APP-DOCKER-PASSWORD")})}),
 		})})
 	require.Error(t, err)
-	assertLifecycleSecretsRedacted(t, api, err)
+	assertLifecycleSecretsRedacted(t, expectedSecrets, err)
 
 	imported, err := provider.Read(p.ReadRequest{ID: postgres.ID, Urn: lifecycleURN("Postgres", "postgres")})
 	require.NoError(t, err)
@@ -96,17 +100,17 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 
 	_, err = provider.Update(p.UpdateRequest{ID: postgres.ID, Urn: lifecycleURN("Postgres", "postgres"), State: postgres.Properties,
 		OldInputs: postgres.Properties, Inputs: property.NewMap(map[string]property.Value{
-			"name": property.New("db"), "environmentId": property.New(environmentID), "databaseName": property.New("app"),
-			"databaseUser": property.New("app"), "databasePassword": property.New("DB-PASSWORD-UPDATED"),
+			"name": property.New("db"), "environmentId": property.New(environmentID), "databaseName": property.New("app-updated"),
+			"databaseUser": property.New("app"), "databasePassword": property.New("DB-PASSWORD"),
 		})})
 	require.Error(t, err)
-	assertLifecycleSecretsRedacted(t, api, err)
+	assertLifecycleSecretsRedacted(t, expectedSecrets, err)
 	_, err = provider.Update(p.UpdateRequest{ID: redis.ID, Urn: lifecycleURN("Redis", "redis"), State: redis.Properties,
 		OldInputs: redis.Properties, Inputs: property.NewMap(map[string]property.Value{
-			"name": property.New("cache"), "environmentId": property.New(environmentID), "databasePassword": property.New("REDIS-PASSWORD-UPDATED"),
+			"name": property.New("cache"), "environmentId": property.New(environmentID), "databasePassword": property.New("REDIS-PASSWORD"), "dockerImage": property.New("redis:9"),
 		})})
 	require.Error(t, err)
-	assertLifecycleSecretsRedacted(t, api, err)
+	assertLifecycleSecretsRedacted(t, expectedSecrets, err)
 
 	for _, r := range []struct {
 		response p.CreateResponse
@@ -118,9 +122,9 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 	api.AssertRequests(t)
 }
 
-func assertLifecycleSecretsRedacted(t *testing.T, api *lifecycleAPI, err error) {
+func assertLifecycleSecretsRedacted(t *testing.T, expectedSecrets []string, err error) {
 	t.Helper()
-	for _, secret := range api.SecretValues() {
+	for _, secret := range expectedSecrets {
 		require.NotContains(t, err.Error(), secret)
 	}
 }
@@ -138,11 +142,12 @@ func lifecycleURN(kind, name string) resource.URN {
 }
 
 type lifecycleAPI struct {
-	server   *httptest.Server
-	mu       sync.Mutex
-	expected []lifecycleRequest
-	seen     int
-	secrets  map[string]struct{}
+	server          *httptest.Server
+	mu              sync.Mutex
+	expected        []lifecycleRequest
+	seen            int
+	secrets         map[string]struct{}
+	expectedSecrets []string
 }
 
 type lifecycleRequest struct {
@@ -152,11 +157,11 @@ type lifecycleRequest struct {
 	body         json.RawMessage
 	status       int
 	response     string
-	responseFunc func(map[string]struct{}) string
+	responseFunc func([]string) string
 }
 
-func newLifecycleAPI(t *testing.T) *lifecycleAPI {
-	api := &lifecycleAPI{secrets: map[string]struct{}{}}
+func newLifecycleAPI(t *testing.T, expectedSecrets []string) *lifecycleAPI {
+	api := &lifecycleAPI{secrets: map[string]struct{}{}, expectedSecrets: expectedSecrets}
 	api.expected = lifecycleTranscript()
 	api.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
@@ -170,20 +175,26 @@ func newLifecycleAPI(t *testing.T) *lifecycleAPI {
 			return
 		}
 		expected := api.expected[index]
-		api.captureSecrets(r.URL.Path, body)
 		api.mu.Unlock()
 		queriesMatch := len(r.URL.Query()) == 0 && len(expected.query) == 0 || reflect.DeepEqual(r.URL.Query(), expected.query)
 		if r.Method != expected.method || r.URL.Path != expected.path || !queriesMatch {
 			t.Errorf("request %d mismatch: got %s %s?%s, want %s %s?%s", index, r.Method, r.URL.Path, r.URL.Query().Encode(), expected.method, expected.path, expected.query.Encode())
 		}
 		assertSemanticJSON(t, body, expected.body, index)
+		api.mu.Lock()
+		api.captureSecrets(body)
+		api.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(expected.status)
 		response := expected.response
 		if expected.responseFunc != nil {
 			api.mu.Lock()
-			response = expected.responseFunc(api.secrets)
+			missing := api.missingExpectedSecretsLocked()
 			api.mu.Unlock()
+			if len(missing) != 0 {
+				t.Errorf("request %d generated failure before all expected secrets were captured: missing %v", index, missing)
+			}
+			response = expected.responseFunc(api.expectedSecrets)
 		}
 		_, _ = w.Write([]byte(response))
 	}))
@@ -198,26 +209,41 @@ func newLifecycleAPI(t *testing.T) *lifecycleAPI {
 	return api
 }
 
-func (s *lifecycleAPI) captureSecrets(path string, body []byte) {
-	var fields map[string]any
-	if json.Unmarshal(body, &fields) != nil {
+func (s *lifecycleAPI) captureSecrets(body []byte) {
+	var value any
+	if json.Unmarshal(body, &value) != nil {
 		return
 	}
-	for _, key := range []string{"env", "buildArgs", "buildSecrets", "databasePassword"} {
-		if value, ok := fields[key].(string); ok && value != "" {
-			s.secrets[value] = struct{}{}
+	var walk func(any)
+	walk = func(value any) {
+		switch value := value.(type) {
+		case string:
+			for _, expected := range s.expectedSecrets {
+				if value == expected {
+					s.secrets[value] = struct{}{}
+				}
+			}
+		case []any:
+			for _, child := range value {
+				walk(child)
+			}
+		case map[string]any:
+			for _, child := range value {
+				walk(child)
+			}
 		}
 	}
+	walk(value)
 }
 
-func (s *lifecycleAPI) SecretValues() []string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	values := make([]string, 0, len(s.secrets))
-	for value := range s.secrets {
-		values = append(values, value)
+func (s *lifecycleAPI) missingExpectedSecretsLocked() []string {
+	missing := []string{}
+	for _, expected := range s.expectedSecrets {
+		if _, ok := s.secrets[expected]; !ok {
+			missing = append(missing, expected)
+		}
 	}
-	return values
+	return missing
 }
 
 func (s *lifecycleAPI) URL() string { return s.server.URL }
@@ -254,12 +280,8 @@ func lifecycleTranscript() []lifecycleRequest {
 		return r(http.MethodGet, path, q(key, id), "", response)
 	}
 	trueResponse := `true`
-	secretEcho := func(secrets map[string]struct{}) string {
-		values := make([]string, 0, len(secrets))
-		for value := range secrets {
-			values = append(values, value)
-		}
-		return `{"message":"redeploy failed ` + strings.Join(values, " ") + `"}`
+	secretEcho := func(secrets []string) string {
+		return `{"message":"redeploy failed ` + strings.Join(secrets, " ") + `"}`
 	}
 	appOne := `{"applicationId":"a1","name":"app","environmentId":"e1","status":"done","source":{"type":"docker","image":"nginx"}}`
 	composeOne := `{"composeId":"c1","name":"stack","environmentId":"e1","composeType":"raw","source":{"type":"raw","composeFile":"services: {}"},"status":"done"}`
@@ -269,7 +291,7 @@ func lifecycleTranscript() []lifecycleRequest {
 		r(http.MethodPost, "/api/project.create", nil, `{"name":"demo"}`, `{"project":{"projectId":"p1","name":"demo"},"environment":{"environmentId":"e1","name":"production","isDefault":true}}`),
 		r(http.MethodPost, "/api/environment.create", nil, `{"name":"staging","projectId":"p1"}`, `{"environmentId":"e2","projectId":"p1","name":"staging","isDefault":false}`),
 		r(http.MethodPost, "/api/application.create", nil, `{"environmentId":"e1","name":"app"}`, `{"applicationId":"a1"}`),
-		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"nginx","password":"","registryUrl":"","username":""}`, trueResponse),
+		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"nginx","password":"APP-DOCKER-PASSWORD","registryUrl":"","username":""}`, trueResponse),
 		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, trueResponse),
 		r(http.MethodPost, "/api/application.deploy", nil, `{"applicationId":"a1"}`, `"running"`),
 		get("/api/application.one", "applicationId", "a1", appOne),
@@ -296,12 +318,12 @@ func lifecycleTranscript() []lifecycleRequest {
 		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"alpine","password":"","registryUrl":"","username":""}`, trueResponse),
 		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, trueResponse),
 		r(http.MethodPost, "/api/application.redeploy", nil, `{"applicationId":"a1"}`, `"running"`), get("/api/application.one", "applicationId", "a1", appOne),
-		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"broken","password":"","registryUrl":"","username":""}`, trueResponse),
+		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"broken","password":"APP-DOCKER-PASSWORD","registryUrl":"","username":""}`, trueResponse),
 		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`, trueResponse),
 		{method: http.MethodPost, path: "/api/application.redeploy", body: json.RawMessage(`{"applicationId":"a1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
 		get("/api/postgres.one", "postgresId", "pg1", postgresOne),
-		{method: http.MethodPost, path: "/api/postgres.update", body: json.RawMessage(`{"databaseName":"app","databasePassword":"DB-PASSWORD-UPDATED","databaseUser":"app","description":null,"dockerImage":"","name":"db","postgresId":"pg1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
-		{method: http.MethodPost, path: "/api/redis.update", body: json.RawMessage(`{"databasePassword":"REDIS-PASSWORD-UPDATED","description":null,"dockerImage":"","name":"cache","redisId":"r1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
+		{method: http.MethodPost, path: "/api/postgres.update", body: json.RawMessage(`{"databaseName":"app-updated","databasePassword":"DB-PASSWORD","databaseUser":"app","description":null,"dockerImage":"","name":"db","postgresId":"pg1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
+		{method: http.MethodPost, path: "/api/redis.update", body: json.RawMessage(`{"databasePassword":"REDIS-PASSWORD","description":null,"dockerImage":"redis:9","name":"cache","redisId":"r1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
 		r(http.MethodPost, "/api/domain.delete", nil, `{"domainId":"d-compose"}`, trueResponse), r(http.MethodPost, "/api/domain.delete", nil, `{"domainId":"d-app"}`, trueResponse),
 		r(http.MethodPost, "/api/application.delete", nil, `{"applicationId":"a1"}`, trueResponse), r(http.MethodPost, "/api/compose.delete", nil, `{"composeId":"c1","deleteVolumes":false}`, trueResponse),
 		r(http.MethodPost, "/api/redis.remove", nil, `{"redisId":"r1"}`, trueResponse), r(http.MethodPost, "/api/postgres.remove", nil, `{"postgresId":"pg1"}`, trueResponse),
