@@ -1,8 +1,11 @@
 package dokploy
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
 	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
@@ -101,6 +104,7 @@ func (r Domain) Diff(_ context.Context, req infer.DiffRequest[DomainArgs, Domain
 		changed bool
 	}{
 		{"serviceName", !sameOptionalString(in.ServiceName, old.ServiceName)}, {"host", in.Host != old.Host}, {"path", !sameOptionalString(in.Path, old.Path)}, {"internalPath", !sameOptionalString(in.InternalPath, old.InternalPath)}, {"port", !sameOptionalInt(in.Port, old.Port)}, {"https", in.HTTPS != old.HTTPS}, {"certificateType", in.CertificateType != old.CertificateType}, {"customCertResolver", !sameOptionalString(in.CustomCertResolver, old.CustomCertResolver)}, {"stripPath", in.StripPath != old.StripPath},
+		{"enabled", in.Enabled != old.Enabled},
 	} {
 		if field.changed {
 			kind := p.Update
@@ -173,6 +177,36 @@ func domainUpdateBody(id string, a DomainArgs) generated.DomainUpdateJSONRequest
 	return b
 }
 
+func updateDomain(ctx context.Context, api *client.Client, id string, args DomainArgs, enabledOnly bool) error {
+	var payload map[string]any
+	if enabledOnly {
+		payload = map[string]any{"domainId": id, "enabled": args.Enabled}
+	} else {
+		encoded, err := json.Marshal(domainUpdateBody(id, args))
+		if err != nil {
+			return fmt.Errorf("domain.update request encoding failed: %w", err)
+		}
+		if err := json.Unmarshal(encoded, &payload); err != nil {
+			return fmt.Errorf("domain.update request encoding failed: %w", err)
+		}
+		payload["enabled"] = args.Enabled
+	}
+	encoded, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("domain.update request encoding failed: %w", err)
+	}
+	response, err := api.DomainUpdateWithBody(ctx, "application/json", bytes.NewReader(encoded))
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		_, _ = io.Copy(io.Discard, response.Body)
+		return fmt.Errorf("domain.update returned HTTP %d", response.StatusCode)
+	}
+	return nil
+}
+
 func (r Domain) Create(ctx context.Context, req infer.CreateRequest[DomainArgs]) (infer.CreateResponse[DomainState], error) {
 	state := DomainState{DomainArgs: req.Inputs}
 	if req.DryRun {
@@ -188,7 +222,7 @@ func (r Domain) Create(ctx context.Context, req infer.CreateRequest[DomainArgs])
 	}
 	state.DomainID = *resp.JSON200.DomainId
 	if !req.Inputs.Enabled {
-		if _, err = api.DomainUpdateWithResponse(ctx, domainUpdateBody(state.DomainID, req.Inputs)); err != nil {
+		if err = updateDomain(ctx, api, state.DomainID, req.Inputs, true); err != nil {
 			return infer.CreateResponse[DomainState]{ID: state.DomainID, Output: state}, err
 		}
 	}
@@ -212,7 +246,10 @@ func (r Domain) Read(ctx context.Context, req infer.ReadRequest[DomainArgs, Doma
 	a.HTTPS = valueBool(d.Https)
 	a.CertificateType = CertificateType(value(d.CertificateType))
 	a.StripPath = valueBool(d.StripPath)
-	a.Enabled = valueBool(d.Enabled)
+	a.Enabled = req.State.Enabled
+	if d.Enabled != nil {
+		a.Enabled = *d.Enabled
+	}
 	return infer.ReadResponse[DomainArgs, DomainState]{ID: *d.DomainId, Inputs: a, State: DomainState{DomainArgs: a, DomainID: *d.DomainId}}, nil
 }
 func valueBool(v *bool) bool { return v != nil && *v }
@@ -221,7 +258,7 @@ func (r Domain) Update(ctx context.Context, req infer.UpdateRequest[DomainArgs, 
 	if req.DryRun {
 		return infer.UpdateResponse[DomainState]{Output: st}, nil
 	}
-	if _, err := r.client(ctx).DomainUpdateWithResponse(ctx, domainUpdateBody(req.ID, req.Inputs)); err != nil {
+	if err := updateDomain(ctx, r.client(ctx), req.ID, req.Inputs, false); err != nil {
 		return infer.UpdateResponse[DomainState]{Output: st}, err
 	}
 	return infer.UpdateResponse[DomainState]{Output: st}, nil

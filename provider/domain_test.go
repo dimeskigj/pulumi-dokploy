@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var _ infer.ExplicitDependencies[DomainArgs, DomainState] = Domain{}
+
 func TestDomainTargetValidation(t *testing.T) {
 	for name, args := range map[string]DomainArgs{
 		"none":                     {Host: "app.example.com"},
@@ -74,12 +76,18 @@ func TestDomainDiff(t *testing.T) {
 	d, err = (Domain{}).Diff(t.Context(), infer.DiffRequest[DomainArgs, DomainState]{Inputs: in, State: DomainState{DomainArgs: old}})
 	require.NoError(t, err)
 	require.Equal(t, p.UpdateReplace, d.DetailedDiff["composeId"].Kind)
+	unchanged, err := (Domain{}).Diff(t.Context(), infer.DiffRequest[DomainArgs, DomainState]{Inputs: in, State: DomainState{DomainArgs: in}})
+	require.NoError(t, err)
+	require.Empty(t, unchanged.DetailedDiff)
+	enabled, err := (Domain{}).Diff(t.Context(), infer.DiffRequest[DomainArgs, DomainState]{Inputs: DomainArgs{ApplicationID: stringPtr("a1"), Host: "new.example.com", Enabled: true}, State: DomainState{DomainArgs: DomainArgs{ApplicationID: stringPtr("a1"), Host: "new.example.com", Enabled: false}}})
+	require.NoError(t, err)
+	require.Equal(t, p.Update, enabled.DetailedDiff["enabled"].Kind)
 }
 
 func TestDomainCreateApplicationAndDisabledUpdate(t *testing.T) {
 	s := newScriptedServer(t,
 		expectPOST("/api/domain.create", `{"applicationId":"a1","certificateType":"letsencrypt","domainType":"application","host":"app.example.com","https":true,"stripPath":false}`, `{"domainId":"d1"}`),
-		expectPOST("/api/domain.update", `{"certificateType":"letsencrypt","customCertResolver":null,"domainId":"d1","domainType":"application","host":"app.example.com","https":true,"internalPath":null,"path":null,"port":null,"serviceName":null,"stripPath":false}`, `{}`),
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.update", Body: json.RawMessage(`{"domainId":"d1","enabled":false}`), Status: http.StatusOK, Response: []byte(`{}`)},
 	)
 	r := Domain{client: fixedClient(s.API())}
 	got, err := r.Create(t.Context(), infer.CreateRequest[DomainArgs]{Inputs: DomainArgs{ApplicationID: stringPtr("a1"), Host: "app.example.com", Enabled: false, HTTPS: true, CertificateType: CertificateLetsencrypt}})
@@ -90,21 +98,36 @@ func TestDomainCreateApplicationAndDisabledUpdate(t *testing.T) {
 func TestDomainCreateComposePreviewAndRoutingUpdate(t *testing.T) {
 	s := newScriptedServer(t,
 		expectPOST("/api/domain.create", `{"certificateType":"letsencrypt","composeId":"c1","domainType":"compose","host":"app.example.com","https":true,"serviceName":"web","stripPath":false}`, `{"domainId":"d1"}`),
-		expectPOST("/api/domain.update", `{"certificateType":"letsencrypt","customCertResolver":null,"domainId":"d1","domainType":"compose","host":"app.example.com","https":true,"internalPath":null,"path":"/api","port":8080,"serviceName":"web","stripPath":false}`, `{}`),
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.update", Body: json.RawMessage(`{"certificateType":"letsencrypt","customCertResolver":null,"domainId":"d1","domainType":"compose","enabled":true,"host":"app.example.com","https":true,"internalPath":null,"path":"/api","port":8080,"serviceName":"web","stripPath":false}`), Status: http.StatusOK, Response: []byte(`{}`)},
 	)
 	r := Domain{client: fixedClient(s.API())}
 	_, err := r.Create(t.Context(), infer.CreateRequest[DomainArgs]{Inputs: DomainArgs{ComposeID: stringPtr("c1"), ServiceName: stringPtr("web"), Host: "app.example.com", HTTPS: true, StripPath: false, Enabled: true, CertificateType: ""}})
 	require.NoError(t, err)
-	_, err = r.Update(t.Context(), infer.UpdateRequest[DomainArgs, DomainState]{ID: "d1", Inputs: DomainArgs{ComposeID: stringPtr("c1"), ServiceName: stringPtr("web"), Host: "app.example.com", Path: stringPtr("/api"), Port: intPtr(8080), HTTPS: true, CertificateType: CertificateLetsencrypt}, State: DomainState{DomainID: "d1"}})
+	_, err = r.Update(t.Context(), infer.UpdateRequest[DomainArgs, DomainState]{ID: "d1", Inputs: DomainArgs{ComposeID: stringPtr("c1"), ServiceName: stringPtr("web"), Host: "app.example.com", Path: stringPtr("/api"), Port: intPtr(8080), HTTPS: true, Enabled: true, CertificateType: CertificateLetsencrypt}, State: DomainState{DomainID: "d1", DomainArgs: DomainArgs{Enabled: false}}})
 	require.NoError(t, err)
 	_, err = r.Create(t.Context(), infer.CreateRequest[DomainArgs]{Inputs: DomainArgs{ApplicationID: stringPtr("a1"), Host: "preview.example.com"}, DryRun: true})
+	require.NoError(t, err)
+}
+
+func TestDomainUpdateTogglesEnabledBothDirections(t *testing.T) {
+	s := newScriptedServer(t,
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.update", Body: json.RawMessage(`{"certificateType":"letsencrypt","customCertResolver":null,"domainId":"d1","domainType":"application","enabled":false,"host":"app.example.com","https":true,"internalPath":null,"path":null,"port":null,"serviceName":null,"stripPath":false}`), Status: http.StatusOK, Response: []byte(`{}`)},
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.update", Body: json.RawMessage(`{"certificateType":"letsencrypt","customCertResolver":null,"domainId":"d1","domainType":"application","enabled":true,"host":"app.example.com","https":true,"internalPath":null,"path":null,"port":null,"serviceName":null,"stripPath":false}`), Status: http.StatusOK, Response: []byte(`{}`)},
+	)
+	r := Domain{client: fixedClient(s.API())}
+	args := DomainArgs{ApplicationID: stringPtr("a1"), Host: "app.example.com", HTTPS: true, CertificateType: CertificateLetsencrypt}
+	args.Enabled = false
+	_, err := r.Update(t.Context(), infer.UpdateRequest[DomainArgs, DomainState]{ID: "d1", Inputs: args, State: DomainState{DomainArgs: DomainArgs{ApplicationID: stringPtr("a1"), Host: args.Host, Enabled: true}}})
+	require.NoError(t, err)
+	args.Enabled = true
+	_, err = r.Update(t.Context(), infer.UpdateRequest[DomainArgs, DomainState]{ID: "d1", Inputs: args, State: DomainState{DomainArgs: DomainArgs{ApplicationID: stringPtr("a1"), Host: args.Host, Enabled: false}}})
 	require.NoError(t, err)
 }
 
 func TestDomainCreateReturnsPartialStateWhenDisabledUpdateFails(t *testing.T) {
 	s := newScriptedServer(t,
 		expectPOST("/api/domain.create", `{"applicationId":"a1","certificateType":"letsencrypt","domainType":"application","host":"app.example.com","https":true,"stripPath":false}`, `{"domainId":"d1"}`),
-		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.update", Body: json.RawMessage(`{"certificateType":"letsencrypt","customCertResolver":null,"domainId":"d1","domainType":"application","host":"app.example.com","https":true,"internalPath":null,"path":null,"port":null,"serviceName":null,"stripPath":false}`), Status: http.StatusInternalServerError, Response: []byte(`{"message":"failed"}`)},
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.update", Body: json.RawMessage(`{"domainId":"d1","enabled":false}`), Status: http.StatusInternalServerError, Response: []byte(`{"message":"failed"}`)},
 	)
 	r := Domain{client: fixedClient(s.API())}
 	got, err := r.Create(t.Context(), infer.CreateRequest[DomainArgs]{Inputs: DomainArgs{ApplicationID: stringPtr("a1"), Host: "app.example.com", Enabled: false, HTTPS: true}})
@@ -130,6 +153,14 @@ func TestDomainReadImportAndDeleteNotFound(t *testing.T) {
 	require.Empty(t, read.ID)
 	_, err = r.Delete(t.Context(), infer.DeleteRequest[DomainState]{ID: "missing"})
 	require.NoError(t, err)
+}
+
+func TestDomainReadPreservesPriorEnabledWhenAPIOmitsIt(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/domain.one", map[string][]string{"domainId": {"d1"}}, http.StatusOK, `{"domainId":"d1","applicationId":"a1","host":"app.example.com"}`))
+	r := Domain{client: fixedClient(s.API())}
+	read, err := r.Read(t.Context(), infer.ReadRequest[DomainArgs, DomainState]{ID: "d1", State: DomainState{DomainArgs: DomainArgs{Enabled: true}}})
+	require.NoError(t, err)
+	require.True(t, read.Inputs.Enabled)
 }
 
 func intPtr(v int) *int { return &v }
