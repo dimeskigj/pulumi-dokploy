@@ -57,26 +57,79 @@ func TestComposeGitSourceDefaultsComposePath(t *testing.T) {
 	}
 }
 
+func TestComposeGitLabSourceDefaultsComposePath(t *testing.T) {
+	source := property.New(map[string]property.Value{
+		"type": property.New("gitlab"),
+		"gitlab": property.New(map[string]property.Value{
+			"integrationId": property.New("i1"), "projectId": property.New(float64(42)),
+			"owner": property.New("owner"), "namespace": property.New("namespace"),
+			"repository": property.New("repo"), "branch": property.New("main"),
+		}),
+	})
+	got, err := (Compose{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{"name": property.New("demo"), "environmentId": property.New("e1"), "source": source})})
+	if err != nil || len(got.Failures) != 0 {
+		t.Fatalf("Check() = %#v, %v", got.Failures, err)
+	}
+	if got.Inputs.Source.GitLab.ComposePath != "./docker-compose.yml" {
+		t.Fatalf("compose path = %q", got.Inputs.Source.GitLab.ComposePath)
+	}
+}
+
 func TestComposeInferredSchemaHasVariantSpecificComposePaths(t *testing.T) {
 	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
 	if err != nil {
 		t.Fatal(err)
 	}
 	compose := spec.Resources["dokploy:index:Compose"]
-	sourceRef := strings.TrimPrefix(compose.InputProperties["source"].Ref, "#/types/")
-	source := spec.Types[sourceRef]
-	rawRef := strings.TrimPrefix(source.Properties["raw"].Ref, "#/types/")
-	gitRef := strings.TrimPrefix(source.Properties["git"].Ref, "#/types/")
-	gitlabRef := strings.TrimPrefix(source.Properties["gitlab"].Ref, "#/types/")
-	if _, ok := spec.Types[rawRef].Properties["composeFile"]; !ok {
+	if compose.InputProperties == nil {
+		t.Fatal("Compose input properties are nil")
+	}
+	sourceProperty, ok := compose.InputProperties["source"]
+	if !ok || sourceProperty.Ref == "" {
+		t.Fatal("Compose source property is missing its type reference")
+	}
+	sourceRef := strings.TrimPrefix(sourceProperty.Ref, "#/types/")
+	source, ok := spec.Types[sourceRef]
+	if !ok || source.Properties == nil {
+		t.Fatalf("source type %q is missing properties", sourceRef)
+	}
+	for _, variant := range []string{"raw", "git", "gitlab"} {
+		if _, ok := source.Properties[variant]; !ok {
+			t.Fatalf("source schema lacks %s variant", variant)
+		}
+		if source.Properties[variant].Ref == "" {
+			t.Fatalf("source schema variant %s lacks type reference", variant)
+		}
+	}
+	raw, ok := spec.Types[strings.TrimPrefix(source.Properties["raw"].Ref, "#/types/")]
+	if !ok || raw.Properties == nil {
+		t.Fatal("raw source type is missing properties")
+	}
+	composeFile, ok := raw.Properties["composeFile"]
+	if !ok || composeFile.Type != "string" || !contains(raw.Required, "composeFile") {
 		t.Fatal("raw schema lacks composeFile")
 	}
-	if _, ok := spec.Types[rawRef].Properties["composePath"]; ok {
+	if _, ok := raw.Properties["composePath"]; ok {
 		t.Fatal("raw schema unexpectedly exposes composePath")
 	}
-	for _, ref := range []string{gitRef, gitlabRef} {
-		if _, ok := spec.Types[ref].Properties["composePath"]; !ok {
+	for _, variant := range []string{"git", "gitlab"} {
+		ref := strings.TrimPrefix(source.Properties[variant].Ref, "#/types/")
+		typ, ok := spec.Types[ref]
+		if !ok || typ.Properties == nil {
+			t.Fatalf("%s source type is missing properties", variant)
+		}
+		path, ok := typ.Properties["composePath"]
+		if !ok || path.Type != "string" || contains(typ.Required, "composePath") {
 			t.Fatalf("repository schema %q lacks composePath", ref)
 		}
 	}
+}
+
+func contains(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
 }

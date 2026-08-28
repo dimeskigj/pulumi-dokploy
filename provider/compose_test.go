@@ -189,6 +189,57 @@ func TestComposeUpdateErrorStatusReturnsError(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestComposeGitAndGitLabEnvironmentErrorsAreRedactedAcrossLifecycle(t *testing.T) {
+	secret := "ENVIRONMENT-SECRET"
+	for _, tc := range []struct {
+		name                       string
+		source                     ComposeSource
+		providerPath, providerBody string
+	}{
+		{"git", ComposeSource{Type: ComposeSourceGit, Git: &GitComposeSource{URL: "https://git.test/repo", Branch: "main"}}, "/api/compose.update", `{"composeId":"c1","composePath":"./docker-compose.yml","customGitBranch":"main","customGitSSHKeyId":null,"customGitUrl":"https://git.test/repo","enableSubmodules":false,"sourceType":"git","watchPaths":null}`},
+		{"gitlab", ComposeSource{Type: ComposeSourceGitLab, GitLab: &GitLabComposeSource{IntegrationID: "i1", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "repo", Branch: "main"}}, "/api/compose.update", `{"composeId":"c1","composePath":"./docker-compose.yml","enableSubmodules":false,"gitlabBranch":"main","gitlabId":"i1","gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabProjectId":42,"gitlabRepository":"repo","sourceType":"gitlab","watchPaths":null}`},
+	} {
+		for _, stage := range []string{"source", "saveEnvironment", "deploy", "poll"} {
+			t.Run(tc.name+"-"+stage, func(t *testing.T) {
+				old := waitPollInterval
+				waitPollInterval = 0
+				t.Cleanup(func() { waitPollInterval = old })
+				expectations := []scriptedRequest{expectPOST("/api/compose.create", `{"composeType":"docker-compose","environmentId":"e1","name":"demo"}`, `{"composeId":"c1"}`)}
+				if stage == "source" {
+					expectations = append(expectations, scriptedRequest{Method: http.MethodPost, Path: tc.providerPath, Body: json.RawMessage(tc.providerBody), Status: http.StatusBadRequest, Response: []byte(`{"code":"SOURCE_FAILED","message":"failed ENVIRONMENT-SECRET"}`)})
+				} else {
+					expectations = append(expectations, expectPOST(tc.providerPath, tc.providerBody, `{}`), expectPOST("/api/compose.fetchSourceType", `{"composeId":"c1"}`, `true`))
+					if stage == "saveEnvironment" {
+						expectations = append(expectations, scriptedRequest{Method: http.MethodPost, Path: "/api/compose.saveEnvironment", Body: json.RawMessage(`{"composeId":"c1","env":"ENVIRONMENT-SECRET"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"ENV_FAILED","message":"failed ENVIRONMENT-SECRET"}`)})
+					} else {
+						expectations = append(expectations, expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":"ENVIRONMENT-SECRET"}`, `true`))
+						if stage == "deploy" {
+							expectations = append(expectations, scriptedRequest{Method: http.MethodPost, Path: "/api/compose.deploy", Body: json.RawMessage(`{"composeId":"c1"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"DEPLOY_FAILED","message":"failed ENVIRONMENT-SECRET"}`)})
+						} else {
+							expectations = append(expectations, expectPOST("/api/compose.deploy", `{"composeId":"c1"}`, `"running"`), scriptedRequest{Method: http.MethodGet, Path: "/api/compose.one", Query: map[string][]string{"composeId": {"c1"}}, Status: http.StatusBadRequest, Response: []byte(`{"code":"POLL_FAILED","message":"failed ENVIRONMENT-SECRET"}`)})
+						}
+					}
+				}
+				if stage == "source" || stage == "saveEnvironment" {
+					cleanupStatus := http.StatusOK
+					cleanupResponse := []byte(`true`)
+					if stage == "source" {
+						cleanupStatus = http.StatusInternalServerError
+						cleanupResponse = []byte(`{"code":"CLEANUP_FAILED","message":"cleanup ENVIRONMENT-SECRET"}`)
+					}
+					expectations = append(expectations, scriptedRequest{Method: http.MethodPost, Path: "/api/compose.delete", Body: json.RawMessage(`{"composeId":"c1","deleteVolumes":false}`), Status: cleanupStatus, Response: cleanupResponse})
+				}
+				s := newScriptedServer(t, expectations...)
+				got, err := (Compose{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ComposeArgs]{Inputs: ComposeArgs{Name: "demo", EnvironmentID: "e1", Environment: &secret, Source: tc.source}})
+				require.Error(t, err)
+				require.Equal(t, "c1", got.ID)
+				require.NotContains(t, err.Error(), secret)
+				require.NotContains(t, err.Error(), "CLEANUP_FAILED")
+			})
+		}
+	}
+}
+
 func TestComposeDiffMarksSourceEnvironmentAndServerReplacements(t *testing.T) {
 	oldServer, newServer := "s1", "s2"
 	old := ComposeArgs{EnvironmentID: "e1", ServerID: &oldServer, Source: ComposeSource{Type: ComposeSourceGit, Git: &GitComposeSource{URL: "u", Branch: "main"}}}
