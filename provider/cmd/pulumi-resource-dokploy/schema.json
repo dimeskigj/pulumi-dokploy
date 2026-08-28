@@ -7,13 +7,13 @@
   "language": {
     "csharp": {
       "packageName": "Pulumi.Dokploy",
-      "rootNamespace": "Pulumi.Dokploy"
+      "rootNamespace": "Pulumi"
     },
     "go": {
       "importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"
     },
     "java": {
-      "basePackage": "dev.codechem.pulumi.dokploy",
+      "basePackage": "dev.codechem.pulumi",
       "packageName": "dev.codechem.pulumi.dokploy"
     },
     "nodejs": {

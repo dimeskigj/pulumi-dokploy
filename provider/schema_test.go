@@ -2,6 +2,8 @@ package dokploy
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -24,8 +26,8 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "moduleName"))
 	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
-	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "rootNamespace"))
-	require.Equal(t, "dev.codechem.pulumi.dokploy", languageSetting(spec, "java", "basePackage"))
+	require.Equal(t, "Pulumi", languageSetting(spec, "csharp", "rootNamespace"))
+	require.Equal(t, "dev.codechem.pulumi", languageSetting(spec, "java", "basePackage"))
 	require.Equal(t, "dev.codechem.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
 	require.NotNil(t, spec.Resources)
 	require.ElementsMatch(t, []string{
@@ -82,6 +84,22 @@ func TestSchemaReplacementFlags(t *testing.T) {
 	require.True(t, props["serviceName"].ReplaceOnChanges)
 }
 
+func TestGeneratedDotnetAndJavaPackagesDoNotDuplicateProviderSuffix(t *testing.T) {
+	dotnetProject := readGenerated(t, "sdk", "dotnet", "Pulumi.Dokploy.csproj")
+	require.NotContains(t, dotnetProject, "Pulumi.Dokploy.Dokploy")
+	dotnetProvider := readGenerated(t, "sdk", "dotnet", "Provider.cs")
+	require.Contains(t, dotnetProvider, "namespace Pulumi.Dokploy\n")
+	require.NotContains(t, dotnetProvider, "namespace Pulumi.Dokploy.Dokploy")
+
+	javaProvider := readGenerated(t, "sdk", "java", "src", "main", "java", "dev", "codechem", "pulumi", "dokploy", "Provider.java")
+	require.Contains(t, javaProvider, "package dev.codechem.pulumi.dokploy;")
+	require.NotContains(t, javaProvider, "package dev.codechem.pulumi.dokploy.dokploy;")
+	_, err := os.Stat(filepath.Join("..", "sdk", "java", "src", "main", "java", "dev", "codechem", "pulumi", "dokploy", "Provider.java"))
+	require.NoError(t, err)
+	_, err = os.Stat(filepath.Join("..", "sdk", "java", "src", "main", "java", "dev", "codechem", "pulumi", "dokploy", "dokploy"))
+	require.Error(t, err)
+}
+
 func resourceTokens(resources map[string]schema.ResourceSpec) []string {
 	result := make([]string, 0, len(resources))
 	for token := range resources {
@@ -113,6 +131,13 @@ func schemaProperty(spec schema.PackageSpec, resourceToken, property string) sch
 }
 
 func trimTypeRef(ref string) string { return strings.TrimPrefix(ref, "#/types/") }
+
+func readGenerated(t *testing.T, parts ...string) string {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join(append([]string{".."}, parts...)...))
+	require.NoError(t, err)
+	return string(data)
+}
 
 func languageSetting(spec schema.PackageSpec, language, key string) any {
 	settings := map[string]any{}
