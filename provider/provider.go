@@ -32,6 +32,7 @@ func Provider() p.Provider {
 			infer.Resource(Application{client: configuredClient}),
 			infer.Resource(Compose{client: configuredClient}),
 			infer.Resource(Postgres{client: configuredClient}),
+			infer.Resource(Redis{client: configuredClient}),
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{"provider": "index"},
 	})
