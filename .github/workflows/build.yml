@@ -32,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     name: prerequisites
     permissions:
+      contents: read
       pull-requests: write # For schema check comment.
     steps:
     - name: Checkout Repo
@@ -168,6 +169,7 @@ jobs:
         - java
     name: build_sdks
     permissions:
+      contents: read
       pull-requests: write # For Renovate SDK updates.
     steps:
     - name: Checkout Repo
