@@ -1,5 +1,6 @@
 import importlib.util
 import hashlib
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -115,8 +116,37 @@ class GateCommandTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             NORMALIZE.require_exact_run_values("run: |\n  if false; then\n    make lint\n  fi\n", ("make lint",))
 
+    def test_duplicate_docs_gates_fail_exact_gate_policy(self):
+        with self.assertRaises(SystemExit):
+            NORMALIZE.require_exact_run_values(
+                "run: make docs_check\nrun: make docs_check\n",
+                ("make docs_check",),
+            )
+
 
 class WorkflowPolicyTests(unittest.TestCase):
+    def test_pages_normalizer_restores_missing_and_drifted_workflows(self):
+        for initial in (None, NORMALIZE.PAGES_WORKFLOW.replace("group: pages", "group: drifted")):
+            with self.subTest(initial=initial):
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "pages.yml"
+                    if initial is not None:
+                        path.write_text(initial)
+                    NORMALIZE.normalize_pages_workflow(path)
+                    self.assertEqual(path.read_text(), NORMALIZE.PAGES_WORKFLOW)
+
+    def test_workflow_policy_rejects_drifted_pages_content(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shutil.copytree(
+                NORMALIZE.ROOT / ".github" / "workflows",
+                root / ".github" / "workflows",
+            )
+            pages = root / ".github" / "workflows" / "pages.yml"
+            pages.write_text(pages.read_text().replace("node-version: 24.18.0", "node-version: 24.17.0"))
+            with self.assertRaises(SystemExit):
+                NORMALIZE.validate_workflow_policy(root)
+
     def test_pages_workflow_is_explicitly_allowed_with_two_non_go_jobs(self):
         self.assertIn("pages.yml", NORMALIZE.GENERATED_WORKFLOW_NAMES)
         self.assertEqual(
@@ -231,6 +261,26 @@ jobs:
                     "    - name: Check OpenAPI and generated SDKs\n",
                     "    - name: Check documentation\n      run: make docs_check\n",
                 )
+
+    def test_docs_gate_insertion_adds_one_setup_and_gate_to_prerequisites(self):
+        fixture = """jobs:
+  prerequisites:
+    steps:
+    - name: Check OpenAPI and generated SDKs
+      run: make check_openapi && make check_codegen
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "build.yml"
+            path.write_text(fixture)
+            NORMALIZE.insert_in_job(
+                path,
+                "prerequisites",
+                "    - name: Check OpenAPI and generated SDKs\n",
+                "    - name: Setup Node for docs\n      uses: actions/setup-node@sha\n    - name: Check documentation\n      run: make docs_check\n",
+            )
+            result = path.read_text()
+            self.assertEqual(result.count("name: Setup Node for docs"), 1)
+            self.assertEqual(NORMALIZE.executable_run_lines(result).count("make docs_check"), 1)
 
 
 class GeneratedMiseSafetyTests(unittest.TestCase):

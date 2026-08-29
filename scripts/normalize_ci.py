@@ -119,6 +119,15 @@ jobs:
 """
 
 
+def normalize_trailing_whitespace(text: str) -> str:
+    return "\n".join(line.rstrip() for line in text.splitlines()) + "\n"
+
+
+def normalize_pages_workflow(path: Path) -> None:
+    if not path.exists() or normalize_trailing_whitespace(path.read_text()) != PAGES_WORKFLOW:
+        path.write_text(PAGES_WORKFLOW)
+
+
 def replace_exact(text: str, old: str, new: str) -> str:
     old_count = text.count(old)
     new_count = text.count(new)
@@ -255,7 +264,10 @@ def validate_workflow_policy(root: Path = ROOT) -> None:
     if actual != expected:
         raise SystemExit(f"generated workflow filename set mismatch: actual={sorted(actual)} expected={sorted(expected)}")
     for name in GENERATED_WORKFLOW_NAMES:
-        validate_workflow_jobs(name, (workflows / name).read_text(), WORKFLOW_JOB_POLICY[name])
+        text = (workflows / name).read_text()
+        if name == "pages.yml" and normalize_trailing_whitespace(text) != PAGES_WORKFLOW:
+            raise SystemExit("pages workflow does not match canonical content")
+        validate_workflow_jobs(name, text, WORKFLOW_JOB_POLICY[name])
 
 
 def normalize_build_trigger(text: str) -> str:
@@ -325,8 +337,7 @@ def remove_validated_generated_mise() -> None:
 def main() -> None:
     # These are the only generator-owned files this policy is allowed to touch.
     pages = WORKFLOWS / "pages.yml"
-    if not pages.exists():
-        pages.write_text(PAGES_WORKFLOW)
+    normalize_pages_workflow(pages)
     trim_explicit_outputs()
     remove_validated_generated_mise()
     build = WORKFLOWS / "build.yml"
