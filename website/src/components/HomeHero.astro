@@ -1,4 +1,7 @@
 ---
+import { base } from "../site-config.mjs";
+
+const withBase = (path: string) => `${base.replace(/\/$/, "")}/${path.replace(/^\//, "")}/`;
 const { eyebrow = "Pulumi provider", title = "Deploy with confidence.", description = "Provision and manage Dokploy infrastructure with Pulumi's familiar infrastructure-as-code workflow." } = Astro.props;
 ---
 
@@ -7,6 +10,6 @@ const { eyebrow = "Pulumi provider", title = "Deploy with confidence.", descript
     <p class="eyebrow">{eyebrow}</p>
     <h1 id="home-hero-title">{title}</h1>
     <p class="home-hero__description">{description}</p>
-    <div class="home-hero__actions"><a class="button button--primary" href="/getting-started/">Get started</a><a class="button" href="/reference/">Explore the reference</a></div>
+    <div class="home-hero__actions"><a class="button button--primary" href={withBase("getting-started")}>Get started</a><a class="button" href={withBase("reference")}>Explore the reference</a></div>
   </div>
 </section>
