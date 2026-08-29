@@ -27,6 +27,9 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
+	if len(resources) != 8 {
+		t.Fatalf("canonical YAML has %d managed resources, want 8", len(resources))
+	}
 	want := map[string]int{
 		"dokploy:index:Project":     1,
 		"dokploy:index:Environment": 1,
@@ -43,7 +46,9 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 			t.Fatalf("resource %q is not an object", name)
 		}
 		typeName, _ := resource["type"].(string)
-		if _, exists := want[typeName]; exists {
+		if _, exists := want[typeName]; !exists {
+			t.Errorf("resource %q has unknown type token %q", name, typeName)
+		} else {
 			counts[typeName]++
 		}
 		if strings.Contains(typeName, "Domain") && resource["properties"] == nil {
@@ -66,6 +71,27 @@ func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
 	cmd.Dir = "."
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("Pulumi YAML binding failed: %v\n%s", err, output)
+	}
+}
+
+func TestCanonicalYAMLRejectsUnknownProperty(t *testing.T) {
+	canonical, err := os.ReadFile("yaml/Pulumi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	variant := strings.Replace(string(canonical), "      name: dokploy-mvp\n", "      invalidProperty: true\n      name: dokploy-mvp\n", 1)
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "Pulumi.yaml"), []byte(variant), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	out := filepath.Join(root, "out")
+	cmd := exec.Command("mise", "exec", "pulumi@3.259.0", "--", "pulumi", "convert", "--from", "yaml", "--language", "yaml", "--strict", "--cwd", root, "--out", out, "--generate-only")
+	output, err := cmd.CombinedOutput()
+	if err == nil {
+		t.Fatal("Pulumi YAML binding unexpectedly accepted invalidProperty")
+	}
+	if !strings.Contains(string(output), "invalidProperty") {
+		t.Fatalf("binding error omitted invalid property: %v\n%s", err, output)
 	}
 }
 
