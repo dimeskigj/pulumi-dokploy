@@ -3,12 +3,17 @@ import { readFile } from "node:fs/promises";
 const EXPECTED_RESOURCES = new Set([
   "Application", "Compose", "Domain", "Environment", "Postgres", "Project", "Redis",
 ]);
+const SOURCE_PATH = Symbol("schema source path");
 
 export async function loadSchema(path) {
   let source;
   try {
     source = await readFile(path, "utf8");
-    return JSON.parse(source);
+    const schema = JSON.parse(source);
+    if (schema && typeof schema === "object") {
+      Object.defineProperty(schema, SOURCE_PATH, { value: String(path) });
+    }
+    return schema;
   } catch (error) {
     throw new Error(`Unable to load schema ${path}: ${error.message}`, { cause: error });
   }
@@ -80,16 +85,20 @@ function normalizeProperties(properties = {}, requiredNames = [], context, types
   });
 }
 
-export function parseSchema(schema, options = {}) {
+function parseSchemaInternal(schema, options = {}) {
   if (!schema || schema.name !== "dokploy") {
     throw new Error(`Unexpected Pulumi package name: ${schema?.name}`);
   }
   const types = schema.types ?? {};
   const resources = schema.resources ?? {};
   const expectedResources = options.expectedResources ?? EXPECTED_RESOURCES;
-  const actualResources = new Set(Object.keys(resources).map(resourceName));
-  if (actualResources.size !== expectedResources.size || [...expectedResources].some((name) => !actualResources.has(name))) {
-    throw new Error(`Unexpected resource set: ${[...actualResources].join(", ")}`);
+  const resourceTokens = Object.keys(resources);
+  const expectedTokens = new Set([...expectedResources].map((name) => `dokploy:index:${name}`));
+  if (
+    resourceTokens.length !== expectedTokens.size ||
+    resourceTokens.some((token) => !expectedTokens.has(token))
+  ) {
+    throw new Error(`Unexpected resource set: ${resourceTokens.join(", ")}`);
   }
 
   const typeModels = Object.keys(types).sort().map((token) => {
@@ -120,4 +129,16 @@ export function parseSchema(schema, options = {}) {
     resources: resourceModels,
     types: typeModels,
   };
+}
+
+export function parseSchema(schema, options = {}) {
+  try {
+    return parseSchemaInternal(schema, options);
+  } catch (error) {
+    const source = schema?.[SOURCE_PATH];
+    if (source && !error.message.includes(source)) {
+      throw new Error(`${error.message} (schema: ${source})`, { cause: error });
+    }
+    throw error;
+  }
 }

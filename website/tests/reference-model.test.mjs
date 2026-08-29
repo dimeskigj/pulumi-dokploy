@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { formatType, loadSchema, parseSchema, slugFromToken } from "../scripts/reference-model.mjs";
 
@@ -85,4 +88,52 @@ test("loads and validates the real provider schema", async () => {
       .inputs.find(({ name }) => name === "environmentId").replaceOnChanges,
     true,
   );
+});
+
+test("rejects duplicate normalized resource names", () => {
+  const resources = {
+    ...schema.resources,
+    "dokploy:index:Nested:Application": schema.resources["dokploy:index:Application"],
+  };
+  assert.throws(
+    () => parseSchema({ ...schema, resources }, { expectedResources: new Set(["Application"]) }),
+    /Unexpected resource set/,
+  );
+});
+
+test("rejects resource tokens that do not exactly match expected tokens", () => {
+  const resources = { "dokploy:other:Application": schema.resources["dokploy:index:Application"] };
+  assert.throws(
+    () => parseSchema({ ...schema, resources }, { expectedResources: new Set(["Application"]) }),
+    /Unexpected resource set/,
+  );
+});
+
+test("rejects missing descriptions and dangling type references", () => {
+  const missingDescription = structuredClone(schema);
+  missingDescription.resources["dokploy:index:Application"].description = "";
+  assert.throws(
+    () => parseSchema(missingDescription, { expectedResources: new Set(["Application"]) }),
+    /Missing description/,
+  );
+
+  const danglingReference = structuredClone(schema);
+  danglingReference.resources["dokploy:index:Application"].inputProperties.source.$ref =
+    "#/types/dokploy:index:Missing";
+  assert.throws(
+    () => parseSchema(danglingReference, { expectedResources: new Set(["Application"]) }),
+    /Dangling type reference/,
+  );
+});
+
+test("includes the source path in validation errors for loaded schemas", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "reference-model-"));
+  const path = join(directory, "malformed-schema.json");
+  try {
+    await writeFile(path, JSON.stringify({ ...schema, name: "not-dokploy" }));
+    const loaded = await loadSchema(path);
+    assert.throws(() => parseSchema(loaded), new RegExp(`not-dokploy.*${path}`));
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
