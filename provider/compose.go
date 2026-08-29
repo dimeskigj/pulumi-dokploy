@@ -175,7 +175,7 @@ func (r Compose) Create(ctx context.Context, req infer.CreateRequest[ComposeArgs
 	if err := waitForDone(ctx, "compose", state.ComposeID, func(c context.Context) (string, error) { return composeStatus(c, api, state.ComposeID) }); err != nil {
 		return infer.CreateResponse[ComposeState]{ID: state.ComposeID, Output: state}, initFailed(sanitizeComposeError(err, req.Inputs))
 	}
-	state.Status = "done"
+	state.Status = statusDone
 	return infer.CreateResponse[ComposeState]{ID: state.ComposeID, Output: state}, nil
 }
 
@@ -312,7 +312,7 @@ func (r Compose) Update(ctx context.Context, req infer.UpdateRequest[ComposeArgs
 		if e := waitForDone(ctx, "compose", req.ID, func(c context.Context) (string, error) { return composeStatus(c, api, req.ID) }); e != nil {
 			return infer.UpdateResponse[ComposeState]{Output: st}, sanitizeComposeError(e, req.Inputs)
 		}
-		st.Status = "done"
+		st.Status = statusDone
 	}
 	return infer.UpdateResponse[ComposeState]{Output: st}, nil
 }

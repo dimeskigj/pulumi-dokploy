@@ -8,7 +8,7 @@ on:
 env:
   PROVIDER: dokploy
   TRAVIS_OS_NAME: linux
-  GOVERSION: "1.21.x"
+  GOVERSION: "1.25.13"
   NODEVERSION: "20.x"
   PYTHONVERSION: "3.11.15"
   DOTNETVERSION: "8.0.x"
@@ -579,7 +579,7 @@ jobs:
       run: tar -zxf ${{github.workspace}}/sdk/go.tar.gz -C
         ${{github.workspace}}/sdk/go
     - name: Publish Go SDK
-      uses: pulumi/publish-go-sdk-action@v1
+      uses: pulumi/publish-go-sdk-action@0a153fa3c54227a3c0f7c97a57033ecfe94ab3c2
       with:
         repository: ${{ github.repository }}
         base-ref: ${{ github.sha }}
