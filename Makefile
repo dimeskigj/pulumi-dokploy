@@ -5,7 +5,7 @@ PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
 VERSION_GENERIC ?= 0.0.1-alpha.0+dev
 
-.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_sdks gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
+.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_sdks install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
 
 provider:
 	mkdir -p bin
@@ -38,8 +38,10 @@ build_sdks:
 	cd sdk/dotnet && dotnet build --nologo
 	cd sdk/java && gradle build --no-daemon
 
-gen_examples: codegen
-	mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER)
+install_plugin: provider
+	mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall
+
+gen_examples: codegen install_plugin
 	rm -rf examples/nodejs examples/python examples/go examples/dotnet examples/java
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out ../nodejs --generate-only
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language python --cwd examples/yaml --out ../python --generate-only
@@ -63,7 +65,7 @@ gen_examples: codegen
 	cp examples/yaml/README.md examples/dotnet/README.md
 	cp examples/yaml/README.md examples/java/README.md
 
-test_examples:
+test_examples: install_plugin
 	mise exec -- go test ./examples -tags=all -count=1
 	cd examples/go && go test . -count=1
 	python3 -m compileall -q examples/python
