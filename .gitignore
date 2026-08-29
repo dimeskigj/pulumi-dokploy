@@ -13,6 +13,7 @@ provider/**/schema-embed.json
 sdk/dotnet/version.txt
 sdk/java/.gradle
 sdk/java/build/
+**/target/
 sdk/python/venv
 **/__pycache__/
 *.py[cod]
