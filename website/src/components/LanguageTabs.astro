@@ -1,0 +1,18 @@
+---
+import { Code, TabItem, Tabs } from "@astrojs/starlight/components";
+
+const ORDER = ["typescript", "python", "go", "csharp", "java", "yaml"];
+type Example = { language: string; label: string; code: string };
+const { examples } = Astro.props as { examples: Example[] };
+if (examples.map((example) => example.language).join(",") !== ORDER.join(",")) {
+  throw new Error(`LanguageTabs requires: ${ORDER.join(", ")}`);
+}
+---
+
+<Tabs syncKey="language">
+  {examples.map((example) => (
+    <TabItem label={example.label}>
+      <Code code={example.code} lang={example.language} />
+    </TabItem>
+  ))}
+</Tabs>

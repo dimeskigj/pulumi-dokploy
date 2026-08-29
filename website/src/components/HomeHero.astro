@@ -1,0 +1,18 @@
+---
+import { base } from "../site-config.mjs";
+import { Code } from "@astrojs/starlight/components";
+
+const withBase = (path: string) => `${base.replace(/\/$/, "")}/${path.replace(/^\//, "")}/`;
+const referenceRoot = withBase("reference");
+const { eyebrow = "Pulumi provider", title = "Deploy with confidence.", description = "Provision and manage Dokploy infrastructure with Pulumi's familiar infrastructure-as-code workflow.", referenceLabel = "Explore the reference", code } = Astro.props;
+---
+
+<section class="home-hero" aria-labelledby="home-hero-title">
+  <div class="home-hero__content">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1 id="home-hero-title">{title}</h1>
+    <p class="home-hero__description">{description}</p>
+    <div class="home-hero__actions"><a class="button button--primary" href={withBase("getting-started") + "installation/"}>Get started</a><a class="button" href={`${referenceRoot}project/`}>{referenceLabel}</a></div>
+  </div>
+  {code && <div class="home-hero__code"><Code code={code} lang="typescript" /></div>}
+</section>

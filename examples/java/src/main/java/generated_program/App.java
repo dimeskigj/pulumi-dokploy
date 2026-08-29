@@ -36,7 +36,7 @@ public class App {
     public static void stack(Context ctx) {
         final var config = ctx.config();
         final var dokployEndpoint = config.require("dokploy:endpoint");
-        final var dokployApiKey = config.require("dokploy:apiKey");
+        final var dokployApiKey = config.requireSecret("dokploy:apiKey");
         final var appHost = config.get("appHost").orElse("app.example.invalid");
         final var composeHost = config.get("composeHost").orElse("compose.example.invalid");
         final var gitlabIntegration = config.get("gitlabIntegration").orElse("gitlab-integration-id");
@@ -128,11 +128,11 @@ services:
             .enabled(true)
             .build());
 
-        ctx.export("gitlabIntegration0", gitlabIntegration);
-        ctx.export("gitlabProject0", gitlabProject);
-        ctx.export("gitlabOwner0", gitlabOwner);
-        ctx.export("gitlabNamespace0", gitlabNamespace);
-        ctx.export("gitlabRepository0", gitlabRepository);
-        ctx.export("gitBranch0", gitBranch);
+        ctx.export("gitlabIntegration", gitlabIntegration);
+        ctx.export("gitlabProject", gitlabProject);
+        ctx.export("gitlabOwner", gitlabOwner);
+        ctx.export("gitlabNamespace", gitlabNamespace);
+        ctx.export("gitlabRepository", gitlabRepository);
+        ctx.export("gitBranch", gitBranch);
     }
 }

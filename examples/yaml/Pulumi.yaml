@@ -13,7 +13,9 @@ outputs:
 
 config:
   dokploy:endpoint: https://dokploy.example.invalid
-  dokploy:apiKey: replace-with-a-dokploy-api-key
+  dokploy:apiKey:
+    secret: true
+    value: replace-with-a-dokploy-api-key
   appHost:
     type: string
     default: app.example.invalid

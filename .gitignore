@@ -17,3 +17,6 @@ sdk/java/build/
 sdk/python/venv
 **/__pycache__/
 *.py[cod]
+website/dist/
+website/.astro/
+/.superpowers/sdd/

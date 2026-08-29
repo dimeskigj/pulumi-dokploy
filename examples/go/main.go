@@ -11,10 +11,8 @@ import (
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 		cfg := config.New(ctx, "")
-		var dokployEndpoint interface{}
-		cfg.RequireObject("dokploy:endpoint", &dokployEndpoint)
-		var dokployApiKey interface{}
-		cfg.RequireObject("dokploy:apiKey", &dokployApiKey)
+		_ = cfg.Require("dokploy:endpoint")
+		_ = cfg.RequireSecret("dokploy:apiKey")
 		appHost := "app.example.invalid"
 		if param := cfg.Get("appHost"); param != "" {
 			appHost = param

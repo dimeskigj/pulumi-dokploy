@@ -4,6 +4,8 @@
 
 The Dokploy provider manages self-hosted Dokploy projects and deployments with Pulumi.
 
+**[Read the documentation](https://gjorgjidimeski.github.io/pulumi-dokploy/)**
+
 ## Install
 
 The provider is built and tested with Go 1.25.13, including the security-fixed
@@ -56,6 +58,10 @@ those volumes should be deleted.
 
 Database passwords, environment values, application build arguments/build secrets, and nested
 Docker credentials are secret inputs. Keep them secret in configuration and never log them.
+
+See the [Get Started](https://gjorgjidimeski.github.io/pulumi-dokploy/getting-started/installation/),
+[Resources](https://gjorgjidimeski.github.io/pulumi-dokploy/reference/), and
+[Guides](https://gjorgjidimeski.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
 
 ## Import
 
