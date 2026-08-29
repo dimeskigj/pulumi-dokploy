@@ -17,7 +17,7 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid, Code, LinkButton } from "@astrojs/starlight/components";
+import { Badge, Card, CardGrid, Code, LinkButton } from "@astrojs/starlight/components";
 
 <Code code={`import * as dokploy from "@dimeskigj/pulumi-dokploy";
 
@@ -42,15 +42,17 @@ const app = new dokploy.Application("web", {
 
 ## Write in the language your team uses
 
-TypeScript · Python · Go · C# · Java · YAML
+<Badge text="TypeScript" variant="tip" /> <Badge text="Python" variant="tip" /> <Badge text="Go" variant="tip" /> <Badge text="C#" variant="tip" /> <Badge text="Java" variant="tip" /> <Badge text="YAML" variant="tip" />
 
 ## Provider guarantees
 
-- Pulumi previews show planned changes before Dokploy is modified.
-- Creates and updates wait for Dokploy deployment completion.
-- Imports and refreshes reconcile existing Dokploy resources with Pulumi state.
-- Deployment errors retain partial state and the resource ID for repair.
-- Secret inputs and derived secret outputs remain redacted and are never logged.
+<CardGrid stagger>
+	<Card title="Plan before you apply" icon="magnifier">Pulumi previews show planned changes before Dokploy is modified.</Card>
+	<Card title="Deployment-aware writes" icon="clock">Creates and updates wait for Dokploy deployment completion.</Card>
+	<Card title="Stays in sync" icon="random">Imports and refreshes reconcile existing Dokploy resources with Pulumi state.</Card>
+	<Card title="Recoverable failures" icon="warning">Deployment errors retain partial state and the resource ID for repair.</Card>
+	<Card title="Secrets stay secret" icon="padlock">Secret inputs and derived secret outputs remain redacted and are never logged.</Card>
+</CardGrid>
 
 <CardGrid>
 	<LinkButton href="https://github.com/dimeskigj/pulumi-dokploy" icon="github">View the provider on GitHub</LinkButton>

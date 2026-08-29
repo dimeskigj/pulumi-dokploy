@@ -66,8 +66,11 @@ test("landing page contains the required hierarchy and release-safe Registry wor
   assert.match(landing, /<CardGrid/);
   assert.match(landing, /Deploy Dokploy with Pulumi/);
   assert.match(landing, /Resource reference/);
-  assert.match(landing, /TypeScript · Python · Go · C# · Java · YAML/);
-  assert.equal((landing.match(/<Card title="/g) ?? []).length, 7, "landing must define seven capability cards");
+  for (const language of ["TypeScript", "Python", "Go", "C#", "Java", "YAML"]) {
+    assert.match(landing, new RegExp(`<Badge text="${language}"`), `landing must advertise ${language} support`);
+  }
+  const capabilities = landing.slice(landing.indexOf("## From intent to deployment"), landing.indexOf("## Write in the language"));
+  assert.equal((capabilities.match(/<Card title="/g) ?? []).length, 7, "landing must define seven capability cards");
   assert.match(landing, /first release is published/i);
   assert.match(landing, /https:\/\/github\.com\/dimeskigj\/pulumi-dokploy/);
   assert.match(landing, /https:\/\/www\.pulumi\.com\/registry\/packages\/dokploy\//);
