@@ -5,7 +5,7 @@ PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
 VERSION_GENERIC ?= 0.0.1-alpha.0+dev
 
-.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_sdks install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
+.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
 
 provider:
 	mkdir -p bin
@@ -31,12 +31,22 @@ codegen: provider
 	mise exec pulumi@3.259.0 -- pulumi package gen-sdk provider/cmd/$(PROVIDER)/schema.json --language all -o sdk
 	printf '%s' '$(VERSION_GENERIC)' > sdk/dotnet/version.txt
 
-build_sdks:
+build_go:
 	mise exec -- go test ./sdk/go/...
+
+build_python:
 	python3 -m compileall -q sdk/python
+
+build_nodejs:
 	cd sdk/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund && npm run build
+
+build_dotnet:
 	cd sdk/dotnet && dotnet build --nologo
+
+build_java:
 	cd sdk/java && gradle build --no-daemon
+
+build_sdks: build_go build_python build_nodejs build_dotnet build_java
 
 install_plugin: provider
 	mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall
