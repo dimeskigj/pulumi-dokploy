@@ -3,7 +3,7 @@ title: Applications
 description: Create and update Dokploy applications from Docker, Git, or GitLab sources.
 ---
 
-Create a Docker application by selecting the `docker` source variant:
+Create a Docker application by selecting the `docker` source variant. A Project owns the default production Environment; use an explicit Environment when this application belongs in staging or another non-production target.
 
 ```typescript
 const app = new dokploy.Application("web", {
@@ -13,4 +13,33 @@ const app = new dokploy.Application("web", {
 });
 ```
 
-Use `type: "git"` for a public repository or `type: "gitlab"` for an existing GitLab integration. The provider manages the application and waits for deployment completion on create and update; it does not manage the referenced GitLab integration or SSH key. `environmentId` and `serverId` changes replace the application. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).
+For a public Git repository, select `type: "git"` and provide the URL, branch, and build settings:
+
+```typescript
+const gitApp = new dokploy.Application("git-web", {
+  name: "git-web",
+  environmentId: environment.environmentId,
+  source: {
+    type: "git",
+    git: { url: "https://github.com/example/web.git", branch: "main", build: { type: "docker" } },
+  },
+});
+```
+
+For an existing GitLab integration, select `type: "gitlab"` and pass its integration and repository metadata. The integration itself remains unmanaged:
+
+```typescript
+const gitlabApp = new dokploy.Application("gitlab-web", {
+  name: "gitlab-web",
+  environmentId: environment.environmentId,
+  source: {
+    type: "gitlab",
+    gitlab: {
+      integrationId: "integration-1", projectId: 42, owner: "example",
+      namespace: "platform", repository: "web", branch: "main", build: { type: "docker" },
+    },
+  },
+});
+```
+
+Creates and updates fetch the selected source and wait for deployment completion. A source discriminator change replaces the Application; `environmentId` and `serverId` are also replacement-only. Other metadata and source settings update through the normal Pulumi diff. The Project/Environment is a dependency, while GitLab integrations and SSH keys are referenced rather than managed. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).
