@@ -8,6 +8,7 @@ import (
 	dokploy "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
 
 type liveConfig struct {
@@ -42,7 +43,7 @@ func runMVP(t *testing.T, ctx context.Context, cfg liveConfig) {
 	if err := stack.SetConfig(ctx, "dokploy:apiKey", auto.ConfigValue{Value: cfg.APIKey, Secret: true}); err != nil {
 		t.Fatal(err)
 	}
-	for _, key := range []string{"databasePassword", "redisPassword", "applicationSecret", "composeSecret"} {
+	for _, key := range []string{"databasePassword", "redisPassword", "applicationEnvironment", "applicationBuildArgs", "applicationBuildSecrets", "composeEnvironment"} {
 		if err := stack.SetConfig(ctx, key, auto.ConfigValue{Value: "task12-" + key, Secret: true}); err != nil {
 			t.Fatal(err)
 		}
@@ -61,6 +62,13 @@ func runMVP(t *testing.T, ctx context.Context, cfg liveConfig) {
 
 func mvpProgram(cfg liveConfig, image string) pulumi.RunFunc {
 	return func(ctx *pulumi.Context) error {
+		secrets := config.New(ctx, "")
+		databasePassword := secrets.RequireSecret("databasePassword")
+		redisPassword := secrets.RequireSecret("redisPassword")
+		applicationEnvironment := secrets.RequireSecret("applicationEnvironment").ToStringPtrOutput()
+		applicationBuildArgs := secrets.RequireSecret("applicationBuildArgs").ToStringPtrOutput()
+		applicationBuildSecrets := secrets.RequireSecret("applicationBuildSecrets").ToStringPtrOutput()
+		composeEnvironment := secrets.RequireSecret("composeEnvironment").ToStringPtrOutput()
 		project, err := dokploy.NewProject(ctx, "project-"+cfg.NameSuffix, &dokploy.ProjectArgs{Name: pulumi.String("task12-" + cfg.NameSuffix)})
 		if err != nil {
 			return err
@@ -69,19 +77,19 @@ func mvpProgram(cfg liveConfig, image string) pulumi.RunFunc {
 		if err != nil {
 			return err
 		}
-		application, err := dokploy.NewApplication(ctx, "application-"+cfg.NameSuffix, &dokploy.ApplicationArgs{Name: pulumi.String("application-" + cfg.NameSuffix), EnvironmentId: project.DefaultEnvironmentId, Source: &dokploy.ApplicationSourceArgs{Type: pulumi.String("docker"), Docker: &dokploy.DockerSourceArgs{Image: pulumi.String(image)}}, Environment: pulumi.ToSecret(pulumi.StringPtr("APP_SECRET=task12")).(pulumi.StringPtrOutput)})
+		application, err := dokploy.NewApplication(ctx, "application-"+cfg.NameSuffix, &dokploy.ApplicationArgs{Name: pulumi.String("application-" + cfg.NameSuffix), EnvironmentId: project.DefaultEnvironmentId, Source: &dokploy.ApplicationSourceArgs{Type: pulumi.String("docker"), Docker: &dokploy.DockerSourceArgs{Image: pulumi.String(image)}}, Environment: applicationEnvironment, BuildArgs: applicationBuildArgs, BuildSecrets: applicationBuildSecrets})
 		if err != nil {
 			return err
 		}
-		compose, err := dokploy.NewCompose(ctx, "compose-"+cfg.NameSuffix, &dokploy.ComposeArgs{Name: pulumi.String("compose-" + cfg.NameSuffix), EnvironmentId: project.DefaultEnvironmentId, Source: &dokploy.ComposeSourceArgs{Type: pulumi.String("raw"), Raw: &dokploy.RawComposeSourceArgs{ComposeFile: pulumi.String("services:\n  web:\n    image: nginx:1.27\n")}}})
+		compose, err := dokploy.NewCompose(ctx, "compose-"+cfg.NameSuffix, &dokploy.ComposeArgs{Name: pulumi.String("compose-" + cfg.NameSuffix), EnvironmentId: project.DefaultEnvironmentId, Source: &dokploy.ComposeSourceArgs{Type: pulumi.String("raw"), Raw: &dokploy.RawComposeSourceArgs{ComposeFile: pulumi.String("services:\n  web:\n    image: nginx:1.27\n")}}, Environment: composeEnvironment})
 		if err != nil {
 			return err
 		}
-		_, err = dokploy.NewPostgres(ctx, "postgres-"+cfg.NameSuffix, &dokploy.PostgresArgs{Name: pulumi.String("postgres-" + cfg.NameSuffix), EnvironmentId: environment.EnvironmentId, DatabaseName: pulumi.String("app"), DatabaseUser: pulumi.String("app"), DatabasePassword: pulumi.ToSecret(pulumi.String("task12-db")).(pulumi.StringOutput)})
+		_, err = dokploy.NewPostgres(ctx, "postgres-"+cfg.NameSuffix, &dokploy.PostgresArgs{Name: pulumi.String("postgres-" + cfg.NameSuffix), EnvironmentId: environment.EnvironmentId, DatabaseName: pulumi.String("app"), DatabaseUser: pulumi.String("app"), DatabasePassword: databasePassword})
 		if err != nil {
 			return err
 		}
-		_, err = dokploy.NewRedis(ctx, "redis-"+cfg.NameSuffix, &dokploy.RedisArgs{Name: pulumi.String("redis-" + cfg.NameSuffix), EnvironmentId: environment.EnvironmentId, DatabasePassword: pulumi.ToSecret(pulumi.String("task12-redis")).(pulumi.StringOutput)})
+		_, err = dokploy.NewRedis(ctx, "redis-"+cfg.NameSuffix, &dokploy.RedisArgs{Name: pulumi.String("redis-" + cfg.NameSuffix), EnvironmentId: environment.EnvironmentId, DatabasePassword: redisPassword})
 		if err != nil {
 			return err
 		}

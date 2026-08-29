@@ -33,8 +33,9 @@ gen_examples: codegen
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language go --cwd examples/yaml --out ../go --generate-only
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language csharp --cwd examples/yaml --out ../dotnet --generate-only
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language java --cwd examples/yaml --out ../java --generate-only
-	go mod edit -require=$(PROJECT)@v0.0.0 -replace=$(PROJECT)=$(CURDIR) examples/go/go.mod
+	go mod edit -require=$(PROJECT)@v0.0.0 -replace=$(PROJECT)=../../ examples/go/go.mod
 	cd examples/go && go mod tidy
+	python3 -c 'from pathlib import Path; p=Path("examples/go/go.mod"); s=p.read_text(); s=s.replace(" => " + str(Path.cwd()), " => ../../"); p.write_text(s)'
 	cd examples/nodejs && npm pkg set dependencies.@gjorgjidimeski/pulumi-dokploy=file:../../sdk/nodejs
 	printf '%s\n' '-e ../../sdk/python' > examples/python/requirements.txt
 	python3 -c 'from pathlib import Path; p=Path("examples/dotnet/dokploy-mvp.csproj"); p.write_text(p.read_text().replace('"'"'<PackageReference Include="Pulumi.Dokploy" Version="0.0.1-alpha.0+dev" />'"'"', '"'"'<ProjectReference Include="../../sdk/dotnet/Pulumi.Dokploy.csproj" />'"'"'))'
@@ -42,6 +43,12 @@ gen_examples: codegen
 	python3 -c 'from pathlib import Path; p=Path("examples/java/pom.xml"); p.write_text(p.read_text().replace("<maven.compiler.source>11</maven.compiler.source>", "<maven.compiler.source>17</maven.compiler.source>").replace("<maven.compiler.target>11</maven.compiler.target>", "<maven.compiler.target>17</maven.compiler.target>").replace("<maven.compiler.release>11</maven.compiler.release>", "<maven.compiler.release>17</maven.compiler.release>"))'
 	python3 -c 'from pathlib import Path; p=Path("examples/java/src/main/java/generated_program/App.java"); s=p.read_text().replace("com.gjorgjidimeski.dokploy", "dev.codechem.pulumi.dokploy").replace("config.requireObject(\"dokploy:endpoint\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.require(\"dokploy:endpoint\")").replace("config.requireObject(\"dokploy:apiKey\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.require(\"dokploy:apiKey\")").replace("config.getSecret(\"registryPassword\").orElse(\"replace-with-a-registry-password\")", "config.getSecret(\"registryPassword\").applyValue(v -> v.orElse(\"replace-with-a-registry-password\"))").replace("config.getSecret(\"databasePassword\").orElse(\"replace-with-a-database-password\")", "config.getSecret(\"databasePassword\").applyValue(v -> v.orElse(\"replace-with-a-database-password\"))").replace("config.getSecret(\"redisPassword\").orElse(\"replace-with-a-redis-password\")", "config.getSecret(\"redisPassword\").applyValue(v -> v.orElse(\"replace-with-a-redis-password\"))"); p.write_text(s)'
 	python3 -c 'from pathlib import Path; p=Path("examples/dotnet/Program.cs"); s=p.read_text(); s=s.replace('"'"'config.GetSecret("registryPassword") ?? "replace-with-a-registry-password"'"'"', '"'"'config.GetSecret("registryPassword") ?? Output.CreateSecret("replace-with-a-registry-password")'"'"').replace('"'"'config.GetSecret("databasePassword") ?? "replace-with-a-database-password"'"'"', '"'"'config.GetSecret("databasePassword") ?? Output.CreateSecret("replace-with-a-database-password")'"'"').replace('"'"'config.GetSecret("redisPassword") ?? "replace-with-a-redis-password"'"'"', '"'"'config.GetSecret("redisPassword") ?? Output.CreateSecret("replace-with-a-redis-password")'"'"'); p.write_text(s)'
+	python3 -c 'from pathlib import Path; [Path(x).write_text(chr(10).join(line.rstrip() for line in Path(x).read_text().splitlines()).rstrip()+chr(10)) for x in ["examples/dotnet/Program.cs", "examples/java/pom.xml"]]'
+	cp examples/yaml/README.md examples/nodejs/README.md
+	cp examples/yaml/README.md examples/python/README.md
+	cp examples/yaml/README.md examples/go/README.md
+	cp examples/yaml/README.md examples/dotnet/README.md
+	cp examples/yaml/README.md examples/java/README.md
 
 test_examples:
 	mise exec -- go test ./examples -tags=all -count=1

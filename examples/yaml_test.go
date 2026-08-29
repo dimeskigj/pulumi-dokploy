@@ -3,7 +3,10 @@
 package examples
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -24,15 +27,16 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	want := map[string]bool{
-		"dokploy:index:Project":     false,
-		"dokploy:index:Environment": false,
-		"dokploy:index:Application": false,
-		"dokploy:index:Compose":     false,
-		"dokploy:index:Postgres":    false,
-		"dokploy:index:Redis":       false,
-		"dokploy:index:Domain":      false,
+	want := map[string]int{
+		"dokploy:index:Project":     1,
+		"dokploy:index:Environment": 1,
+		"dokploy:index:Application": 1,
+		"dokploy:index:Compose":     1,
+		"dokploy:index:Postgres":    1,
+		"dokploy:index:Redis":       1,
+		"dokploy:index:Domain":      2,
 	}
+	counts := map[string]int{}
 	for name, raw := range resources {
 		resource, ok := raw.(map[string]any)
 		if !ok {
@@ -40,18 +44,70 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		}
 		typeName, _ := resource["type"].(string)
 		if _, exists := want[typeName]; exists {
-			want[typeName] = true
+			counts[typeName]++
 		}
 		if strings.Contains(typeName, "Domain") && resource["properties"] == nil {
 			t.Errorf("resource %q has no properties", name)
 		}
 	}
-	for typeName, found := range want {
-		if !found {
-			t.Errorf("canonical YAML is missing %s", typeName)
+	for typeName, expected := range want {
+		if counts[typeName] != expected {
+			t.Errorf("canonical YAML has %d %s resources, want %d", counts[typeName], typeName, expected)
 		}
 		if _, ok := schemaResources(t)[typeName]; !ok {
 			t.Errorf("%s is not present in generated provider schema", typeName)
+		}
+	}
+}
+
+func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
+	out := t.TempDir()
+	cmd := exec.Command("mise", "exec", "pulumi@3.259.0", "--", "pulumi", "convert", "--from", "yaml", "--language", "yaml", "--cwd", "yaml", "--out", out, "--generate-only")
+	cmd.Dir = "."
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("Pulumi YAML binding failed: %v\n%s", err, output)
+	}
+}
+
+func TestGeneratedArtifactsArePortableAndDocumentAlternatives(t *testing.T) {
+	root, err := filepath.Abs(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	workspaceRoot := filepath.Dir(root)
+	for _, language := range []string{"nodejs", "python", "go", "dotnet", "java"} {
+		languageRoot := filepath.Join(root, language)
+		if err := filepath.Walk(languageRoot, func(path string, info os.FileInfo, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
+			}
+			if info.IsDir() {
+				if path != languageRoot && map[string]bool{"bin": true, "obj": true, "target": true, "node_modules": true, "__pycache__": true}[info.Name()] {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if info.Mode()&os.ModeSymlink != 0 {
+				return nil
+			}
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			if strings.Contains(string(data), workspaceRoot) {
+				return fmt.Errorf("%s contains workspace absolute path", path)
+			}
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+		readme, err := os.ReadFile(filepath.Join(languageRoot, "README.md"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		text := string(readme)
+		if !strings.Contains(text, "Git source alternative") || !strings.Contains(text, "GitLab source alternative") {
+			t.Errorf("%s README omits inactive source alternatives", language)
 		}
 	}
 }

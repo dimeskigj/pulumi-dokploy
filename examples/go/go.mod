@@ -117,4 +117,4 @@ require (
 	lukechampine.com/frand v1.5.1 // indirect
 )
 
-replace github.com/gjorgjidimeski/pulumi-dokploy => /Users/gjorgjidimeski/Projects/pulumi-dokploy/.worktrees/dokploy-provider-mvp
+replace github.com/gjorgjidimeski/pulumi-dokploy => ../../
