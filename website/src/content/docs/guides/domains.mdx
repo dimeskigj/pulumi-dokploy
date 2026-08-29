@@ -1,0 +1,15 @@
+---
+title: Domains
+description: Attach a Dokploy domain to a managed service.
+---
+
+Create a `Domain` in the same environment as the service it fronts, then provide the service relationship required by the schema. Keep the target environment and server stable because environment and server changes are replacement-only where marked in the reference.
+
+```typescript
+const domain = new dokploy.Domain("web-domain", {
+  host: "app.example.com",
+  applicationId: app.applicationId,
+});
+```
+
+The provider reconciles domain changes with Dokploy and waits for the operation to complete. Check the exact required fields and supported relationship in the [Domain reference](../../reference/domain/) before applying.

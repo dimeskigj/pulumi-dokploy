@@ -1,0 +1,18 @@
+---
+title: Sources
+description: Choose the source discriminator for applications and Compose stacks.
+---
+
+Applications use one `ApplicationSource` discriminator:
+
+- `type: "docker"` with `docker` settings for a Docker image.
+- `type: "git"` with `git` settings for a public Git repository.
+- `type: "gitlab"` with `gitlab` settings for an existing GitLab integration and repository.
+
+Compose stacks use one `ComposeSource` discriminator:
+
+- `type: "raw"` with Compose content in the configuration.
+- `type: "git"` with a Git repository and path.
+- `type: "gitlab"` with an existing GitLab integration and repository details.
+
+GitLab integrations and SSH keys are referenced, not managed, by this provider. Change a source discriminator only when you intend to replace the resource; source transitions are not in-place conversions. See the [Application](../../reference/application/), [Compose](../../reference/compose/), and [complex types](../../reference/types/) references.

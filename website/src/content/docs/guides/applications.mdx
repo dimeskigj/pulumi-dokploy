@@ -1,0 +1,16 @@
+---
+title: Applications
+description: Create and update Dokploy applications from Docker, Git, or GitLab sources.
+---
+
+Create a Docker application by selecting the `docker` source variant:
+
+```typescript
+const app = new dokploy.Application("web", {
+  name: "web",
+  environmentId: environment.environmentId,
+  source: { type: "docker", docker: { image: "nginx:latest" } },
+});
+```
+
+Use `type: "git"` for a public repository or `type: "gitlab"` for an existing GitLab integration. The provider manages the application and waits for deployment completion on create and update; it does not manage the referenced GitLab integration or SSH key. `environmentId` and `serverId` changes replace the application. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).

@@ -1,0 +1,12 @@
+---
+title: Lifecycle and state
+description: Understand previews, deployment polling, replacement, imports, and partial state.
+---
+
+Pulumi previews calculate the planned operation without applying it. During create and update, the provider submits the Dokploy operation and polls deployment status until it completes or fails.
+
+Fields such as `environmentId` and `serverId` are replacement-only where shown in the generated reference. A source discriminator change also replaces the resource. Review the [resource reference](../../reference/) before changing these fields.
+
+Refresh and import read the remote Dokploy object back into Pulumi state. A not-found response removes the object from state so the next `pulumi up` can recreate it. If a deployment fails after Dokploy creates an object, partial state retains its ID and the failure can be inspected and repaired rather than being silently discarded.
+
+Use `pulumi import` for adoption, then run `pulumi refresh` and review the resulting state before applying updates. Write-only secrets may need to be supplied again after import; see [Secrets](../secrets/) and [Imports](../../guides/imports/).

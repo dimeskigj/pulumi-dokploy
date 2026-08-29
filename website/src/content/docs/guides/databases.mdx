@@ -1,0 +1,18 @@
+---
+title: Databases
+description: Provision PostgreSQL and Redis services with secret-aware credentials.
+---
+
+Postgres and Redis are resources in the target environment. Supply passwords as secret inputs and make the database depend on the project or explicit environment through `environmentId`.
+
+```typescript
+const database = new dokploy.Postgres("app-db", {
+  name: "app-db",
+  environmentId: environment.environmentId,
+  databaseName: "app",
+  databaseUser: "app",
+  databasePassword: pulumi.secret(config.require("databasePassword")),
+});
+```
+
+The Redis resource follows the same lifecycle and requires `databasePassword`. Database environment values are secret inputs; do not log them. Review the [Postgres reference](../../reference/postgres/), [Redis reference](../../reference/redis/), and [secrets guidance](../../concepts/secrets/).

@@ -1,0 +1,17 @@
+---
+title: Installation
+description: Install the Pulumi Dokploy package for your language.
+---
+
+Install the SDK package for your Pulumi program. The package supplies language bindings; Pulumi automatically downloads and runs the matching `pulumi-resource-dokploy` provider binary during deployment.
+
+```bash
+npm install @gjorgjidimeski/pulumi-dokploy
+pip install pulumi_dokploy
+go get github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy
+dotnet add package Pulumi.Dokploy
+mvn dependency:get -Dartifact=dev.codechem.pulumi.dokploy
+pulumi package add github.com/gjorgjidimeski/pulumi-dokploy dokploy
+```
+
+The six supported authoring languages are TypeScript, Python, Go, C#, Java, and YAML. Continue with [your first deployment](../first-deployment/), then consult the [generated resource reference](../../reference/project/).

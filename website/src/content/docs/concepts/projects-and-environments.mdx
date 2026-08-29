@@ -1,0 +1,23 @@
+---
+title: Projects and environments
+description: Organize Dokploy resources with projects and explicit environments.
+---
+
+A `Project` owns the default production environment. Dependent resources use the project’s environment ID, which gives a small deployment a useful default without creating a second resource.
+
+For staging, testing, or another non-production target, create an explicit `Environment` and pass its ID to each dependent resource:
+
+```typescript
+const project = new dokploy.Project("platform", { name: "platform" });
+const staging = new dokploy.Environment("staging", {
+  name: "staging",
+  projectId: project.projectId,
+});
+const app = new dokploy.Application("web-staging", {
+  name: "web-staging",
+  environmentId: staging.environmentId,
+  source: { type: "docker", docker: { image: "nginx:latest" } },
+});
+```
+
+`environmentId` is replacement-only for resources that target an environment. Moving a resource between environments therefore creates a replacement rather than silently moving the existing Dokploy object. See the [Application reference](../../reference/application/) and [lifecycle guidance](../lifecycle-and-state/).

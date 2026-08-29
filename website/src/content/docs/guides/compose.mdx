@@ -1,0 +1,18 @@
+---
+title: Compose stacks
+description: Manage raw, Git, and GitLab Compose deployments safely.
+---
+
+For a raw Compose stack, select `type: "raw"` and provide the Compose content. Git and existing GitLab sources use their corresponding discriminators. The target `environmentId` and optional `serverId` are dependencies and replacement-only fields.
+
+```typescript
+const stack = new dokploy.Compose("web-stack", {
+  name: "web-stack",
+  environmentId: environment.environmentId,
+  source: { type: "raw", composeFile: "services:\n  web:\n    image: nginx:latest\n" },
+});
+```
+
+The provider waits for deployment completion and updates the stack when its configuration changes. `deleteVolumesOnDestroy` defaults to `false`, so `pulumi destroy` preserves Compose volumes. Setting it to `true` is destructive: do so only when deleting the data volumes is intentional.
+
+See the [Compose reference](../../reference/compose/) and [source discriminators](../../concepts/sources/).
