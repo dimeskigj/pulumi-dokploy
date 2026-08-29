@@ -1,0 +1,14 @@
+template: native
+provider: dokploy
+major-version: 0
+providerDefaultBranch: main
+publishRegistry: true
+providerVersion: github.com/gjorgjidimeski/pulumi-dokploy/provider.Version
+parallel: 3
+sdkModuleDir: sdk/go/dokploy
+envOverride:
+  DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
+  DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+esc:
+  enabled: true
+  environment: imports/github-secrets

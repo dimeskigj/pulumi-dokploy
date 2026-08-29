@@ -2,7 +2,11 @@
   "name": "dokploy",
   "displayName": "Dokploy",
   "version": "0.0.1-alpha.0+dev",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains.",
   "homepage": "https://github.com/gjorgjidimeski/pulumi-dokploy",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/gjorgjidimeski/pulumi-dokploy",
+  "publisher": "gjorgjidimeski",
   "namespace": "gjorgjidimeski",
   "language": {
     "csharp": {

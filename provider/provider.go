@@ -19,8 +19,12 @@ func Provider() p.Provider {
 	return infer.Provider(infer.Options{
 		Metadata: schema.Metadata{
 			DisplayName: "Dokploy",
+			Description: "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains.",
 			Namespace:   "gjorgjidimeski",
 			Homepage:    "https://github.com/gjorgjidimeski/pulumi-dokploy",
+			Repository:  "https://github.com/gjorgjidimeski/pulumi-dokploy",
+			Publisher:   "gjorgjidimeski",
+			License:     "Apache-2.0",
 			LanguageMap: map[string]any{
 				"go":     map[string]any{"importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"},
 				"nodejs": map[string]any{"packageName": "@gjorgjidimeski/pulumi-dokploy"},

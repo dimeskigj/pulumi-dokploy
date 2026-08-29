@@ -95,20 +95,20 @@ publishing {
                 inceptionYear = ""
                 name = ""
                 packaging = "jar"
-                description = $/ /$
+                description = $/Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains./$
 
-                url = "https://example.com"
+                url = "https://github.com/gjorgjidimeski/pulumi-dokploy"
 
                 scm {
-                    connection = "https://example.com"
-                    developerConnection = "https://example.com"
-                    url = "https://example.com"
+                    connection = "git@github.com/gjorgjidimeski/pulumi-dokploy.git"
+                    developerConnection = "git@github.com/gjorgjidimeski/pulumi-dokploy.git"
+                    url = "https://github.com/gjorgjidimeski/pulumi-dokploy"
                 }
 
                 licenses {
                     license {
-                        name = ""
-                        url = ""
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                     }
                 }
 

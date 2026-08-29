@@ -21,9 +21,14 @@ def readme():
 setup(name='pulumi_dokploy',
       python_requires='>=3.9',
       version=VERSION,
+      description="Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains.",
       long_description=readme(),
       long_description_content_type='text/markdown',
       url='https://github.com/gjorgjidimeski/pulumi-dokploy',
+      project_urls={
+          'Repository': 'https://github.com/gjorgjidimeski/pulumi-dokploy'
+      },
+      license='Apache-2.0',
       packages=find_packages(),
       package_data={
           'pulumi_dokploy': [

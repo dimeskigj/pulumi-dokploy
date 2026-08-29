@@ -5,11 +5,24 @@ PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
 VERSION_GENERIC ?= 0.0.1-alpha.0+dev
 
-.PHONY: provider codegen build_sdks gen_examples test_examples test test_provider lint generate_openapi check_openapi
+.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_sdks gen_examples test_examples test test_provider lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
 
 provider:
 	mkdir -p bin
 	go build -ldflags "-X $(PROJECT)/provider.Version=$(VERSION_GENERIC)" -o bin/$(PROVIDER) ./provider/cmd/pulumi-resource-$(PACK)
+
+provider_no_deps: provider
+
+prepare_local_workspace:
+
+generate_schema: provider
+	mise exec pulumi@3.259.0 -- pulumi package get-schema $(CURDIR)/bin/$(PROVIDER) > provider/cmd/$(PROVIDER)/schema.json
+
+generate_go generate_nodejs generate_python generate_dotnet generate_java: codegen
+
+local_generate: codegen
+
+sign-goreleaser-exe-%:
 
 codegen: provider
 	mkdir -p provider/cmd/$(PROVIDER) sdk
@@ -75,3 +88,8 @@ generate_openapi:
 
 check_openapi: generate_openapi
 	git diff --exit-code -- openapi/dokploy.json internal/client/generated/generated.gen.go
+
+build: provider
+
+ci-mgmt:
+	mise exec -- go run github.com/pulumi/ci-mgmt/provider-ci@0ffac60baf6734014a6dfb392ac1e52bb41433d4 generate
