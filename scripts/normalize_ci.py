@@ -134,9 +134,17 @@ def executable_run_lines(text: str) -> list[str]:
                 break
             script.append(candidate.strip())
             index += 1
+        dead_conditional = False
         for command in script:
             command = command.strip()
             if not command or command.startswith("#"):
+                continue
+            if re.fullmatch(r"if\s+false;\s*then", command):
+                dead_conditional = True
+                continue
+            if dead_conditional:
+                if command == "fi":
+                    dead_conditional = False
                 continue
             if command in {"set -e", "set -o errexit", "set -o pipefail", "set -euo pipefail"}:
                 continue
@@ -175,10 +183,19 @@ def validate_workflow_jobs(name: str, text: str, policy: dict[str, bool]) -> Non
     versions = re.findall(r"^\s*GOVERSION:\s*[\"']?([^\"'\s]+)", text, re.MULTILINE)
     if any(version != GO_VERSION for version in versions):
         raise SystemExit(f"stale GOVERSION pin in {name}")
+    job_versions_by_name = {
+        job: re.findall(r"^\s*GOVERSION:\s*[\"']?([^\"'\s]+)", section, re.MULTILINE)
+        for job, section in sections.items()
+    }
+    has_job_specific_versions = any(job_versions_by_name.values())
     for job, executes_go in policy.items():
         section = sections[job]
-        if executes_go and (not versions or versions.count(GO_VERSION) == 0):
-            raise SystemExit(f"Go-executing workflow {name}/{job} lacks GOVERSION {GO_VERSION}")
+        job_versions = job_versions_by_name[job]
+        if executes_go:
+            if has_job_specific_versions and job_versions != [GO_VERSION]:
+                raise SystemExit(f"Go-executing workflow {name}/{job} lacks per-job GOVERSION {GO_VERSION}")
+            if not has_job_specific_versions and versions.count(GO_VERSION) == 0:
+                raise SystemExit(f"Go-executing workflow {name}/{job} lacks GOVERSION {GO_VERSION}")
         if not executes_go:
             if re.search(r"^\s*(?:-\s*)?uses:.*(?:setup-go|setup-tools)", section, re.MULTILINE):
                 raise SystemExit(f"non-Go workflow job invokes Go/project setup in {name}/{job}")
@@ -189,7 +206,7 @@ def validate_workflow_jobs(name: str, text: str, policy: dict[str, bool]) -> Non
 
 def validate_workflow_policy(root: Path = ROOT) -> None:
     workflows = root / ".github" / "workflows"
-    actual = {path.name for path in workflows.glob("*.yml")}
+    actual = {path.name for path in workflows.glob("*") if path.suffix in {".yml", ".yaml"}}
     expected = set(GENERATED_WORKFLOW_NAMES)
     if actual != expected:
         raise SystemExit(f"generated workflow filename set mismatch: actual={sorted(actual)} expected={sorted(expected)}")

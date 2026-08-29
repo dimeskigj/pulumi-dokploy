@@ -22,8 +22,9 @@ import (
 
 func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 	expectedSecrets := []string{
-		"ENV-SECRET", "ARGS-SECRET", "BUILD-SECRET", "APP-DOCKER-PASSWORD",
-		"COMPOSE-ENV-SECRET", "DB-PASSWORD", "REDIS-PASSWORD",
+		"provider-key", "ENV-SECRET", "ARGS-SECRET", "BUILD-SECRET", "APP-DOCKER-PASSWORD",
+		"APP-UPDATE-PASSWORD", "COMPOSE-ENV-SECRET", "DB-PASSWORD", "DB-UPDATE-PASSWORD",
+		"REDIS-PASSWORD", "REDIS-UPDATE-PASSWORD",
 	}
 	api := newLifecycleAPI(t, expectedSecrets)
 	oldPoll := waitPollInterval
@@ -89,7 +90,7 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 		OldInputs: application.Properties, Inputs: property.NewMap(map[string]property.Value{
 			"name": property.New("app"), "environmentId": property.New(environmentID),
 			"environment": property.New("ENV-SECRET"), "buildArgs": property.New("ARGS-SECRET"), "buildSecrets": property.New("BUILD-SECRET"),
-			"source": property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("broken"), "password": property.New("APP-DOCKER-PASSWORD")})}),
+			"source": property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("broken"), "password": property.New("APP-UPDATE-PASSWORD")})}),
 		})})
 	require.Error(t, err)
 	assertLifecycleSecretsRedacted(t, expectedSecrets, err)
@@ -101,13 +102,13 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 	_, err = provider.Update(p.UpdateRequest{ID: postgres.ID, Urn: lifecycleURN("Postgres", "postgres"), State: postgres.Properties,
 		OldInputs: postgres.Properties, Inputs: property.NewMap(map[string]property.Value{
 			"name": property.New("db"), "environmentId": property.New(environmentID), "databaseName": property.New("app-updated"),
-			"databaseUser": property.New("app"), "databasePassword": property.New("DB-PASSWORD"),
+			"databaseUser": property.New("app"), "databasePassword": property.New("DB-UPDATE-PASSWORD"),
 		})})
 	require.Error(t, err)
 	assertLifecycleSecretsRedacted(t, expectedSecrets, err)
 	_, err = provider.Update(p.UpdateRequest{ID: redis.ID, Urn: lifecycleURN("Redis", "redis"), State: redis.Properties,
 		OldInputs: redis.Properties, Inputs: property.NewMap(map[string]property.Value{
-			"name": property.New("cache"), "environmentId": property.New(environmentID), "databasePassword": property.New("REDIS-PASSWORD"), "dockerImage": property.New("redis:9"),
+			"name": property.New("cache"), "environmentId": property.New(environmentID), "databasePassword": property.New("REDIS-UPDATE-PASSWORD"), "dockerImage": property.New("redis:9"),
 		})})
 	require.Error(t, err)
 	assertLifecycleSecretsRedacted(t, expectedSecrets, err)
@@ -183,17 +184,12 @@ func newLifecycleAPI(t *testing.T, expectedSecrets []string) *lifecycleAPI {
 		assertSemanticJSON(t, body, expected.body, index)
 		api.mu.Lock()
 		api.captureSecrets(body)
+		api.captureSecret(r.Header.Get("x-api-key"))
 		api.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(expected.status)
 		response := expected.response
 		if expected.responseFunc != nil {
-			api.mu.Lock()
-			missing := api.missingExpectedSecretsLocked()
-			api.mu.Unlock()
-			if len(missing) != 0 {
-				t.Errorf("request %d generated failure before all expected secrets were captured: missing %v", index, missing)
-			}
 			response = expected.responseFunc(api.expectedSecrets)
 		}
 		_, _ = w.Write([]byte(response))
@@ -236,6 +232,14 @@ func (s *lifecycleAPI) captureSecrets(body []byte) {
 	walk(value)
 }
 
+func (s *lifecycleAPI) captureSecret(secret string) {
+	for _, expected := range s.expectedSecrets {
+		if secret == expected {
+			s.secrets[secret] = struct{}{}
+		}
+	}
+}
+
 func (s *lifecycleAPI) missingExpectedSecretsLocked() []string {
 	missing := []string{}
 	for _, expected := range s.expectedSecrets {
@@ -252,6 +256,7 @@ func (s *lifecycleAPI) AssertRequests(t *testing.T) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	require.Equal(t, len(s.expected), s.seen)
+	require.Empty(t, s.missingExpectedSecretsLocked())
 }
 
 func assertSemanticJSON(t *testing.T, actual, expected []byte, index int) {
@@ -318,12 +323,12 @@ func lifecycleTranscript() []lifecycleRequest {
 		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"alpine","password":"","registryUrl":"","username":""}`, trueResponse),
 		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, trueResponse),
 		r(http.MethodPost, "/api/application.redeploy", nil, `{"applicationId":"a1"}`, `"running"`), get("/api/application.one", "applicationId", "a1", appOne),
-		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"broken","password":"APP-DOCKER-PASSWORD","registryUrl":"","username":""}`, trueResponse),
+		r(http.MethodPost, "/api/application.saveDockerProvider", nil, `{"applicationId":"a1","dockerImage":"broken","password":"APP-UPDATE-PASSWORD","registryUrl":"","username":""}`, trueResponse),
 		r(http.MethodPost, "/api/application.saveEnvironment", nil, `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`, trueResponse),
 		{method: http.MethodPost, path: "/api/application.redeploy", body: json.RawMessage(`{"applicationId":"a1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
 		get("/api/postgres.one", "postgresId", "pg1", postgresOne),
-		{method: http.MethodPost, path: "/api/postgres.update", body: json.RawMessage(`{"databaseName":"app-updated","databasePassword":"DB-PASSWORD","databaseUser":"app","description":null,"dockerImage":"","name":"db","postgresId":"pg1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
-		{method: http.MethodPost, path: "/api/redis.update", body: json.RawMessage(`{"databasePassword":"REDIS-PASSWORD","description":null,"dockerImage":"redis:9","name":"cache","redisId":"r1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
+		{method: http.MethodPost, path: "/api/postgres.update", body: json.RawMessage(`{"databaseName":"app-updated","databasePassword":"DB-UPDATE-PASSWORD","databaseUser":"app","description":null,"dockerImage":"","name":"db","postgresId":"pg1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
+		{method: http.MethodPost, path: "/api/redis.update", body: json.RawMessage(`{"databasePassword":"REDIS-UPDATE-PASSWORD","description":null,"dockerImage":"redis:9","name":"cache","redisId":"r1"}`), status: http.StatusBadRequest, responseFunc: secretEcho},
 		r(http.MethodPost, "/api/domain.delete", nil, `{"domainId":"d-compose"}`, trueResponse), r(http.MethodPost, "/api/domain.delete", nil, `{"domainId":"d-app"}`, trueResponse),
 		r(http.MethodPost, "/api/application.delete", nil, `{"applicationId":"a1"}`, trueResponse), r(http.MethodPost, "/api/compose.delete", nil, `{"composeId":"c1","deleteVolumes":false}`, trueResponse),
 		r(http.MethodPost, "/api/redis.remove", nil, `{"redisId":"r1"}`, trueResponse), r(http.MethodPost, "/api/postgres.remove", nil, `{"postgresId":"pg1"}`, trueResponse),

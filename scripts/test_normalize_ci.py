@@ -111,6 +111,10 @@ class GateCommandTests(unittest.TestCase):
 """
         NORMALIZE.require_exact_run_values(fixture, ("make lint",))
 
+    def test_multiline_dead_conditional_does_not_satisfy_exact_gate(self):
+        with self.assertRaises(SystemExit):
+            NORMALIZE.require_exact_run_values("run: |\n  if false; then\n    make lint\n  fi\n", ("make lint",))
+
 
 class WorkflowPolicyTests(unittest.TestCase):
     def test_workflow_policy_requires_complete_filename_set(self):
@@ -120,6 +124,17 @@ class WorkflowPolicyTests(unittest.TestCase):
             workflows.mkdir(parents=True)
             for name in NORMALIZE.GENERATED_WORKFLOW_NAMES[:-1]:
                 (workflows / name).write_text("name: fixture\njobs:\n")
+            with self.assertRaises(SystemExit):
+                NORMALIZE.validate_workflow_policy(root)
+
+    def test_workflow_policy_rejects_yaml_workflows(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflows = root / ".github" / "workflows"
+            workflows.mkdir(parents=True)
+            for name in NORMALIZE.GENERATED_WORKFLOW_NAMES:
+                (workflows / name).write_text("name: fixture\njobs:\n")
+            (workflows / "unexpected.yaml").write_text("name: fixture\njobs:\n")
             with self.assertRaises(SystemExit):
                 NORMALIZE.validate_workflow_policy(root)
 
@@ -161,6 +176,20 @@ jobs:
     - run: make test
 """
         NORMALIZE.validate_workflow_jobs("fixture.yml", fixture, {"go_job": True})
+
+    def test_each_go_job_requires_its_own_version_pin(self):
+        fixture = """jobs:
+  go_job:
+    env:
+      GOVERSION: "1.25.13"
+    steps:
+    - run: make test
+  missing_pin:
+    steps:
+    - run: go test ./...
+"""
+        with self.assertRaises(SystemExit):
+            NORMALIZE.validate_workflow_jobs("fixture.yml", fixture, {"go_job": True, "missing_pin": True})
 
 
 class GeneratedMiseSafetyTests(unittest.TestCase):

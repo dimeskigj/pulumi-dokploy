@@ -14,3 +14,5 @@ sdk/dotnet/version.txt
 sdk/java/.gradle
 sdk/java/build/
 sdk/python/venv
+**/__pycache__/
+*.py[cod]

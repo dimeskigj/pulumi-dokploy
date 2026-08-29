@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -107,6 +108,7 @@ func TestMVPProgramUsesConfiguredSecrets(t *testing.T) {
 }
 
 type captureMVPResources struct {
+	mu        sync.Mutex
 	resources map[string]resource.PropertyMap
 }
 
@@ -115,6 +117,8 @@ func (m *captureMVPResources) Call(pulumi.MockCallArgs) (resource.PropertyMap, e
 }
 
 func (m *captureMVPResources) NewResource(args pulumi.MockResourceArgs) (string, resource.PropertyMap, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if m.resources == nil {
 		m.resources = map[string]resource.PropertyMap{}
 	}
@@ -123,6 +127,8 @@ func (m *captureMVPResources) NewResource(args pulumi.MockResourceArgs) (string,
 }
 
 func (m *captureMVPResources) resource(token string) resource.PropertyMap {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	return m.resources[token]
 }
 
