@@ -555,5 +555,9 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ steps.esc-secrets.outputs.SLACK_WEBHOOK_URL }}
   lint:
     name: lint
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
     uses: ./.github/workflows/lint.yml
     secrets: inherit
