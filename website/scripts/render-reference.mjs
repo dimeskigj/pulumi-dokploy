@@ -1,8 +1,8 @@
-import { access, mkdir, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
+import { access, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, basename } from "node:path";
 
 function frontmatter(title, description) {
-  return `---\ntitle: ${title}\ndescription: ${JSON.stringify(description)}\n---\n`;
+  return `---\ntitle: ${JSON.stringify(title)}\ndescription: ${JSON.stringify(description)}\n---\n`;
 }
 
 const generatedNotice = "> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.";
@@ -58,66 +58,72 @@ ${sections}
 `;
 }
 
-async function pathExists(path) {
+async function pathExists(path, filesystem) {
   try {
-    await access(path);
+    await filesystem.access(path);
     return true;
   } catch {
     return false;
   }
 }
 
-async function uniqueSiblingPath(target, label) {
-  const path = await mkdtemp(join(dirname(target), `.${basename(target)}-${label}-`));
-  await rm(path, { recursive: true, force: true });
+async function uniqueSiblingPath(target, label, filesystem) {
+  const path = await filesystem.mkdtemp(join(dirname(target), `.${basename(target)}-${label}-`));
+  await filesystem.rm(path, { recursive: true, force: true });
   return path;
 }
 
-export async function replaceGeneratedDirectory(target, files, write = writeFile) {
-  const temporary = await mkdtemp(join(dirname(target), `.${basename(target)}-tmp-`));
+export async function replaceGeneratedDirectory(target, files, write = writeFile, fsOperations = {}) {
+  const filesystem = { access, mkdtemp, rename, rm, ...fsOperations };
+  const temporary = await filesystem.mkdtemp(join(dirname(target), `.${basename(target)}-tmp-`));
   let backup;
   let targetMoved = false;
   let installed = false;
+  let preserveBackup = false;
 
   try {
     for (const [filename, content] of Object.entries(files)) {
       await write(join(temporary, filename), content, "utf8");
     }
 
-    if (await pathExists(target)) {
-      backup = await uniqueSiblingPath(target, "backup");
-      await rename(target, backup);
+    if (await pathExists(target, filesystem)) {
+      backup = await uniqueSiblingPath(target, "backup", filesystem);
+      await filesystem.rename(target, backup);
       targetMoved = true;
     }
 
     try {
-      await rename(temporary, target);
+      await filesystem.rename(temporary, target);
       installed = true;
     } catch (error) {
       if (targetMoved) {
         try {
-          await rename(backup, target);
+          await filesystem.rename(backup, target);
           backup = undefined;
           targetMoved = false;
         } catch {
-          // Preserve the failed installation error; cleanup below is best effort.
+          preserveBackup = true;
         }
       }
       throw error;
     }
 
     if (backup) {
-      await rm(backup, { recursive: true, force: true });
-      backup = undefined;
+      try {
+        await filesystem.rm(backup, { recursive: true, force: true });
+        backup = undefined;
+      } catch {
+        // Cleanup after installation must not report failure after output changed.
+      }
     }
   } finally {
     try {
-      if (!installed) await rm(temporary, { recursive: true, force: true });
+      if (!installed) await filesystem.rm(temporary, { recursive: true, force: true });
     } catch {
       // Cleanup must not mask generation or installation errors.
     }
     try {
-      if (backup) await rm(backup, { recursive: true, force: true });
+      if (backup && !preserveBackup) await filesystem.rm(backup, { recursive: true, force: true });
     } catch {
       // Cleanup must not mask generation or installation errors.
     }
