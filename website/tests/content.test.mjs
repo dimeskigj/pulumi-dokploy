@@ -69,9 +69,9 @@ test("landing page contains the required hierarchy and release-safe Registry wor
   assert.match(landing, /TypeScript · Python · Go · C# · Java · YAML/);
   assert.equal((landing.match(/title: "/g) ?? []).length, 7, "landing must define seven capability cards");
   assert.match(landing, /first release is published/i);
-  assert.match(landing, /https:\/\/github\.com\/gjorgjidimeski\/pulumi-dokploy/);
+  assert.match(landing, /https:\/\/github\.com\/dimeskigj\/pulumi-dokploy/);
   assert.match(landing, /https:\/\/www\.pulumi\.com\/registry\/packages\/dokploy\//);
-  const hierarchy = ["<HomeHero", "<CapabilityMap", "## Write in the language", "## Provider guarantees", "github.com/gjorgjidimeski", "www.pulumi.com/registry"].map((marker) => landing.indexOf(marker));
+  const hierarchy = ["<HomeHero", "<CapabilityMap", "## Write in the language", "## Provider guarantees", "github.com/dimeskigj", "www.pulumi.com/registry"].map((marker) => landing.indexOf(marker));
   assert.ok(hierarchy.every((position, index) => position >= 0 && (index === 0 || position > hierarchy[index - 1])), "landing sections must remain in canonical order");
 });
 

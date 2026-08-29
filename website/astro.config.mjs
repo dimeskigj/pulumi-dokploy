@@ -15,7 +15,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/gjorgjidimeski/pulumi-dokploy",
+          href: "https://github.com/dimeskigj/pulumi-dokploy",
         },
       ],
       sidebar: [

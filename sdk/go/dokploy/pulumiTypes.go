@@ -7,7 +7,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy/internal"
+	"github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy/internal"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 

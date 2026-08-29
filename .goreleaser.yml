@@ -18,7 +18,7 @@ builds:
     - -s
     - -w
     - -X
-      github.com/gjorgjidimeski/pulumi-dokploy/provider.Version={{.Tag}}
+      github.com/dimeskigj/pulumi-dokploy/provider.Version={{.Tag}}
   binary: pulumi-resource-dokploy
 - id: build-provider-sign-windows
   dir: provider

@@ -24,9 +24,9 @@ setup(name='pulumi_dokploy',
       description="Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains.",
       long_description=readme(),
       long_description_content_type='text/markdown',
-      url='https://github.com/gjorgjidimeski/pulumi-dokploy',
+      url='https://github.com/dimeskigj/pulumi-dokploy',
       project_urls={
-          'Repository': 'https://github.com/gjorgjidimeski/pulumi-dokploy'
+          'Repository': 'https://github.com/dimeskigj/pulumi-dokploy'
       },
       license='Apache-2.0',
       packages=find_packages(),

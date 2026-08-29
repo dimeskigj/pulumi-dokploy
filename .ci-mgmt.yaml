@@ -3,7 +3,7 @@ provider: dokploy
 major-version: 0
 providerDefaultBranch: main
 publishRegistry: true
-providerVersion: github.com/gjorgjidimeski/pulumi-dokploy/provider.Version
+providerVersion: github.com/dimeskigj/pulumi-dokploy/provider.Version
 parallel: 3
 sdkModuleDir: sdk/go/dokploy
 envOverride:

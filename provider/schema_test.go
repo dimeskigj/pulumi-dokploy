@@ -22,13 +22,13 @@ func providerSchema(t *testing.T) schema.PackageSpec {
 func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	spec := providerSchema(t)
 	require.Empty(t, spec.Functions)
-	require.Equal(t, "@gjorgjidimeski/pulumi-dokploy", languageSetting(spec, "nodejs", "packageName"))
+	require.Equal(t, "@dimeskigj/pulumi-dokploy", languageSetting(spec, "nodejs", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "moduleName"))
 	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
 	require.Equal(t, "Pulumi", languageSetting(spec, "csharp", "rootNamespace"))
-	require.Equal(t, "dev.codechem.pulumi", languageSetting(spec, "java", "basePackage"))
-	require.Equal(t, "dev.codechem.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
+	require.Equal(t, "net.dimeski.pulumi", languageSetting(spec, "java", "basePackage"))
+	require.Equal(t, "net.dimeski.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
 	require.NotNil(t, spec.Resources)
 	require.ElementsMatch(t, []string{
 		"dokploy:index:Project", "dokploy:index:Environment", "dokploy:index:Application",
@@ -91,12 +91,12 @@ func TestGeneratedDotnetAndJavaPackagesDoNotDuplicateProviderSuffix(t *testing.T
 	require.Contains(t, dotnetProvider, "namespace Pulumi.Dokploy\n")
 	require.NotContains(t, dotnetProvider, "namespace Pulumi.Dokploy.Dokploy")
 
-	javaProvider := readGenerated(t, "sdk", "java", "src", "main", "java", "dev", "codechem", "pulumi", "dokploy", "Provider.java")
-	require.Contains(t, javaProvider, "package dev.codechem.pulumi.dokploy;")
-	require.NotContains(t, javaProvider, "package dev.codechem.pulumi.dokploy.dokploy;")
-	_, err := os.Stat(filepath.Join("..", "sdk", "java", "src", "main", "java", "dev", "codechem", "pulumi", "dokploy", "Provider.java"))
+	javaProvider := readGenerated(t, "sdk", "java", "src", "main", "java", "net", "dimeski", "pulumi", "dokploy", "Provider.java")
+	require.Contains(t, javaProvider, "package net.dimeski.pulumi.dokploy;")
+	require.NotContains(t, javaProvider, "package net.dimeski.pulumi.dokploy.dokploy;")
+	_, err := os.Stat(filepath.Join("..", "sdk", "java", "src", "main", "java", "net", "dimeski", "pulumi", "dokploy", "Provider.java"))
 	require.NoError(t, err)
-	_, err = os.Stat(filepath.Join("..", "sdk", "java", "src", "main", "java", "dev", "codechem", "pulumi", "dokploy", "dokploy"))
+	_, err = os.Stat(filepath.Join("..", "sdk", "java", "src", "main", "java", "net", "dimeski", "pulumi", "dokploy", "dokploy"))
 	require.Error(t, err)
 }
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
-	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	"github.com/oapi-codegen/nullable"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )

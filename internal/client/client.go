@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 )
 
 // Option customizes a Client during construction.

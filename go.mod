@@ -1,4 +1,4 @@
-module github.com/gjorgjidimeski/pulumi-dokploy
+module github.com/dimeskigj/pulumi-dokploy
 
 go 1.25.13
 

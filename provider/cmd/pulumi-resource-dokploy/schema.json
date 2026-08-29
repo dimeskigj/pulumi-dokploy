@@ -3,25 +3,25 @@
   "displayName": "Dokploy",
   "version": "0.0.1-alpha.0+dev",
   "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains.",
-  "homepage": "https://github.com/gjorgjidimeski/pulumi-dokploy",
+  "homepage": "https://github.com/dimeskigj/pulumi-dokploy",
   "license": "Apache-2.0",
-  "repository": "https://github.com/gjorgjidimeski/pulumi-dokploy",
-  "publisher": "gjorgjidimeski",
-  "namespace": "gjorgjidimeski",
+  "repository": "https://github.com/dimeskigj/pulumi-dokploy",
+  "publisher": "dimeskigj",
+  "namespace": "dimeskigj",
   "language": {
     "csharp": {
       "packageName": "Pulumi.Dokploy",
       "rootNamespace": "Pulumi"
     },
     "go": {
-      "importBasePath": "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"
+      "importBasePath": "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"
     },
     "java": {
-      "basePackage": "dev.codechem.pulumi",
-      "packageName": "dev.codechem.pulumi.dokploy"
+      "basePackage": "net.dimeski.pulumi",
+      "packageName": "net.dimeski.pulumi.dokploy"
     },
     "nodejs": {
-      "packageName": "@gjorgjidimeski/pulumi-dokploy"
+      "packageName": "@dimeskigj/pulumi-dokploy"
     },
     "python": {
       "moduleName": "pulumi_dokploy",

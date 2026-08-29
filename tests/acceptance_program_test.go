@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	dokploy "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"
+	dokploy "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"

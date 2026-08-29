@@ -395,7 +395,7 @@ def main() -> None:
     insert_in_job(acceptance, "prerequisites", "    - name: Setup Tools\n", credential_step)
 
     command_dispatch = WORKFLOWS / "command-dispatch.yml"
-    exact_once(command_dispatch, "repository: pulumi/pulumi-dokploy", "repository: gjorgjidimeski/pulumi-dokploy")
+    exact_once(command_dispatch, "repository: pulumi/pulumi-dokploy", "repository: dimeskigj/pulumi-dokploy")
 
     release_command = WORKFLOWS / "release_command.yml"
     exact_optional(release_command, "pulumi/action-release-by-pr-label@main", RELEASE_ACTION)
@@ -415,7 +415,7 @@ def main() -> None:
         exact_optional(
             path,
             "github.com/pulumi/pulumi-dokploy/provider/pkg/version.Version={{.Tag}}",
-            "github.com/gjorgjidimeski/pulumi-dokploy/provider.Version={{.Tag}}",
+            "github.com/dimeskigj/pulumi-dokploy/provider.Version={{.Tag}}",
         )
 
     for name in ("build.yml", "prerelease.yml", "release.yml", "run-acceptance-tests.yml", "weekly-pulumi-update.yml"):

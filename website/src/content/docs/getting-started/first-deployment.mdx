@@ -13,7 +13,7 @@ pulumi config set --secret dokploy:apiKey "$DOKPLOY_API_KEY"
 Create a project and Docker-backed application. The `Project` owns its default production environment, so the application can target `project.defaultEnvironmentId`.
 
 ```typescript
-import * as dokploy from "@gjorgjidimeski/pulumi-dokploy";
+import * as dokploy from "@dimeskigj/pulumi-dokploy";
 
 const project = new dokploy.Project("platform", { name: "platform" });
 const app = new dokploy.Application("web", {

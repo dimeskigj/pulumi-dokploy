@@ -12,8 +12,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
-	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 )
 
 type scriptedRequest struct {

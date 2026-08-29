@@ -1,10 +1,10 @@
 # Pulumi Dokploy Provider
 
-[![Build Status](https://github.com/gjorgjidimeski/pulumi-dokploy/actions/workflows/build.yml/badge.svg)](https://github.com/gjorgjidimeski/pulumi-dokploy/actions/workflows/build.yml)
+[![Build Status](https://github.com/dimeskigj/pulumi-dokploy/actions/workflows/build.yml/badge.svg)](https://github.com/dimeskigj/pulumi-dokploy/actions/workflows/build.yml)
 
 The Dokploy provider manages self-hosted Dokploy projects and deployments with Pulumi.
 
-**[Read the documentation](https://gjorgjidimeski.github.io/pulumi-dokploy/)**
+**[Read the documentation](https://dimeskigj.github.io/pulumi-dokploy/)**
 
 ## Install
 
@@ -15,12 +15,12 @@ Install the package for your Pulumi language:
 
 | Language | Package |
 | --- | --- |
-| Node.js | `@gjorgjidimeski/pulumi-dokploy` |
+| Node.js | `@dimeskigj/pulumi-dokploy` |
 | Python | `pulumi_dokploy` |
-| Go | `github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy` |
+| Go | `github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy` |
 | .NET | `Pulumi.Dokploy` |
-| Java | `dev.codechem.pulumi.dokploy` |
-| YAML | `pulumi package add github.com/gjorgjidimeski/pulumi-dokploy dokploy` |
+| Java | `net.dimeski.pulumi.dokploy` |
+| YAML | `pulumi package add github.com/dimeskigj/pulumi-dokploy dokploy` |
 
 The provider is also available from the Pulumi Registry once a release is published.
 
@@ -59,9 +59,9 @@ those volumes should be deleted.
 Database passwords, environment values, application build arguments/build secrets, and nested
 Docker credentials are secret inputs. Keep them secret in configuration and never log them.
 
-See the [Get Started](https://gjorgjidimeski.github.io/pulumi-dokploy/getting-started/installation/),
-[Resources](https://gjorgjidimeski.github.io/pulumi-dokploy/reference/), and
-[Guides](https://gjorgjidimeski.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
+See the [Get Started](https://dimeskigj.github.io/pulumi-dokploy/getting-started/installation/),
+[Resources](https://dimeskigj.github.io/pulumi-dokploy/reference/), and
+[Guides](https://dimeskigj.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
 
 ## Import
 

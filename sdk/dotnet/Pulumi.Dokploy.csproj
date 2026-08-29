@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>gjorgjidimeski</Authors>
-    <Company>gjorgjidimeski</Company>
+    <Authors>dimeskigj</Authors>
+    <Company>dimeskigj</Company>
     <Description>Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/gjorgjidimeski/pulumi-dokploy</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/gjorgjidimeski/pulumi-dokploy</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/dimeskigj/pulumi-dokploy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dimeskigj/pulumi-dokploy</RepositoryUrl>
     <PackageIcon>logo.png</PackageIcon>
 
     <TargetFramework>net6.0</TargetFramework>

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client/generated"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"

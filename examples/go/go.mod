@@ -3,7 +3,7 @@ module dokploy-mvp
 go 1.25.13
 
 require (
-	github.com/gjorgjidimeski/pulumi-dokploy v0.0.0
+	github.com/dimeskigj/pulumi-dokploy v0.0.0
 	github.com/pulumi/pulumi/sdk/v3 v3.259.0
 )
 
@@ -117,4 +117,4 @@ require (
 	lukechampine.com/frand v1.5.1 // indirect
 )
 
-replace github.com/gjorgjidimeski/pulumi-dokploy => ../../
+replace github.com/dimeskigj/pulumi-dokploy => ../../

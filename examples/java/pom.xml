@@ -24,7 +24,7 @@
 					<version>1.0.0</version>
 				</dependency>
 				<dependency>
-					<groupId>dev.codechem.pulumi</groupId>
+					<groupId>net.dimeski.pulumi</groupId>
 					<artifactId>dokploy</artifactId>
 					<version>0.0.1-alpha.0+dev</version>
 				</dependency>

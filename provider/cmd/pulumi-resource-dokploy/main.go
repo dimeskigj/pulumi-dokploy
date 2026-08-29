@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	dokploy "github.com/gjorgjidimeski/pulumi-dokploy/provider"
+	dokploy "github.com/dimeskigj/pulumi-dokploy/provider"
 )
 
 func main() {

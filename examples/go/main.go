@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy"
+	"github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )

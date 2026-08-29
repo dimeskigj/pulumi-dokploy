@@ -1,5 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as dokploy from "@gjorgjidimeski/pulumi-dokploy";
+import * as dokploy from "@dimeskigj/pulumi-dokploy";
 
 const config = new pulumi.Config();
 const dokployEndpoint = config.require("dokploy:endpoint");

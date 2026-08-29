@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gjorgjidimeski/pulumi-dokploy/internal/client"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
 )

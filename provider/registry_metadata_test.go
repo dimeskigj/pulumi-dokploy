@@ -157,16 +157,16 @@ func validateWorkflowSemantics(workflow map[string]any, name string) error {
 
 func TestRegistryMetadata(t *testing.T) {
 	spec := providerSchema(t)
-	require.Equal(t, "https://github.com/gjorgjidimeski/pulumi-dokploy", spec.Repository)
+	require.Equal(t, "https://github.com/dimeskigj/pulumi-dokploy", spec.Repository)
 	require.Equal(t, "Apache-2.0", spec.License)
-	require.Equal(t, "gjorgjidimeski", spec.Publisher)
+	require.Equal(t, "dimeskigj", spec.Publisher)
 	require.NotEmpty(t, spec.Description)
-	require.Equal(t, "@gjorgjidimeski/pulumi-dokploy", languageSetting(spec, "nodejs", "packageName"))
+	require.Equal(t, "@dimeskigj/pulumi-dokploy", languageSetting(spec, "nodejs", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "moduleName"))
-	require.Equal(t, "github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy", languageSetting(spec, "go", "importBasePath"))
+	require.Equal(t, "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy", languageSetting(spec, "go", "importBasePath"))
 	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
-	require.Equal(t, "dev.codechem.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
+	require.Equal(t, "net.dimeski.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
 	}
@@ -267,7 +267,7 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Contains(t, acceptanceText, `test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"`)
 	dispatch, dispatchText := readWorkflow(t, "command-dispatch.yml")
 	require.NotNil(t, dispatch)
-	require.Contains(t, dispatchText, "repository: gjorgjidimeski/pulumi-dokploy")
+	require.Contains(t, dispatchText, "repository: dimeskigj/pulumi-dokploy")
 	for _, file := range []string{".mise.toml", "go.mod", "examples/go/go.mod"} {
 		content, err := os.ReadFile("../" + file)
 		require.NoError(t, err)

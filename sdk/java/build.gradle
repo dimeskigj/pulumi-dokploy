@@ -8,7 +8,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
-group = "dev.codechem.pulumi"
+group = "net.dimeski.pulumi"
 
 def resolvedVersion = System.getenv("PACKAGE_VERSION") ?:
     (project.version == "unspecified"
@@ -84,7 +84,7 @@ jar.configure {
 publishing {
     publications {
         mainPublication(MavenPublication) {
-            groupId = "dev.codechem.pulumi"
+            groupId = "net.dimeski.pulumi"
             artifactId = "dokploy"
             version = resolvedVersion
             from components.java
@@ -97,12 +97,12 @@ publishing {
                 packaging = "jar"
                 description = $/Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains./$
 
-                url = "https://github.com/gjorgjidimeski/pulumi-dokploy"
+                url = "https://github.com/dimeskigj/pulumi-dokploy"
 
                 scm {
-                    connection = "git@github.com/gjorgjidimeski/pulumi-dokploy.git"
-                    developerConnection = "git@github.com/gjorgjidimeski/pulumi-dokploy.git"
-                    url = "https://github.com/gjorgjidimeski/pulumi-dokploy"
+                    connection = "git@github.com/dimeskigj/pulumi-dokploy.git"
+                    developerConnection = "git@github.com/dimeskigj/pulumi-dokploy.git"
+                    url = "https://github.com/dimeskigj/pulumi-dokploy"
                 }
 
                 licenses {

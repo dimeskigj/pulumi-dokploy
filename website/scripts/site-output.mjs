@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 
 export const BASE = "/pulumi-dokploy";
-export const ORIGIN = "https://gjorgjidimeski.github.io";
+export const ORIGIN = "https://dimeskigj.github.io";
 
 export async function collectFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
