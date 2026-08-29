@@ -21,7 +21,7 @@ const gitApp = new dokploy.Application("git-web", {
   environmentId: environment.environmentId,
   source: {
     type: "git",
-    git: { url: "https://github.com/example/web.git", branch: "main", build: { type: "docker" } },
+    git: { url: "https://github.com/example/web.git", branch: "main", build: { type: "nixpacks" } },
   },
 });
 ```
@@ -36,7 +36,7 @@ const gitlabApp = new dokploy.Application("gitlab-web", {
     type: "gitlab",
     gitlab: {
       integrationId: "integration-1", projectId: 42, owner: "example",
-      namespace: "platform", repository: "web", branch: "main", build: { type: "docker" },
+      namespace: "platform", repository: "web", branch: "main", build: { type: "nixpacks" },
     },
   },
 });

@@ -71,6 +71,8 @@ test("landing page contains the required hierarchy and release-safe Registry wor
   assert.match(landing, /first release is published/i);
   assert.match(landing, /https:\/\/github\.com\/gjorgjidimeski\/pulumi-dokploy/);
   assert.match(landing, /https:\/\/www\.pulumi\.com\/registry\/packages\/dokploy\//);
+  const hierarchy = ["<HomeHero", "<CapabilityMap", "## Write in the language", "## Provider guarantees", "github.com/gjorgjidimeski", "www.pulumi.com/registry"].map((marker) => landing.indexOf(marker));
+  assert.ok(hierarchy.every((position, index) => position >= 0 && (index === 0 || position > hierarchy[index - 1])), "landing sections must remain in canonical order");
 });
 
 test("resource guides cover provider source variants and dependencies", async () => {
@@ -111,4 +113,55 @@ test("Domain guide describes only supported targets and lifecycle behavior", asy
   assert.match(domains, /routing|enabled.*in.place|in.place.*enabled/i);
   assert.doesNotMatch(domains, /environmentId|serverId|deployment polling|waits for.*deployment/i);
   assert.match(domains, /reference\/domain/);
+});
+
+test("curated internal links stay relative and sidebar routes are canonical", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  const curatedFiles = required.filter((path) => path !== "index.mdx");
+  for (const path of required) {
+    const source = await readFile(new URL(`../src/content/docs/${path}`, import.meta.url), "utf8");
+    assert.doesNotMatch(source, /(?:href=["']|\]\()\/pulumi-dokploy\//);
+    for (const match of source.matchAll(/\]\((\/[^)]*)\)/g)) {
+      assert.fail(`${path} contains a root-relative internal link: ${match[1]}`);
+    }
+  }
+  const canonicalRoutes = new Set([
+    "/", "/getting-started/installation/", "/getting-started/first-deployment/",
+    "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/imports/", "/guides/troubleshooting/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/redis/", "/reference/domain/", "/reference/configuration/", "/reference/types/",
+    "/contributing/",
+  ]);
+  for (const match of config.matchAll(/link: "(\/[^\"]*)"/g)) {
+    const route = match[1];
+    assert.match(route, /^\/(?:[^/]+\/)*$/);
+    assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
+  }
+  assert.equal((config.match(/link: "\//g) ?? []).length, 24);
+  assert.equal(curatedFiles.length, 13);
+});
+
+test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
+  const applications = await readFile(new URL("../src/content/docs/guides/applications.mdx", import.meta.url), "utf8");
+  assert.match(applications, /source:\s*\{ type: "docker"/);
+  assert.match(applications, /source:\s*\{\n\s*type: "git"/);
+  assert.match(applications, /source:\s*\{\n\s*type: "gitlab"/);
+  const buildTypes = [...applications.matchAll(/build:\s*\{\s*type:\s*"([^"]+)"/g)].map((match) => match[1]);
+  assert.ok(buildTypes.length >= 2);
+  assert.ok(buildTypes.every((type) => ["nixpacks", "dockerfile"].includes(type)));
+  assert.doesNotMatch(applications, /build:\s*\{ type: "docker" \}/);
+  assert.match(applications, /A source discriminator change replaces the Application/);
+  assert.match(applications, /environmentId.*serverId.*replacement-only/);
+
+  const compose = await readFile(new URL("../src/content/docs/guides/compose.mdx", import.meta.url), "utf8");
+  for (const variant of ["raw", "git", "gitlab"]) assert.equal((compose.match(new RegExp(`type: "${variant}"`, "g")) ?? []).length, 1);
+  assert.match(compose, /fetch the selected raw or repository source, then redeploy and wait for deployment completion/);
+  assert.match(compose, /deleteVolumesOnDestroy` defaults to `false`/);
+
+  const domains = await readFile(new URL("../src/content/docs/guides/domains.mdx", import.meta.url), "utf8");
+  assert.match(domains, /exactly one service target: an `applicationId` or a `composeId`/);
+  assert.match(domains, /Changing the Application\/Compose target or `serviceName` replaces the Domain/);
+  assert.match(domains, /Routing fields .*along with `enabled`, update in place/);
+  assert.match(domains, /has no deployment-status polling/);
+  assert.doesNotMatch(domains, /`environmentId`|`serverId`|deployment status/);
 });
