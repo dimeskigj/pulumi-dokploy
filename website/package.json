@@ -2,7 +2,9 @@
   "name": "pulumi-dokploy-docs",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "generate": "node scripts/generate-reference.mjs && node scripts/generate-examples.mjs",
@@ -15,7 +17,8 @@
   "dependencies": {
     "@astrojs/starlight": "0.41.10",
     "astro": "7.2.9",
-    "sharp": "0.35.4"
+    "sharp": "0.35.4",
+    "starlight-ion-theme": "^2.4.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",

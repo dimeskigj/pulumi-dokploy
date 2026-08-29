@@ -1,4 +1,6 @@
 ---
+import { Badge } from "@astrojs/starlight/components";
+
 type Property = {
   name: string;
   type: string;
@@ -27,9 +29,9 @@ const { properties = [] } = Astro.props as { properties?: Property[] };
           <td>{property.description}</td>
           <td>
             <ul class="property-badges" aria-label={`Metadata for ${property.name}`}>
-              {property.required && <li class="badge">Required</li>}
-              {property.secret && <li class="badge">Secret</li>}
-              {property.replaceOnChanges && <li class="badge">Replaces resource</li>}
+              {property.required && <li><Badge text="Required" variant="danger" /></li>}
+              {property.secret && <li><Badge text="Secret" variant="caution" /></li>}
+              {property.replaceOnChanges && <li><Badge text="Replaces resource" variant="note" /></li>}
               {property.defaultValue !== null && property.defaultValue !== undefined && <li>Default: <code>{String(property.defaultValue)}</code></li>}
               {property.environment && property.environment.length > 0 && <li>Environment: <code>{property.environment.join(", ")}</code></li>}
             </ul>

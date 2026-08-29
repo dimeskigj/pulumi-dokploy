@@ -1,9 +1,0 @@
----
-type RelatedResource = { label: string; href: string };
-const { resources = [] } = Astro.props as { resources?: RelatedResource[] };
----
-
-<section class="related-resources" aria-labelledby="related-resources-title">
-  <h2 id="related-resources-title">Related resources</h2>
-  <ul>{resources.map((resource) => <li><a href={resource.href}>{resource.label}</a></li>)}</ul>
-</section>

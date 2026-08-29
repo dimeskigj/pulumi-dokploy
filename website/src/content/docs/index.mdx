@@ -3,35 +3,42 @@ title: Deploy Dokploy with Pulumi
 description: Provision and manage self-hosted Dokploy infrastructure with Pulumi.
 template: splash
 pagefind: false
+hero:
+  title: Deploy Dokploy with Pulumi
+  tagline: Describe Dokploy projects, services, and supporting infrastructure as code. Preview changes before applying them, then let the provider wait for deployment completion.
+  actions:
+    - text: Get started
+      link: getting-started/installation/
+      icon: rocket
+      variant: primary
+    - text: Resource reference
+      link: reference/project/
+      icon: document
+      variant: minimal
 ---
 
-import HomeHero from "../../components/HomeHero.astro";
-import CapabilityMap from "../../components/CapabilityMap.astro";
+import { Card, CardGrid, Code, LinkButton } from "@astrojs/starlight/components";
 
-<HomeHero
-  title="Deploy Dokploy with Pulumi"
-  description="Describe Dokploy projects, services, and supporting infrastructure as code. Preview changes before applying them, then let the provider wait for deployment completion."
-  referenceLabel="Resource reference"
-  referenceHref="reference"
-  code={`import * as dokploy from "@dimeskigj/pulumi-dokploy";
+<Code code={`import * as dokploy from "@dimeskigj/pulumi-dokploy";
 
 const project = new dokploy.Project("platform", { name: "platform" });
 const app = new dokploy.Application("web", {
   name: "web",
   environmentId: project.defaultEnvironmentId,
   source: { type: "docker", docker: { image: "nginx:latest" } },
-});`}
-/>
+});`} lang="typescript" title="index.ts" />
 
-<CapabilityMap capabilities={[
-  { title: "Projects", description: "Organize Dokploy workloads and own the default production environment." },
-  { title: "Environments", description: "Add explicit non-production environments and target resources by ID." },
-  { title: "Applications", description: "Deploy Docker images, public Git repositories, or existing GitLab integrations." },
-  { title: "Compose", description: "Manage raw Compose text, Git Compose files, and existing GitLab stacks." },
-  { title: "Databases", description: "Provision PostgreSQL and Redis services with secret-aware credentials." },
-  { title: "Domains", description: "Attach domains to supported Dokploy applications and services." },
-  { title: "Lifecycle", description: "Review previews, wait for deployments, import resources, and inspect partial state." },
-]} />
+## From intent to deployment
+
+<CardGrid stagger>
+	<Card title="Projects" icon="document">Organize Dokploy workloads and own the default production environment.</Card>
+	<Card title="Environments" icon="setting">Add explicit non-production environments and target resources by ID.</Card>
+	<Card title="Applications" icon="rocket">Deploy Docker images, public Git repositories, or existing GitLab integrations.</Card>
+	<Card title="Compose" icon="puzzle">Manage raw Compose text, Git Compose files, and existing GitLab stacks.</Card>
+	<Card title="Databases" icon="database">Provision PostgreSQL and Redis services with secret-aware credentials.</Card>
+	<Card title="Domains" icon="link">Attach domains to supported Dokploy applications and services.</Card>
+	<Card title="Lifecycle" icon="random">Review previews, wait for deployments, import resources, and inspect partial state.</Card>
+</CardGrid>
 
 ## Write in the language your team uses
 
@@ -45,9 +52,9 @@ TypeScript · Python · Go · C# · Java · YAML
 - Deployment errors retain partial state and the resource ID for repair.
 - Secret inputs and derived secret outputs remain redacted and are never logged.
 
-<div class="home-hero__actions">
-  <a class="button" href="https://github.com/dimeskigj/pulumi-dokploy">View the provider on GitHub</a>
-  <a class="button" href="https://www.pulumi.com/registry/packages/dokploy/">Pulumi Registry</a>
-</div>
+<CardGrid>
+	<LinkButton href="https://github.com/dimeskigj/pulumi-dokploy" icon="github">View the provider on GitHub</LinkButton>
+	<LinkButton href="https://www.pulumi.com/registry/packages/dokploy/" icon="external" variant="secondary">Pulumi Registry</LinkButton>
+</CardGrid>
 
 The Registry page becomes the package discovery location after the first release is published; this project does not claim an unpublished Registry release.

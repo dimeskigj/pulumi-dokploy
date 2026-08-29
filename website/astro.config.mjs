@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { ion } from "starlight-ion-theme";
 import { base, output, site } from "./src/site-config.mjs";
 
 export default defineConfig({
@@ -10,7 +11,7 @@ export default defineConfig({
     starlight({
       title: "Pulumi Dokploy",
       description: "Deploy and manage Dokploy infrastructure with Pulumi.",
-      customCss: ["./src/styles/global.css"],
+      plugins: [ion()],
       social: [
         {
           icon: "github",

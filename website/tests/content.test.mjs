@@ -50,28 +50,28 @@ test("sidebar keeps the canonical resource order and base-safe links", async () 
   assert.match(config, /label: "Core Concepts"/);
   assert.match(config, /label: "Guides"/);
   assert.match(config, /label: "Examples"/);
-  const hero = await readFile(new URL("../src/components/HomeHero.astro", import.meta.url), "utf8");
-  assert.match(hero, /import \{ base \} from "\.\.\/site-config\.mjs"/);
-  assert.match(hero, /withBase\("getting-started"\)/);
-  assert.match(hero, /withBase\("reference"\)/);
-  assert.match(hero, /Get started/);
-  assert.match(hero, /referenceLabel/);
+  const landing = await readFile(new URL("../src/content/docs/index.mdx", import.meta.url), "utf8");
+  assert.match(landing, /link: getting-started\/installation\//);
+  assert.match(landing, /link: reference\/project\//);
+  assert.match(landing, /text: Get started/);
+  assert.match(landing, /text: Resource reference/);
+  assert.doesNotMatch(landing, /link: \/(getting-started|reference)\//);
 });
 
 test("landing page contains the required hierarchy and release-safe Registry wording", async () => {
   const landing = await readFile(new URL("../src/content/docs/index.mdx", import.meta.url), "utf8");
   assert.match(landing, /template: splash/);
   assert.match(landing, /pagefind: false/);
-  assert.match(landing, /<HomeHero/);
-  assert.match(landing, /<CapabilityMap/);
+  assert.match(landing, /hero:/);
+  assert.match(landing, /<CardGrid/);
   assert.match(landing, /Deploy Dokploy with Pulumi/);
   assert.match(landing, /Resource reference/);
   assert.match(landing, /TypeScript · Python · Go · C# · Java · YAML/);
-  assert.equal((landing.match(/title: "/g) ?? []).length, 7, "landing must define seven capability cards");
+  assert.equal((landing.match(/<Card title="/g) ?? []).length, 7, "landing must define seven capability cards");
   assert.match(landing, /first release is published/i);
   assert.match(landing, /https:\/\/github\.com\/dimeskigj\/pulumi-dokploy/);
   assert.match(landing, /https:\/\/www\.pulumi\.com\/registry\/packages\/dokploy\//);
-  const hierarchy = ["<HomeHero", "<CapabilityMap", "## Write in the language", "## Provider guarantees", "github.com/dimeskigj", "www.pulumi.com/registry"].map((marker) => landing.indexOf(marker));
+  const hierarchy = ["hero:", "<CardGrid", "## Write in the language", "## Provider guarantees", "github.com/dimeskigj", "www.pulumi.com/registry"].map((marker) => landing.indexOf(marker));
   assert.ok(hierarchy.every((position, index) => position >= 0 && (index === 0 || position > hierarchy[index - 1])), "landing sections must remain in canonical order");
 });
 
