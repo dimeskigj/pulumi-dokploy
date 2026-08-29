@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Apply the repository's explicit CI policy to pinned CI Management output."""
 
+import hashlib
 from pathlib import Path
 import re
 
@@ -16,23 +17,40 @@ GENERATED_WORKFLOW_NAMES = (
 RELEASE_ACTION = "pulumi/action-release-by-pr-label@a90569296b805a3179b81c1860f5777073cc7aa2"
 PUBLISH_GO_ACTION = "pulumi/publish-go-sdk-action@0a153fa3c54227a3c0f7c97a57033ecfe94ab3c2"
 GO_VERSION = "1.25.13"
+KNOWN_MISE_SHA256 = {
+    "mise.toml": "6e4d48dfc6ba5bc647f8de223f35044793ae73aea8ff52f5e989a1dd597f1b08",
+    "mise.test.toml": "25d93429d74aefa3c4c59cafc6c33dbbd00b1a876714855eaaadc7a6c8ded0c9",
+}
+BUILD_PUSH_WITH_PATHS_IGNORE = """  push:
+    branches:
+    - master
+    - main
+    - feature-**
+    paths-ignore:
+    - CHANGELOG.md
+    tags-ignore:
+    - v*
+    - sdk/*
+    - "**"
+  pull_request: {}
+"""
+BUILD_PUSH_NORMALIZED = BUILD_PUSH_WITH_PATHS_IGNORE.replace(
+    "    paths-ignore:\n    - CHANGELOG.md\n", ""
+).replace("  pull_request: {}\n", '    - "**"\n  pull_request: {}\n')
+
+
+def replace_exact(text: str, old: str, new: str) -> str:
+    old_count = text.count(old)
+    new_count = text.count(new)
+    if old_count == 1 and new_count == 0:
+        return text.replace(old, new, 1)
+    if old_count == 0 and new_count == 1:
+        return text
+    raise SystemExit(f"expected exactly one old xor normalized pattern: old={old_count}, new={new_count}")
 
 
 def exact_once(path: Path, old: str, new: str) -> None:
-    text = path.read_text()
-    old_count = text.count(old)
-    new_count = text.count(new) if new else 0
-    if new and new_count == 1:
-        return
-    if old_count == 1 and new_count == 0:
-        path.write_text(text.replace(old, new, 1))
-        return
-    if old_count == 0 and new_count == 1:
-        return
-    raise SystemExit(
-        f"expected exactly one generated pattern in {path}: "
-        f"old={old_count}, normalized={new_count}"
-    )
+    path.write_text(replace_exact(path.read_text(), old, new))
 
 
 def exact_optional(path: Path, old: str, new: str) -> None:
@@ -55,8 +73,21 @@ def exact_remove(path: Path, old: str) -> None:
     if count == 0:
         return
     if count != 1:
-        raise SystemExit(f"expected at most one generated pattern in {path}: count={count}")
+        raise SystemExit(f"expected at most one removable generated pattern: count={count}")
     path.write_text(text.replace(old, "", 1))
+
+
+def normalize_build_trigger(text: str) -> str:
+    return replace_exact(text, BUILD_PUSH_WITH_PATHS_IGNORE, BUILD_PUSH_NORMALIZED)
+
+
+def ensure_build_pull_request(text: str) -> str:
+    old = "  pull_request: {}\n"
+    if text.count(old) == 0 and text.count("  workflow_dispatch: {}\n") == 1:
+        return text.replace("  workflow_dispatch: {}\n", "  pull_request: {}\n  workflow_dispatch: {}\n", 1)
+    if text.count(old) == 1 and text.count("  workflow_dispatch: {}\n") == 1:
+        return text
+    raise SystemExit("expected exactly one build pull_request/workflow_dispatch trigger state")
 
 
 def insert_in_job(path: Path, job: str, marker: str, insertion: str) -> None:
@@ -94,6 +125,9 @@ def remove_validated_generated_mise() -> None:
             raise SystemExit(f"refusing to remove unrecognized generated mise file: {path}")
         if "[tools]" not in lines:
             raise SystemExit(f"refusing to remove malformed generated mise file: {path}")
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest != KNOWN_MISE_SHA256[path.name]:
+            raise SystemExit(f"refusing to remove modified generated mise file: {path}")
         path.unlink()
 
 
@@ -102,9 +136,8 @@ def main() -> None:
     trim_explicit_outputs()
     remove_validated_generated_mise()
     build = WORKFLOWS / "build.yml"
-    exact_once(build, '  workflow_dispatch: {}\n', '  pull_request: {}\n  workflow_dispatch: {}\n')
-    exact_remove(build, '    paths-ignore:\n    - CHANGELOG.md\n')
-    exact_remove(build, '    - "**"\n')
+    build.write_text(ensure_build_pull_request(build.read_text()))
+    build.write_text(normalize_build_trigger(build.read_text()))
     exact_optional(build, "pulumi/action-release-by-pr-label@main", RELEASE_ACTION)
     gate = """    - name: Check OpenAPI and generated SDKs
       run: make check_openapi && make check_codegen
@@ -167,6 +200,16 @@ def main() -> None:
 
     for name in ("build.yml", "prerelease.yml", "release.yml", "run-acceptance-tests.yml", "weekly-pulumi-update.yml"):
         exact_once(WORKFLOWS / name, 'GOVERSION: "1.21.x"', f'GOVERSION: "{GO_VERSION}"')
+    exact_once(
+        WORKFLOWS / "lint.yml",
+        """env:
+  PULUMI_API: https://api.pulumi-staging.io
+""",
+        """env:
+  GOVERSION: "1.25.13"
+  PULUMI_API: https://api.pulumi-staging.io
+""",
+    )
 
     lint = ROOT / ".golangci.yml"
     exact_once(
@@ -194,12 +237,14 @@ def main() -> None:
         lint,
         """        path: pkg/
         text: "var-naming" # https://github.com/pulumi/ci-mgmt/issues/2100
+formatters:
 """,
         """        path: pkg/
         text: "var-naming" # https://github.com/pulumi/ci-mgmt/issues/2100
       - linters:
           - goconst
         path: '.*_test\\.go'
+formatters:
 """,
     )
 

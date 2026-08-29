@@ -21,6 +21,31 @@ func readWorkflow(t *testing.T, name string) (map[string]any, string) {
 	return workflow, string(content)
 }
 
+func hasRunCommand(value any, fragments ...string) bool {
+	switch value := value.(type) {
+	case map[string]any:
+		if run, ok := value["run"].(string); ok {
+			for _, fragment := range fragments {
+				if strings.Contains(run, fragment) {
+					return true
+				}
+			}
+		}
+		for _, child := range value {
+			if hasRunCommand(child, fragments...) {
+				return true
+			}
+		}
+	case []any:
+		for _, child := range value {
+			if hasRunCommand(child, fragments...) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func TestRegistryMetadata(t *testing.T) {
 	spec := providerSchema(t)
 	require.Equal(t, "https://github.com/gjorgjidimeski/pulumi-dokploy", spec.Repository)
@@ -72,6 +97,11 @@ func TestRegistryMetadata(t *testing.T) {
 			if version, ok := env["GOVERSION"]; ok {
 				require.Equal(t, releaseGoVersion, version, workflow)
 			}
+		}
+		if hasRunCommand(parsed, "make ", "go test") {
+			env, ok := parsed["env"].(map[string]any)
+			require.True(t, ok, "Go-executing workflow %s has no env", workflow)
+			require.Equal(t, releaseGoVersion, env["GOVERSION"], workflow)
 		}
 	}
 	build, _ := readWorkflow(t, "build.yml")
