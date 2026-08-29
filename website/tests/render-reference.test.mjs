@@ -128,10 +128,11 @@ test("does not report cleanup failure after installing new output", async () => 
   let backupRemovals = 0;
   try {
     await replaceGeneratedDirectory(target, { "new.mdx": "new" }, writeFile, injectedFilesystem(fsRename, async (path, options) => {
-      if (path.includes(".reference-backup-") && backupRemovals++ > 0) throw new Error("backup cleanup failed");
+      if (path.includes(".reference-backup-") && backupRemovals++ === 1) throw new Error("backup cleanup failed");
       return rm(path, options);
     }));
     assert.equal(await readFile(join(target, "new.mdx"), "utf8"), "new");
+    assert.equal((await readdir(parent)).filter((entry) => entry.startsWith(".reference-backup-")).length, 0);
   } finally {
     await rm(parent, { recursive: true, force: true });
   }

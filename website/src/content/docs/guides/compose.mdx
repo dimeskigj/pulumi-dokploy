@@ -9,7 +9,7 @@ Create a Compose stack in a Project’s default Environment or target an explici
 const stack = new dokploy.Compose("web-stack", {
   name: "web-stack",
   environmentId: environment.environmentId,
-  source: { type: "raw", composeFile: "services:\n  web:\n    image: nginx:latest\n" },
+  source: { type: "raw", raw: { composeFile: "services:\n  web:\n    image: nginx:latest\n" } },
 });
 ```
 

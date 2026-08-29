@@ -11,7 +11,7 @@ const database = new dokploy.Postgres("app-db", {
   environmentId: environment.environmentId,
   databaseName: "app",
   databaseUser: "app",
-  databasePassword: pulumi.secret(config.require("databasePassword")),
+  databasePassword: config.requireSecret("databasePassword"),
 });
 ```
 
@@ -21,7 +21,7 @@ Redis uses the same placement dependency and requires a password:
 const cache = new dokploy.Redis("app-cache", {
   name: "app-cache",
   environmentId: environment.environmentId,
-  databasePassword: pulumi.secret(config.require("redisPassword")),
+  databasePassword: config.requireSecret("redisPassword"),
 });
 ```
 

@@ -1,44 +1,166 @@
 name: dokploy-mvp
-runtime: nodejs
+runtime: yaml
+
 description: A complete Dokploy MVP deployment.
+
+outputs:
+  gitlabIntegration: ${gitlabIntegration}
+  gitlabProject: ${gitlabProject}
+  gitlabOwner: ${gitlabOwner}
+  gitlabNamespace: ${gitlabNamespace}
+  gitlabRepository: ${gitlabRepository}
+  gitBranch: ${gitBranch}
+
 config:
+  dokploy:endpoint: https://dokploy.example.invalid
+  dokploy:apiKey:
+    secret: true
+    value: replace-with-a-dokploy-api-key
   appHost:
     type: string
     default: app.example.invalid
   composeHost:
     type: string
     default: compose.example.invalid
-  databasePassword:
-    type: string
-    default: replace-with-a-database-password
-    secret: true
-  dokploy:apiKey:
-    value: replace-with-a-dokploy-api-key
-  dokploy:endpoint:
-    value: https://dokploy.example.invalid
-  gitBranch:
-    type: string
-    default: main
   gitlabIntegration:
     type: string
     default: gitlab-integration-id
-  gitlabNamespace:
-    type: string
-    default: platform
-  gitlabOwner:
-    type: string
-    default: example
   gitlabProject:
     type: integer
     default: 42
+  gitlabOwner:
+    type: string
+    default: example
+  gitlabNamespace:
+    type: string
+    default: platform
   gitlabRepository:
     type: string
     default: application
-  redisPassword:
+  gitBranch:
     type: string
-    default: replace-with-a-redis-password
-    secret: true
+    default: main
   registryPassword:
     type: string
-    default: replace-with-a-registry-password
     secret: true
+    default: replace-with-a-registry-password
+  databasePassword:
+    type: string
+    secret: true
+    default: replace-with-a-database-password
+  redisPassword:
+    type: string
+    secret: true
+    default: replace-with-a-redis-password
+
+resources:
+  project:
+    type: dokploy:index:Project
+    properties:
+      name: dokploy-mvp
+      description: Canonical Dokploy provider example
+
+  environment:
+    type: dokploy:index:Environment
+    properties:
+      projectId: ${project.projectId}
+      name: staging
+      description: Additional non-production environment
+
+  application:
+    type: dokploy:index:Application
+    properties:
+      name: mvp-application
+      environmentId: ${project.defaultEnvironmentId}
+      source:
+        type: docker
+        docker:
+          image: nginx:1.27
+          username: example
+          password:
+            fn::secret: ${registryPassword}
+      environment:
+        fn::secret: APP_HOST=${appHost}
+      createEnvFile: true
+
+      # Alternative source (documentation only; do not enable alongside docker):
+      # source:
+      #   type: git
+      #   git:
+      #     url: https://github.com/example/application.git
+      #     branch: main
+      #     build:
+      #       type: nixpacks
+      # Alternative GitLab source (documentation only; do not enable alongside docker):
+      # source:
+      #   type: gitlab
+      #   gitlab:
+      #     integrationId: ${config.gitlabIntegration}
+      #     projectId: ${config.gitlabProject}
+      #     owner: ${config.gitlabOwner}
+      #     namespace: ${config.gitlabNamespace}
+      #     repository: ${config.gitlabRepository}
+      #     branch: ${config.gitBranch}
+      #     build:
+      #       type: nixpacks
+
+  compose:
+    type: dokploy:index:Compose
+    properties:
+      name: mvp-compose
+      environmentId: ${project.defaultEnvironmentId}
+      source:
+        type: raw
+        raw:
+          composeFile: |
+            services:
+              web:
+                image: nginx:1.27
+                ports:
+                  - "8080:80"
+      environment:
+        fn::secret: COMPOSE_HOST=${composeHost}
+      createEnvFile: true
+
+  postgres:
+    type: dokploy:index:Postgres
+    properties:
+      name: mvp-postgres
+      environmentId: ${environment.environmentId}
+      databaseName: app
+      databaseUser: app
+      databasePassword:
+        fn::secret: ${databasePassword}
+      environment:
+        fn::secret: POSTGRES_HOST=postgres
+
+  redis:
+    type: dokploy:index:Redis
+    properties:
+      name: mvp-redis
+      environmentId: ${environment.environmentId}
+      databasePassword:
+        fn::secret: ${redisPassword}
+      environment:
+        fn::secret: REDIS_HOST=redis
+
+  applicationDomain:
+    type: dokploy:index:Domain
+    properties:
+      applicationId: ${application.applicationId}
+      host: ${appHost}
+      port: 80
+      https: true
+      certificateType: none
+      enabled: true
+
+  composeDomain:
+    type: dokploy:index:Domain
+    properties:
+      composeId: ${compose.composeId}
+      serviceName: web
+      host: ${composeHost}
+      port: 80
+      https: true
+      certificateType: none
+      enabled: true

@@ -49,6 +49,7 @@ test("uses scalar and secret configuration accessors for endpoint and API key", 
   assert.match(source.csharp, /config\.RequireSecret\("dokploy:apiKey"\)/);
   assert.match(source.java, /config\.require\("dokploy:endpoint"\)/);
   assert.match(source.java, /config\.requireSecret\("dokploy:apiKey"\)/);
+  assert.match(source.yaml, /dokploy:apiKey:\n\s+secret: true\n\s+value: replace-with-a-dokploy-api-key/);
   for (const code of [source.typescript, source.python, source.go, source.csharp]) {
     assert.doesNotMatch(code, /requireObject|require_object|RequireObject/);
   }

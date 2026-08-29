@@ -76,6 +76,18 @@ test("derives stable lowercase slugs", () => {
   assert.equal(slugFromToken("dokploy:index:Postgres"), "postgres");
 });
 
+test("rejects tokens that are not exactly dokploy:index:identifier", () => {
+  for (const token of [
+    "dokploy:other:Postgres",
+    "dokploy:index:Postgres:Extra",
+    "dokploy:index:",
+    "other:index:Postgres",
+    "dokploy:index:Postgres/unsafe",
+  ]) {
+    assert.throws(() => slugFromToken(token), /Invalid Pulumi token/);
+  }
+});
+
 test("loads and validates the real provider schema", async () => {
   const model = parseSchema(
     await loadSchema(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url)),

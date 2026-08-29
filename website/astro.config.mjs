@@ -63,7 +63,10 @@ export default defineConfig({
         },
         {
           label: "Examples",
-          items: [{ label: "First deployment", link: "/getting-started/first-deployment/" }],
+          items: [
+            { label: "Examples", link: "/examples/" },
+            { label: "Complete example", link: "/examples/complete/" },
+          ],
         },
         { label: "Contributing", link: "/contributing/" },
       ],

@@ -47,3 +47,23 @@ test("built site has valid internal links, base paths, routes, and search index"
     }
   }
 });
+
+test("built component output preserves accessibility semantics", async () => {
+  const reference = await readFile(path.join(DIST, "reference/application/index.html"), "utf8");
+  assert.match(reference, /<div class="property-table-wrap" role="region" aria-label="Property details" tabindex="0">/);
+  assert.match(reference, /<table class="property-table"><caption>Property details<\/caption><thead><tr><th scope="col">Property<\/th>/);
+  assert.match(reference, /<th scope="row"><code>environmentId<\/code><\/th>/);
+
+  const examples = await readFile(path.join(DIST, "examples/complete/index.html"), "utf8");
+  const tabs = [...examples.matchAll(/<a role="tab"[^>]*>([^<]+)<\/a>/g)].map((match) => match[1]);
+  assert.deepEqual(tabs, ["TypeScript", "Python", "Go", "C#", "Java", "YAML"]);
+  const tabElements = [...examples.matchAll(/<a role="tab"[^>]*>/g)].map(([element]) => element);
+  assert.equal(tabElements.length, 6);
+  assert.ok(tabElements.every((element) => /aria-selected="(?:true|false)"/.test(element) && /tabindex="(?:0|-1)"/.test(element)));
+  const panels = [...examples.matchAll(/<div id="([^"]+)"[^>]*aria-labelledby="([^"]+)"[^>]*role="tabpanel"[^>]*>/g)];
+  assert.equal(panels.length, 6);
+  for (const [, panelId, tabId] of panels) {
+    assert.match(examples, new RegExp(`role="tab"[^>]*id="${tabId}"`));
+    assert.ok(panelId.startsWith("tab-panel-"));
+  }
+});

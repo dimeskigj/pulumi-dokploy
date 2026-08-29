@@ -129,6 +129,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
     "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/imports/", "/guides/troubleshooting/",
+    "/examples/", "/examples/complete/",
     "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/redis/", "/reference/domain/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
   ]);
@@ -137,7 +138,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 24);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 25);
   assert.equal(curatedFiles.length, 13);
 });
 
@@ -164,4 +165,25 @@ test("provider guides enforce exact schema discriminators and lifecycle statemen
   assert.match(domains, /Routing fields .*along with `enabled`, update in place/);
   assert.match(domains, /has no deployment-status polling/);
   assert.doesNotMatch(domains, /`environmentId`|`serverId`|deployment status/);
+});
+
+test("Compose raw quickstart nests composeFile under the raw source", async () => {
+  const compose = await readFile(new URL("../src/content/docs/guides/compose.mdx", import.meta.url), "utf8");
+  assert.match(compose, /source: \{ type: "raw", raw: \{ composeFile:/);
+  assert.doesNotMatch(compose, /source: \{ type: "raw", composeFile:/);
+});
+
+test("database examples use secret-aware configuration access", async () => {
+  const databases = await readFile(new URL("../src/content/docs/guides/databases.mdx", import.meta.url), "utf8");
+  assert.match(databases, /config\.requireSecret\("databasePassword"\)/);
+  assert.match(databases, /config\.requireSecret\("redisPassword"\)/);
+  assert.doesNotMatch(databases, /pulumi\.secret\(config\.require\(/);
+});
+
+test("Examples sidebar uses the complete examples routes", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  const examples = config.slice(config.indexOf('label: "Examples"'), config.indexOf('label: "Contributing"'));
+  assert.match(examples, /label: "Examples", link: "\/examples\/"/);
+  assert.match(examples, /label: "Complete example", link: "\/examples\/complete\/"/);
+  assert.doesNotMatch(examples, /getting-started\/first-deployment/);
 });

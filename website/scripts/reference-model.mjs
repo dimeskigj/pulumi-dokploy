@@ -20,6 +20,9 @@ export async function loadSchema(path) {
 }
 
 export function slugFromToken(token) {
+  if (typeof token !== "string" || !/^dokploy:index:[A-Za-z][A-Za-z0-9_-]*$/.test(token)) {
+    throw new Error(`Invalid Pulumi token: ${token}`);
+  }
   const name = token.split(":").at(-1);
   if (!name) throw new Error(`Invalid Pulumi token: ${token}`);
   return name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
@@ -33,14 +36,7 @@ export function formatType(property) {
 }
 
 function resourceName(token) {
-  if (
-    typeof token !== "string" ||
-    !token.startsWith("dokploy:index:") ||
-    token.split(":").length < 3 ||
-    !token.split(":").at(-1)
-  ) {
-    throw new Error(`Invalid Pulumi token: ${token}`);
-  }
+  slugFromToken(token);
   return token.split(":").at(-1);
 }
 
