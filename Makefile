@@ -5,7 +5,7 @@ PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
 VERSION_GENERIC ?= 0.0.1-alpha.0+dev
 
-.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
+.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_go_sdk install_python_sdk install_nodejs_sdk install_dotnet_sdk install_java_sdk install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
 
 provider:
 	mkdir -p bin
@@ -45,6 +45,23 @@ build_dotnet:
 
 build_java:
 	cd sdk/java && gradle build --no-daemon
+
+install_go_sdk:
+	cd examples/go && go mod tidy
+
+install_python_sdk:
+	python3 -m compileall -q examples/python
+
+install_nodejs_sdk:
+	cd sdk/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+	cd examples/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund && npx tsc --noEmit
+
+install_dotnet_sdk:
+	cd examples/dotnet && dotnet build --nologo
+
+install_java_sdk:
+	cd sdk/java && gradle publishToMavenLocal --no-daemon
+	cd examples/java && mvn package -DskipTests
 
 build_sdks: build_go build_python build_nodejs build_dotnet build_java
 
