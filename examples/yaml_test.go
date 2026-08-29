@@ -74,6 +74,32 @@ func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
 	}
 }
 
+func TestGeneratedProjectRuntimes(t *testing.T) {
+	for language, wantRuntime := range map[string]string{
+		"nodejs": "nodejs",
+		"python": "python",
+		"go":     "go",
+		"dotnet": "dotnet",
+		"java":   "java",
+	} {
+		t.Run(language, func(t *testing.T) {
+			data, err := os.ReadFile(filepath.Join(language, "Pulumi.yaml"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var manifest struct {
+				Runtime string `yaml:"runtime"`
+			}
+			if err := yaml.Unmarshal(data, &manifest); err != nil {
+				t.Fatalf("generated %s manifest is invalid: %v", language, err)
+			}
+			if manifest.Runtime != wantRuntime {
+				t.Errorf("generated %s manifest runtime = %q, want %q", language, manifest.Runtime, wantRuntime)
+			}
+		})
+	}
+}
+
 func TestCanonicalYAMLRejectsUnknownProperty(t *testing.T) {
 	canonical, err := os.ReadFile("yaml/Pulumi.yaml")
 	if err != nil {

@@ -1,4 +1,5 @@
 import { access, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { dirname, join, basename } from "node:path";
 
 function frontmatter(title, description) {
@@ -67,10 +68,8 @@ async function pathExists(path, filesystem) {
   }
 }
 
-async function uniqueSiblingPath(target, label, filesystem) {
-  const path = await filesystem.mkdtemp(join(dirname(target), `.${basename(target)}-${label}-`));
-  await filesystem.rm(path, { recursive: true, force: true });
-  return path;
+async function uniqueSiblingPath(target, label) {
+  return join(dirname(target), `.${basename(target)}-${label}-${randomUUID()}`);
 }
 
 export async function replaceGeneratedDirectory(target, files, write = writeFile, fsOperations = {}) {
@@ -87,7 +86,7 @@ export async function replaceGeneratedDirectory(target, files, write = writeFile
     }
 
     if (await pathExists(target, filesystem)) {
-      backup = await uniqueSiblingPath(target, "backup", filesystem);
+      backup = await uniqueSiblingPath(target, "backup");
       await filesystem.rename(target, backup);
       targetMoved = true;
     }

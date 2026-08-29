@@ -18,3 +18,4 @@ sdk/python/venv
 *.py[cod]
 website/dist/
 website/.astro/
+/.superpowers/sdd/
