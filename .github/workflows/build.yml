@@ -115,6 +115,14 @@ jobs:
         labels: impact/no-changelog-required
         number: ${{ github.event.issue.number }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Setup Node for docs
+      uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with:
+        node-version: 24.18.0
+        cache: npm
+        cache-dependency-path: website/package-lock.json
+    - name: Check documentation
+      run: make docs_check
     - name: Check OpenAPI and generated SDKs
       run: make check_openapi && make check_codegen
     - name: Run race tests
