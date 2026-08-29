@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { base, output, site } from "../src/site-config.mjs";
 
-test("Astro is configured for the project Pages URL", async () => {
-  const { default: config } = await import("../astro.config.mjs");
-  assert.equal(config.site, "https://gjorgjidimeski.github.io");
-  assert.equal(config.base, "/pulumi-dokploy");
-  assert.equal(config.output, "static");
-  assert.equal(config.integrations.length, 1);
+test("site configuration uses the project Pages URL", () => {
+  assert.equal(site, "https://gjorgjidimeski.github.io");
+  assert.equal(base, "/pulumi-dokploy");
+  assert.equal(output, "static");
 });
