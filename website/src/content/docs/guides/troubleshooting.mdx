@@ -1,0 +1,20 @@
+---
+title: Troubleshooting
+description: Diagnose endpoint, authorization, deployment, source, and import issues.
+---
+
+## Endpoint and authorization
+
+The endpoint is normalized before requests are made; configure the Dokploy origin such as `https://dokploy.example.com`, not a path to an API operation. A 401 or 403 usually means the API key is missing, expired, or lacks permission. Re-set it with `pulumi config set --secret dokploy:apiKey` and verify the selected stack.
+
+## Failed deployments
+
+Create and update operations poll Dokploy deployment status. A failed deployment can retain the remote ID in partial state. Inspect the Dokploy deployment, repair the source or configuration, and run `pulumi up` again rather than assuming the object was deleted.
+
+## Source changes
+
+Docker, Git, and GitLab application sources, and raw, Git, and GitLab Compose sources, are discriminated unions. Unsupported source transitions replace the resource; create a replacement deliberately rather than expecting an in-place conversion.
+
+## Imports and passwords
+
+Refresh an imported resource and review its state. Missing imported passwords are expected when Dokploy treats them as write-only: restore them as secret inputs before updating. See [imports](../imports/) and [source behavior](../../concepts/sources/).

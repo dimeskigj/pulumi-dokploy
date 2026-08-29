@@ -1,0 +1,41 @@
+---
+type Property = {
+  name: string;
+  type: string;
+  typeHref: string | null;
+  description: string;
+  required: boolean;
+  secret: boolean;
+  replaceOnChanges: boolean;
+  defaultValue?: unknown;
+  environment?: string[];
+};
+const { properties = [] } = Astro.props as { properties?: Property[] };
+---
+
+<div class="property-table-wrap" role="region" aria-label="Property details" tabindex="0">
+  <table class="property-table">
+    <caption>Property details</caption>
+    <thead>
+      <tr><th scope="col">Property</th><th scope="col">Type</th><th scope="col">Description</th><th scope="col">Metadata</th></tr>
+    </thead>
+    <tbody>
+      {properties.map((property) => (
+        <tr>
+          <th scope="row"><code>{property.name}</code></th>
+          <td>{property.typeHref ? <a href={property.typeHref}><code>{property.type}</code></a> : <code>{property.type}</code>}</td>
+          <td>{property.description}</td>
+          <td>
+            <ul class="property-badges" aria-label={`Metadata for ${property.name}`}>
+              {property.required && <li class="badge">Required</li>}
+              {property.secret && <li class="badge">Secret</li>}
+              {property.replaceOnChanges && <li class="badge">Replaces resource</li>}
+              {property.defaultValue !== null && property.defaultValue !== undefined && <li>Default: <code>{String(property.defaultValue)}</code></li>}
+              {property.environment && property.environment.length > 0 && <li>Environment: <code>{property.environment.join(", ")}</code></li>}
+            </ul>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

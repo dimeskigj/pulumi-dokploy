@@ -1,0 +1,42 @@
+---
+title: Compose stacks
+description: Manage raw, Git, and GitLab Compose deployments safely.
+---
+
+Create a Compose stack in a Project’s default Environment or target an explicit Environment through `environmentId`. Raw, public Git, and existing GitLab sources are separate source variants.
+
+```typescript
+const stack = new dokploy.Compose("web-stack", {
+  name: "web-stack",
+  environmentId: environment.environmentId,
+  source: { type: "raw", raw: { composeFile: "services:\n  web:\n    image: nginx:latest\n" } },
+});
+```
+
+For a Git Compose file, provide its repository URL and branch:
+
+```typescript
+const gitStack = new dokploy.Compose("git-stack", {
+  name: "git-stack", environmentId: environment.environmentId,
+  source: { type: "git", git: { url: "https://github.com/example/stack.git", branch: "main" } },
+});
+```
+
+For an existing GitLab integration, provide the integration, project, owner, namespace, repository, and branch metadata:
+
+```typescript
+const gitlabStack = new dokploy.Compose("gitlab-stack", {
+  name: "gitlab-stack", environmentId: environment.environmentId,
+  source: {
+    type: "gitlab",
+    gitlab: {
+      integrationId: "integration-1", projectId: 42, owner: "example",
+      namespace: "platform", repository: "stack", branch: "main",
+    },
+  },
+});
+```
+
+Creates and updates fetch the selected raw or repository source, then redeploy and wait for deployment completion. Source settings and stack metadata update in place; `environmentId` and `serverId` are replacement-only dependencies. `deleteVolumesOnDestroy` defaults to `false`, so `pulumi destroy` preserves Compose volumes. Setting it to `true` is destructive: do so only when deleting the data volumes is intentional.
+
+See the [Compose reference](../../reference/compose/) and [source discriminators](../../concepts/sources/).

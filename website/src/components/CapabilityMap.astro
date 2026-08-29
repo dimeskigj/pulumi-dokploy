@@ -1,0 +1,14 @@
+---
+type Capability = { title: string; description: string };
+const { capabilities = [
+  { title: "Model", description: "Describe projects, environments, and services as typed resources." },
+  { title: "Deploy", description: "Apply predictable changes to your Dokploy instance." },
+  { title: "Operate", description: "Keep infrastructure configuration reviewable and repeatable." },
+] } = Astro.props as { capabilities?: Capability[] };
+---
+
+<section class="capability-map" aria-labelledby="capability-map-title">
+  <p class="eyebrow">The workflow</p>
+  <h2 id="capability-map-title">From intent to deployment</h2>
+  <ol>{capabilities.map((capability) => <li><span class="capability-map__index" aria-hidden="true"></span><h3>{capability.title}</h3><p>{capability.description}</p></li>)}</ol>
+</section>

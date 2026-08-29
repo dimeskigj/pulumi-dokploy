@@ -1,0 +1,45 @@
+---
+title: Applications
+description: Create and update Dokploy applications from Docker, Git, or GitLab sources.
+---
+
+Create a Docker application by selecting the `docker` source variant. A Project owns the default production Environment; use an explicit Environment when this application belongs in staging or another non-production target.
+
+```typescript
+const app = new dokploy.Application("web", {
+  name: "web",
+  environmentId: environment.environmentId,
+  source: { type: "docker", docker: { image: "nginx:latest" } },
+});
+```
+
+For a public Git repository, select `type: "git"` and provide the URL, branch, and build settings:
+
+```typescript
+const gitApp = new dokploy.Application("git-web", {
+  name: "git-web",
+  environmentId: environment.environmentId,
+  source: {
+    type: "git",
+    git: { url: "https://github.com/example/web.git", branch: "main", build: { type: "nixpacks" } },
+  },
+});
+```
+
+For an existing GitLab integration, select `type: "gitlab"` and pass its integration and repository metadata. The integration itself remains unmanaged:
+
+```typescript
+const gitlabApp = new dokploy.Application("gitlab-web", {
+  name: "gitlab-web",
+  environmentId: environment.environmentId,
+  source: {
+    type: "gitlab",
+    gitlab: {
+      integrationId: "integration-1", projectId: 42, owner: "example",
+      namespace: "platform", repository: "web", branch: "main", build: { type: "nixpacks" },
+    },
+  },
+});
+```
+
+Creates and updates fetch the selected source and wait for deployment completion. A source discriminator change replaces the Application; `environmentId` and `serverId` are also replacement-only. Other metadata and source settings update through the normal Pulumi diff. The Project/Environment is a dependency, while GitLab integrations and SSH keys are referenced rather than managed. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).

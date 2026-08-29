@@ -1,0 +1,92 @@
+# Pulumi Dokploy Provider
+
+[![Build Status](https://github.com/gjorgjidimeski/pulumi-dokploy/actions/workflows/build.yml/badge.svg)](https://github.com/gjorgjidimeski/pulumi-dokploy/actions/workflows/build.yml)
+
+The Dokploy provider manages self-hosted Dokploy projects and deployments with Pulumi.
+
+**[Read the documentation](https://gjorgjidimeski.github.io/pulumi-dokploy/)**
+
+## Install
+
+The provider is built and tested with Go 1.25.13, including the security-fixed
+toolchain used by the release workflows.
+
+Install the package for your Pulumi language:
+
+| Language | Package |
+| --- | --- |
+| Node.js | `@gjorgjidimeski/pulumi-dokploy` |
+| Python | `pulumi_dokploy` |
+| Go | `github.com/gjorgjidimeski/pulumi-dokploy/sdk/go/dokploy` |
+| .NET | `Pulumi.Dokploy` |
+| Java | `dev.codechem.pulumi.dokploy` |
+| YAML | `pulumi package add github.com/gjorgjidimeski/pulumi-dokploy dokploy` |
+
+The provider is also available from the Pulumi Registry once a release is published.
+
+## Configuration
+
+Configure the Dokploy URL and API key in the Pulumi stack. The API key is always secret:
+
+```bash
+pulumi config set dokploy:endpoint https://dokploy.example.com
+pulumi config set --secret dokploy:apiKey "$DOKPLOY_API_KEY"
+```
+
+The same values can be supplied with `DOKPLOY_ENDPOINT` and `DOKPLOY_API_KEY`. Do not put
+API keys, database passwords, build secrets, or Docker registry passwords in source control;
+use `pulumi config set --secret` (or secret outputs). Secret inputs and derived state remain
+redacted in Pulumi diagnostics.
+
+## Resources
+
+The provider exposes seven resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+`dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
+`dokploy:index:Redis`, and `dokploy:index:Domain`.
+
+Project owns the default environment. Create explicit `Environment` resources for additional
+environments and use their IDs from dependent resources. Applications and Compose stacks can
+use Git, Docker, raw Compose, or private GitLab sources. A private GitLab reference records the
+integration/project/owner/namespace/repository/branch details. The referenced GitLab integration is not managed
+by this provider. SSH key references are likewise passed through and not managed.
+
+Source type changes replace that resource rather than attempting an
+in-place conversion. Create and update operations wait for Dokploy deployment completion;
+deployment errors preserve partial state so the failed resource can be inspected and repaired.
+Compose volumes are preserved on destroy by default. Set `deleteVolumesOnDestroy` only when
+those volumes should be deleted.
+
+Database passwords, environment values, application build arguments/build secrets, and nested
+Docker credentials are secret inputs. Keep them secret in configuration and never log them.
+
+See the [Get Started](https://gjorgjidimeski.github.io/pulumi-dokploy/getting-started/installation/),
+[Resources](https://gjorgjidimeski.github.io/pulumi-dokploy/reference/), and
+[Guides](https://gjorgjidimeski.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
+
+## Import
+
+Existing resources can be adopted with their Pulumi token and Dokploy ID:
+
+```bash
+pulumi import dokploy:index:Project existing p1
+```
+
+After import, review the generated state and supply any write-only secret inputs required for
+future updates.
+
+## Development
+
+Use the pinned tools from `mise`:
+
+```bash
+mise install
+make lint
+make test
+make build
+make codegen
+make check_openapi
+make ci-mgmt
+```
+
+Generated SDKs and CI workflows must be regenerated rather than hand-edited. See
+`CONTRIBUTING.md` for the complete workflow.

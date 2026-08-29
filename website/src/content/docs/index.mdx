@@ -1,0 +1,53 @@
+---
+title: Deploy Dokploy with Pulumi
+description: Provision and manage self-hosted Dokploy infrastructure with Pulumi.
+template: splash
+pagefind: false
+---
+
+import HomeHero from "../../components/HomeHero.astro";
+import CapabilityMap from "../../components/CapabilityMap.astro";
+
+<HomeHero
+  title="Deploy Dokploy with Pulumi"
+  description="Describe Dokploy projects, services, and supporting infrastructure as code. Preview changes before applying them, then let the provider wait for deployment completion."
+  referenceLabel="Resource reference"
+  referenceHref="reference"
+  code={`import * as dokploy from "@gjorgjidimeski/pulumi-dokploy";
+
+const project = new dokploy.Project("platform", { name: "platform" });
+const app = new dokploy.Application("web", {
+  name: "web",
+  environmentId: project.defaultEnvironmentId,
+  source: { type: "docker", docker: { image: "nginx:latest" } },
+});`}
+/>
+
+<CapabilityMap capabilities={[
+  { title: "Projects", description: "Organize Dokploy workloads and own the default production environment." },
+  { title: "Environments", description: "Add explicit non-production environments and target resources by ID." },
+  { title: "Applications", description: "Deploy Docker images, public Git repositories, or existing GitLab integrations." },
+  { title: "Compose", description: "Manage raw Compose text, Git Compose files, and existing GitLab stacks." },
+  { title: "Databases", description: "Provision PostgreSQL and Redis services with secret-aware credentials." },
+  { title: "Domains", description: "Attach domains to supported Dokploy applications and services." },
+  { title: "Lifecycle", description: "Review previews, wait for deployments, import resources, and inspect partial state." },
+]} />
+
+## Write in the language your team uses
+
+TypeScript · Python · Go · C# · Java · YAML
+
+## Provider guarantees
+
+- Pulumi previews show planned changes before Dokploy is modified.
+- Creates and updates wait for Dokploy deployment completion.
+- Imports and refreshes reconcile existing Dokploy resources with Pulumi state.
+- Deployment errors retain partial state and the resource ID for repair.
+- Secret inputs and derived secret outputs remain redacted and are never logged.
+
+<div class="home-hero__actions">
+  <a class="button" href="https://github.com/gjorgjidimeski/pulumi-dokploy">View the provider on GitHub</a>
+  <a class="button" href="https://www.pulumi.com/registry/packages/dokploy/">Pulumi Registry</a>
+</div>
+
+The Registry page becomes the package discovery location after the first release is published; this project does not claim an unpublished Registry release.

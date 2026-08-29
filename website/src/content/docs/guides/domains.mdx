@@ -1,0 +1,25 @@
+---
+title: Domains
+description: Attach a Dokploy domain to a managed service.
+---
+
+Create a `Domain` with exactly one service target: an `applicationId` or a `composeId`. For Compose routing, also provide the Compose `serviceName`. Domains do not have environment or server placement fields; the selected Application or Compose resource supplies that context.
+
+```typescript
+const domain = new dokploy.Domain("web-domain", {
+  host: "app.example.com",
+  applicationId: app.applicationId,
+});
+```
+
+For a Compose service, use the alternate target instead of `applicationId`:
+
+```typescript
+const apiDomain = new dokploy.Domain("api-domain", {
+  host: "api.example.com",
+  composeId: stack.composeId,
+  serviceName: "api",
+});
+```
+
+Changing the Application/Compose target or `serviceName` replaces the Domain. Routing fields such as `host`, `path`, `internalPath`, and `port`, along with `enabled`, update in place. Domain operations are routing updates; this resource has no deployment-status polling. Check the exact fields in the [Domain reference](../../reference/domain/) before applying.
