@@ -44,10 +44,24 @@ The provider exposes seven resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:Redis`, and `dokploy:index:Domain`.
 
-The provider supports Pulumi previews, imports, deployment-aware updates, multiple application
-and Compose sources, and secret-aware resource state. See the [Get Started](https://gjorgjidimeski.github.io/pulumi-dokploy/getting-started/installation/),
+Project owns the default environment. Create explicit `Environment` resources for additional
+environments and use their IDs from dependent resources. Applications and Compose stacks can
+use Git, Docker, raw Compose, or private GitLab sources. A private GitLab reference records the
+integration/project/owner/namespace/repository/branch details. The referenced GitLab integration is not managed
+by this provider. SSH key references are likewise passed through and not managed.
+
+Source type changes replace that resource rather than attempting an
+in-place conversion. Create and update operations wait for Dokploy deployment completion;
+deployment errors preserve partial state so the failed resource can be inspected and repaired.
+Compose volumes are preserved on destroy by default. Set `deleteVolumesOnDestroy` only when
+those volumes should be deleted.
+
+Database passwords, environment values, application build arguments/build secrets, and nested
+Docker credentials are secret inputs. Keep them secret in configuration and never log them.
+
+See the [Get Started](https://gjorgjidimeski.github.io/pulumi-dokploy/getting-started/installation/),
 [Resources](https://gjorgjidimeski.github.io/pulumi-dokploy/reference/), and
-[Guides](https://gjorgjidimeski.github.io/pulumi-dokploy/guides/applications/) pages for details.
+[Guides](https://gjorgjidimeski.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
 
 ## Import
 

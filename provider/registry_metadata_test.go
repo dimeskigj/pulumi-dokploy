@@ -99,6 +99,7 @@ var workflowJobPolicy = map[string]map[string]bool{
 	"community-moderation.yml":    {"warn_codegen": false},
 	"export-repo-secrets.yml":     {"export-to-esc": false},
 	"lint.yml":                    {"lint": true},
+	"pages.yml":                   {"build": false, "deploy": false},
 	"prerelease.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"pull-request.yml":            {"comment-on-pr": false},
 	"release_command.yml":         {"should_release": false},
