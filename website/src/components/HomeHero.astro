@@ -1,0 +1,12 @@
+---
+const { eyebrow = "Pulumi provider", title = "Deploy with confidence.", description = "Provision and manage Dokploy infrastructure with Pulumi's familiar infrastructure-as-code workflow." } = Astro.props;
+---
+
+<section class="home-hero" aria-labelledby="home-hero-title">
+  <div class="home-hero__content">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1 id="home-hero-title">{title}</h1>
+    <p class="home-hero__description">{description}</p>
+    <div class="home-hero__actions"><a class="button button--primary" href="/getting-started/">Get started</a><a class="button" href="/reference/">Explore the reference</a></div>
+  </div>
+</section>
