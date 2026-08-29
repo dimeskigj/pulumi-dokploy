@@ -14,6 +14,41 @@ GENERATED_WORKFLOW_NAMES = (
     "prerelease.yml", "pull-request.yml", "release_command.yml", "release.yml",
     "run-acceptance-tests.yml", "weekly-pulumi-update.yml",
 )
+WORKFLOW_JOB_POLICY = {
+    "build.yml": {
+        "prerequisites": True, "build_sdks": True, "tag_release_if_labeled_needs_release": False,
+        "test": True, "publish": True, "publish_sdk": True, "lint": True,
+    },
+    "command-dispatch.yml": {"command-dispatch-for-testing": False},
+    "comment-on-stale-issues.yml": {"cleanup": False},
+    "community-moderation.yml": {"warn_codegen": False},
+    "export-repo-secrets.yml": {"export-to-esc": False},
+    "lint.yml": {"lint": True},
+    "prerelease.yml": {
+        "prerequisites": True, "build_sdks": True, "test": True, "publish": True,
+        "publish_sdk": True, "publish_java_sdk": True, "publish_go_sdk": True,
+    },
+    "pull-request.yml": {"comment-on-pr": False},
+    "release_command.yml": {"should_release": False},
+    "release.yml": {
+        "prerequisites": True, "build_sdks": True, "test": True, "publish": True,
+        "publish_sdk": True, "publish_java_sdk": True, "publish_go_sdk": True,
+        "dispatch_docs_build": False,
+    },
+    "run-acceptance-tests.yml": {
+        "comment-notification": False, "prerequisites": True, "build_sdks": True,
+        "test": True, "sentinel": False, "lint": True,
+    },
+    "weekly-pulumi-update.yml": {"weekly-pulumi-update": True},
+}
+EXPECTED_BUILD_GATES = (
+    "make check_openapi && make check_codegen",
+    "make test_race",
+    "make build_sdks",
+    "make test_examples",
+    "make govulncheck",
+    "make license",
+)
 RELEASE_ACTION = "pulumi/action-release-by-pr-label@a90569296b805a3179b81c1860f5777073cc7aa2"
 PUBLISH_GO_ACTION = "pulumi/publish-go-sdk-action@0a153fa3c54227a3c0f7c97a57033ecfe94ab3c2"
 GO_VERSION = "1.25.13"
@@ -76,6 +111,90 @@ def exact_remove(path: Path, old: str) -> None:
     if count != 1:
         raise SystemExit(f"expected at most one removable generated pattern: count={count}")
     path.write_text(text.replace(old, "", 1))
+
+
+def executable_run_lines(text: str) -> list[str]:
+    """Return literal commands from YAML run fields, excluding shell setup/comments."""
+    lines = text.splitlines()
+    commands = []
+    index = 0
+    while index < len(lines):
+        match = re.match(r"^(\s*)(?:-\s*)?run:\s*(.*)$", lines[index])
+        if not match:
+            index += 1
+            continue
+        indent, value = len(match.group(1)), match.group(2).strip()
+        script = []
+        if value and value not in {"|", "|-", "|+", ">", ">-", ">+"}:
+            script.append(value)
+        index += 1
+        while index < len(lines):
+            candidate = lines[index]
+            if candidate.strip() and len(candidate) - len(candidate.lstrip()) <= indent:
+                break
+            script.append(candidate.strip())
+            index += 1
+        for command in script:
+            command = command.strip()
+            if not command or command.startswith("#"):
+                continue
+            if command in {"set -e", "set -o errexit", "set -o pipefail", "set -euo pipefail"}:
+                continue
+            commands.append(command)
+    return commands
+
+
+def require_exact_run_values(text: str, expected: tuple[str, ...]) -> None:
+    commands = executable_run_lines(text)
+    for value in expected:
+        if commands.count(value) != 1:
+            raise SystemExit(f"expected exactly one executable run value {value!r}, found {commands.count(value)}")
+
+
+def _job_sections(text: str) -> dict[str, str]:
+    jobs = text.find("jobs:\n")
+    if jobs < 0:
+        raise SystemExit("workflow has no jobs section")
+    job_text = text[jobs + 6:]
+    boundary = re.search(r"^[^ \t\n].*:$", job_text, re.MULTILINE)
+    if boundary:
+        job_text = job_text[:boundary.start()]
+    matches = list(re.finditer(r"^  ([A-Za-z0-9_-]+):$", job_text, re.MULTILINE))
+    sections = {}
+    for number, match in enumerate(matches):
+        start = jobs + 6 + match.start()
+        end = jobs + 6 + matches[number + 1].start() if number + 1 < len(matches) else jobs + 6 + len(job_text)
+        sections[match.group(1)] = text[start:end]
+    return sections
+
+
+def validate_workflow_jobs(name: str, text: str, policy: dict[str, bool]) -> None:
+    sections = _job_sections(text)
+    if set(sections) != set(policy):
+        raise SystemExit(f"workflow job policy mismatch for {name}: actual={sorted(sections)} policy={sorted(policy)}")
+    versions = re.findall(r"^\s*GOVERSION:\s*[\"']?([^\"'\s]+)", text, re.MULTILINE)
+    if any(version != GO_VERSION for version in versions):
+        raise SystemExit(f"stale GOVERSION pin in {name}")
+    for job, executes_go in policy.items():
+        section = sections[job]
+        if executes_go and (not versions or versions.count(GO_VERSION) == 0):
+            raise SystemExit(f"Go-executing workflow {name}/{job} lacks GOVERSION {GO_VERSION}")
+        if not executes_go:
+            if re.search(r"^\s*(?:-\s*)?uses:.*(?:setup-go|setup-tools)", section, re.MULTILINE):
+                raise SystemExit(f"non-Go workflow job invokes Go/project setup in {name}/{job}")
+            for command in executable_run_lines(section):
+                if re.search(r"\b(?:go|make)\b", command):
+                    raise SystemExit(f"non-Go workflow job invokes Go/make in {name}/{job}")
+
+
+def validate_workflow_policy(root: Path = ROOT) -> None:
+    workflows = root / ".github" / "workflows"
+    actual = {path.name for path in workflows.glob("*.yml")}
+    expected = set(GENERATED_WORKFLOW_NAMES)
+    if actual != expected:
+        raise SystemExit(f"generated workflow filename set mismatch: actual={sorted(actual)} expected={sorted(expected)}")
+    for name in GENERATED_WORKFLOW_NAMES:
+        validate_workflow_jobs(name, (workflows / name).read_text(), WORKFLOW_JOB_POLICY[name])
 
 
 def normalize_build_trigger(text: str) -> str:
@@ -261,6 +380,8 @@ formatters:
         raise SystemExit("build workflow trigger normalization failed")
     if "pull_request:" in acceptance.read_text():
         raise SystemExit("acceptance workflow must not trigger on pull_request")
+    require_exact_run_values(build.read_text(), EXPECTED_BUILD_GATES)
+    validate_workflow_policy()
 
 
 if __name__ == "__main__":

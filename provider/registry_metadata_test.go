@@ -77,36 +77,78 @@ func workflowJobRunSteps(workflow map[string]any, wantedJob string) []workflowRu
 	return result
 }
 
-func hasRunStep(steps []workflowRunStep, fragments ...string) bool {
+func hasExactRunCommand(steps []workflowRunStep, expected string) bool {
 	for _, step := range steps {
-		matched := true
-		for _, fragment := range fragments {
-			if !strings.Contains(step.run, fragment) {
-				matched = false
-				break
+		for _, line := range strings.Split(step.run, "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, "set ") {
+				continue
+			}
+			if line == expected {
+				return true
 			}
 		}
-		if matched {
-			return true
-		}
 	}
 	return false
 }
 
-func isToolchainRun(run string) bool {
-	for _, fragment := range []string{"go ", "make ", "golangci", "govuln", "license"} {
-		if strings.Contains(run, fragment) {
-			return true
-		}
-	}
-	return false
+var workflowJobPolicy = map[string]map[string]bool{
+	"build.yml":                   {"prerequisites": true, "build_sdks": true, "tag_release_if_labeled_needs_release": false, "test": true, "publish": true, "publish_sdk": true, "lint": true},
+	"command-dispatch.yml":        {"command-dispatch-for-testing": false},
+	"comment-on-stale-issues.yml": {"cleanup": false},
+	"community-moderation.yml":    {"warn_codegen": false},
+	"export-repo-secrets.yml":     {"export-to-esc": false},
+	"lint.yml":                    {"lint": true},
+	"prerelease.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
+	"pull-request.yml":            {"comment-on-pr": false},
+	"release_command.yml":         {"should_release": false},
+	"release.yml":                 {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true, "dispatch_docs_build": false},
+	"run-acceptance-tests.yml":    {"comment-notification": false, "prerequisites": true, "build_sdks": true, "test": true, "sentinel": false, "lint": true},
+	"weekly-pulumi-update.yml":    {"weekly-pulumi-update": true},
 }
 
-func validateWorkflowSemantics(workflow map[string]any) error {
-	steps := workflowRunSteps(workflow)
-	for _, step := range steps {
-		if isToolchainRun(step.run) && step.env["GOVERSION"] != releaseGoVersion {
-			return fmt.Errorf("toolchain run %q does not resolve GOVERSION %s", step.run, releaseGoVersion)
+func validateWorkflowSemantics(workflow map[string]any, name string) error {
+	policy, ok := workflowJobPolicy[name]
+	if !ok {
+		return fmt.Errorf("workflow %q is not classified", name)
+	}
+	jobs, ok := workflow["jobs"].(map[string]any)
+	if !ok || len(jobs) != len(policy) {
+		return fmt.Errorf("workflow %q job set is not exhaustively classified", name)
+	}
+	workflowEnv, _ := workflow["env"].(map[string]any)
+	for jobName, executesGo := range policy {
+		rawJob, exists := jobs[jobName]
+		if !exists {
+			return fmt.Errorf("workflow %q job %q is not classified", name, jobName)
+		}
+		job, _ := rawJob.(map[string]any)
+		env := map[string]any{}
+		for key, value := range workflowEnv {
+			env[key] = value
+		}
+		if jobEnv, ok := job["env"].(map[string]any); ok {
+			for key, value := range jobEnv {
+				env[key] = value
+			}
+		}
+		if executesGo && env["GOVERSION"] != releaseGoVersion {
+			return fmt.Errorf("Go workflow job %s/%s does not resolve GOVERSION %s", name, jobName, releaseGoVersion)
+		}
+		if !executesGo {
+			if steps, ok := job["steps"].([]any); ok {
+				for _, rawStep := range steps {
+					step, _ := rawStep.(map[string]any)
+					if uses, _ := step["uses"].(string); strings.Contains(uses, "setup-go") || strings.Contains(uses, "setup-tools") {
+						return fmt.Errorf("non-Go workflow job %s/%s invokes Go/project setup", name, jobName)
+					}
+				}
+			}
+			for _, step := range workflowJobRunSteps(workflow, jobName) {
+				if strings.Contains(step.run, "make ") || strings.Contains(step.run, "go ") || strings.Contains(step.run, "setup-go") || strings.Contains(step.run, "setup-tools") {
+					return fmt.Errorf("non-Go workflow job %s/%s invokes Go tooling", name, jobName)
+				}
+			}
 		}
 	}
 	return nil
@@ -147,7 +189,19 @@ func TestRegistryMetadata(t *testing.T) {
 		require.True(t, strings.Contains(docs, section), "README missing %q", section)
 	}
 
-	workflowNames := []string{"build.yml", "command-dispatch.yml", "comment-on-stale-issues.yml", "community-moderation.yml", "export-repo-secrets.yml", "lint.yml", "prerelease.yml", "pull-request.yml", "release_command.yml", "release.yml", "run-acceptance-tests.yml", "weekly-pulumi-update.yml"}
+	workflowNames := make([]string, 0, len(workflowJobPolicy))
+	for name := range workflowJobPolicy {
+		workflowNames = append(workflowNames, name)
+	}
+	allWorkflowFiles, err := os.ReadDir("../.github/workflows")
+	require.NoError(t, err)
+	actualWorkflowNames := make([]string, 0, len(allWorkflowFiles))
+	for _, file := range allWorkflowFiles {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".yml") {
+			actualWorkflowNames = append(actualWorkflowNames, file.Name())
+		}
+	}
+	require.ElementsMatch(t, workflowNames, actualWorkflowNames)
 	shaPattern := regexp.MustCompile(`uses:\s+[^@\s]+@([^\s#]+)`)
 	sha := regexp.MustCompile(`^[0-9a-f]{40}$`)
 	allWorkflowText := ""
@@ -164,8 +218,10 @@ func TestRegistryMetadata(t *testing.T) {
 				require.Equal(t, releaseGoVersion, version, workflow)
 			}
 		}
-		require.NoError(t, validateWorkflowSemantics(parsed), workflow)
+		require.NoError(t, validateWorkflowSemantics(parsed, workflow), workflow)
 	}
+	require.NotContains(t, allWorkflowText, "1.21.x", "stale workflow Go pin")
+	require.NotContains(t, allWorkflowText, "1.25.11", "stale workflow Go pin")
 	build, buildText := readWorkflow(t, "build.yml")
 	on, ok := build["on"].(map[string]any)
 	require.True(t, ok)
@@ -180,17 +236,17 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Equal(t, 1, strings.Count(buildText, "  push:\n"), "build has exactly one push trigger")
 	require.Equal(t, 1, strings.Count(buildText, "  pull_request: {}\n"), "build has exactly one pull_request trigger")
 	require.Equal(t, 0, strings.Count(allWorkflowText, "paths-ignore:"), "no workflow has paths-ignore")
-	gateRuns := map[string][]string{
-		"lint": {"make lint"}, "race": {"make test_race"},
-		"openapi and codegen": {"make check_openapi", "make check_codegen"},
-		"SDKs":                {"make build_sdks"}, "examples": {"make test_examples"},
-		"vulnerability": {"make govulncheck"}, "license": {"make license"},
+	gateRuns := map[string]string{
+		"lint": "make lint", "race": "make test_race",
+		"openapi and codegen": "make check_openapi && make check_codegen",
+		"SDKs":                "make build_sdks", "examples": "make test_examples",
+		"vulnerability": "make govulncheck", "license": "make license",
 	}
-	for name, fragments := range gateRuns {
+	for name, command := range gateRuns {
 		if name == "lint" {
-			require.True(t, hasRunStep(workflowJobRunSteps(mustWorkflow(t, "lint.yml"), "lint"), fragments...), "missing complete %s gate run step", name)
+			require.True(t, hasExactRunCommand(workflowJobRunSteps(mustWorkflow(t, "lint.yml"), "lint"), command), "missing complete %s gate run step", name)
 		} else {
-			require.True(t, hasRunStep(workflowJobRunSteps(build, "prerequisites"), fragments...), "missing complete %s gate run step", name)
+			require.True(t, hasExactRunCommand(workflowJobRunSteps(build, "prerequisites"), command), "missing complete %s gate run step", name)
 		}
 	}
 	release, releaseText := readWorkflow(t, "release.yml")
@@ -247,14 +303,15 @@ jobs:
 		t.Run(name, func(t *testing.T) {
 			workflow := map[string]any{}
 			require.NoError(t, yaml.Unmarshal([]byte(fixture), &workflow))
-			if name == "missing GOVERSION" {
-				require.True(t, hasRunStep(workflowRunSteps(workflow), "make lint"))
-				require.Error(t, validateWorkflowSemantics(workflow))
-			} else if name == "wrong job" {
-				require.True(t, hasRunStep(workflowRunSteps(workflow), "make lint"))
-				require.False(t, hasRunStep(workflowJobRunSteps(workflow, "build"), "make lint"))
-			} else {
-				require.False(t, hasRunStep(workflowRunSteps(workflow), "make lint"))
+			switch name {
+			case "missing GOVERSION":
+				require.True(t, hasExactRunCommand(workflowRunSteps(workflow), "make lint"))
+				require.Error(t, validateWorkflowSemantics(workflow, "lint.yml"))
+			case "wrong job":
+				require.True(t, hasExactRunCommand(workflowRunSteps(workflow), "make lint"))
+				require.False(t, hasExactRunCommand(workflowJobRunSteps(workflow, "build"), "make lint"))
+			default:
+				require.False(t, hasExactRunCommand(workflowRunSteps(workflow), "make lint"))
 			}
 		})
 	}
