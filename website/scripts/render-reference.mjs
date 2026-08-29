@@ -12,7 +12,7 @@ export function renderResource(resource) {
   const replacementMetadata = [...new Map([...resource.inputs, ...resource.outputs]
     .filter((property) => property.replaceOnChanges)
     .map((property) => [property.name, property])).values()]
-    .map((property) => `<!-- ${property.name} replaceOnChanges: true -->`)
+    .map((property) => `{/* ${property.name} replaceOnChanges: true */}`)
     .join("\n");
   return `${frontmatter(resource.name, resource.description)}
 ${propertyTableImport}
@@ -48,7 +48,7 @@ Provider configuration for Dokploy.
 
 export function renderTypes(model) {
   const types = [...model.types].sort((left, right) => left.name.localeCompare(right.name));
-  const sections = types.map((type) => `## ${type.name} {#${type.slug}}\n\n${type.description}\n\n<PropertyTable properties={${JSON.stringify(type.properties)}} />`).join("\n\n");
+  const sections = types.map((type) => `<h2 id="${type.slug}">${type.name}</h2>\n\n${type.description}\n\n<PropertyTable properties={${JSON.stringify(type.properties)}} />`).join("\n\n");
   return `${frontmatter("Types", "Complex types used by the Dokploy provider.")}
 ${propertyTableImport}
 

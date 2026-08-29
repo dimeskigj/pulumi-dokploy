@@ -20,7 +20,7 @@ test("renders generated notice and input/output metadata", () => {
   });
   assert.match(mdx, /title: "Application"/);
   assert.match(mdx, /Generated from `schema\.json`/);
-  assert.match(mdx, /replaceOnChanges: true/);
+  assert.match(mdx, /\{\/\* environmentId replaceOnChanges: true \*\/\}/);
 });
 
 test("serializes hostile frontmatter title and description safely", () => {
@@ -39,7 +39,8 @@ test("renders configuration properties as JSON component props", () => {
 
 test("renders complex types with stable slug anchors", () => {
   const mdx = renderTypes({ types: [{ name: "ZedType", slug: "zed-type", description: "Zed.", properties: [] }, { name: "AlphaType", slug: "alpha-type", description: "Alpha.", properties: [] }] });
-  assert.ok(mdx.indexOf("## AlphaType {#alpha-type}") < mdx.indexOf("## ZedType {#zed-type}"));
+  assert.ok(mdx.indexOf('<h2 id="alpha-type">AlphaType</h2>') < mdx.indexOf('<h2 id="zed-type">ZedType</h2>'));
+  assert.doesNotMatch(mdx, /\{#(?:alpha|zed)-type\}/);
 });
 
 test("replaces the generated directory atomically", async () => {
