@@ -2,8 +2,8 @@ import pulumi
 import pulumi_dokploy as dokploy
 
 config = pulumi.Config()
-dokploy_endpoint = config.require_object("dokploy:endpoint")
-dokploy_api_key = config.require_object("dokploy:apiKey")
+dokploy_endpoint = config.require("dokploy:endpoint")
+dokploy_api_key = config.require_secret("dokploy:apiKey")
 app_host = config.get("appHost")
 if app_host is None:
     app_host = "app.example.invalid"

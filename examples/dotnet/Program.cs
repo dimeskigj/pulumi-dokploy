@@ -6,8 +6,8 @@ using Dokploy = Pulumi.Dokploy;
 return await Deployment.RunAsync(() =>
 {
     var config = new Config();
-    var dokployEndpoint = config.RequireObject<dynamic>("dokploy:endpoint");
-    var dokployApiKey = config.RequireObject<dynamic>("dokploy:apiKey");
+    var dokployEndpoint = config.Require("dokploy:endpoint");
+    var dokployApiKey = config.RequireSecret("dokploy:apiKey");
     var appHost = config.Get("appHost") ?? "app.example.invalid";
     var composeHost = config.Get("composeHost") ?? "compose.example.invalid";
     var gitlabIntegration = config.Get("gitlabIntegration") ?? "gitlab-integration-id";

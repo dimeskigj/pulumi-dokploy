@@ -26,7 +26,7 @@ function normalizeCode(code, sourcePath) {
 }
 
 export async function loadExamples(root) {
-  const rootUrl = root instanceof URL ? root : pathToFileURL(root);
+  const rootUrl = root instanceof URL ? new URL(root.href.endsWith("/") ? root.href : `${root.href}/`) : pathToFileURL(`${root}${String(root).endsWith("/") ? "" : "/"}`);
   const examples = [];
   for (const [language, label, relativePath] of SOURCES) {
     const sourcePath = relativePath.replaceAll("\\", "/");
@@ -57,7 +57,7 @@ description: A complete Dokploy deployment in six Pulumi languages.
 
 import LanguageTabs from "../../../components/LanguageTabs.astro";
 
-This page is generated from the tracked provider examples so every language stays synchronized with the canonical YAML source.
+This page embeds the tracked language programs produced by \`make gen_examples\`, which converts the canonical YAML program into each SDK language. The website generator does not translate programs; it only embeds those tracked files.
 
 The generated examples use invalid placeholders for endpoints and credentials. Supply real values through secret configuration before deployment.
 

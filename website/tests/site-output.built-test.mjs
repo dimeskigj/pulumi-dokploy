@@ -1,36 +1,10 @@
 import assert from "node:assert/strict";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
+import { BASE, ORIGIN, assertAnchorExists, candidateSiteTargets, collectFiles } from "../scripts/site-output.mjs";
 
 const DIST = path.resolve(new URL("../dist/", import.meta.url).pathname);
-const BASE = "/pulumi-dokploy";
-const ORIGIN = "https://gjorgjidimeski.github.io";
-
-export async function collectFiles(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const files = [];
-  for (const entry of entries) {
-    const file = path.join(directory, entry.name);
-    if (entry.isDirectory()) files.push(...await collectFiles(file));
-    else files.push(file);
-  }
-  return files;
-}
-
-export function candidateSiteTargets(dist, sourceFile, rawUrl) {
-  const sourceRoute = path.relative(dist, sourceFile)
-    .replaceAll(path.sep, "/")
-    .replace(/index\.html$/, "");
-  const url = new URL(rawUrl, `${ORIGIN}${BASE}/${sourceRoute}`);
-  if (url.origin !== ORIGIN) return [];
-  assert.ok(url.pathname === BASE || url.pathname.startsWith(`${BASE}/`), `URL escapes base: ${rawUrl}`);
-  const relative = decodeURIComponent(url.pathname.slice(BASE.length)).replace(/^\//, "");
-  const target = path.join(dist, relative);
-  return relative.endsWith("/") || relative === ""
-    ? [path.join(target, "index.html")]
-    : [target, path.join(target, "index.html")];
-}
 
 async function exists(file) {
   try {
@@ -68,7 +42,7 @@ test("built site has valid internal links, base paths, routes, and search index"
       if (parsed.hash) {
         const targetHtml = await readFile(target, "utf8");
         const id = decodeURIComponent(parsed.hash.slice(1));
-        assert.match(targetHtml, new RegExp(`\\bid=(['"])${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\1`), `Missing anchor ${id} for ${rawUrl}`);
+        assertAnchorExists(targetHtml, id);
       }
     }
   }

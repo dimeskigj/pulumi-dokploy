@@ -2,16 +2,16 @@ import * as pulumi from "@pulumi/pulumi";
 import * as dokploy from "@gjorgjidimeski/pulumi-dokploy";
 
 const config = new pulumi.Config();
-const dokployEndpoint = config.requireObject<any>("dokploy:endpoint");
-const dokployApiKey = config.requireObject<any>("dokploy:apiKey");
+const dokployEndpoint = config.require("dokploy:endpoint");
+const dokployApiKey = config.requireSecret("dokploy:apiKey");
 const appHost = config.get("appHost") || "app.example.invalid";
 const composeHost = config.get("composeHost") || "compose.example.invalid";
-const gitlabIntegration = config.get("gitlabIntegration") || "gitlab-integration-id";
-const gitlabProject = config.getNumber("gitlabProject") || 42;
-const gitlabOwner = config.get("gitlabOwner") || "example";
-const gitlabNamespace = config.get("gitlabNamespace") || "platform";
-const gitlabRepository = config.get("gitlabRepository") || "application";
-const gitBranch = config.get("gitBranch") || "main";
+const gitlabIntegrationConfig = config.get("gitlabIntegration") || "gitlab-integration-id";
+const gitlabProjectConfig = config.getNumber("gitlabProject") || 42;
+const gitlabOwnerConfig = config.get("gitlabOwner") || "example";
+const gitlabNamespaceConfig = config.get("gitlabNamespace") || "platform";
+const gitlabRepositoryConfig = config.get("gitlabRepository") || "application";
+const gitBranchConfig = config.get("gitBranch") || "main";
 const registryPassword = config.getSecret("registryPassword") || pulumi.secret("replace-with-a-registry-password");
 const databasePassword = config.getSecret("databasePassword") || pulumi.secret("replace-with-a-database-password");
 const redisPassword = config.getSecret("redisPassword") || pulumi.secret("replace-with-a-redis-password");
@@ -86,9 +86,9 @@ const composeDomain = new dokploy.Domain("composeDomain", {
     certificateType: "none",
     enabled: true,
 });
-export const gitlabIntegration0 = gitlabIntegration;
-export const gitlabProject0 = gitlabProject;
-export const gitlabOwner0 = gitlabOwner;
-export const gitlabNamespace0 = gitlabNamespace;
-export const gitlabRepository0 = gitlabRepository;
-export const gitBranch0 = gitBranch;
+export const gitlabIntegration = gitlabIntegrationConfig;
+export const gitlabProject = gitlabProjectConfig;
+export const gitlabOwner = gitlabOwnerConfig;
+export const gitlabNamespace = gitlabNamespaceConfig;
+export const gitlabRepository = gitlabRepositoryConfig;
+export const gitBranch = gitBranchConfig;
