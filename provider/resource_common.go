@@ -9,6 +9,11 @@ import (
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
+const (
+	statusDone         = "done"
+	defaultComposePath = "./docker-compose.yml"
+)
+
 type clientFactory func(context.Context) *client.Client
 
 var waitPollInterval = 2 * time.Second
@@ -37,7 +42,7 @@ func waitForDone(ctx context.Context, kind, id string, read func(context.Context
 			}
 		} else {
 			switch status {
-			case "done":
+			case statusDone:
 				return nil
 			case "error":
 				return fmt.Errorf("%s %s deployment failed", kind, id)

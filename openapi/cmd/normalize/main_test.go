@@ -53,7 +53,7 @@ func responseSchema(t *testing.T, d *Document, path, method, status string) stru
 		} `json:"content"`
 	}
 	op := d.Paths[path].Post
-	if method == "get" {
+	if method == httpMethodGet {
 		op = d.Paths[path].Get
 	}
 	b, _ := json.Marshal(op.Raw["responses"].(map[string]any)[status])

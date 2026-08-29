@@ -69,7 +69,7 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 			retryAfter = resp.Header.Get("Retry-After")
 		}
 		if resp != nil && resp.Body != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 		if req.Body != nil && req.Body != http.NoBody {
 			body, bodyErr := req.GetBody()
@@ -95,7 +95,10 @@ func (t *retryTransport) apiError(resp *http.Response, req *http.Request) error 
 		return &APIError{StatusCode: resp.StatusCode, Operation: operationName(req)}
 	}
 	body, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	closeErr := resp.Body.Close()
+	if err == nil && closeErr != nil {
+		err = closeErr
+	}
 	if err != nil {
 		return &APIError{StatusCode: resp.StatusCode, Operation: operationName(req), Message: "response body unavailable"}
 	}
@@ -140,7 +143,8 @@ func retryDelay(policy RetryPolicy, attempt int, retryAfter string) time.Duratio
 		}
 	}
 	if policy.Jitter > 0 {
-		d *= 1 + (rand.Float64()*2-1)*policy.Jitter
+		// Jitter is not security-sensitive; math/rand is sufficient here.
+		d *= 1 + (rand.Float64()*2-1)*policy.Jitter // #nosec G404
 	}
 	if d < 0 {
 		d = 0

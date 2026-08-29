@@ -134,7 +134,7 @@ func assertSecretInput(t *testing.T, mocks *captureMVPResources, token, key, wan
 func secretInputValue(t *testing.T, mocks *captureMVPResources, token, key, want string) string {
 	t.Helper()
 	value := mocks.resource(token)[resource.PropertyKey(key)]
-	if !value.IsSecret() && !(value.IsOutput() && value.OutputValue().Secret) {
+	if !value.IsSecret() && (!value.IsOutput() || !value.OutputValue().Secret) {
 		t.Fatalf("%s.%s did not retain secret propagation: %#v", token, key, value)
 	}
 	if value.IsSecret() {

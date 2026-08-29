@@ -142,9 +142,10 @@ func quotedValueEnd(text string, start int, quote byte) int {
 			escaped = false
 			continue
 		}
-		if text[i] == '\\' {
+		switch text[i] {
+		case '\\':
 			escaped = true
-		} else if text[i] == quote {
+		case quote:
 			return i
 		}
 	}

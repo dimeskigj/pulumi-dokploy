@@ -7,12 +7,10 @@ on:
     - master
     - main
     - feature-**
-    paths-ignore:
-    - CHANGELOG.md
     tags-ignore:
     - v*
     - sdk/*
-    - "**"
+  pull_request: {}
   workflow_dispatch: {}
 env:
   PROVIDER: dokploy
@@ -117,6 +115,18 @@ jobs:
         labels: impact/no-changelog-required
         number: ${{ github.event.issue.number }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Check OpenAPI and generated SDKs
+      run: make check_openapi && make check_codegen
+    - name: Run race tests
+      run: make test_race
+    - name: Build all SDKs
+      run: make build_sdks
+    - name: Test all examples
+      run: make test_examples
+    - name: Vulnerability scan
+      run: make govulncheck
+    - name: License scan
+      run: make license
     - name: Build Provider
       run: make provider
     - name: Check worktree clean
@@ -267,7 +277,7 @@ jobs:
       uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
     - name: check if this commit needs release
       if: ${{ env.RELEASE_BOT_ENDPOINT != '' }}
-      uses: pulumi/action-release-by-pr-label@main
+      uses: pulumi/action-release-by-pr-label@a90569296b805a3179b81c1860f5777073cc7aa2
       with:
         command: "release-if-needed"
         repo: ${{ github.repository }}

@@ -149,7 +149,7 @@ func (s ComposeSource) validate() error {
 
 func composePath(path string) string {
 	if path == "" {
-		return "./docker-compose.yml"
+		return defaultComposePath
 	}
 	return path
 }

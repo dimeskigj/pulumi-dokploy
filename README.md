@@ -39,13 +39,13 @@ The provider exposes seven resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:Redis`, and `dokploy:index:Domain`.
 
-`Project` owns its default environment. Create explicit `Environment` resources for additional
+Project owns the default environment. Create explicit `Environment` resources for additional
 environments and use their IDs from dependent resources. Applications and Compose stacks can
 use Git, Docker, raw Compose, or private GitLab sources. A private GitLab reference records the
-integration/project/owner/namespace/repository/branch details; the referenced GitLab integration
-is not managed by this provider. SSH key references are likewise passed through and not managed.
+integration/project/owner/namespace/repository/branch details. The referenced GitLab integration is not managed
+by this provider. SSH key references are likewise passed through and not managed.
 
-Changing an Application or Compose source type replaces that resource rather than attempting an
+Source type changes replace that resource rather than attempting an
 in-place conversion. Create and update operations wait for Dokploy deployment completion;
 deployment errors preserve partial state so the failed resource can be inspected and repaired.
 Compose volumes are preserved on destroy by default. Set `deleteVolumesOnDestroy` only when

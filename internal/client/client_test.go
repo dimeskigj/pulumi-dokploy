@@ -166,7 +166,7 @@ func TestGeneratedOperationReturnsTypedAPIErrorForNonSuccess(t *testing.T) {
 				if status == http.StatusNotFound {
 					code = "NOT_FOUND"
 				}
-				_, _ = w.Write([]byte(fmt.Sprintf(`{"code":%q,"message":"missing"}`, code)))
+				_, _ = fmt.Fprintf(w, `{"code":%q,"message":"missing"}`, code)
 			}))
 			defer server.Close()
 			c, err := New(server.URL, "super-secret", WithRetryPolicy(RetryPolicy{Attempts: 1, InitialDelay: time.Millisecond}))

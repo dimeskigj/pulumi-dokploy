@@ -57,8 +57,8 @@ func New(endpoint, apiKey string, options ...Option) (*Client, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 30 * time.Second}
 	} else {
-		copy := *httpClient
-		httpClient = &copy
+		clonedClient := *httpClient
+		httpClient = &clonedClient
 		if httpClient.Timeout == 0 {
 			httpClient.Timeout = 30 * time.Second
 		}

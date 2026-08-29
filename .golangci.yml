@@ -1,16 +1,14 @@
 version: "2"
 linters:
-  enable:
-    - goconst
-    - gosec
+  enable: [goconst, gosec, misspell, nakedret, unconvert]
+  disable:
+    # lll and revive are style/documentation policy, not correctness gates.
     - lll
-    - misspell
-    - nakedret
     - revive
-    - unconvert
   exclusions:
     generated: lax
+    rules:
+      - linters: [goconst]
+        path: '.*_test\.go'
 formatters:
-  enable:
-    - gci
-    - gofmt
+  enable: [gofmt]

@@ -331,15 +331,19 @@ func TestApplicationCreateGitAndGitLabSetupFailuresCleanUp(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			const buildBody = `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`
 			const environmentBody = `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`
-			expectations := []scriptedRequest{expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), scriptedRequest{Method: http.MethodPost, Path: tc.provider, Body: json.RawMessage(tc.providerBody), Status: http.StatusOK, Response: []byte(`true`)}}
+			expectations := []scriptedRequest{
+				expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
+				{Method: http.MethodPost, Path: tc.provider, Body: json.RawMessage(tc.providerBody), Status: http.StatusOK, Response: []byte(`true`)},
+			}
 			if tc.stage != "source" {
 				expectations = append(expectations, expectPOST("/api/application.saveBuildType", buildBody, `true`))
 			}
-			if tc.stage == "environment" {
+			switch tc.stage {
+			case "environment":
 				expectations = append(expectations, scriptedRequest{Method: http.MethodPost, Path: "/api/application.saveEnvironment", Body: json.RawMessage(environmentBody), Status: http.StatusBadRequest, Response: []byte(`{"code":"SETUP_FAILED","message":"setup failed ENV-SECRET ARGS-SECRET BUILD-SECRET"}`)})
-			} else if tc.stage == "build" {
+			case "build":
 				expectations[len(expectations)-1] = scriptedRequest{Method: http.MethodPost, Path: "/api/application.saveBuildType", Body: json.RawMessage(buildBody), Status: http.StatusBadRequest, Response: []byte(`{"code":"SETUP_FAILED","message":"setup failed ENV-SECRET ARGS-SECRET BUILD-SECRET"}`)}
-			} else {
+			default:
 				expectations[1] = scriptedRequest{Method: http.MethodPost, Path: tc.provider, Body: json.RawMessage(tc.providerBody), Status: http.StatusBadRequest, Response: []byte(`{"code":"SETUP_FAILED","message":"setup failed ENV-SECRET ARGS-SECRET BUILD-SECRET"}`)}
 			}
 			expectations = append(expectations, expectPOST("/api/application.delete", `{"applicationId":"a1"}`, `true`))

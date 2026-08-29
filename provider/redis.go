@@ -148,7 +148,7 @@ func (r Redis) Create(ctx context.Context, req infer.CreateRequest[RedisArgs]) (
 	if err := waitForDone(ctx, "redis", state.RedisID, func(c context.Context) (string, error) { return redisStatus(c, api, state.RedisID) }); err != nil {
 		return infer.CreateResponse[RedisState]{ID: state.RedisID, Output: state}, initFailed(sanitizeRedisError(err, req.Inputs))
 	}
-	state.Status = "done"
+	state.Status = statusDone
 	return infer.CreateResponse[RedisState]{ID: state.RedisID, Output: state}, nil
 }
 
@@ -281,7 +281,7 @@ func (r Redis) Update(ctx context.Context, req infer.UpdateRequest[RedisArgs, Re
 		if err := waitForDone(ctx, "redis", req.ID, func(c context.Context) (string, error) { return redisStatus(c, api, req.ID) }); err != nil {
 			return infer.UpdateResponse[RedisState]{Output: state}, sanitizeRedisError(err, req.Inputs, req.State.RedisArgs)
 		}
-		state.Status = "done"
+		state.Status = statusDone
 	}
 	return infer.UpdateResponse[RedisState]{Output: state}, nil
 }

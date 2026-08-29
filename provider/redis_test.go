@@ -117,7 +117,10 @@ func TestRedisPasswordErrorsRedactOldAndNewAcrossDeployAndPoll(t *testing.T) {
 			old := waitPollInterval
 			waitPollInterval = 0
 			t.Cleanup(func() { waitPollInterval = old })
-			expectations := []scriptedRequest{expectPOST("/api/redis.update", `{"databasePassword":"NEW-PASSWORD","description":null,"dockerImage":"redis:8","name":"cache","redisId":"r1"}`, `{}`), scriptedRequest{Method: http.MethodPost, Path: "/api/redis.deploy", Body: json.RawMessage(`{"redisId":"r1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"OLD-PASSWORD NEW-PASSWORD"}`)}}
+			expectations := []scriptedRequest{
+				expectPOST("/api/redis.update", `{"databasePassword":"NEW-PASSWORD","description":null,"dockerImage":"redis:8","name":"cache","redisId":"r1"}`, `{}`),
+				{Method: http.MethodPost, Path: "/api/redis.deploy", Body: json.RawMessage(`{"redisId":"r1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"OLD-PASSWORD NEW-PASSWORD"}`)},
+			}
 			if stage == "poll" {
 				expectations[1] = expectPOST("/api/redis.deploy", `{"redisId":"r1"}`, `"running"`)
 				expectations = append(expectations, scriptedRequest{Method: http.MethodGet, Path: "/api/redis.one", Query: map[string][]string{"redisId": {"r1"}}, Status: http.StatusBadRequest, Response: []byte(`{"message":"OLD-PASSWORD NEW-PASSWORD"}`)})

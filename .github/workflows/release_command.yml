@@ -24,7 +24,7 @@ jobs:
       name: Fetch secrets from ESC
       uses: pulumi/esc-action@9eb774255b1a4afb7855678ae8d4a77359da0d9b
     - name: Should release PR
-      uses: pulumi/action-release-by-pr-label@main
+      uses: pulumi/action-release-by-pr-label@a90569296b805a3179b81c1860f5777073cc7aa2
       with:
         command: "should-release"
         repo: ${{ github.repository }}

@@ -5,9 +5,6 @@ on:
   repository_dispatch:
     types:
     - run-acceptance-tests-command
-  pull_request:
-    paths-ignore:
-    - CHANGELOG.md
   workflow_dispatch: {}
 env:
   PROVIDER: dokploy
@@ -50,6 +47,7 @@ jobs:
         issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
         body: "Please view the PR build: ${{ steps.vars.outputs.run-url }}"
   prerequisites:
+    environment: dokploy-acceptance
     runs-on: ubuntu-latest
     name: prerequisites
     permissions:
@@ -84,6 +82,11 @@ jobs:
         set-env: PROVIDER_VERSION
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Require Dokploy acceptance credentials
+      env:
+        DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}
+        DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}
+      run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"
     - name: Setup Tools
       uses: ./.github/actions/setup-tools
       with:

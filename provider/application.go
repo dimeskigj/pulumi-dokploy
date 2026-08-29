@@ -156,7 +156,7 @@ func (r Application) Create(ctx context.Context, req infer.CreateRequest[Applica
 	if err := waitForDone(ctx, "application", state.ApplicationID, func(ctx context.Context) (string, error) { return applicationStatus(ctx, api, state.ApplicationID) }); err != nil {
 		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, initFailed(sanitizeApplicationError(err, req.Inputs))
 	}
-	state.Status = "done"
+	state.Status = statusDone
 	return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, nil
 }
 
@@ -362,7 +362,7 @@ func (r Application) Update(ctx context.Context, req infer.UpdateRequest[Applica
 		if err := waitForDone(ctx, "application", req.ID, func(ctx context.Context) (string, error) { return applicationStatus(ctx, api, req.ID) }); err != nil {
 			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
 		}
-		state.Status = "done"
+		state.Status = statusDone
 	}
 	return infer.UpdateResponse[ApplicationState]{Output: state}, nil
 }

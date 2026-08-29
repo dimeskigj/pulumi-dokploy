@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+const (
+	httpMethodGet  = "get"
+	httpMethodPost = "post"
+)
+
 type Document struct {
 	OpenAPI    string               `json:"openapi"`
 	Info       map[string]any       `json:"info"`
@@ -59,10 +64,10 @@ func (p *PathItem) UnmarshalJSON(b []byte) error {
 				return err
 			}
 			p.Methods[k] = &x
-			if k == "get" {
+			if k == httpMethodGet {
 				p.Get = &x
 			}
-			if k == "post" {
+			if k == httpMethodPost {
 				p.Post = &x
 			}
 		} else {
@@ -345,6 +350,7 @@ func main() {
 	}
 	b, _ := json.MarshalIndent(out, "", "  ")
 	b = append(b, '\n')
+	// #nosec G306 -- generated source is intentionally repository-readable.
 	if err = os.WriteFile(*outPath, b, 0644); err != nil {
 		panic(err)
 	}

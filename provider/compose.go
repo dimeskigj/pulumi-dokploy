@@ -66,10 +66,10 @@ func (r Compose) Check(ctx context.Context, req infer.CheckRequest) (infer.Check
 		failures = append(failures, p.CheckFailure{Property: "composeType", Reason: "composeType must be one of docker-compose or stack"})
 	}
 	if in.Source.Type == ComposeSourceGit && in.Source.Git != nil && in.Source.Git.ComposePath == "" {
-		in.Source.Git.ComposePath = "./docker-compose.yml"
+		in.Source.Git.ComposePath = defaultComposePath
 	}
 	if in.Source.Type == ComposeSourceGitLab && in.Source.GitLab != nil && in.Source.GitLab.ComposePath == "" {
-		in.Source.GitLab.ComposePath = "./docker-compose.yml"
+		in.Source.GitLab.ComposePath = defaultComposePath
 	}
 	if in.Name == "" {
 		failures = append(failures, p.CheckFailure{Property: "name", Reason: "name must not be empty"})

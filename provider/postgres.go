@@ -164,7 +164,7 @@ func (r Postgres) Create(ctx context.Context, req infer.CreateRequest[PostgresAr
 	if err := waitForDone(ctx, "postgres", state.PostgresID, func(c context.Context) (string, error) { return postgresStatus(c, api, state.PostgresID) }); err != nil {
 		return infer.CreateResponse[PostgresState]{ID: state.PostgresID, Output: state}, initFailed(sanitizePostgresError(err, req.Inputs))
 	}
-	state.Status = "done"
+	state.Status = statusDone
 	return infer.CreateResponse[PostgresState]{ID: state.PostgresID, Output: state}, nil
 }
 
@@ -300,7 +300,7 @@ func (r Postgres) Update(ctx context.Context, req infer.UpdateRequest[PostgresAr
 		if err := waitForDone(ctx, "postgres", req.ID, func(c context.Context) (string, error) { return postgresStatus(c, api, req.ID) }); err != nil {
 			return infer.UpdateResponse[PostgresState]{Output: state}, sanitizePostgresError(err, req.Inputs, req.State.PostgresArgs)
 		}
-		state.Status = "done"
+		state.Status = statusDone
 	}
 	return infer.UpdateResponse[PostgresState]{Output: state}, nil
 }

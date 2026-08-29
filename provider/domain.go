@@ -237,7 +237,7 @@ func updateDomain(ctx context.Context, api *client.Client, id string, args Domai
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		_, _ = io.Copy(io.Discard, response.Body)
 		return fmt.Errorf("domain.update returned HTTP %d", response.StatusCode)
