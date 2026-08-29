@@ -89,6 +89,9 @@ func (r Environment) Create(ctx context.Context, req infer.CreateRequest[Environ
 		return infer.CreateResponse[EnvironmentState]{}, err
 	}
 	if isDefault {
+		if _, cleanupErr := r.client(ctx).EnvironmentRemoveWithResponse(ctx, generated.EnvironmentRemoveJSONRequestBody{EnvironmentId: *response.JSON200.EnvironmentId}); cleanupErr != nil {
+			p.GetLogger(ctx).Warningf("environment cleanup failed for %s: %s", *response.JSON200.EnvironmentId, cleanupErr)
+		}
 		return infer.CreateResponse[EnvironmentState]{}, errors.New(unsupportedDefaultEnvironment)
 	}
 	state := EnvironmentState{EnvironmentArgs: req.Inputs, EnvironmentID: *response.JSON200.EnvironmentId, IsDefault: isDefault}

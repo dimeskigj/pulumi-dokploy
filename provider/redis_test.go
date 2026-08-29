@@ -104,10 +104,24 @@ func TestRedisImportReconstructsObservablePassword(t *testing.T) {
 	require.Equal(t, "observed-env", *got.Inputs.Environment)
 }
 
-func TestRedisImportRejectsMissingPassword(t *testing.T) {
+func TestRedisImportAllowsMissingPasswordWithoutInventingSecret(t *testing.T) {
 	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","status":"done"}`))
-	_, err := (Redis{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[RedisArgs, RedisState]{ID: "r1"})
-	require.EqualError(t, err, "redis.one omitted required databasePassword; import requires an observable password or prior state")
+	got, err := (Redis{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[RedisArgs, RedisState]{ID: "r1"})
+	require.NoError(t, err)
+	require.Empty(t, got.Inputs.DatabasePassword)
+}
+
+func TestRedisRefreshPreservesPriorPasswordWhenAPIOmitsIt(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","status":"done"}`))
+	got, err := (Redis{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[RedisArgs, RedisState]{ID: "r1", State: RedisState{RedisArgs: RedisArgs{DatabasePassword: "prior"}}})
+	require.NoError(t, err)
+	require.Equal(t, "prior", got.Inputs.DatabasePassword)
+}
+
+func TestRedisPostImportPasswordIsRuntimeUpdate(t *testing.T) {
+	diff, err := (Redis{}).Diff(t.Context(), infer.DiffRequest[RedisArgs, RedisState]{Inputs: RedisArgs{DatabasePassword: "supplied"}, State: RedisState{RedisArgs: RedisArgs{}}})
+	require.NoError(t, err)
+	require.Equal(t, p.Update, diff.DetailedDiff["databasePassword"].Kind)
 }
 
 func TestRedisPasswordErrorsRedactOldAndNewAcrossDeployAndPoll(t *testing.T) {

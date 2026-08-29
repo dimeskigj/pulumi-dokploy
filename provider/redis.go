@@ -218,6 +218,11 @@ func (r Redis) Read(ctx context.Context, req infer.ReadRequest[RedisArgs, RedisS
 		return infer.ReadResponse[RedisArgs, RedisState]{}, fmt.Errorf("redis.one returned incomplete redis")
 	}
 	v := resp.JSON200
+	for name, field := range map[string]*string{"name": v.Name, "environmentId": v.EnvironmentId} {
+		if field == nil {
+			return infer.ReadResponse[RedisArgs, RedisState]{}, fmt.Errorf("redis.one omitted required %s", name)
+		}
+	}
 	a := req.State.RedisArgs
 	a.Name, a.EnvironmentID = value(v.Name), value(v.EnvironmentId)
 	a.AppName, a.Description, a.ServerID, a.ExternalPort = v.AppName, v.Description, v.ServerId, v.ExternalPort
@@ -229,9 +234,6 @@ func (r Redis) Read(ctx context.Context, req infer.ReadRequest[RedisArgs, RedisS
 	}
 	if password := stringValue(v.AdditionalProperties, "databasePassword"); password != "" {
 		a.DatabasePassword = password
-	}
-	if a.DatabasePassword == "" {
-		return infer.ReadResponse[RedisArgs, RedisState]{}, fmt.Errorf("redis.one omitted required databasePassword; import requires an observable password or prior state")
 	}
 	status, err := redisStatusValue(v)
 	if err != nil {

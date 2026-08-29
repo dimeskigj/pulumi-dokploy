@@ -19,6 +19,15 @@ func TestApplicationPreviewMakesNoRequest(t *testing.T) {
 	require.Empty(t, got.ID)
 }
 
+func TestApplicationDeclaresSecretDependenciesForTopLevelAndNestedOutputs(t *testing.T) {
+	var _ infer.ExplicitDependencies[ApplicationArgs, ApplicationState] = Application{}
+	// Provider schema generation exercises WireDependencies and must retain the
+	// nested Docker password's secret marker as well as top-level secrets.
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	require.True(t, schemaProperty(spec, "dokploy:index:Application", "source.docker.password").Secret)
+}
+
 func TestApplicationCreateDockerOrdersConfigurationBeforeDeployment(t *testing.T) {
 	oldInterval := waitPollInterval
 	waitPollInterval = 0

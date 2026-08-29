@@ -376,7 +376,13 @@ func (r Application) Delete(ctx context.Context, req infer.DeleteRequest[Applica
 }
 
 func (r Application) WireDependencies(f infer.FieldSelector, args *ApplicationArgs, state *ApplicationState) {
-	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.Source), f.InputField(&args.Environment), f.InputField(&args.BuildArgs), f.InputField(&args.BuildSecrets), f.InputField(&args.CreateEnvFile)}
+	deps := []infer.InputField{
+		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.CreateEnvFile),
+	}
 	f.OutputField(&state.ApplicationID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
+	f.OutputField(&state.Environment).DependsOn(f.InputField(&args.Environment).Secret())
+	f.OutputField(&state.BuildArgs).DependsOn(f.InputField(&args.BuildArgs).Secret())
+	f.OutputField(&state.BuildSecrets).DependsOn(f.InputField(&args.BuildSecrets).Secret())
+	f.OutputField(&state.Source).DependsOn(f.InputField(&args.Source).Secret())
 }

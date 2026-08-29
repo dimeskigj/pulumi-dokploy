@@ -235,6 +235,11 @@ func (r Postgres) Read(ctx context.Context, req infer.ReadRequest[PostgresArgs, 
 		return infer.ReadResponse[PostgresArgs, PostgresState]{}, fmt.Errorf("postgres.one returned incomplete postgres")
 	}
 	v := resp.JSON200
+	for name, field := range map[string]*string{"name": v.Name, "environmentId": v.EnvironmentId, "databaseName": v.DatabaseName, "databaseUser": v.DatabaseUser} {
+		if field == nil {
+			return infer.ReadResponse[PostgresArgs, PostgresState]{}, fmt.Errorf("postgres.one omitted required %s", name)
+		}
+	}
 	a := req.State.PostgresArgs
 	a.Name, a.EnvironmentID, a.DatabaseName, a.DatabaseUser = value(v.Name), value(v.EnvironmentId), value(v.DatabaseName), value(v.DatabaseUser)
 	a.AppName, a.Description, a.ServerID, a.ExternalPort = v.AppName, v.Description, v.ServerId, v.ExternalPort
@@ -246,9 +251,6 @@ func (r Postgres) Read(ctx context.Context, req infer.ReadRequest[PostgresArgs, 
 	}
 	if password := stringValue(v.AdditionalProperties, "databasePassword"); password != "" {
 		a.DatabasePassword = password
-	}
-	if a.DatabasePassword == "" {
-		return infer.ReadResponse[PostgresArgs, PostgresState]{}, fmt.Errorf("postgres.one omitted required databasePassword; import requires an observable password or prior state")
 	}
 	status, err := postgresStatusValue(v)
 	if err != nil {

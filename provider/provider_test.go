@@ -11,6 +11,9 @@ import (
 var (
 	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]         = Project{}
 	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState] = Environment{}
+	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState] = Application{}
+	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]       = Postgres{}
+	_ infer.ExplicitDependencies[RedisArgs, RedisState]             = Redis{}
 )
 
 func TestProviderSchema(t *testing.T) {

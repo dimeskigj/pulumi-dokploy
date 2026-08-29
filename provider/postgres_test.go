@@ -115,10 +115,24 @@ func TestPostgresImportReconstructsObservableSecrets(t *testing.T) {
 	require.Equal(t, "observed-env", *got.Inputs.Environment)
 }
 
-func TestPostgresImportRejectsMissingPassword(t *testing.T) {
+func TestPostgresImportAllowsMissingPasswordWithoutInventingSecret(t *testing.T) {
 	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","status":"done"}`))
-	_, err := (Postgres{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[PostgresArgs, PostgresState]{ID: "p1"})
-	require.EqualError(t, err, "postgres.one omitted required databasePassword; import requires an observable password or prior state")
+	got, err := (Postgres{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[PostgresArgs, PostgresState]{ID: "p1"})
+	require.NoError(t, err)
+	require.Empty(t, got.Inputs.DatabasePassword)
+}
+
+func TestPostgresRefreshPreservesPriorPasswordWhenAPIOmitsIt(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","status":"done"}`))
+	got, err := (Postgres{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[PostgresArgs, PostgresState]{ID: "p1", State: PostgresState{PostgresArgs: PostgresArgs{DatabasePassword: "prior"}}})
+	require.NoError(t, err)
+	require.Equal(t, "prior", got.Inputs.DatabasePassword)
+}
+
+func TestPostgresPostImportPasswordIsRuntimeUpdate(t *testing.T) {
+	diff, err := (Postgres{}).Diff(t.Context(), infer.DiffRequest[PostgresArgs, PostgresState]{Inputs: PostgresArgs{DatabasePassword: "supplied"}, State: PostgresState{PostgresArgs: PostgresArgs{}}})
+	require.NoError(t, err)
+	require.Equal(t, p.Update, diff.DetailedDiff["databasePassword"].Kind)
 }
 
 func TestPostgresUpdateErrorsRedactOldAndNewSecrets(t *testing.T) {

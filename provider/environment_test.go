@@ -34,6 +34,24 @@ func TestEnvironmentCreate(t *testing.T) {
 	require.Equal(t, "e1", got.ID)
 }
 
+func TestEnvironmentCreateDefaultRemovesCreatedEnvironmentBeforeReturningUnsupportedError(t *testing.T) {
+	s := newScriptedServer(t,
+		expectPOST("/api/environment.create", `{"name":"production","projectId":"p1"}`, `{"environmentId":"e1","isDefault":true}`),
+		expectPOST("/api/environment.remove", `{"environmentId":"e1"}`, `true`),
+	)
+	_, err := (Environment{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[EnvironmentArgs]{Inputs: EnvironmentArgs{ProjectID: "p1", Name: "production"}})
+	require.EqualError(t, err, unsupportedDefaultEnvironment)
+}
+
+func TestEnvironmentCreateDefaultPreservesUnsupportedErrorWhenCleanupFails(t *testing.T) {
+	s := newScriptedServer(t,
+		expectPOST("/api/environment.create", `{"name":"production","projectId":"p1"}`, `{"environmentId":"e1","isDefault":true}`),
+		scriptedRequest{Method: http.MethodPost, Path: "/api/environment.remove", Body: json.RawMessage(`{"environmentId":"e1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"cleanup failed"}`)},
+	)
+	_, err := (Environment{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[EnvironmentArgs]{Inputs: EnvironmentArgs{ProjectID: "p1", Name: "production"}})
+	require.EqualError(t, err, unsupportedDefaultEnvironment)
+}
+
 func TestEnvironmentProjectIDReplacement(t *testing.T) {
 	r := Environment{}
 	diff, err := r.Diff(t.Context(), infer.DiffRequest[EnvironmentArgs, EnvironmentState]{
