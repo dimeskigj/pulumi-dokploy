@@ -5,7 +5,7 @@ PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
 VERSION_GENERIC ?= 0.0.1-alpha.0+dev
 
-.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_sdks gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-%
+.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_sdks gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi ci-mgmt build prepare_local_workspace local_generate sign-goreleaser-exe-% docs_generate docs_check docs_build
 
 provider:
 	mkdir -p bin
@@ -102,6 +102,21 @@ license:
 	mise exec -- go run github.com/google/go-licenses@v1.6.0 check ./...
 
 build: provider
+
+docs_generate:
+	npm ci --prefix website
+	npm --prefix website run generate
+
+docs_check:
+	npm ci --prefix website
+	npm --prefix website run check:generated
+	npm --prefix website run check
+	npm --prefix website run build
+	npm --prefix website run test:built
+
+docs_build:
+	npm ci --prefix website
+	npm --prefix website run build
 
 ci-mgmt:
 	mise exec -- go run github.com/pulumi/ci-mgmt/provider-ci@0ffac60baf6734014a6dfb392ac1e52bb41433d4 generate

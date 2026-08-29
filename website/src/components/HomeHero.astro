@@ -12,7 +12,7 @@ const { eyebrow = "Pulumi provider", title = "Deploy with confidence.", descript
     <p class="eyebrow">{eyebrow}</p>
     <h1 id="home-hero-title">{title}</h1>
     <p class="home-hero__description">{description}</p>
-    <div class="home-hero__actions"><a class="button button--primary" href={withBase("getting-started")}>Get started</a><a class="button" href={`${referenceRoot}project/`}>{referenceLabel}</a></div>
+    <div class="home-hero__actions"><a class="button button--primary" href={withBase("getting-started") + "installation/"}>Get started</a><a class="button" href={`${referenceRoot}project/`}>{referenceLabel}</a></div>
   </div>
   {code && <div class="home-hero__code"><Code code={code} lang="typescript" /></div>}
 </section>
