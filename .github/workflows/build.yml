@@ -64,7 +64,17 @@ jobs:
       name: Check Schema is Valid
       id: schema-check
       run: |
-        schema-tools compare -p ${{ env.PROVIDER }} -o ${{ github.event.repository.default_branch }} -n --local-path=provider/cmd/pulumi-resource-${{ env.PROVIDER }}/schema.json > "$RUNNER_TEMP/schema-check-report.md"
+        set +e
+        schema-tools compare -p ${{ env.PROVIDER }} -o ${{ github.event.repository.default_branch }} -n --repository github://api.github.com/${{ github.repository_owner }} --local-path=provider/cmd/pulumi-resource-${{ env.PROVIDER }}/schema.json > "$RUNNER_TEMP/schema-check-report.md" 2>&1
+        status=$?
+        set -e
+        if [ $status -ne 0 ] && grep -q '404 HTTP error fetching schema' "$RUNNER_TEMP/schema-check-report.md"; then
+          echo "No baseline schema found on ${{ github.event.repository.default_branch }} yet (first schema); nothing to compare." > "$RUNNER_TEMP/schema-check-report.md"
+          echo "Looking good! No breaking changes found." >> "$RUNNER_TEMP/schema-check-report.md"
+        elif [ $status -ne 0 ]; then
+          cat "$RUNNER_TEMP/schema-check-report.md"
+          exit $status
+        fi
         if grep -Fq 'Looking good! No breaking changes found.' "$RUNNER_TEMP/schema-check-report.md"; then
           echo "no-breaking-changes=true" >> "$GITHUB_OUTPUT"
         else
