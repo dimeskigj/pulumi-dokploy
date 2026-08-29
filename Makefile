@@ -5,7 +5,7 @@ PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
 VERSION_GENERIC ?= 0.0.1-alpha.0+dev
 
-.PHONY: provider codegen build_sdks test test_provider lint generate_openapi check_openapi
+.PHONY: provider codegen build_sdks gen_examples test_examples test test_provider lint generate_openapi check_openapi
 
 provider:
 	mkdir -p bin
@@ -25,10 +25,38 @@ build_sdks:
 	cd sdk/dotnet && dotnet build --nologo
 	cd sdk/java && gradle build --no-daemon
 
+gen_examples: codegen
+	mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER)
+	rm -rf examples/nodejs examples/python examples/go examples/dotnet examples/java
+	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out ../nodejs --generate-only
+	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language python --cwd examples/yaml --out ../python --generate-only
+	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language go --cwd examples/yaml --out ../go --generate-only
+	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language csharp --cwd examples/yaml --out ../dotnet --generate-only
+	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language java --cwd examples/yaml --out ../java --generate-only
+	go mod edit -require=$(PROJECT)@v0.0.0 -replace=$(PROJECT)=$(CURDIR) examples/go/go.mod
+	cd examples/go && go mod tidy
+	cd examples/nodejs && npm pkg set dependencies.@gjorgjidimeski/pulumi-dokploy=file:../../sdk/nodejs
+	printf '%s\n' '-e ../../sdk/python' > examples/python/requirements.txt
+	python3 -c 'from pathlib import Path; p=Path("examples/dotnet/dokploy-mvp.csproj"); p.write_text(p.read_text().replace('"'"'<PackageReference Include="Pulumi.Dokploy" Version="0.0.1-alpha.0+dev" />'"'"', '"'"'<ProjectReference Include="../../sdk/dotnet/Pulumi.Dokploy.csproj" />'"'"'))'
+	python3 -c 'from pathlib import Path; p=Path("examples/java/pom.xml"); p.write_text(p.read_text().replace("<groupId>com.gjorgjidimeski</groupId>", "<groupId>dev.codechem.pulumi</groupId>"))'
+	python3 -c 'from pathlib import Path; p=Path("examples/java/pom.xml"); p.write_text(p.read_text().replace("<maven.compiler.source>11</maven.compiler.source>", "<maven.compiler.source>17</maven.compiler.source>").replace("<maven.compiler.target>11</maven.compiler.target>", "<maven.compiler.target>17</maven.compiler.target>").replace("<maven.compiler.release>11</maven.compiler.release>", "<maven.compiler.release>17</maven.compiler.release>"))'
+	python3 -c 'from pathlib import Path; p=Path("examples/java/src/main/java/generated_program/App.java"); s=p.read_text().replace("com.gjorgjidimeski.dokploy", "dev.codechem.pulumi.dokploy").replace("config.requireObject(\"dokploy:endpoint\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.require(\"dokploy:endpoint\")").replace("config.requireObject(\"dokploy:apiKey\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.require(\"dokploy:apiKey\")").replace("config.getSecret(\"registryPassword\").orElse(\"replace-with-a-registry-password\")", "config.getSecret(\"registryPassword\").applyValue(v -> v.orElse(\"replace-with-a-registry-password\"))").replace("config.getSecret(\"databasePassword\").orElse(\"replace-with-a-database-password\")", "config.getSecret(\"databasePassword\").applyValue(v -> v.orElse(\"replace-with-a-database-password\"))").replace("config.getSecret(\"redisPassword\").orElse(\"replace-with-a-redis-password\")", "config.getSecret(\"redisPassword\").applyValue(v -> v.orElse(\"replace-with-a-redis-password\"))"); p.write_text(s)'
+	python3 -c 'from pathlib import Path; p=Path("examples/dotnet/Program.cs"); s=p.read_text(); s=s.replace('"'"'config.GetSecret("registryPassword") ?? "replace-with-a-registry-password"'"'"', '"'"'config.GetSecret("registryPassword") ?? Output.CreateSecret("replace-with-a-registry-password")'"'"').replace('"'"'config.GetSecret("databasePassword") ?? "replace-with-a-database-password"'"'"', '"'"'config.GetSecret("databasePassword") ?? Output.CreateSecret("replace-with-a-database-password")'"'"').replace('"'"'config.GetSecret("redisPassword") ?? "replace-with-a-redis-password"'"'"', '"'"'config.GetSecret("redisPassword") ?? Output.CreateSecret("replace-with-a-redis-password")'"'"'); p.write_text(s)'
+
+test_examples:
+	mise exec -- go test ./examples -tags=all -count=1
+	cd examples/go && go test . -count=1
+	python3 -m compileall -q examples/python
+	cd sdk/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+	cd examples/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund && npx tsc --noEmit
+	cd examples/dotnet && dotnet build --nologo
+	cd sdk/java && gradle publishToMavenLocal --no-daemon
+	cd examples/java && mvn package -DskipTests
+
 test_provider:
 	go test -short -v -count=1 ./provider/... ./internal/...
 
-test: test_provider
+test: test_provider test_examples
 
 lint:
 	golangci-lint run

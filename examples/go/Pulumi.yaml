@@ -1,0 +1,44 @@
+name: dokploy-mvp
+runtime: go
+description: A complete Dokploy MVP deployment.
+config:
+  appHost:
+    type: string
+    default: app.example.invalid
+  composeHost:
+    type: string
+    default: compose.example.invalid
+  databasePassword:
+    type: string
+    default: replace-with-a-database-password
+    secret: true
+  dokploy:apiKey:
+    value: replace-with-a-dokploy-api-key
+  dokploy:endpoint:
+    value: https://dokploy.example.invalid
+  gitBranch:
+    type: string
+    default: main
+  gitlabIntegration:
+    type: string
+    default: gitlab-integration-id
+  gitlabNamespace:
+    type: string
+    default: platform
+  gitlabOwner:
+    type: string
+    default: example
+  gitlabProject:
+    type: integer
+    default: 42
+  gitlabRepository:
+    type: string
+    default: application
+  redisPassword:
+    type: string
+    default: replace-with-a-redis-password
+    secret: true
+  registryPassword:
+    type: string
+    default: replace-with-a-registry-password
+    secret: true
