@@ -1,4 +1,4 @@
-//go:build all
+//go:build all || nodejs || python || dotnet || go || java || yaml
 
 package examples
 
