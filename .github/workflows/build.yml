@@ -10,8 +10,6 @@ on:
     tags-ignore:
     - v*
     - sdk/*
-    - "**"
-    - "**"
   pull_request: {}
   workflow_dispatch: {}
 env:
