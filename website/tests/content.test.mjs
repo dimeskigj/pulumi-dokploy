@@ -97,12 +97,18 @@ test("resource guides cover provider source variants and dependencies", async ()
 
   const databases = await readFile(new URL("../src/content/docs/guides/databases.mdx", import.meta.url), "utf8");
   assert.match(databases, /Postgres/);
+  assert.match(databases, /MySQL/);
+  assert.match(databases, /MariaDB/);
+  assert.match(databases, /MongoDB/);
   assert.match(databases, /Redis/);
   assert.match(databases, /Project|Environment|environmentId/);
   assert.match(databases, /runtime|placement/i);
   assert.match(databases, /password/i);
   assert.match(databases, /import/i);
   assert.match(databases, /reference\/postgres/);
+  assert.match(databases, /reference\/mysql/);
+  assert.match(databases, /reference\/mariadb/);
+  assert.match(databases, /reference\/mongodb/);
   assert.match(databases, /reference\/redis/);
 });
 
@@ -133,7 +139,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
     "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/imports/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
-    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/redis/", "/reference/domain/", "/reference/configuration/", "/reference/types/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
   ]);
   for (const match of config.matchAll(/link: "(\/[^\"]*)"/g)) {
@@ -141,7 +147,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 25);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 28);
   assert.equal(curatedFiles.length, 13);
 });
 

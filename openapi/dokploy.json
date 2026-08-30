@@ -4710,6 +4710,3764 @@
         ]
       }
     },
+    "/mariadb.create": {
+      "post": {
+        "operationId": "mariadb-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appName": {
+                    "maxLength": 63,
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z0-9._-]+$",
+                    "type": "string"
+                  },
+                  "databaseName": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databasePassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseRootPassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseUser": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "dockerImage": {
+                    "default": "mariadb:6",
+                    "type": "string"
+                  },
+                  "environmentId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "serverId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "environmentId",
+                  "databaseName",
+                  "databaseUser",
+                  "databasePassword"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MariaDB"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mariadb"
+        ]
+      }
+    },
+    "/mariadb.deploy": {
+      "post": {
+        "operationId": "mariadb-deploy",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mariadbId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mariadbId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mariadb"
+        ]
+      }
+    },
+    "/mariadb.one": {
+      "get": {
+        "operationId": "mariadb-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mariadbId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MariaDB"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mariadb"
+        ]
+      }
+    },
+    "/mariadb.remove": {
+      "post": {
+        "operationId": "mariadb-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mariadbId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mariadbId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mariadb"
+        ]
+      }
+    },
+    "/mariadb.saveEnvironment": {
+      "post": {
+        "operationId": "mariadb-saveEnvironment",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "env": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mariadbId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mariadbId",
+                  "env"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mariadb"
+        ]
+      }
+    },
+    "/mariadb.saveExternalPort": {
+      "post": {
+        "operationId": "mariadb-saveExternalPort",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "externalPort": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mariadbId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mariadbId",
+                  "externalPort"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mariadb"
+        ]
+      }
+    },
+    "/mariadb.update": {
+      "post": {
+        "operationId": "mariadb-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appName": {
+                    "maxLength": 63,
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z0-9._-]+$",
+                    "type": "string"
+                  },
+                  "applicationStatus": {
+                    "enum": [
+                      "idle",
+                      "running",
+                      "done",
+                      "error"
+                    ],
+                    "type": "string"
+                  },
+                  "args": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "command": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "cpuLimit": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "cpuReservation": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "databaseName": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databasePassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseRootPassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseUser": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "detachDokployNetwork": {
+                    "type": "boolean"
+                  },
+                  "dockerImage": {
+                    "type": "string"
+                  },
+                  "endpointSpecSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Mode": {
+                                "type": "string"
+                              },
+                              "Ports": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Protocol": {
+                                      "type": "string"
+                                    },
+                                    "PublishMode": {
+                                      "type": "string"
+                                    },
+                                    "PublishedPort": {
+                                      "type": "number"
+                                    },
+                                    "TargetPort": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "env": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "environmentId": {
+                    "type": "string"
+                  },
+                  "externalPort": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "healthCheckSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Interval": {
+                                "type": "number"
+                              },
+                              "Retries": {
+                                "type": "number"
+                              },
+                              "StartPeriod": {
+                                "type": "number"
+                              },
+                              "Test": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "Timeout": {
+                                "type": "number"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "labelsSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mariadbId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "memoryLimit": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "memoryReservation": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "modeSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Global": {
+                                "properties": {},
+                                "type": "object"
+                              },
+                              "GlobalJob": {
+                                "properties": {},
+                                "type": "object"
+                              },
+                              "Replicated": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "Replicas": {
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "ReplicatedJob": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "MaxConcurrent": {
+                                    "type": "number"
+                                  },
+                                  "TotalCompletions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "networkIds": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "networkSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "Aliases": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "DriverOpts": {
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  },
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "type": "object"
+                                },
+                                "Target": {
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "placementSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Constraints": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "MaxReplicas": {
+                                "type": "number"
+                              },
+                              "Platforms": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Architecture": {
+                                      "type": "string"
+                                    },
+                                    "OS": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "Architecture",
+                                    "OS"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "Preferences": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Spread": {
+                                      "properties": {
+                                        "SpreadDescriptor": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "SpreadDescriptor"
+                                      ],
+                                      "type": "object"
+                                    }
+                                  },
+                                  "required": [
+                                    "Spread"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "replicas": {
+                    "type": "number"
+                  },
+                  "restartPolicySwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Condition": {
+                                "type": "string"
+                              },
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "MaxAttempts": {
+                                "type": "number"
+                              },
+                              "Window": {
+                                "type": "number"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rollbackConfigSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "FailureAction": {
+                                "type": "string"
+                              },
+                              "MaxFailureRatio": {
+                                "type": "number"
+                              },
+                              "Monitor": {
+                                "type": "number"
+                              },
+                              "Order": {
+                                "type": "string"
+                              },
+                              "Parallelism": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "Parallelism",
+                              "Order"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "stopGracePeriodSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "ulimitsSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "Hard": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -1,
+                                  "type": "integer"
+                                },
+                                "Name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "Soft": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "Name",
+                                "Soft",
+                                "Hard"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "updateConfigSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "FailureAction": {
+                                "type": "string"
+                              },
+                              "MaxFailureRatio": {
+                                "type": "number"
+                              },
+                              "Monitor": {
+                                "type": "number"
+                              },
+                              "Order": {
+                                "type": "string"
+                              },
+                              "Parallelism": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "Parallelism",
+                              "Order"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mariadbId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MariaDB"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mariadb"
+        ]
+      }
+    },
+    "/mongo.create": {
+      "post": {
+        "operationId": "mongo-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appName": {
+                    "maxLength": 63,
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z0-9._-]+$",
+                    "type": "string"
+                  },
+                  "databasePassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseUser": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "dockerImage": {
+                    "default": "mongo:15",
+                    "type": "string"
+                  },
+                  "environmentId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "replicaSets": {
+                    "anyOf": [
+                      {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "serverId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "environmentId",
+                  "databaseUser",
+                  "databasePassword"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MongoDB"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mongo"
+        ]
+      }
+    },
+    "/mongo.deploy": {
+      "post": {
+        "operationId": "mongo-deploy",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mongoId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mongoId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mongo"
+        ]
+      }
+    },
+    "/mongo.one": {
+      "get": {
+        "operationId": "mongo-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mongoId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MongoDB"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mongo"
+        ]
+      }
+    },
+    "/mongo.remove": {
+      "post": {
+        "operationId": "mongo-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mongoId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mongoId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mongo"
+        ]
+      }
+    },
+    "/mongo.saveEnvironment": {
+      "post": {
+        "operationId": "mongo-saveEnvironment",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "env": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mongoId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mongoId",
+                  "env"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mongo"
+        ]
+      }
+    },
+    "/mongo.saveExternalPort": {
+      "post": {
+        "operationId": "mongo-saveExternalPort",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "externalPort": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mongoId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mongoId",
+                  "externalPort"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mongo"
+        ]
+      }
+    },
+    "/mongo.update": {
+      "post": {
+        "operationId": "mongo-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appName": {
+                    "maxLength": 63,
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z0-9._-]+$",
+                    "type": "string"
+                  },
+                  "applicationStatus": {
+                    "enum": [
+                      "idle",
+                      "running",
+                      "done",
+                      "error"
+                    ],
+                    "type": "string"
+                  },
+                  "args": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "command": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "cpuLimit": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "cpuReservation": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "databasePassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseUser": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "detachDokployNetwork": {
+                    "type": "boolean"
+                  },
+                  "dockerImage": {
+                    "type": "string"
+                  },
+                  "endpointSpecSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Mode": {
+                                "type": "string"
+                              },
+                              "Ports": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Protocol": {
+                                      "type": "string"
+                                    },
+                                    "PublishMode": {
+                                      "type": "string"
+                                    },
+                                    "PublishedPort": {
+                                      "type": "number"
+                                    },
+                                    "TargetPort": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "env": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "environmentId": {
+                    "type": "string"
+                  },
+                  "externalPort": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "healthCheckSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Interval": {
+                                "type": "number"
+                              },
+                              "Retries": {
+                                "type": "number"
+                              },
+                              "StartPeriod": {
+                                "type": "number"
+                              },
+                              "Test": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "Timeout": {
+                                "type": "number"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "labelsSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "memoryLimit": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "memoryReservation": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "modeSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Global": {
+                                "properties": {},
+                                "type": "object"
+                              },
+                              "GlobalJob": {
+                                "properties": {},
+                                "type": "object"
+                              },
+                              "Replicated": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "Replicas": {
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "ReplicatedJob": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "MaxConcurrent": {
+                                    "type": "number"
+                                  },
+                                  "TotalCompletions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mongoId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "networkIds": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "networkSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "Aliases": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "DriverOpts": {
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  },
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "type": "object"
+                                },
+                                "Target": {
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "placementSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Constraints": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "MaxReplicas": {
+                                "type": "number"
+                              },
+                              "Platforms": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Architecture": {
+                                      "type": "string"
+                                    },
+                                    "OS": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "Architecture",
+                                    "OS"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "Preferences": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Spread": {
+                                      "properties": {
+                                        "SpreadDescriptor": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "SpreadDescriptor"
+                                      ],
+                                      "type": "object"
+                                    }
+                                  },
+                                  "required": [
+                                    "Spread"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "replicaSets": {
+                    "anyOf": [
+                      {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "replicas": {
+                    "type": "number"
+                  },
+                  "restartPolicySwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Condition": {
+                                "type": "string"
+                              },
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "MaxAttempts": {
+                                "type": "number"
+                              },
+                              "Window": {
+                                "type": "number"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rollbackConfigSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "FailureAction": {
+                                "type": "string"
+                              },
+                              "MaxFailureRatio": {
+                                "type": "number"
+                              },
+                              "Monitor": {
+                                "type": "number"
+                              },
+                              "Order": {
+                                "type": "string"
+                              },
+                              "Parallelism": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "Parallelism",
+                              "Order"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "stopGracePeriodSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "ulimitsSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "Hard": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -1,
+                                  "type": "integer"
+                                },
+                                "Name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "Soft": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "Name",
+                                "Soft",
+                                "Hard"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "updateConfigSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "FailureAction": {
+                                "type": "string"
+                              },
+                              "MaxFailureRatio": {
+                                "type": "number"
+                              },
+                              "Monitor": {
+                                "type": "number"
+                              },
+                              "Order": {
+                                "type": "string"
+                              },
+                              "Parallelism": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "Parallelism",
+                              "Order"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mongoId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MongoDB"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mongo"
+        ]
+      }
+    },
+    "/mysql.create": {
+      "post": {
+        "operationId": "mysql-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appName": {
+                    "maxLength": 63,
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z0-9._-]+$",
+                    "type": "string"
+                  },
+                  "databaseName": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databasePassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseRootPassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseUser": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "dockerImage": {
+                    "default": "mysql:8",
+                    "type": "string"
+                  },
+                  "environmentId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "serverId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "environmentId",
+                  "databaseName",
+                  "databaseUser",
+                  "databasePassword"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MySQL"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mysql"
+        ]
+      }
+    },
+    "/mysql.deploy": {
+      "post": {
+        "operationId": "mysql-deploy",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mysqlId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mysqlId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mysql"
+        ]
+      }
+    },
+    "/mysql.one": {
+      "get": {
+        "operationId": "mysql-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mysqlId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MySQL"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mysql"
+        ]
+      }
+    },
+    "/mysql.remove": {
+      "post": {
+        "operationId": "mysql-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mysqlId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mysqlId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mysql"
+        ]
+      }
+    },
+    "/mysql.saveEnvironment": {
+      "post": {
+        "operationId": "mysql-saveEnvironment",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "env": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mysqlId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mysqlId",
+                  "env"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mysql"
+        ]
+      }
+    },
+    "/mysql.saveExternalPort": {
+      "post": {
+        "operationId": "mysql-saveExternalPort",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "externalPort": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mysqlId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mysqlId",
+                  "externalPort"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mysql"
+        ]
+      }
+    },
+    "/mysql.update": {
+      "post": {
+        "operationId": "mysql-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appName": {
+                    "maxLength": 63,
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z0-9._-]+$",
+                    "type": "string"
+                  },
+                  "applicationStatus": {
+                    "enum": [
+                      "idle",
+                      "running",
+                      "done",
+                      "error"
+                    ],
+                    "type": "string"
+                  },
+                  "args": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "command": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "cpuLimit": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "cpuReservation": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "databaseName": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databasePassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseRootPassword": {
+                    "pattern": "^[a-zA-Z0-9@#%^\u0026*()_+\\-=[\\]{}|;:,.\u003c\u003e?~`]*$",
+                    "type": "string"
+                  },
+                  "databaseUser": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "detachDokployNetwork": {
+                    "type": "boolean"
+                  },
+                  "dockerImage": {
+                    "type": "string"
+                  },
+                  "endpointSpecSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Mode": {
+                                "type": "string"
+                              },
+                              "Ports": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Protocol": {
+                                      "type": "string"
+                                    },
+                                    "PublishMode": {
+                                      "type": "string"
+                                    },
+                                    "PublishedPort": {
+                                      "type": "number"
+                                    },
+                                    "TargetPort": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "env": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "environmentId": {
+                    "type": "string"
+                  },
+                  "externalPort": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "healthCheckSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Interval": {
+                                "type": "number"
+                              },
+                              "Retries": {
+                                "type": "number"
+                              },
+                              "StartPeriod": {
+                                "type": "number"
+                              },
+                              "Test": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "Timeout": {
+                                "type": "number"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "labelsSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "memoryLimit": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "memoryReservation": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "modeSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Global": {
+                                "properties": {},
+                                "type": "object"
+                              },
+                              "GlobalJob": {
+                                "properties": {},
+                                "type": "object"
+                              },
+                              "Replicated": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "Replicas": {
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "ReplicatedJob": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "MaxConcurrent": {
+                                    "type": "number"
+                                  },
+                                  "TotalCompletions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mysqlId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "networkIds": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "networkSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "Aliases": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "DriverOpts": {
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  },
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "type": "object"
+                                },
+                                "Target": {
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "placementSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Constraints": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "MaxReplicas": {
+                                "type": "number"
+                              },
+                              "Platforms": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Architecture": {
+                                      "type": "string"
+                                    },
+                                    "OS": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "Architecture",
+                                    "OS"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "Preferences": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Spread": {
+                                      "properties": {
+                                        "SpreadDescriptor": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "SpreadDescriptor"
+                                      ],
+                                      "type": "object"
+                                    }
+                                  },
+                                  "required": [
+                                    "Spread"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "replicas": {
+                    "type": "number"
+                  },
+                  "restartPolicySwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Condition": {
+                                "type": "string"
+                              },
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "MaxAttempts": {
+                                "type": "number"
+                              },
+                              "Window": {
+                                "type": "number"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rollbackConfigSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "FailureAction": {
+                                "type": "string"
+                              },
+                              "MaxFailureRatio": {
+                                "type": "number"
+                              },
+                              "Monitor": {
+                                "type": "number"
+                              },
+                              "Order": {
+                                "type": "string"
+                              },
+                              "Parallelism": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "Parallelism",
+                              "Order"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "stopGracePeriodSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "ulimitsSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "Hard": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -1,
+                                  "type": "integer"
+                                },
+                                "Name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "Soft": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "Name",
+                                "Soft",
+                                "Hard"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "updateConfigSwarm": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "Delay": {
+                                "type": "number"
+                              },
+                              "FailureAction": {
+                                "type": "string"
+                              },
+                              "MaxFailureRatio": {
+                                "type": "number"
+                              },
+                              "Monitor": {
+                                "type": "number"
+                              },
+                              "Order": {
+                                "type": "string"
+                              },
+                              "Parallelism": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "Parallelism",
+                              "Order"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mysqlId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MySQL"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mysql"
+        ]
+      }
+    },
     "/postgres.create": {
       "post": {
         "operationId": "postgres-create",
@@ -7696,6 +11454,123 @@
           },
           "description": {
             "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "MariaDB": {
+        "type": "object",
+        "properties": {
+          "mariadbId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "appName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "environmentId": {
+            "type": "string"
+          },
+          "serverId": {
+            "type": "string"
+          },
+          "databaseName": {
+            "type": "string"
+          },
+          "databaseUser": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "env": {
+            "type": "string"
+          },
+          "externalPort": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      },
+      "MongoDB": {
+        "type": "object",
+        "properties": {
+          "mongoId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "appName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "environmentId": {
+            "type": "string"
+          },
+          "serverId": {
+            "type": "string"
+          },
+          "databaseUser": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "env": {
+            "type": "string"
+          },
+          "externalPort": {
+            "type": "integer"
+          },
+          "replicaSets": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      },
+      "MySQL": {
+        "type": "object",
+        "properties": {
+          "mysqlId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "appName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "environmentId": {
+            "type": "string"
+          },
+          "serverId": {
+            "type": "string"
+          },
+          "databaseName": {
+            "type": "string"
+          },
+          "databaseUser": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "env": {
+            "type": "string"
+          },
+          "externalPort": {
+            "type": "integer"
           }
         },
         "additionalProperties": true

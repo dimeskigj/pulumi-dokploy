@@ -25,6 +25,21 @@ export type Environment = import("./environment").Environment;
 export const Environment: typeof import("./environment").Environment = null as any;
 utilities.lazyLoad(exports, ["Environment"], () => require("./environment"));
 
+export { MariaDBArgs } from "./mariaDB";
+export type MariaDB = import("./mariaDB").MariaDB;
+export const MariaDB: typeof import("./mariaDB").MariaDB = null as any;
+utilities.lazyLoad(exports, ["MariaDB"], () => require("./mariaDB"));
+
+export { MongoDBArgs } from "./mongoDB";
+export type MongoDB = import("./mongoDB").MongoDB;
+export const MongoDB: typeof import("./mongoDB").MongoDB = null as any;
+utilities.lazyLoad(exports, ["MongoDB"], () => require("./mongoDB"));
+
+export { MySQLArgs } from "./mySQL";
+export type MySQL = import("./mySQL").MySQL;
+export const MySQL: typeof import("./mySQL").MySQL = null as any;
+utilities.lazyLoad(exports, ["MySQL"], () => require("./mySQL"));
+
 export { PostgresArgs } from "./postgres";
 export type Postgres = import("./postgres").Postgres;
 export const Postgres: typeof import("./postgres").Postgres = null as any;
@@ -67,6 +82,12 @@ const _module = {
                 return new Domain(name, <any>undefined, { urn })
             case "dokploy:index:Environment":
                 return new Environment(name, <any>undefined, { urn })
+            case "dokploy:index:MariaDB":
+                return new MariaDB(name, <any>undefined, { urn })
+            case "dokploy:index:MongoDB":
+                return new MongoDB(name, <any>undefined, { urn })
+            case "dokploy:index:MySQL":
+                return new MySQL(name, <any>undefined, { urn })
             case "dokploy:index:Postgres":
                 return new Postgres(name, <any>undefined, { urn })
             case "dokploy:index:Project":

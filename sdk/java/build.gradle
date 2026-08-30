@@ -95,7 +95,7 @@ publishing {
                 inceptionYear = ""
                 name = ""
                 packaging = "jar"
-                description = $/Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains./$
+                description = $/Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, and domains./$
 
                 url = "https://github.com/dimeskigj/pulumi-dokploy"
 

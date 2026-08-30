@@ -2,7 +2,7 @@
   "name": "dokploy",
   "displayName": "Dokploy",
   "version": "0.0.1-alpha.0+dev",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, databases, Redis instances, and domains.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, and domains.",
   "homepage": "https://github.com/dimeskigj/pulumi-dokploy",
   "license": "Apache-2.0",
   "repository": "https://github.com/dimeskigj/pulumi-dokploy",
@@ -819,6 +819,414 @@
       "requiredInputs": [
         "projectId",
         "name"
+      ]
+    },
+    "dokploy:index:MariaDB": {
+      "description": "A Dokploy MariaDB database.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databaseName": {
+          "type": "string",
+          "description": "The MariaDB database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The MariaDB database password.",
+          "secret": true
+        },
+        "databaseRootPassword": {
+          "type": "string",
+          "description": "The optional MariaDB root password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The MariaDB database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The MariaDB Docker image.",
+          "default": "mariadb:11"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for MariaDB.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "mariadbId": {
+          "type": "string",
+          "description": "The stable Dokploy MariaDB ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "status": {
+          "type": "string",
+          "description": "The current MariaDB deployment status."
+        }
+      },
+      "required": [
+        "name",
+        "environmentId",
+        "databaseName",
+        "databaseUser",
+        "databasePassword",
+        "dockerImage",
+        "mariadbId",
+        "status"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databaseName": {
+          "type": "string",
+          "description": "The MariaDB database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The MariaDB database password.",
+          "secret": true
+        },
+        "databaseRootPassword": {
+          "type": "string",
+          "description": "The optional MariaDB root password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The MariaDB database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The MariaDB Docker image.",
+          "default": "mariadb:11"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for MariaDB.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "environmentId",
+        "databaseName",
+        "databaseUser",
+        "databasePassword"
+      ]
+    },
+    "dokploy:index:MongoDB": {
+      "description": "A Dokploy MongoDB database.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The MongoDB database password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The MongoDB database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The MongoDB Docker image.",
+          "default": "mongo:8"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for MongoDB.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "mongoId": {
+          "type": "string",
+          "description": "The stable Dokploy MongoDB ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "replicaSets": {
+          "type": "boolean",
+          "description": "Whether to enable a MongoDB replica set."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "status": {
+          "type": "string",
+          "description": "The current MongoDB deployment status."
+        }
+      },
+      "required": [
+        "name",
+        "environmentId",
+        "databaseUser",
+        "databasePassword",
+        "dockerImage",
+        "mongoId",
+        "status"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The MongoDB database password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The MongoDB database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The MongoDB Docker image.",
+          "default": "mongo:8"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for MongoDB.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "replicaSets": {
+          "type": "boolean",
+          "description": "Whether to enable a MongoDB replica set."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "environmentId",
+        "databaseUser",
+        "databasePassword"
+      ]
+    },
+    "dokploy:index:MySQL": {
+      "description": "A Dokploy MySQL database.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databaseName": {
+          "type": "string",
+          "description": "The MySQL database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The MySQL database password.",
+          "secret": true
+        },
+        "databaseRootPassword": {
+          "type": "string",
+          "description": "The optional MySQL root password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The MySQL database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The MySQL Docker image.",
+          "default": "mysql:8"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for MySQL.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "mysqlId": {
+          "type": "string",
+          "description": "The stable Dokploy MySQL ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        },
+        "status": {
+          "type": "string",
+          "description": "The current MySQL deployment status."
+        }
+      },
+      "required": [
+        "name",
+        "environmentId",
+        "databaseName",
+        "databaseUser",
+        "databasePassword",
+        "dockerImage",
+        "mysqlId",
+        "status"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "The optional deployed database name."
+        },
+        "databaseName": {
+          "type": "string",
+          "description": "The MySQL database name."
+        },
+        "databasePassword": {
+          "type": "string",
+          "description": "The MySQL database password.",
+          "secret": true
+        },
+        "databaseRootPassword": {
+          "type": "string",
+          "description": "The optional MySQL root password.",
+          "secret": true
+        },
+        "databaseUser": {
+          "type": "string",
+          "description": "The MySQL database user."
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional database description."
+        },
+        "dockerImage": {
+          "type": "string",
+          "description": "The MySQL Docker image.",
+          "default": "mysql:8"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment variables for MySQL.",
+          "secret": true
+        },
+        "environmentId": {
+          "type": "string",
+          "description": "The target environment ID.",
+          "replaceOnChanges": true
+        },
+        "externalPort": {
+          "type": "integer",
+          "description": "The optional externally exposed port."
+        },
+        "name": {
+          "type": "string",
+          "description": "The database resource name."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID.",
+          "replaceOnChanges": true
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "environmentId",
+        "databaseName",
+        "databaseUser",
+        "databasePassword"
       ]
     },
     "dokploy:index:Postgres": {

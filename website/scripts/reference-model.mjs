@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 const EXPECTED_RESOURCES = new Set([
-  "Application", "Compose", "Domain", "Environment", "Postgres", "Project", "Redis",
+  "Application", "Compose", "Domain", "Environment", "Postgres", "MySQL", "MariaDB", "MongoDB", "Project", "Redis",
 ]);
 const SOURCE_PATH = Symbol("schema source path");
 
@@ -19,12 +19,19 @@ export async function loadSchema(path) {
   }
 }
 
+// Names whose branded spelling (mysql, mariadb, mongodb) doesn't match what
+// the generic camelCase-to-kebab split below would produce (my-sql,
+// maria-db, mongo-db) because they pack multiple capitalized segments,
+// including an acronym, together.
+const SLUG_OVERRIDES = { MySQL: "mysql", MariaDB: "mariadb", MongoDB: "mongodb" };
+
 export function slugFromToken(token) {
   if (typeof token !== "string" || !/^dokploy:index:[A-Za-z][A-Za-z0-9_-]*$/.test(token)) {
     throw new Error(`Invalid Pulumi token: ${token}`);
   }
   const name = token.split(":").at(-1);
   if (!name) throw new Error(`Invalid Pulumi token: ${token}`);
+  if (SLUG_OVERRIDES[name]) return SLUG_OVERRIDES[name];
   return name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 

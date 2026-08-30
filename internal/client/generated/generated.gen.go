@@ -369,6 +369,78 @@ func (e DomainUpdateJSONBodyDomainType) Valid() bool {
 	}
 }
 
+// Defines values for MariadbUpdateJSONBodyApplicationStatus.
+const (
+	MariadbUpdateJSONBodyApplicationStatusDone    MariadbUpdateJSONBodyApplicationStatus = "done"
+	MariadbUpdateJSONBodyApplicationStatusError   MariadbUpdateJSONBodyApplicationStatus = "error"
+	MariadbUpdateJSONBodyApplicationStatusIdle    MariadbUpdateJSONBodyApplicationStatus = "idle"
+	MariadbUpdateJSONBodyApplicationStatusRunning MariadbUpdateJSONBodyApplicationStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the MariadbUpdateJSONBodyApplicationStatus enum.
+func (e MariadbUpdateJSONBodyApplicationStatus) Valid() bool {
+	switch e {
+	case MariadbUpdateJSONBodyApplicationStatusDone:
+		return true
+	case MariadbUpdateJSONBodyApplicationStatusError:
+		return true
+	case MariadbUpdateJSONBodyApplicationStatusIdle:
+		return true
+	case MariadbUpdateJSONBodyApplicationStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MongoUpdateJSONBodyApplicationStatus.
+const (
+	MongoUpdateJSONBodyApplicationStatusDone    MongoUpdateJSONBodyApplicationStatus = "done"
+	MongoUpdateJSONBodyApplicationStatusError   MongoUpdateJSONBodyApplicationStatus = "error"
+	MongoUpdateJSONBodyApplicationStatusIdle    MongoUpdateJSONBodyApplicationStatus = "idle"
+	MongoUpdateJSONBodyApplicationStatusRunning MongoUpdateJSONBodyApplicationStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the MongoUpdateJSONBodyApplicationStatus enum.
+func (e MongoUpdateJSONBodyApplicationStatus) Valid() bool {
+	switch e {
+	case MongoUpdateJSONBodyApplicationStatusDone:
+		return true
+	case MongoUpdateJSONBodyApplicationStatusError:
+		return true
+	case MongoUpdateJSONBodyApplicationStatusIdle:
+		return true
+	case MongoUpdateJSONBodyApplicationStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MysqlUpdateJSONBodyApplicationStatus.
+const (
+	MysqlUpdateJSONBodyApplicationStatusDone    MysqlUpdateJSONBodyApplicationStatus = "done"
+	MysqlUpdateJSONBodyApplicationStatusError   MysqlUpdateJSONBodyApplicationStatus = "error"
+	MysqlUpdateJSONBodyApplicationStatusIdle    MysqlUpdateJSONBodyApplicationStatus = "idle"
+	MysqlUpdateJSONBodyApplicationStatusRunning MysqlUpdateJSONBodyApplicationStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the MysqlUpdateJSONBodyApplicationStatus enum.
+func (e MysqlUpdateJSONBodyApplicationStatus) Valid() bool {
+	switch e {
+	case MysqlUpdateJSONBodyApplicationStatusDone:
+		return true
+	case MysqlUpdateJSONBodyApplicationStatusError:
+		return true
+	case MysqlUpdateJSONBodyApplicationStatusIdle:
+		return true
+	case MysqlUpdateJSONBodyApplicationStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostgresUpdateJSONBodyApplicationStatus.
 const (
 	PostgresUpdateJSONBodyApplicationStatusDone    PostgresUpdateJSONBodyApplicationStatus = "done"
@@ -478,6 +550,54 @@ type Environment struct {
 	EnvironmentId        *string                `json:"environmentId,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	ProjectId            *string                `json:"projectId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// MariaDB defines model for MariaDB.
+type MariaDB struct {
+	AppName              *string                `json:"appName,omitempty"`
+	DatabaseName         *string                `json:"databaseName,omitempty"`
+	DatabaseUser         *string                `json:"databaseUser,omitempty"`
+	Description          *string                `json:"description,omitempty"`
+	Env                  *string                `json:"env,omitempty"`
+	EnvironmentId        *string                `json:"environmentId,omitempty"`
+	ExternalPort         *int                   `json:"externalPort,omitempty"`
+	Image                *string                `json:"image,omitempty"`
+	MariadbId            *string                `json:"mariadbId,omitempty"`
+	Name                 *string                `json:"name,omitempty"`
+	ServerId             *string                `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// MongoDB defines model for MongoDB.
+type MongoDB struct {
+	AppName              *string                `json:"appName,omitempty"`
+	DatabaseUser         *string                `json:"databaseUser,omitempty"`
+	Description          *string                `json:"description,omitempty"`
+	Env                  *string                `json:"env,omitempty"`
+	EnvironmentId        *string                `json:"environmentId,omitempty"`
+	ExternalPort         *int                   `json:"externalPort,omitempty"`
+	Image                *string                `json:"image,omitempty"`
+	MongoId              *string                `json:"mongoId,omitempty"`
+	Name                 *string                `json:"name,omitempty"`
+	ReplicaSets          *bool                  `json:"replicaSets,omitempty"`
+	ServerId             *string                `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// MySQL defines model for MySQL.
+type MySQL struct {
+	AppName              *string                `json:"appName,omitempty"`
+	DatabaseName         *string                `json:"databaseName,omitempty"`
+	DatabaseUser         *string                `json:"databaseUser,omitempty"`
+	Description          *string                `json:"description,omitempty"`
+	Env                  *string                `json:"env,omitempty"`
+	EnvironmentId        *string                `json:"environmentId,omitempty"`
+	ExternalPort         *int                   `json:"externalPort,omitempty"`
+	Image                *string                `json:"image,omitempty"`
+	MysqlId              *string                `json:"mysqlId,omitempty"`
+	Name                 *string                `json:"name,omitempty"`
+	ServerId             *string                `json:"serverId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -1072,6 +1192,439 @@ type EnvironmentUpdateJSONBody struct {
 	ProjectId     *string `json:"projectId,omitempty"`
 }
 
+// MariadbCreateJSONBody defines parameters for MariadbCreate.
+type MariadbCreateJSONBody struct {
+	AppName              *string                   `json:"appName,omitempty"`
+	DatabaseName         string                    `json:"databaseName"`
+	DatabasePassword     string                    `json:"databasePassword"`
+	DatabaseRootPassword *string                   `json:"databaseRootPassword,omitempty"`
+	DatabaseUser         string                    `json:"databaseUser"`
+	Description          nullable.Nullable[string] `json:"description,omitempty"`
+	DockerImage          *string                   `json:"dockerImage,omitempty"`
+	EnvironmentId        string                    `json:"environmentId"`
+	Name                 string                    `json:"name"`
+	ServerId             nullable.Nullable[string] `json:"serverId,omitempty"`
+}
+
+// MariadbDeployJSONBody defines parameters for MariadbDeploy.
+type MariadbDeployJSONBody struct {
+	MariadbId string `json:"mariadbId"`
+}
+
+// MariadbOneParams defines parameters for MariadbOne.
+type MariadbOneParams struct {
+	MariadbId string `form:"mariadbId" json:"mariadbId"`
+}
+
+// MariadbRemoveJSONBody defines parameters for MariadbRemove.
+type MariadbRemoveJSONBody struct {
+	MariadbId string `json:"mariadbId"`
+}
+
+// MariadbSaveEnvironmentJSONBody defines parameters for MariadbSaveEnvironment.
+type MariadbSaveEnvironmentJSONBody struct {
+	Env       nullable.Nullable[string] `json:"env"`
+	MariadbId string                    `json:"mariadbId"`
+}
+
+// MariadbSaveExternalPortJSONBody defines parameters for MariadbSaveExternalPort.
+type MariadbSaveExternalPortJSONBody struct {
+	ExternalPort nullable.Nullable[float32] `json:"externalPort"`
+	MariadbId    string                     `json:"mariadbId"`
+}
+
+// MariadbUpdateJSONBody defines parameters for MariadbUpdate.
+type MariadbUpdateJSONBody struct {
+	AppName              *string                                 `json:"appName,omitempty"`
+	ApplicationStatus    *MariadbUpdateJSONBodyApplicationStatus `json:"applicationStatus,omitempty"`
+	Args                 nullable.Nullable[[]string]             `json:"args,omitempty"`
+	Command              nullable.Nullable[string]               `json:"command,omitempty"`
+	CpuLimit             nullable.Nullable[string]               `json:"cpuLimit,omitempty"`
+	CpuReservation       nullable.Nullable[string]               `json:"cpuReservation,omitempty"`
+	CreatedAt            *string                                 `json:"createdAt,omitempty"`
+	DatabaseName         *string                                 `json:"databaseName,omitempty"`
+	DatabasePassword     *string                                 `json:"databasePassword,omitempty"`
+	DatabaseRootPassword *string                                 `json:"databaseRootPassword,omitempty"`
+	DatabaseUser         *string                                 `json:"databaseUser,omitempty"`
+	Description          nullable.Nullable[string]               `json:"description,omitempty"`
+	DetachDokployNetwork *bool                                   `json:"detachDokployNetwork,omitempty"`
+	DockerImage          *string                                 `json:"dockerImage,omitempty"`
+	EndpointSpecSwarm    nullable.Nullable[struct {
+		Mode  *string `json:"Mode,omitempty"`
+		Ports *[]struct {
+			Protocol      *string  `json:"Protocol,omitempty"`
+			PublishMode   *string  `json:"PublishMode,omitempty"`
+			PublishedPort *float32 `json:"PublishedPort,omitempty"`
+			TargetPort    *float32 `json:"TargetPort,omitempty"`
+		} `json:"Ports,omitempty"`
+	}] `json:"endpointSpecSwarm,omitempty"`
+	Env              nullable.Nullable[string]  `json:"env,omitempty"`
+	EnvironmentId    *string                    `json:"environmentId,omitempty"`
+	ExternalPort     nullable.Nullable[float32] `json:"externalPort,omitempty"`
+	HealthCheckSwarm nullable.Nullable[struct {
+		Interval    *float32  `json:"Interval,omitempty"`
+		Retries     *float32  `json:"Retries,omitempty"`
+		StartPeriod *float32  `json:"StartPeriod,omitempty"`
+		Test        *[]string `json:"Test,omitempty"`
+		Timeout     *float32  `json:"Timeout,omitempty"`
+	}] `json:"healthCheckSwarm,omitempty"`
+	LabelsSwarm       nullable.Nullable[map[string]string] `json:"labelsSwarm,omitempty"`
+	MariadbId         string                               `json:"mariadbId"`
+	MemoryLimit       nullable.Nullable[string]            `json:"memoryLimit,omitempty"`
+	MemoryReservation nullable.Nullable[string]            `json:"memoryReservation,omitempty"`
+	ModeSwarm         nullable.Nullable[struct {
+		Global     *map[string]interface{} `json:"Global,omitempty"`
+		GlobalJob  *map[string]interface{} `json:"GlobalJob,omitempty"`
+		Replicated *struct {
+			Replicas *float32 `json:"Replicas,omitempty"`
+		} `json:"Replicated,omitempty"`
+		ReplicatedJob *struct {
+			MaxConcurrent    *float32 `json:"MaxConcurrent,omitempty"`
+			TotalCompletions *float32 `json:"TotalCompletions,omitempty"`
+		} `json:"ReplicatedJob,omitempty"`
+	}] `json:"modeSwarm,omitempty"`
+	Name         *string                     `json:"name,omitempty"`
+	NetworkIds   nullable.Nullable[[]string] `json:"networkIds,omitempty"`
+	NetworkSwarm nullable.Nullable[struct {
+		Aliases    *[]string          `json:"Aliases,omitempty"`
+		DriverOpts *map[string]string `json:"DriverOpts,omitempty"`
+		Target     *string            `json:"Target,omitempty"`
+	}] `json:"networkSwarm,omitempty"`
+	PlacementSwarm nullable.Nullable[struct {
+		Constraints *[]string `json:"Constraints,omitempty"`
+		MaxReplicas *float32  `json:"MaxReplicas,omitempty"`
+		Platforms   *[]struct {
+			Architecture string `json:"Architecture"`
+			OS           string `json:"OS"`
+		} `json:"Platforms,omitempty"`
+		Preferences *[]struct {
+			Spread struct {
+				SpreadDescriptor string `json:"SpreadDescriptor"`
+			} `json:"Spread"`
+		} `json:"Preferences,omitempty"`
+	}] `json:"placementSwarm,omitempty"`
+	Replicas           *float32 `json:"replicas,omitempty"`
+	RestartPolicySwarm nullable.Nullable[struct {
+		Condition   *string  `json:"Condition,omitempty"`
+		Delay       *float32 `json:"Delay,omitempty"`
+		MaxAttempts *float32 `json:"MaxAttempts,omitempty"`
+		Window      *float32 `json:"Window,omitempty"`
+	}] `json:"restartPolicySwarm,omitempty"`
+	RollbackConfigSwarm nullable.Nullable[struct {
+		Delay           *float32 `json:"Delay,omitempty"`
+		FailureAction   *string  `json:"FailureAction,omitempty"`
+		MaxFailureRatio *float32 `json:"MaxFailureRatio,omitempty"`
+		Monitor         *float32 `json:"Monitor,omitempty"`
+		Order           string   `json:"Order"`
+		Parallelism     float32  `json:"Parallelism"`
+	}] `json:"rollbackConfigSwarm,omitempty"`
+	StopGracePeriodSwarm nullable.Nullable[float32] `json:"stopGracePeriodSwarm,omitempty"`
+	UlimitsSwarm         nullable.Nullable[struct {
+		Hard int    `json:"Hard"`
+		Name string `json:"Name"`
+		Soft int    `json:"Soft"`
+	}] `json:"ulimitsSwarm,omitempty"`
+	UpdateConfigSwarm nullable.Nullable[struct {
+		Delay           *float32 `json:"Delay,omitempty"`
+		FailureAction   *string  `json:"FailureAction,omitempty"`
+		MaxFailureRatio *float32 `json:"MaxFailureRatio,omitempty"`
+		Monitor         *float32 `json:"Monitor,omitempty"`
+		Order           string   `json:"Order"`
+		Parallelism     float32  `json:"Parallelism"`
+	}] `json:"updateConfigSwarm,omitempty"`
+}
+
+// MariadbUpdateJSONBodyApplicationStatus defines parameters for MariadbUpdate.
+type MariadbUpdateJSONBodyApplicationStatus string
+
+// MongoCreateJSONBody defines parameters for MongoCreate.
+type MongoCreateJSONBody struct {
+	AppName          *string                   `json:"appName,omitempty"`
+	DatabasePassword string                    `json:"databasePassword"`
+	DatabaseUser     string                    `json:"databaseUser"`
+	Description      nullable.Nullable[string] `json:"description,omitempty"`
+	DockerImage      *string                   `json:"dockerImage,omitempty"`
+	EnvironmentId    string                    `json:"environmentId"`
+	Name             string                    `json:"name"`
+	ReplicaSets      nullable.Nullable[bool]   `json:"replicaSets,omitempty"`
+	ServerId         nullable.Nullable[string] `json:"serverId,omitempty"`
+}
+
+// MongoDeployJSONBody defines parameters for MongoDeploy.
+type MongoDeployJSONBody struct {
+	MongoId string `json:"mongoId"`
+}
+
+// MongoOneParams defines parameters for MongoOne.
+type MongoOneParams struct {
+	MongoId string `form:"mongoId" json:"mongoId"`
+}
+
+// MongoRemoveJSONBody defines parameters for MongoRemove.
+type MongoRemoveJSONBody struct {
+	MongoId string `json:"mongoId"`
+}
+
+// MongoSaveEnvironmentJSONBody defines parameters for MongoSaveEnvironment.
+type MongoSaveEnvironmentJSONBody struct {
+	Env     nullable.Nullable[string] `json:"env"`
+	MongoId string                    `json:"mongoId"`
+}
+
+// MongoSaveExternalPortJSONBody defines parameters for MongoSaveExternalPort.
+type MongoSaveExternalPortJSONBody struct {
+	ExternalPort nullable.Nullable[float32] `json:"externalPort"`
+	MongoId      string                     `json:"mongoId"`
+}
+
+// MongoUpdateJSONBody defines parameters for MongoUpdate.
+type MongoUpdateJSONBody struct {
+	AppName              *string                               `json:"appName,omitempty"`
+	ApplicationStatus    *MongoUpdateJSONBodyApplicationStatus `json:"applicationStatus,omitempty"`
+	Args                 nullable.Nullable[[]string]           `json:"args,omitempty"`
+	Command              nullable.Nullable[string]             `json:"command,omitempty"`
+	CpuLimit             nullable.Nullable[string]             `json:"cpuLimit,omitempty"`
+	CpuReservation       nullable.Nullable[string]             `json:"cpuReservation,omitempty"`
+	CreatedAt            *string                               `json:"createdAt,omitempty"`
+	DatabasePassword     *string                               `json:"databasePassword,omitempty"`
+	DatabaseUser         *string                               `json:"databaseUser,omitempty"`
+	Description          nullable.Nullable[string]             `json:"description,omitempty"`
+	DetachDokployNetwork *bool                                 `json:"detachDokployNetwork,omitempty"`
+	DockerImage          *string                               `json:"dockerImage,omitempty"`
+	EndpointSpecSwarm    nullable.Nullable[struct {
+		Mode  *string `json:"Mode,omitempty"`
+		Ports *[]struct {
+			Protocol      *string  `json:"Protocol,omitempty"`
+			PublishMode   *string  `json:"PublishMode,omitempty"`
+			PublishedPort *float32 `json:"PublishedPort,omitempty"`
+			TargetPort    *float32 `json:"TargetPort,omitempty"`
+		} `json:"Ports,omitempty"`
+	}] `json:"endpointSpecSwarm,omitempty"`
+	Env              nullable.Nullable[string]  `json:"env,omitempty"`
+	EnvironmentId    *string                    `json:"environmentId,omitempty"`
+	ExternalPort     nullable.Nullable[float32] `json:"externalPort,omitempty"`
+	HealthCheckSwarm nullable.Nullable[struct {
+		Interval    *float32  `json:"Interval,omitempty"`
+		Retries     *float32  `json:"Retries,omitempty"`
+		StartPeriod *float32  `json:"StartPeriod,omitempty"`
+		Test        *[]string `json:"Test,omitempty"`
+		Timeout     *float32  `json:"Timeout,omitempty"`
+	}] `json:"healthCheckSwarm,omitempty"`
+	LabelsSwarm       nullable.Nullable[map[string]string] `json:"labelsSwarm,omitempty"`
+	MemoryLimit       nullable.Nullable[string]            `json:"memoryLimit,omitempty"`
+	MemoryReservation nullable.Nullable[string]            `json:"memoryReservation,omitempty"`
+	ModeSwarm         nullable.Nullable[struct {
+		Global     *map[string]interface{} `json:"Global,omitempty"`
+		GlobalJob  *map[string]interface{} `json:"GlobalJob,omitempty"`
+		Replicated *struct {
+			Replicas *float32 `json:"Replicas,omitempty"`
+		} `json:"Replicated,omitempty"`
+		ReplicatedJob *struct {
+			MaxConcurrent    *float32 `json:"MaxConcurrent,omitempty"`
+			TotalCompletions *float32 `json:"TotalCompletions,omitempty"`
+		} `json:"ReplicatedJob,omitempty"`
+	}] `json:"modeSwarm,omitempty"`
+	MongoId      string                      `json:"mongoId"`
+	Name         *string                     `json:"name,omitempty"`
+	NetworkIds   nullable.Nullable[[]string] `json:"networkIds,omitempty"`
+	NetworkSwarm nullable.Nullable[struct {
+		Aliases    *[]string          `json:"Aliases,omitempty"`
+		DriverOpts *map[string]string `json:"DriverOpts,omitempty"`
+		Target     *string            `json:"Target,omitempty"`
+	}] `json:"networkSwarm,omitempty"`
+	PlacementSwarm nullable.Nullable[struct {
+		Constraints *[]string `json:"Constraints,omitempty"`
+		MaxReplicas *float32  `json:"MaxReplicas,omitempty"`
+		Platforms   *[]struct {
+			Architecture string `json:"Architecture"`
+			OS           string `json:"OS"`
+		} `json:"Platforms,omitempty"`
+		Preferences *[]struct {
+			Spread struct {
+				SpreadDescriptor string `json:"SpreadDescriptor"`
+			} `json:"Spread"`
+		} `json:"Preferences,omitempty"`
+	}] `json:"placementSwarm,omitempty"`
+	ReplicaSets        nullable.Nullable[bool] `json:"replicaSets,omitempty"`
+	Replicas           *float32                `json:"replicas,omitempty"`
+	RestartPolicySwarm nullable.Nullable[struct {
+		Condition   *string  `json:"Condition,omitempty"`
+		Delay       *float32 `json:"Delay,omitempty"`
+		MaxAttempts *float32 `json:"MaxAttempts,omitempty"`
+		Window      *float32 `json:"Window,omitempty"`
+	}] `json:"restartPolicySwarm,omitempty"`
+	RollbackConfigSwarm nullable.Nullable[struct {
+		Delay           *float32 `json:"Delay,omitempty"`
+		FailureAction   *string  `json:"FailureAction,omitempty"`
+		MaxFailureRatio *float32 `json:"MaxFailureRatio,omitempty"`
+		Monitor         *float32 `json:"Monitor,omitempty"`
+		Order           string   `json:"Order"`
+		Parallelism     float32  `json:"Parallelism"`
+	}] `json:"rollbackConfigSwarm,omitempty"`
+	StopGracePeriodSwarm nullable.Nullable[float32] `json:"stopGracePeriodSwarm,omitempty"`
+	UlimitsSwarm         nullable.Nullable[struct {
+		Hard int    `json:"Hard"`
+		Name string `json:"Name"`
+		Soft int    `json:"Soft"`
+	}] `json:"ulimitsSwarm,omitempty"`
+	UpdateConfigSwarm nullable.Nullable[struct {
+		Delay           *float32 `json:"Delay,omitempty"`
+		FailureAction   *string  `json:"FailureAction,omitempty"`
+		MaxFailureRatio *float32 `json:"MaxFailureRatio,omitempty"`
+		Monitor         *float32 `json:"Monitor,omitempty"`
+		Order           string   `json:"Order"`
+		Parallelism     float32  `json:"Parallelism"`
+	}] `json:"updateConfigSwarm,omitempty"`
+}
+
+// MongoUpdateJSONBodyApplicationStatus defines parameters for MongoUpdate.
+type MongoUpdateJSONBodyApplicationStatus string
+
+// MysqlCreateJSONBody defines parameters for MysqlCreate.
+type MysqlCreateJSONBody struct {
+	AppName              *string                   `json:"appName,omitempty"`
+	DatabaseName         string                    `json:"databaseName"`
+	DatabasePassword     string                    `json:"databasePassword"`
+	DatabaseRootPassword *string                   `json:"databaseRootPassword,omitempty"`
+	DatabaseUser         string                    `json:"databaseUser"`
+	Description          nullable.Nullable[string] `json:"description,omitempty"`
+	DockerImage          *string                   `json:"dockerImage,omitempty"`
+	EnvironmentId        string                    `json:"environmentId"`
+	Name                 string                    `json:"name"`
+	ServerId             nullable.Nullable[string] `json:"serverId,omitempty"`
+}
+
+// MysqlDeployJSONBody defines parameters for MysqlDeploy.
+type MysqlDeployJSONBody struct {
+	MysqlId string `json:"mysqlId"`
+}
+
+// MysqlOneParams defines parameters for MysqlOne.
+type MysqlOneParams struct {
+	MysqlId string `form:"mysqlId" json:"mysqlId"`
+}
+
+// MysqlRemoveJSONBody defines parameters for MysqlRemove.
+type MysqlRemoveJSONBody struct {
+	MysqlId string `json:"mysqlId"`
+}
+
+// MysqlSaveEnvironmentJSONBody defines parameters for MysqlSaveEnvironment.
+type MysqlSaveEnvironmentJSONBody struct {
+	Env     nullable.Nullable[string] `json:"env"`
+	MysqlId string                    `json:"mysqlId"`
+}
+
+// MysqlSaveExternalPortJSONBody defines parameters for MysqlSaveExternalPort.
+type MysqlSaveExternalPortJSONBody struct {
+	ExternalPort nullable.Nullable[float32] `json:"externalPort"`
+	MysqlId      string                     `json:"mysqlId"`
+}
+
+// MysqlUpdateJSONBody defines parameters for MysqlUpdate.
+type MysqlUpdateJSONBody struct {
+	AppName              *string                               `json:"appName,omitempty"`
+	ApplicationStatus    *MysqlUpdateJSONBodyApplicationStatus `json:"applicationStatus,omitempty"`
+	Args                 nullable.Nullable[[]string]           `json:"args,omitempty"`
+	Command              nullable.Nullable[string]             `json:"command,omitempty"`
+	CpuLimit             nullable.Nullable[string]             `json:"cpuLimit,omitempty"`
+	CpuReservation       nullable.Nullable[string]             `json:"cpuReservation,omitempty"`
+	CreatedAt            *string                               `json:"createdAt,omitempty"`
+	DatabaseName         *string                               `json:"databaseName,omitempty"`
+	DatabasePassword     *string                               `json:"databasePassword,omitempty"`
+	DatabaseRootPassword *string                               `json:"databaseRootPassword,omitempty"`
+	DatabaseUser         *string                               `json:"databaseUser,omitempty"`
+	Description          nullable.Nullable[string]             `json:"description,omitempty"`
+	DetachDokployNetwork *bool                                 `json:"detachDokployNetwork,omitempty"`
+	DockerImage          *string                               `json:"dockerImage,omitempty"`
+	EndpointSpecSwarm    nullable.Nullable[struct {
+		Mode  *string `json:"Mode,omitempty"`
+		Ports *[]struct {
+			Protocol      *string  `json:"Protocol,omitempty"`
+			PublishMode   *string  `json:"PublishMode,omitempty"`
+			PublishedPort *float32 `json:"PublishedPort,omitempty"`
+			TargetPort    *float32 `json:"TargetPort,omitempty"`
+		} `json:"Ports,omitempty"`
+	}] `json:"endpointSpecSwarm,omitempty"`
+	Env              nullable.Nullable[string]  `json:"env,omitempty"`
+	EnvironmentId    *string                    `json:"environmentId,omitempty"`
+	ExternalPort     nullable.Nullable[float32] `json:"externalPort,omitempty"`
+	HealthCheckSwarm nullable.Nullable[struct {
+		Interval    *float32  `json:"Interval,omitempty"`
+		Retries     *float32  `json:"Retries,omitempty"`
+		StartPeriod *float32  `json:"StartPeriod,omitempty"`
+		Test        *[]string `json:"Test,omitempty"`
+		Timeout     *float32  `json:"Timeout,omitempty"`
+	}] `json:"healthCheckSwarm,omitempty"`
+	LabelsSwarm       nullable.Nullable[map[string]string] `json:"labelsSwarm,omitempty"`
+	MemoryLimit       nullable.Nullable[string]            `json:"memoryLimit,omitempty"`
+	MemoryReservation nullable.Nullable[string]            `json:"memoryReservation,omitempty"`
+	ModeSwarm         nullable.Nullable[struct {
+		Global     *map[string]interface{} `json:"Global,omitempty"`
+		GlobalJob  *map[string]interface{} `json:"GlobalJob,omitempty"`
+		Replicated *struct {
+			Replicas *float32 `json:"Replicas,omitempty"`
+		} `json:"Replicated,omitempty"`
+		ReplicatedJob *struct {
+			MaxConcurrent    *float32 `json:"MaxConcurrent,omitempty"`
+			TotalCompletions *float32 `json:"TotalCompletions,omitempty"`
+		} `json:"ReplicatedJob,omitempty"`
+	}] `json:"modeSwarm,omitempty"`
+	MysqlId      string                      `json:"mysqlId"`
+	Name         *string                     `json:"name,omitempty"`
+	NetworkIds   nullable.Nullable[[]string] `json:"networkIds,omitempty"`
+	NetworkSwarm nullable.Nullable[struct {
+		Aliases    *[]string          `json:"Aliases,omitempty"`
+		DriverOpts *map[string]string `json:"DriverOpts,omitempty"`
+		Target     *string            `json:"Target,omitempty"`
+	}] `json:"networkSwarm,omitempty"`
+	PlacementSwarm nullable.Nullable[struct {
+		Constraints *[]string `json:"Constraints,omitempty"`
+		MaxReplicas *float32  `json:"MaxReplicas,omitempty"`
+		Platforms   *[]struct {
+			Architecture string `json:"Architecture"`
+			OS           string `json:"OS"`
+		} `json:"Platforms,omitempty"`
+		Preferences *[]struct {
+			Spread struct {
+				SpreadDescriptor string `json:"SpreadDescriptor"`
+			} `json:"Spread"`
+		} `json:"Preferences,omitempty"`
+	}] `json:"placementSwarm,omitempty"`
+	Replicas           *float32 `json:"replicas,omitempty"`
+	RestartPolicySwarm nullable.Nullable[struct {
+		Condition   *string  `json:"Condition,omitempty"`
+		Delay       *float32 `json:"Delay,omitempty"`
+		MaxAttempts *float32 `json:"MaxAttempts,omitempty"`
+		Window      *float32 `json:"Window,omitempty"`
+	}] `json:"restartPolicySwarm,omitempty"`
+	RollbackConfigSwarm nullable.Nullable[struct {
+		Delay           *float32 `json:"Delay,omitempty"`
+		FailureAction   *string  `json:"FailureAction,omitempty"`
+		MaxFailureRatio *float32 `json:"MaxFailureRatio,omitempty"`
+		Monitor         *float32 `json:"Monitor,omitempty"`
+		Order           string   `json:"Order"`
+		Parallelism     float32  `json:"Parallelism"`
+	}] `json:"rollbackConfigSwarm,omitempty"`
+	StopGracePeriodSwarm nullable.Nullable[float32] `json:"stopGracePeriodSwarm,omitempty"`
+	UlimitsSwarm         nullable.Nullable[struct {
+		Hard int    `json:"Hard"`
+		Name string `json:"Name"`
+		Soft int    `json:"Soft"`
+	}] `json:"ulimitsSwarm,omitempty"`
+	UpdateConfigSwarm nullable.Nullable[struct {
+		Delay           *float32 `json:"Delay,omitempty"`
+		FailureAction   *string  `json:"FailureAction,omitempty"`
+		MaxFailureRatio *float32 `json:"MaxFailureRatio,omitempty"`
+		Monitor         *float32 `json:"Monitor,omitempty"`
+		Order           string   `json:"Order"`
+		Parallelism     float32  `json:"Parallelism"`
+	}] `json:"updateConfigSwarm,omitempty"`
+}
+
+// MysqlUpdateJSONBodyApplicationStatus defines parameters for MysqlUpdate.
+type MysqlUpdateJSONBodyApplicationStatus string
+
 // PostgresCreateJSONBody defines parameters for PostgresCreate.
 type PostgresCreateJSONBody struct {
 	AppName          *string                   `json:"appName,omitempty"`
@@ -1452,6 +2005,60 @@ type EnvironmentRemoveJSONRequestBody EnvironmentRemoveJSONBody
 
 // EnvironmentUpdateJSONRequestBody defines body for EnvironmentUpdate for application/json ContentType.
 type EnvironmentUpdateJSONRequestBody EnvironmentUpdateJSONBody
+
+// MariadbCreateJSONRequestBody defines body for MariadbCreate for application/json ContentType.
+type MariadbCreateJSONRequestBody MariadbCreateJSONBody
+
+// MariadbDeployJSONRequestBody defines body for MariadbDeploy for application/json ContentType.
+type MariadbDeployJSONRequestBody MariadbDeployJSONBody
+
+// MariadbRemoveJSONRequestBody defines body for MariadbRemove for application/json ContentType.
+type MariadbRemoveJSONRequestBody MariadbRemoveJSONBody
+
+// MariadbSaveEnvironmentJSONRequestBody defines body for MariadbSaveEnvironment for application/json ContentType.
+type MariadbSaveEnvironmentJSONRequestBody MariadbSaveEnvironmentJSONBody
+
+// MariadbSaveExternalPortJSONRequestBody defines body for MariadbSaveExternalPort for application/json ContentType.
+type MariadbSaveExternalPortJSONRequestBody MariadbSaveExternalPortJSONBody
+
+// MariadbUpdateJSONRequestBody defines body for MariadbUpdate for application/json ContentType.
+type MariadbUpdateJSONRequestBody MariadbUpdateJSONBody
+
+// MongoCreateJSONRequestBody defines body for MongoCreate for application/json ContentType.
+type MongoCreateJSONRequestBody MongoCreateJSONBody
+
+// MongoDeployJSONRequestBody defines body for MongoDeploy for application/json ContentType.
+type MongoDeployJSONRequestBody MongoDeployJSONBody
+
+// MongoRemoveJSONRequestBody defines body for MongoRemove for application/json ContentType.
+type MongoRemoveJSONRequestBody MongoRemoveJSONBody
+
+// MongoSaveEnvironmentJSONRequestBody defines body for MongoSaveEnvironment for application/json ContentType.
+type MongoSaveEnvironmentJSONRequestBody MongoSaveEnvironmentJSONBody
+
+// MongoSaveExternalPortJSONRequestBody defines body for MongoSaveExternalPort for application/json ContentType.
+type MongoSaveExternalPortJSONRequestBody MongoSaveExternalPortJSONBody
+
+// MongoUpdateJSONRequestBody defines body for MongoUpdate for application/json ContentType.
+type MongoUpdateJSONRequestBody MongoUpdateJSONBody
+
+// MysqlCreateJSONRequestBody defines body for MysqlCreate for application/json ContentType.
+type MysqlCreateJSONRequestBody MysqlCreateJSONBody
+
+// MysqlDeployJSONRequestBody defines body for MysqlDeploy for application/json ContentType.
+type MysqlDeployJSONRequestBody MysqlDeployJSONBody
+
+// MysqlRemoveJSONRequestBody defines body for MysqlRemove for application/json ContentType.
+type MysqlRemoveJSONRequestBody MysqlRemoveJSONBody
+
+// MysqlSaveEnvironmentJSONRequestBody defines body for MysqlSaveEnvironment for application/json ContentType.
+type MysqlSaveEnvironmentJSONRequestBody MysqlSaveEnvironmentJSONBody
+
+// MysqlSaveExternalPortJSONRequestBody defines body for MysqlSaveExternalPort for application/json ContentType.
+type MysqlSaveExternalPortJSONRequestBody MysqlSaveExternalPortJSONBody
+
+// MysqlUpdateJSONRequestBody defines body for MysqlUpdate for application/json ContentType.
+type MysqlUpdateJSONRequestBody MysqlUpdateJSONBody
 
 // PostgresCreateJSONRequestBody defines body for PostgresCreate for application/json ContentType.
 type PostgresCreateJSONRequestBody PostgresCreateJSONBody
@@ -2344,6 +2951,660 @@ func (a Environment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for MariaDB. Returns the specified
+// element and whether it was found
+func (a MariaDB) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for MariaDB
+func (a *MariaDB) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for MariaDB to handle AdditionalProperties
+func (a *MariaDB) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["appName"]; found {
+		err = json.Unmarshal(raw, &a.AppName)
+		if err != nil {
+			return fmt.Errorf("error reading 'appName': %w", err)
+		}
+		delete(object, "appName")
+	}
+
+	if raw, found := object["databaseName"]; found {
+		err = json.Unmarshal(raw, &a.DatabaseName)
+		if err != nil {
+			return fmt.Errorf("error reading 'databaseName': %w", err)
+		}
+		delete(object, "databaseName")
+	}
+
+	if raw, found := object["databaseUser"]; found {
+		err = json.Unmarshal(raw, &a.DatabaseUser)
+		if err != nil {
+			return fmt.Errorf("error reading 'databaseUser': %w", err)
+		}
+		delete(object, "databaseUser")
+	}
+
+	if raw, found := object["description"]; found {
+		err = json.Unmarshal(raw, &a.Description)
+		if err != nil {
+			return fmt.Errorf("error reading 'description': %w", err)
+		}
+		delete(object, "description")
+	}
+
+	if raw, found := object["env"]; found {
+		err = json.Unmarshal(raw, &a.Env)
+		if err != nil {
+			return fmt.Errorf("error reading 'env': %w", err)
+		}
+		delete(object, "env")
+	}
+
+	if raw, found := object["environmentId"]; found {
+		err = json.Unmarshal(raw, &a.EnvironmentId)
+		if err != nil {
+			return fmt.Errorf("error reading 'environmentId': %w", err)
+		}
+		delete(object, "environmentId")
+	}
+
+	if raw, found := object["externalPort"]; found {
+		err = json.Unmarshal(raw, &a.ExternalPort)
+		if err != nil {
+			return fmt.Errorf("error reading 'externalPort': %w", err)
+		}
+		delete(object, "externalPort")
+	}
+
+	if raw, found := object["image"]; found {
+		err = json.Unmarshal(raw, &a.Image)
+		if err != nil {
+			return fmt.Errorf("error reading 'image': %w", err)
+		}
+		delete(object, "image")
+	}
+
+	if raw, found := object["mariadbId"]; found {
+		err = json.Unmarshal(raw, &a.MariadbId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mariadbId': %w", err)
+		}
+		delete(object, "mariadbId")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["serverId"]; found {
+		err = json.Unmarshal(raw, &a.ServerId)
+		if err != nil {
+			return fmt.Errorf("error reading 'serverId': %w", err)
+		}
+		delete(object, "serverId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for MariaDB to handle AdditionalProperties
+func (a MariaDB) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AppName != nil {
+		object["appName"], err = json.Marshal(a.AppName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'appName': %w", err)
+		}
+	}
+
+	if a.DatabaseName != nil {
+		object["databaseName"], err = json.Marshal(a.DatabaseName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'databaseName': %w", err)
+		}
+	}
+
+	if a.DatabaseUser != nil {
+		object["databaseUser"], err = json.Marshal(a.DatabaseUser)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'databaseUser': %w", err)
+		}
+	}
+
+	if a.Description != nil {
+		object["description"], err = json.Marshal(a.Description)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'description': %w", err)
+		}
+	}
+
+	if a.Env != nil {
+		object["env"], err = json.Marshal(a.Env)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'env': %w", err)
+		}
+	}
+
+	if a.EnvironmentId != nil {
+		object["environmentId"], err = json.Marshal(a.EnvironmentId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'environmentId': %w", err)
+		}
+	}
+
+	if a.ExternalPort != nil {
+		object["externalPort"], err = json.Marshal(a.ExternalPort)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'externalPort': %w", err)
+		}
+	}
+
+	if a.Image != nil {
+		object["image"], err = json.Marshal(a.Image)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'image': %w", err)
+		}
+	}
+
+	if a.MariadbId != nil {
+		object["mariadbId"], err = json.Marshal(a.MariadbId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mariadbId': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.ServerId != nil {
+		object["serverId"], err = json.Marshal(a.ServerId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for MongoDB. Returns the specified
+// element and whether it was found
+func (a MongoDB) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for MongoDB
+func (a *MongoDB) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for MongoDB to handle AdditionalProperties
+func (a *MongoDB) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["appName"]; found {
+		err = json.Unmarshal(raw, &a.AppName)
+		if err != nil {
+			return fmt.Errorf("error reading 'appName': %w", err)
+		}
+		delete(object, "appName")
+	}
+
+	if raw, found := object["databaseUser"]; found {
+		err = json.Unmarshal(raw, &a.DatabaseUser)
+		if err != nil {
+			return fmt.Errorf("error reading 'databaseUser': %w", err)
+		}
+		delete(object, "databaseUser")
+	}
+
+	if raw, found := object["description"]; found {
+		err = json.Unmarshal(raw, &a.Description)
+		if err != nil {
+			return fmt.Errorf("error reading 'description': %w", err)
+		}
+		delete(object, "description")
+	}
+
+	if raw, found := object["env"]; found {
+		err = json.Unmarshal(raw, &a.Env)
+		if err != nil {
+			return fmt.Errorf("error reading 'env': %w", err)
+		}
+		delete(object, "env")
+	}
+
+	if raw, found := object["environmentId"]; found {
+		err = json.Unmarshal(raw, &a.EnvironmentId)
+		if err != nil {
+			return fmt.Errorf("error reading 'environmentId': %w", err)
+		}
+		delete(object, "environmentId")
+	}
+
+	if raw, found := object["externalPort"]; found {
+		err = json.Unmarshal(raw, &a.ExternalPort)
+		if err != nil {
+			return fmt.Errorf("error reading 'externalPort': %w", err)
+		}
+		delete(object, "externalPort")
+	}
+
+	if raw, found := object["image"]; found {
+		err = json.Unmarshal(raw, &a.Image)
+		if err != nil {
+			return fmt.Errorf("error reading 'image': %w", err)
+		}
+		delete(object, "image")
+	}
+
+	if raw, found := object["mongoId"]; found {
+		err = json.Unmarshal(raw, &a.MongoId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mongoId': %w", err)
+		}
+		delete(object, "mongoId")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["replicaSets"]; found {
+		err = json.Unmarshal(raw, &a.ReplicaSets)
+		if err != nil {
+			return fmt.Errorf("error reading 'replicaSets': %w", err)
+		}
+		delete(object, "replicaSets")
+	}
+
+	if raw, found := object["serverId"]; found {
+		err = json.Unmarshal(raw, &a.ServerId)
+		if err != nil {
+			return fmt.Errorf("error reading 'serverId': %w", err)
+		}
+		delete(object, "serverId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for MongoDB to handle AdditionalProperties
+func (a MongoDB) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AppName != nil {
+		object["appName"], err = json.Marshal(a.AppName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'appName': %w", err)
+		}
+	}
+
+	if a.DatabaseUser != nil {
+		object["databaseUser"], err = json.Marshal(a.DatabaseUser)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'databaseUser': %w", err)
+		}
+	}
+
+	if a.Description != nil {
+		object["description"], err = json.Marshal(a.Description)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'description': %w", err)
+		}
+	}
+
+	if a.Env != nil {
+		object["env"], err = json.Marshal(a.Env)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'env': %w", err)
+		}
+	}
+
+	if a.EnvironmentId != nil {
+		object["environmentId"], err = json.Marshal(a.EnvironmentId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'environmentId': %w", err)
+		}
+	}
+
+	if a.ExternalPort != nil {
+		object["externalPort"], err = json.Marshal(a.ExternalPort)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'externalPort': %w", err)
+		}
+	}
+
+	if a.Image != nil {
+		object["image"], err = json.Marshal(a.Image)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'image': %w", err)
+		}
+	}
+
+	if a.MongoId != nil {
+		object["mongoId"], err = json.Marshal(a.MongoId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mongoId': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.ReplicaSets != nil {
+		object["replicaSets"], err = json.Marshal(a.ReplicaSets)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'replicaSets': %w", err)
+		}
+	}
+
+	if a.ServerId != nil {
+		object["serverId"], err = json.Marshal(a.ServerId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for MySQL. Returns the specified
+// element and whether it was found
+func (a MySQL) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for MySQL
+func (a *MySQL) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for MySQL to handle AdditionalProperties
+func (a *MySQL) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["appName"]; found {
+		err = json.Unmarshal(raw, &a.AppName)
+		if err != nil {
+			return fmt.Errorf("error reading 'appName': %w", err)
+		}
+		delete(object, "appName")
+	}
+
+	if raw, found := object["databaseName"]; found {
+		err = json.Unmarshal(raw, &a.DatabaseName)
+		if err != nil {
+			return fmt.Errorf("error reading 'databaseName': %w", err)
+		}
+		delete(object, "databaseName")
+	}
+
+	if raw, found := object["databaseUser"]; found {
+		err = json.Unmarshal(raw, &a.DatabaseUser)
+		if err != nil {
+			return fmt.Errorf("error reading 'databaseUser': %w", err)
+		}
+		delete(object, "databaseUser")
+	}
+
+	if raw, found := object["description"]; found {
+		err = json.Unmarshal(raw, &a.Description)
+		if err != nil {
+			return fmt.Errorf("error reading 'description': %w", err)
+		}
+		delete(object, "description")
+	}
+
+	if raw, found := object["env"]; found {
+		err = json.Unmarshal(raw, &a.Env)
+		if err != nil {
+			return fmt.Errorf("error reading 'env': %w", err)
+		}
+		delete(object, "env")
+	}
+
+	if raw, found := object["environmentId"]; found {
+		err = json.Unmarshal(raw, &a.EnvironmentId)
+		if err != nil {
+			return fmt.Errorf("error reading 'environmentId': %w", err)
+		}
+		delete(object, "environmentId")
+	}
+
+	if raw, found := object["externalPort"]; found {
+		err = json.Unmarshal(raw, &a.ExternalPort)
+		if err != nil {
+			return fmt.Errorf("error reading 'externalPort': %w", err)
+		}
+		delete(object, "externalPort")
+	}
+
+	if raw, found := object["image"]; found {
+		err = json.Unmarshal(raw, &a.Image)
+		if err != nil {
+			return fmt.Errorf("error reading 'image': %w", err)
+		}
+		delete(object, "image")
+	}
+
+	if raw, found := object["mysqlId"]; found {
+		err = json.Unmarshal(raw, &a.MysqlId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mysqlId': %w", err)
+		}
+		delete(object, "mysqlId")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["serverId"]; found {
+		err = json.Unmarshal(raw, &a.ServerId)
+		if err != nil {
+			return fmt.Errorf("error reading 'serverId': %w", err)
+		}
+		delete(object, "serverId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for MySQL to handle AdditionalProperties
+func (a MySQL) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AppName != nil {
+		object["appName"], err = json.Marshal(a.AppName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'appName': %w", err)
+		}
+	}
+
+	if a.DatabaseName != nil {
+		object["databaseName"], err = json.Marshal(a.DatabaseName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'databaseName': %w", err)
+		}
+	}
+
+	if a.DatabaseUser != nil {
+		object["databaseUser"], err = json.Marshal(a.DatabaseUser)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'databaseUser': %w", err)
+		}
+	}
+
+	if a.Description != nil {
+		object["description"], err = json.Marshal(a.Description)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'description': %w", err)
+		}
+	}
+
+	if a.Env != nil {
+		object["env"], err = json.Marshal(a.Env)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'env': %w", err)
+		}
+	}
+
+	if a.EnvironmentId != nil {
+		object["environmentId"], err = json.Marshal(a.EnvironmentId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'environmentId': %w", err)
+		}
+	}
+
+	if a.ExternalPort != nil {
+		object["externalPort"], err = json.Marshal(a.ExternalPort)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'externalPort': %w", err)
+		}
+	}
+
+	if a.Image != nil {
+		object["image"], err = json.Marshal(a.Image)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'image': %w", err)
+		}
+	}
+
+	if a.MysqlId != nil {
+		object["mysqlId"], err = json.Marshal(a.MysqlId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mysqlId': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.ServerId != nil {
+		object["serverId"], err = json.Marshal(a.ServerId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for Postgres. Returns the specified
 // element and whether it was found
 func (a Postgres) Get(fieldName string) (value interface{}, found bool) {
@@ -3155,6 +4416,159 @@ type ClientInterface interface {
 	// EnvironmentUpdate performs a POST /environment.update (the `EnvironmentUpdate` operationId) request.
 	// Takes a body of the `application/json` content type.
 	EnvironmentUpdate(ctx context.Context, body EnvironmentUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbCreateWithBody performs a POST /mariadb.create (the `MariadbCreate` operationId) request,
+	// with any type of body and a specified content type.
+	MariadbCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbCreate performs a POST /mariadb.create (the `MariadbCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MariadbCreate(ctx context.Context, body MariadbCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbDeployWithBody performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request,
+	// with any type of body and a specified content type.
+	MariadbDeployWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbDeploy performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MariadbDeploy(ctx context.Context, body MariadbDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbOne performs a GET /mariadb.one (the `MariadbOne` operationId) request.
+	MariadbOne(ctx context.Context, params *MariadbOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbRemoveWithBody performs a POST /mariadb.remove (the `MariadbRemove` operationId) request,
+	// with any type of body and a specified content type.
+	MariadbRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbRemove performs a POST /mariadb.remove (the `MariadbRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MariadbRemove(ctx context.Context, body MariadbRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbSaveEnvironmentWithBody performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request,
+	// with any type of body and a specified content type.
+	MariadbSaveEnvironmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbSaveEnvironment performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MariadbSaveEnvironment(ctx context.Context, body MariadbSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbSaveExternalPortWithBody performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request,
+	// with any type of body and a specified content type.
+	MariadbSaveExternalPortWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbSaveExternalPort performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MariadbSaveExternalPort(ctx context.Context, body MariadbSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbUpdateWithBody performs a POST /mariadb.update (the `MariadbUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	MariadbUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MariadbUpdate performs a POST /mariadb.update (the `MariadbUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MariadbUpdate(ctx context.Context, body MariadbUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoCreateWithBody performs a POST /mongo.create (the `MongoCreate` operationId) request,
+	// with any type of body and a specified content type.
+	MongoCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoCreate performs a POST /mongo.create (the `MongoCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MongoCreate(ctx context.Context, body MongoCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoDeployWithBody performs a POST /mongo.deploy (the `MongoDeploy` operationId) request,
+	// with any type of body and a specified content type.
+	MongoDeployWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoDeploy performs a POST /mongo.deploy (the `MongoDeploy` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MongoDeploy(ctx context.Context, body MongoDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoOne performs a GET /mongo.one (the `MongoOne` operationId) request.
+	MongoOne(ctx context.Context, params *MongoOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoRemoveWithBody performs a POST /mongo.remove (the `MongoRemove` operationId) request,
+	// with any type of body and a specified content type.
+	MongoRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoRemove performs a POST /mongo.remove (the `MongoRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MongoRemove(ctx context.Context, body MongoRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoSaveEnvironmentWithBody performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request,
+	// with any type of body and a specified content type.
+	MongoSaveEnvironmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoSaveEnvironment performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MongoSaveEnvironment(ctx context.Context, body MongoSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoSaveExternalPortWithBody performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request,
+	// with any type of body and a specified content type.
+	MongoSaveExternalPortWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoSaveExternalPort performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MongoSaveExternalPort(ctx context.Context, body MongoSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoUpdateWithBody performs a POST /mongo.update (the `MongoUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	MongoUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MongoUpdate performs a POST /mongo.update (the `MongoUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MongoUpdate(ctx context.Context, body MongoUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlCreateWithBody performs a POST /mysql.create (the `MysqlCreate` operationId) request,
+	// with any type of body and a specified content type.
+	MysqlCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlCreate performs a POST /mysql.create (the `MysqlCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MysqlCreate(ctx context.Context, body MysqlCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlDeployWithBody performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request,
+	// with any type of body and a specified content type.
+	MysqlDeployWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlDeploy performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MysqlDeploy(ctx context.Context, body MysqlDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlOne performs a GET /mysql.one (the `MysqlOne` operationId) request.
+	MysqlOne(ctx context.Context, params *MysqlOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlRemoveWithBody performs a POST /mysql.remove (the `MysqlRemove` operationId) request,
+	// with any type of body and a specified content type.
+	MysqlRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlRemove performs a POST /mysql.remove (the `MysqlRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MysqlRemove(ctx context.Context, body MysqlRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlSaveEnvironmentWithBody performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request,
+	// with any type of body and a specified content type.
+	MysqlSaveEnvironmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlSaveEnvironment performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MysqlSaveEnvironment(ctx context.Context, body MysqlSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlSaveExternalPortWithBody performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request,
+	// with any type of body and a specified content type.
+	MysqlSaveExternalPortWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlSaveExternalPort performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MysqlSaveExternalPort(ctx context.Context, body MysqlSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlUpdateWithBody performs a POST /mysql.update (the `MysqlUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	MysqlUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MysqlUpdate performs a POST /mysql.update (the `MysqlUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MysqlUpdate(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PostgresCreateWithBody performs a POST /postgres.create (the `PostgresCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -4000,6 +5414,549 @@ func (c *Client) EnvironmentUpdateWithBody(ctx context.Context, contentType stri
 // Takes a body of the `application/json` content type.
 func (c *Client) EnvironmentUpdate(ctx context.Context, body EnvironmentUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnvironmentUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbCreateWithBody performs a POST /mariadb.create (the `MariadbCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MariadbCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbCreate performs a POST /mariadb.create (the `MariadbCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MariadbCreate(ctx context.Context, body MariadbCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbDeployWithBody performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MariadbDeployWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbDeployRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbDeploy performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MariadbDeploy(ctx context.Context, body MariadbDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbDeployRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbOne performs a GET /mariadb.one (the `MariadbOne` operationId) request.
+func (c *Client) MariadbOne(ctx context.Context, params *MariadbOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbRemoveWithBody performs a POST /mariadb.remove (the `MariadbRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MariadbRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbRemove performs a POST /mariadb.remove (the `MariadbRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MariadbRemove(ctx context.Context, body MariadbRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbSaveEnvironmentWithBody performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MariadbSaveEnvironmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbSaveEnvironmentRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbSaveEnvironment performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MariadbSaveEnvironment(ctx context.Context, body MariadbSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbSaveEnvironmentRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbSaveExternalPortWithBody performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MariadbSaveExternalPortWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbSaveExternalPortRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbSaveExternalPort performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MariadbSaveExternalPort(ctx context.Context, body MariadbSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbSaveExternalPortRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbUpdateWithBody performs a POST /mariadb.update (the `MariadbUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MariadbUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MariadbUpdate performs a POST /mariadb.update (the `MariadbUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MariadbUpdate(ctx context.Context, body MariadbUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMariadbUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoCreateWithBody performs a POST /mongo.create (the `MongoCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MongoCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoCreate performs a POST /mongo.create (the `MongoCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MongoCreate(ctx context.Context, body MongoCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoDeployWithBody performs a POST /mongo.deploy (the `MongoDeploy` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MongoDeployWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoDeployRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoDeploy performs a POST /mongo.deploy (the `MongoDeploy` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MongoDeploy(ctx context.Context, body MongoDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoDeployRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoOne performs a GET /mongo.one (the `MongoOne` operationId) request.
+func (c *Client) MongoOne(ctx context.Context, params *MongoOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoRemoveWithBody performs a POST /mongo.remove (the `MongoRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MongoRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoRemove performs a POST /mongo.remove (the `MongoRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MongoRemove(ctx context.Context, body MongoRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoSaveEnvironmentWithBody performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MongoSaveEnvironmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoSaveEnvironmentRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoSaveEnvironment performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MongoSaveEnvironment(ctx context.Context, body MongoSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoSaveEnvironmentRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoSaveExternalPortWithBody performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MongoSaveExternalPortWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoSaveExternalPortRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoSaveExternalPort performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MongoSaveExternalPort(ctx context.Context, body MongoSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoSaveExternalPortRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoUpdateWithBody performs a POST /mongo.update (the `MongoUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MongoUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MongoUpdate performs a POST /mongo.update (the `MongoUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MongoUpdate(ctx context.Context, body MongoUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMongoUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlCreateWithBody performs a POST /mysql.create (the `MysqlCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MysqlCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlCreate performs a POST /mysql.create (the `MysqlCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MysqlCreate(ctx context.Context, body MysqlCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlDeployWithBody performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MysqlDeployWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlDeployRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlDeploy performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MysqlDeploy(ctx context.Context, body MysqlDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlDeployRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlOne performs a GET /mysql.one (the `MysqlOne` operationId) request.
+func (c *Client) MysqlOne(ctx context.Context, params *MysqlOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlRemoveWithBody performs a POST /mysql.remove (the `MysqlRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MysqlRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlRemove performs a POST /mysql.remove (the `MysqlRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MysqlRemove(ctx context.Context, body MysqlRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlSaveEnvironmentWithBody performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MysqlSaveEnvironmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlSaveEnvironmentRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlSaveEnvironment performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MysqlSaveEnvironment(ctx context.Context, body MysqlSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlSaveEnvironmentRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlSaveExternalPortWithBody performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MysqlSaveExternalPortWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlSaveExternalPortRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlSaveExternalPort performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MysqlSaveExternalPort(ctx context.Context, body MysqlSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlSaveExternalPortRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlUpdateWithBody performs a POST /mysql.update (the `MysqlUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MysqlUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MysqlUpdate performs a POST /mysql.update (the `MysqlUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MysqlUpdate(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMysqlUpdateRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5629,6 +7586,876 @@ func NewEnvironmentUpdateRequestWithBody(server string, contentType string, body
 	return req, nil
 }
 
+// NewMariadbCreateRequest calls the generic MariadbCreate builder with application/json body
+func NewMariadbCreateRequest(server string, body MariadbCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMariadbCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMariadbCreateRequestWithBody constructs an http.Request for the MariadbCreate method, with any body, and a specified content type
+func NewMariadbCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mariadb.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMariadbDeployRequest calls the generic MariadbDeploy builder with application/json body
+func NewMariadbDeployRequest(server string, body MariadbDeployJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMariadbDeployRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMariadbDeployRequestWithBody constructs an http.Request for the MariadbDeploy method, with any body, and a specified content type
+func NewMariadbDeployRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mariadb.deploy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMariadbOneRequest constructs an http.Request for the MariadbOne method
+func NewMariadbOneRequest(server string, params *MariadbOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mariadb.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "mariadbId", params.MariadbId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMariadbRemoveRequest calls the generic MariadbRemove builder with application/json body
+func NewMariadbRemoveRequest(server string, body MariadbRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMariadbRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMariadbRemoveRequestWithBody constructs an http.Request for the MariadbRemove method, with any body, and a specified content type
+func NewMariadbRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mariadb.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMariadbSaveEnvironmentRequest calls the generic MariadbSaveEnvironment builder with application/json body
+func NewMariadbSaveEnvironmentRequest(server string, body MariadbSaveEnvironmentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMariadbSaveEnvironmentRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMariadbSaveEnvironmentRequestWithBody constructs an http.Request for the MariadbSaveEnvironment method, with any body, and a specified content type
+func NewMariadbSaveEnvironmentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mariadb.saveEnvironment")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMariadbSaveExternalPortRequest calls the generic MariadbSaveExternalPort builder with application/json body
+func NewMariadbSaveExternalPortRequest(server string, body MariadbSaveExternalPortJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMariadbSaveExternalPortRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMariadbSaveExternalPortRequestWithBody constructs an http.Request for the MariadbSaveExternalPort method, with any body, and a specified content type
+func NewMariadbSaveExternalPortRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mariadb.saveExternalPort")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMariadbUpdateRequest calls the generic MariadbUpdate builder with application/json body
+func NewMariadbUpdateRequest(server string, body MariadbUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMariadbUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMariadbUpdateRequestWithBody constructs an http.Request for the MariadbUpdate method, with any body, and a specified content type
+func NewMariadbUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mariadb.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMongoCreateRequest calls the generic MongoCreate builder with application/json body
+func NewMongoCreateRequest(server string, body MongoCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMongoCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMongoCreateRequestWithBody constructs an http.Request for the MongoCreate method, with any body, and a specified content type
+func NewMongoCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mongo.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMongoDeployRequest calls the generic MongoDeploy builder with application/json body
+func NewMongoDeployRequest(server string, body MongoDeployJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMongoDeployRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMongoDeployRequestWithBody constructs an http.Request for the MongoDeploy method, with any body, and a specified content type
+func NewMongoDeployRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mongo.deploy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMongoOneRequest constructs an http.Request for the MongoOne method
+func NewMongoOneRequest(server string, params *MongoOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mongo.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "mongoId", params.MongoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMongoRemoveRequest calls the generic MongoRemove builder with application/json body
+func NewMongoRemoveRequest(server string, body MongoRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMongoRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMongoRemoveRequestWithBody constructs an http.Request for the MongoRemove method, with any body, and a specified content type
+func NewMongoRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mongo.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMongoSaveEnvironmentRequest calls the generic MongoSaveEnvironment builder with application/json body
+func NewMongoSaveEnvironmentRequest(server string, body MongoSaveEnvironmentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMongoSaveEnvironmentRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMongoSaveEnvironmentRequestWithBody constructs an http.Request for the MongoSaveEnvironment method, with any body, and a specified content type
+func NewMongoSaveEnvironmentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mongo.saveEnvironment")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMongoSaveExternalPortRequest calls the generic MongoSaveExternalPort builder with application/json body
+func NewMongoSaveExternalPortRequest(server string, body MongoSaveExternalPortJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMongoSaveExternalPortRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMongoSaveExternalPortRequestWithBody constructs an http.Request for the MongoSaveExternalPort method, with any body, and a specified content type
+func NewMongoSaveExternalPortRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mongo.saveExternalPort")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMongoUpdateRequest calls the generic MongoUpdate builder with application/json body
+func NewMongoUpdateRequest(server string, body MongoUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMongoUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMongoUpdateRequestWithBody constructs an http.Request for the MongoUpdate method, with any body, and a specified content type
+func NewMongoUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mongo.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMysqlCreateRequest calls the generic MysqlCreate builder with application/json body
+func NewMysqlCreateRequest(server string, body MysqlCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMysqlCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMysqlCreateRequestWithBody constructs an http.Request for the MysqlCreate method, with any body, and a specified content type
+func NewMysqlCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mysql.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMysqlDeployRequest calls the generic MysqlDeploy builder with application/json body
+func NewMysqlDeployRequest(server string, body MysqlDeployJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMysqlDeployRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMysqlDeployRequestWithBody constructs an http.Request for the MysqlDeploy method, with any body, and a specified content type
+func NewMysqlDeployRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mysql.deploy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMysqlOneRequest constructs an http.Request for the MysqlOne method
+func NewMysqlOneRequest(server string, params *MysqlOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mysql.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "mysqlId", params.MysqlId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMysqlRemoveRequest calls the generic MysqlRemove builder with application/json body
+func NewMysqlRemoveRequest(server string, body MysqlRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMysqlRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMysqlRemoveRequestWithBody constructs an http.Request for the MysqlRemove method, with any body, and a specified content type
+func NewMysqlRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mysql.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMysqlSaveEnvironmentRequest calls the generic MysqlSaveEnvironment builder with application/json body
+func NewMysqlSaveEnvironmentRequest(server string, body MysqlSaveEnvironmentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMysqlSaveEnvironmentRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMysqlSaveEnvironmentRequestWithBody constructs an http.Request for the MysqlSaveEnvironment method, with any body, and a specified content type
+func NewMysqlSaveEnvironmentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mysql.saveEnvironment")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMysqlSaveExternalPortRequest calls the generic MysqlSaveExternalPort builder with application/json body
+func NewMysqlSaveExternalPortRequest(server string, body MysqlSaveExternalPortJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMysqlSaveExternalPortRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMysqlSaveExternalPortRequestWithBody constructs an http.Request for the MysqlSaveExternalPort method, with any body, and a specified content type
+func NewMysqlSaveExternalPortRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mysql.saveExternalPort")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMysqlUpdateRequest calls the generic MysqlUpdate builder with application/json body
+func NewMysqlUpdateRequest(server string, body MysqlUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMysqlUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMysqlUpdateRequestWithBody constructs an http.Request for the MysqlUpdate method, with any body, and a specified content type
+func NewMysqlUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mysql.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewPostgresCreateRequest calls the generic PostgresCreate builder with application/json body
 func NewPostgresCreateRequest(server string, body PostgresCreateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -6682,6 +9509,201 @@ type ClientWithResponsesInterface interface {
 	// EnvironmentUpdateWithResponse performs a POST /environment.update (the `EnvironmentUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	EnvironmentUpdateWithResponse(ctx context.Context, body EnvironmentUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*EnvironmentUpdateResponse, error)
+
+	// MariadbCreateWithBodyWithResponse performs a POST /mariadb.create (the `MariadbCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MariadbCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbCreateResponse, error)
+
+	// MariadbCreateWithResponse performs a POST /mariadb.create (the `MariadbCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MariadbCreateWithResponse(ctx context.Context, body MariadbCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbCreateResponse, error)
+
+	// MariadbDeployWithBodyWithResponse performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MariadbDeployWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbDeployResponse, error)
+
+	// MariadbDeployWithResponse performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MariadbDeployWithResponse(ctx context.Context, body MariadbDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbDeployResponse, error)
+
+	// MariadbOneWithResponse performs a GET /mariadb.one (the `MariadbOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MariadbOneWithResponse(ctx context.Context, params *MariadbOneParams, reqEditors ...RequestEditorFn) (*MariadbOneResponse, error)
+
+	// MariadbRemoveWithBodyWithResponse performs a POST /mariadb.remove (the `MariadbRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MariadbRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbRemoveResponse, error)
+
+	// MariadbRemoveWithResponse performs a POST /mariadb.remove (the `MariadbRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MariadbRemoveWithResponse(ctx context.Context, body MariadbRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbRemoveResponse, error)
+
+	// MariadbSaveEnvironmentWithBodyWithResponse performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MariadbSaveEnvironmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbSaveEnvironmentResponse, error)
+
+	// MariadbSaveEnvironmentWithResponse performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MariadbSaveEnvironmentWithResponse(ctx context.Context, body MariadbSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbSaveEnvironmentResponse, error)
+
+	// MariadbSaveExternalPortWithBodyWithResponse performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MariadbSaveExternalPortWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbSaveExternalPortResponse, error)
+
+	// MariadbSaveExternalPortWithResponse performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MariadbSaveExternalPortWithResponse(ctx context.Context, body MariadbSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbSaveExternalPortResponse, error)
+
+	// MariadbUpdateWithBodyWithResponse performs a POST /mariadb.update (the `MariadbUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MariadbUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbUpdateResponse, error)
+
+	// MariadbUpdateWithResponse performs a POST /mariadb.update (the `MariadbUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MariadbUpdateWithResponse(ctx context.Context, body MariadbUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbUpdateResponse, error)
+
+	// MongoCreateWithBodyWithResponse performs a POST /mongo.create (the `MongoCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MongoCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoCreateResponse, error)
+
+	// MongoCreateWithResponse performs a POST /mongo.create (the `MongoCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MongoCreateWithResponse(ctx context.Context, body MongoCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoCreateResponse, error)
+
+	// MongoDeployWithBodyWithResponse performs a POST /mongo.deploy (the `MongoDeploy` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MongoDeployWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoDeployResponse, error)
+
+	// MongoDeployWithResponse performs a POST /mongo.deploy (the `MongoDeploy` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MongoDeployWithResponse(ctx context.Context, body MongoDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoDeployResponse, error)
+
+	// MongoOneWithResponse performs a GET /mongo.one (the `MongoOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MongoOneWithResponse(ctx context.Context, params *MongoOneParams, reqEditors ...RequestEditorFn) (*MongoOneResponse, error)
+
+	// MongoRemoveWithBodyWithResponse performs a POST /mongo.remove (the `MongoRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MongoRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoRemoveResponse, error)
+
+	// MongoRemoveWithResponse performs a POST /mongo.remove (the `MongoRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MongoRemoveWithResponse(ctx context.Context, body MongoRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoRemoveResponse, error)
+
+	// MongoSaveEnvironmentWithBodyWithResponse performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MongoSaveEnvironmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoSaveEnvironmentResponse, error)
+
+	// MongoSaveEnvironmentWithResponse performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MongoSaveEnvironmentWithResponse(ctx context.Context, body MongoSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoSaveEnvironmentResponse, error)
+
+	// MongoSaveExternalPortWithBodyWithResponse performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MongoSaveExternalPortWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoSaveExternalPortResponse, error)
+
+	// MongoSaveExternalPortWithResponse performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MongoSaveExternalPortWithResponse(ctx context.Context, body MongoSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoSaveExternalPortResponse, error)
+
+	// MongoUpdateWithBodyWithResponse performs a POST /mongo.update (the `MongoUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MongoUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoUpdateResponse, error)
+
+	// MongoUpdateWithResponse performs a POST /mongo.update (the `MongoUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MongoUpdateWithResponse(ctx context.Context, body MongoUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoUpdateResponse, error)
+
+	// MysqlCreateWithBodyWithResponse performs a POST /mysql.create (the `MysqlCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MysqlCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlCreateResponse, error)
+
+	// MysqlCreateWithResponse performs a POST /mysql.create (the `MysqlCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MysqlCreateWithResponse(ctx context.Context, body MysqlCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlCreateResponse, error)
+
+	// MysqlDeployWithBodyWithResponse performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MysqlDeployWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlDeployResponse, error)
+
+	// MysqlDeployWithResponse performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MysqlDeployWithResponse(ctx context.Context, body MysqlDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlDeployResponse, error)
+
+	// MysqlOneWithResponse performs a GET /mysql.one (the `MysqlOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MysqlOneWithResponse(ctx context.Context, params *MysqlOneParams, reqEditors ...RequestEditorFn) (*MysqlOneResponse, error)
+
+	// MysqlRemoveWithBodyWithResponse performs a POST /mysql.remove (the `MysqlRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MysqlRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlRemoveResponse, error)
+
+	// MysqlRemoveWithResponse performs a POST /mysql.remove (the `MysqlRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MysqlRemoveWithResponse(ctx context.Context, body MysqlRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlRemoveResponse, error)
+
+	// MysqlSaveEnvironmentWithBodyWithResponse performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MysqlSaveEnvironmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlSaveEnvironmentResponse, error)
+
+	// MysqlSaveEnvironmentWithResponse performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MysqlSaveEnvironmentWithResponse(ctx context.Context, body MysqlSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlSaveEnvironmentResponse, error)
+
+	// MysqlSaveExternalPortWithBodyWithResponse performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MysqlSaveExternalPortWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlSaveExternalPortResponse, error)
+
+	// MysqlSaveExternalPortWithResponse performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MysqlSaveExternalPortWithResponse(ctx context.Context, body MysqlSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlSaveExternalPortResponse, error)
+
+	// MysqlUpdateWithBodyWithResponse performs a POST /mysql.update (the `MysqlUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MysqlUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlUpdateResponse, error)
+
+	// MysqlUpdateWithResponse performs a POST /mysql.update (the `MysqlUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MysqlUpdateWithResponse(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlUpdateResponse, error)
 
 	// PostgresCreateWithBodyWithResponse performs a POST /postgres.create (the `PostgresCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -8753,6 +11775,1434 @@ func (r EnvironmentUpdateResponse) ContentType() string {
 	return ""
 }
 
+type MariadbCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MariaDB
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MariadbCreateResponse) GetJSON200() *MariaDB {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MariadbCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MariadbCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MariadbCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MariadbCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MariadbCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MariadbCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MariadbCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MariadbCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MariadbDeployResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MariadbDeployResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MariadbDeployResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MariadbDeployResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MariadbDeployResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MariadbDeployResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MariadbDeployResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MariadbDeployResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MariadbDeployResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MariadbOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MariaDB
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MariadbOneResponse) GetJSON200() *MariaDB {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MariadbOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MariadbOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MariadbOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r MariadbOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MariadbOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MariadbOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MariadbOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MariadbOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MariadbOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MariadbRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MariadbRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MariadbRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MariadbRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MariadbRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MariadbRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MariadbRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MariadbRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MariadbRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MariadbSaveEnvironmentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *bool
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MariadbSaveEnvironmentResponse) GetJSON200() *bool {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MariadbSaveEnvironmentResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MariadbSaveEnvironmentResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MariadbSaveEnvironmentResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MariadbSaveEnvironmentResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MariadbSaveEnvironmentResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MariadbSaveEnvironmentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MariadbSaveEnvironmentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MariadbSaveEnvironmentResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MariadbSaveExternalPortResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *bool
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MariadbSaveExternalPortResponse) GetJSON200() *bool {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MariadbSaveExternalPortResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MariadbSaveExternalPortResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MariadbSaveExternalPortResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MariadbSaveExternalPortResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MariadbSaveExternalPortResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MariadbSaveExternalPortResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MariadbSaveExternalPortResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MariadbSaveExternalPortResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MariadbUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MariaDB
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MariadbUpdateResponse) GetJSON200() *MariaDB {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MariadbUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MariadbUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MariadbUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MariadbUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MariadbUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MariadbUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MariadbUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MariadbUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MongoCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MongoDB
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MongoCreateResponse) GetJSON200() *MongoDB {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MongoCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MongoCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MongoCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MongoCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MongoCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MongoCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MongoCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MongoCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MongoDeployResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MongoDeployResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MongoDeployResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MongoDeployResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MongoDeployResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MongoDeployResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MongoDeployResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MongoDeployResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MongoDeployResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MongoOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MongoDB
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MongoOneResponse) GetJSON200() *MongoDB {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MongoOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MongoOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MongoOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r MongoOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MongoOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MongoOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MongoOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MongoOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MongoOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MongoRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MongoRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MongoRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MongoRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MongoRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MongoRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MongoRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MongoRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MongoRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MongoSaveEnvironmentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *bool
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MongoSaveEnvironmentResponse) GetJSON200() *bool {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MongoSaveEnvironmentResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MongoSaveEnvironmentResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MongoSaveEnvironmentResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MongoSaveEnvironmentResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MongoSaveEnvironmentResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MongoSaveEnvironmentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MongoSaveEnvironmentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MongoSaveEnvironmentResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MongoSaveExternalPortResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *bool
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MongoSaveExternalPortResponse) GetJSON200() *bool {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MongoSaveExternalPortResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MongoSaveExternalPortResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MongoSaveExternalPortResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MongoSaveExternalPortResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MongoSaveExternalPortResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MongoSaveExternalPortResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MongoSaveExternalPortResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MongoSaveExternalPortResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MongoUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MongoDB
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MongoUpdateResponse) GetJSON200() *MongoDB {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MongoUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MongoUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MongoUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MongoUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MongoUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MongoUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MongoUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MongoUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MysqlCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MySQL
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MysqlCreateResponse) GetJSON200() *MySQL {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MysqlCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MysqlCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MysqlCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MysqlCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MysqlCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MysqlCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MysqlCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MysqlCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MysqlDeployResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MysqlDeployResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MysqlDeployResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MysqlDeployResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MysqlDeployResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MysqlDeployResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MysqlDeployResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MysqlDeployResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MysqlDeployResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MysqlOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MySQL
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MysqlOneResponse) GetJSON200() *MySQL {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MysqlOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MysqlOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MysqlOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r MysqlOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MysqlOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MysqlOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MysqlOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MysqlOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MysqlOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MysqlRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MysqlRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MysqlRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MysqlRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MysqlRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MysqlRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MysqlRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MysqlRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MysqlRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MysqlSaveEnvironmentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *bool
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MysqlSaveEnvironmentResponse) GetJSON200() *bool {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MysqlSaveEnvironmentResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MysqlSaveEnvironmentResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MysqlSaveEnvironmentResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MysqlSaveEnvironmentResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MysqlSaveEnvironmentResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MysqlSaveEnvironmentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MysqlSaveEnvironmentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MysqlSaveEnvironmentResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MysqlSaveExternalPortResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *bool
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MysqlSaveExternalPortResponse) GetJSON200() *bool {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MysqlSaveExternalPortResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MysqlSaveExternalPortResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MysqlSaveExternalPortResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MysqlSaveExternalPortResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MysqlSaveExternalPortResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MysqlSaveExternalPortResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MysqlSaveExternalPortResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MysqlSaveExternalPortResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MysqlUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MySQL
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MysqlUpdateResponse) GetJSON200() *MySQL {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MysqlUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MysqlUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MysqlUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MysqlUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MysqlUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MysqlUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MysqlUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MysqlUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type PostgresCreateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -10551,6 +15001,435 @@ func (c *ClientWithResponses) EnvironmentUpdateWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseEnvironmentUpdateResponse(rsp)
+}
+
+// MariadbCreateWithBodyWithResponse performs a POST /mariadb.create (the `MariadbCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbCreateResponse, error) {
+	rsp, err := c.MariadbCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbCreateResponse(rsp)
+}
+
+// MariadbCreateWithResponse performs a POST /mariadb.create (the `MariadbCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbCreateWithResponse(ctx context.Context, body MariadbCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbCreateResponse, error) {
+	rsp, err := c.MariadbCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbCreateResponse(rsp)
+}
+
+// MariadbDeployWithBodyWithResponse performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbDeployWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbDeployResponse, error) {
+	rsp, err := c.MariadbDeployWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbDeployResponse(rsp)
+}
+
+// MariadbDeployWithResponse performs a POST /mariadb.deploy (the `MariadbDeploy` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbDeployWithResponse(ctx context.Context, body MariadbDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbDeployResponse, error) {
+	rsp, err := c.MariadbDeploy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbDeployResponse(rsp)
+}
+
+// MariadbOneWithResponse performs a GET /mariadb.one (the `MariadbOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbOneWithResponse(ctx context.Context, params *MariadbOneParams, reqEditors ...RequestEditorFn) (*MariadbOneResponse, error) {
+	rsp, err := c.MariadbOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbOneResponse(rsp)
+}
+
+// MariadbRemoveWithBodyWithResponse performs a POST /mariadb.remove (the `MariadbRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbRemoveResponse, error) {
+	rsp, err := c.MariadbRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbRemoveResponse(rsp)
+}
+
+// MariadbRemoveWithResponse performs a POST /mariadb.remove (the `MariadbRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbRemoveWithResponse(ctx context.Context, body MariadbRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbRemoveResponse, error) {
+	rsp, err := c.MariadbRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbRemoveResponse(rsp)
+}
+
+// MariadbSaveEnvironmentWithBodyWithResponse performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbSaveEnvironmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbSaveEnvironmentResponse, error) {
+	rsp, err := c.MariadbSaveEnvironmentWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbSaveEnvironmentResponse(rsp)
+}
+
+// MariadbSaveEnvironmentWithResponse performs a POST /mariadb.saveEnvironment (the `MariadbSaveEnvironment` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbSaveEnvironmentWithResponse(ctx context.Context, body MariadbSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbSaveEnvironmentResponse, error) {
+	rsp, err := c.MariadbSaveEnvironment(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbSaveEnvironmentResponse(rsp)
+}
+
+// MariadbSaveExternalPortWithBodyWithResponse performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbSaveExternalPortWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbSaveExternalPortResponse, error) {
+	rsp, err := c.MariadbSaveExternalPortWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbSaveExternalPortResponse(rsp)
+}
+
+// MariadbSaveExternalPortWithResponse performs a POST /mariadb.saveExternalPort (the `MariadbSaveExternalPort` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbSaveExternalPortWithResponse(ctx context.Context, body MariadbSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbSaveExternalPortResponse, error) {
+	rsp, err := c.MariadbSaveExternalPort(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbSaveExternalPortResponse(rsp)
+}
+
+// MariadbUpdateWithBodyWithResponse performs a POST /mariadb.update (the `MariadbUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MariadbUpdateResponse, error) {
+	rsp, err := c.MariadbUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbUpdateResponse(rsp)
+}
+
+// MariadbUpdateWithResponse performs a POST /mariadb.update (the `MariadbUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MariadbUpdateWithResponse(ctx context.Context, body MariadbUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MariadbUpdateResponse, error) {
+	rsp, err := c.MariadbUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMariadbUpdateResponse(rsp)
+}
+
+// MongoCreateWithBodyWithResponse performs a POST /mongo.create (the `MongoCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoCreateResponse, error) {
+	rsp, err := c.MongoCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoCreateResponse(rsp)
+}
+
+// MongoCreateWithResponse performs a POST /mongo.create (the `MongoCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoCreateWithResponse(ctx context.Context, body MongoCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoCreateResponse, error) {
+	rsp, err := c.MongoCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoCreateResponse(rsp)
+}
+
+// MongoDeployWithBodyWithResponse performs a POST /mongo.deploy (the `MongoDeploy` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoDeployWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoDeployResponse, error) {
+	rsp, err := c.MongoDeployWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoDeployResponse(rsp)
+}
+
+// MongoDeployWithResponse performs a POST /mongo.deploy (the `MongoDeploy` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoDeployWithResponse(ctx context.Context, body MongoDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoDeployResponse, error) {
+	rsp, err := c.MongoDeploy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoDeployResponse(rsp)
+}
+
+// MongoOneWithResponse performs a GET /mongo.one (the `MongoOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoOneWithResponse(ctx context.Context, params *MongoOneParams, reqEditors ...RequestEditorFn) (*MongoOneResponse, error) {
+	rsp, err := c.MongoOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoOneResponse(rsp)
+}
+
+// MongoRemoveWithBodyWithResponse performs a POST /mongo.remove (the `MongoRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoRemoveResponse, error) {
+	rsp, err := c.MongoRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoRemoveResponse(rsp)
+}
+
+// MongoRemoveWithResponse performs a POST /mongo.remove (the `MongoRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoRemoveWithResponse(ctx context.Context, body MongoRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoRemoveResponse, error) {
+	rsp, err := c.MongoRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoRemoveResponse(rsp)
+}
+
+// MongoSaveEnvironmentWithBodyWithResponse performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoSaveEnvironmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoSaveEnvironmentResponse, error) {
+	rsp, err := c.MongoSaveEnvironmentWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoSaveEnvironmentResponse(rsp)
+}
+
+// MongoSaveEnvironmentWithResponse performs a POST /mongo.saveEnvironment (the `MongoSaveEnvironment` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoSaveEnvironmentWithResponse(ctx context.Context, body MongoSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoSaveEnvironmentResponse, error) {
+	rsp, err := c.MongoSaveEnvironment(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoSaveEnvironmentResponse(rsp)
+}
+
+// MongoSaveExternalPortWithBodyWithResponse performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoSaveExternalPortWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoSaveExternalPortResponse, error) {
+	rsp, err := c.MongoSaveExternalPortWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoSaveExternalPortResponse(rsp)
+}
+
+// MongoSaveExternalPortWithResponse performs a POST /mongo.saveExternalPort (the `MongoSaveExternalPort` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoSaveExternalPortWithResponse(ctx context.Context, body MongoSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoSaveExternalPortResponse, error) {
+	rsp, err := c.MongoSaveExternalPort(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoSaveExternalPortResponse(rsp)
+}
+
+// MongoUpdateWithBodyWithResponse performs a POST /mongo.update (the `MongoUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MongoUpdateResponse, error) {
+	rsp, err := c.MongoUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoUpdateResponse(rsp)
+}
+
+// MongoUpdateWithResponse performs a POST /mongo.update (the `MongoUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MongoUpdateWithResponse(ctx context.Context, body MongoUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoUpdateResponse, error) {
+	rsp, err := c.MongoUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMongoUpdateResponse(rsp)
+}
+
+// MysqlCreateWithBodyWithResponse performs a POST /mysql.create (the `MysqlCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlCreateResponse, error) {
+	rsp, err := c.MysqlCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlCreateResponse(rsp)
+}
+
+// MysqlCreateWithResponse performs a POST /mysql.create (the `MysqlCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlCreateWithResponse(ctx context.Context, body MysqlCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlCreateResponse, error) {
+	rsp, err := c.MysqlCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlCreateResponse(rsp)
+}
+
+// MysqlDeployWithBodyWithResponse performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlDeployWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlDeployResponse, error) {
+	rsp, err := c.MysqlDeployWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlDeployResponse(rsp)
+}
+
+// MysqlDeployWithResponse performs a POST /mysql.deploy (the `MysqlDeploy` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlDeployWithResponse(ctx context.Context, body MysqlDeployJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlDeployResponse, error) {
+	rsp, err := c.MysqlDeploy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlDeployResponse(rsp)
+}
+
+// MysqlOneWithResponse performs a GET /mysql.one (the `MysqlOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlOneWithResponse(ctx context.Context, params *MysqlOneParams, reqEditors ...RequestEditorFn) (*MysqlOneResponse, error) {
+	rsp, err := c.MysqlOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlOneResponse(rsp)
+}
+
+// MysqlRemoveWithBodyWithResponse performs a POST /mysql.remove (the `MysqlRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlRemoveResponse, error) {
+	rsp, err := c.MysqlRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlRemoveResponse(rsp)
+}
+
+// MysqlRemoveWithResponse performs a POST /mysql.remove (the `MysqlRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlRemoveWithResponse(ctx context.Context, body MysqlRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlRemoveResponse, error) {
+	rsp, err := c.MysqlRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlRemoveResponse(rsp)
+}
+
+// MysqlSaveEnvironmentWithBodyWithResponse performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlSaveEnvironmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlSaveEnvironmentResponse, error) {
+	rsp, err := c.MysqlSaveEnvironmentWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlSaveEnvironmentResponse(rsp)
+}
+
+// MysqlSaveEnvironmentWithResponse performs a POST /mysql.saveEnvironment (the `MysqlSaveEnvironment` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlSaveEnvironmentWithResponse(ctx context.Context, body MysqlSaveEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlSaveEnvironmentResponse, error) {
+	rsp, err := c.MysqlSaveEnvironment(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlSaveEnvironmentResponse(rsp)
+}
+
+// MysqlSaveExternalPortWithBodyWithResponse performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlSaveExternalPortWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlSaveExternalPortResponse, error) {
+	rsp, err := c.MysqlSaveExternalPortWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlSaveExternalPortResponse(rsp)
+}
+
+// MysqlSaveExternalPortWithResponse performs a POST /mysql.saveExternalPort (the `MysqlSaveExternalPort` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlSaveExternalPortWithResponse(ctx context.Context, body MysqlSaveExternalPortJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlSaveExternalPortResponse, error) {
+	rsp, err := c.MysqlSaveExternalPort(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlSaveExternalPortResponse(rsp)
+}
+
+// MysqlUpdateWithBodyWithResponse performs a POST /mysql.update (the `MysqlUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MysqlUpdateResponse, error) {
+	rsp, err := c.MysqlUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlUpdateResponse(rsp)
+}
+
+// MysqlUpdateWithResponse performs a POST /mysql.update (the `MysqlUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MysqlUpdateWithResponse(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlUpdateResponse, error) {
+	rsp, err := c.MysqlUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMysqlUpdateResponse(rsp)
 }
 
 // PostgresCreateWithBodyWithResponse performs a POST /postgres.create (the `PostgresCreate` operationId) request,
@@ -12424,6 +17303,1137 @@ func ParseEnvironmentUpdateResponse(rsp *http.Response) (*EnvironmentUpdateRespo
 	return response, nil
 }
 
+// ParseMariadbCreateResponse parses an HTTP response from a MariadbCreateWithResponse call
+func ParseMariadbCreateResponse(rsp *http.Response) (*MariadbCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MariadbCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MariaDB
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMariadbDeployResponse parses an HTTP response from a MariadbDeployWithResponse call
+func ParseMariadbDeployResponse(rsp *http.Response) (*MariadbDeployResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MariadbDeployResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMariadbOneResponse parses an HTTP response from a MariadbOneWithResponse call
+func ParseMariadbOneResponse(rsp *http.Response) (*MariadbOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MariadbOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MariaDB
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMariadbRemoveResponse parses an HTTP response from a MariadbRemoveWithResponse call
+func ParseMariadbRemoveResponse(rsp *http.Response) (*MariadbRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MariadbRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMariadbSaveEnvironmentResponse parses an HTTP response from a MariadbSaveEnvironmentWithResponse call
+func ParseMariadbSaveEnvironmentResponse(rsp *http.Response) (*MariadbSaveEnvironmentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MariadbSaveEnvironmentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest bool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMariadbSaveExternalPortResponse parses an HTTP response from a MariadbSaveExternalPortWithResponse call
+func ParseMariadbSaveExternalPortResponse(rsp *http.Response) (*MariadbSaveExternalPortResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MariadbSaveExternalPortResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest bool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMariadbUpdateResponse parses an HTTP response from a MariadbUpdateWithResponse call
+func ParseMariadbUpdateResponse(rsp *http.Response) (*MariadbUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MariadbUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MariaDB
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMongoCreateResponse parses an HTTP response from a MongoCreateWithResponse call
+func ParseMongoCreateResponse(rsp *http.Response) (*MongoCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MongoCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MongoDB
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMongoDeployResponse parses an HTTP response from a MongoDeployWithResponse call
+func ParseMongoDeployResponse(rsp *http.Response) (*MongoDeployResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MongoDeployResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMongoOneResponse parses an HTTP response from a MongoOneWithResponse call
+func ParseMongoOneResponse(rsp *http.Response) (*MongoOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MongoOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MongoDB
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMongoRemoveResponse parses an HTTP response from a MongoRemoveWithResponse call
+func ParseMongoRemoveResponse(rsp *http.Response) (*MongoRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MongoRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMongoSaveEnvironmentResponse parses an HTTP response from a MongoSaveEnvironmentWithResponse call
+func ParseMongoSaveEnvironmentResponse(rsp *http.Response) (*MongoSaveEnvironmentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MongoSaveEnvironmentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest bool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMongoSaveExternalPortResponse parses an HTTP response from a MongoSaveExternalPortWithResponse call
+func ParseMongoSaveExternalPortResponse(rsp *http.Response) (*MongoSaveExternalPortResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MongoSaveExternalPortResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest bool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMongoUpdateResponse parses an HTTP response from a MongoUpdateWithResponse call
+func ParseMongoUpdateResponse(rsp *http.Response) (*MongoUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MongoUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MongoDB
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMysqlCreateResponse parses an HTTP response from a MysqlCreateWithResponse call
+func ParseMysqlCreateResponse(rsp *http.Response) (*MysqlCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MysqlCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MySQL
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMysqlDeployResponse parses an HTTP response from a MysqlDeployWithResponse call
+func ParseMysqlDeployResponse(rsp *http.Response) (*MysqlDeployResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MysqlDeployResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMysqlOneResponse parses an HTTP response from a MysqlOneWithResponse call
+func ParseMysqlOneResponse(rsp *http.Response) (*MysqlOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MysqlOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MySQL
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMysqlRemoveResponse parses an HTTP response from a MysqlRemoveWithResponse call
+func ParseMysqlRemoveResponse(rsp *http.Response) (*MysqlRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MysqlRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMysqlSaveEnvironmentResponse parses an HTTP response from a MysqlSaveEnvironmentWithResponse call
+func ParseMysqlSaveEnvironmentResponse(rsp *http.Response) (*MysqlSaveEnvironmentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MysqlSaveEnvironmentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest bool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMysqlSaveExternalPortResponse parses an HTTP response from a MysqlSaveExternalPortWithResponse call
+func ParseMysqlSaveExternalPortResponse(rsp *http.Response) (*MysqlSaveExternalPortResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MysqlSaveExternalPortResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest bool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMysqlUpdateResponse parses an HTTP response from a MysqlUpdateWithResponse call
+func ParseMysqlUpdateResponse(rsp *http.Response) (*MysqlUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MysqlUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MySQL
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParsePostgresCreateResponse parses an HTTP response from a PostgresCreateWithResponse call
 func ParsePostgresCreateResponse(rsp *http.Response) (*PostgresCreateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -13402,94 +19412,107 @@ func ParseRedisUpdateResponse(rsp *http.Response) (*RedisUpdateResponse, error) 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

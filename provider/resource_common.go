@@ -64,6 +64,13 @@ func waitForDone(ctx context.Context, kind, id string, read func(context.Context
 	}
 }
 
+func sameOptionalBool(a, b *bool) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	return *a == *b
+}
+
 func initFailed(err error) infer.ResourceInitFailedError {
 	return infer.ResourceInitFailedError{Reasons: []string{err.Error()}}
 }

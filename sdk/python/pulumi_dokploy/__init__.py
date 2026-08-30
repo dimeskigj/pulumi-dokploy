@@ -10,6 +10,9 @@ from .application import *
 from .compose import *
 from .domain import *
 from .environment import *
+from .maria_db import *
+from .mongo_db import *
+from .my_sql import *
 from .postgres import *
 from .project import *
 from .provider import *
@@ -36,6 +39,9 @@ _utilities.register(
    "dokploy:index:Compose": "Compose",
    "dokploy:index:Domain": "Domain",
    "dokploy:index:Environment": "Environment",
+   "dokploy:index:MariaDB": "MariaDB",
+   "dokploy:index:MongoDB": "MongoDB",
+   "dokploy:index:MySQL": "MySQL",
    "dokploy:index:Postgres": "Postgres",
    "dokploy:index:Project": "Project",
    "dokploy:index:Redis": "Redis"

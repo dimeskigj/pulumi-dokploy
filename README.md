@@ -40,8 +40,9 @@ redacted in Pulumi diagnostics.
 
 ## Resources
 
-The provider exposes seven resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+The provider exposes ten resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
+`dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
 `dokploy:index:Redis`, and `dokploy:index:Domain`.
 
 Project owns the default environment. Create explicit `Environment` resources for additional

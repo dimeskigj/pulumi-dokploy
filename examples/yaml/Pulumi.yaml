@@ -48,6 +48,18 @@ config:
     type: string
     secret: true
     default: replace-with-a-database-password
+  mysqlPassword:
+    type: string
+    secret: true
+    default: replace-with-a-mysql-password
+  mariadbPassword:
+    type: string
+    secret: true
+    default: replace-with-a-mariadb-password
+  mongodbPassword:
+    type: string
+    secret: true
+    default: replace-with-a-mongodb-password
   redisPassword:
     type: string
     secret: true
@@ -133,6 +145,41 @@ resources:
         fn::secret: ${databasePassword}
       environment:
         fn::secret: POSTGRES_HOST=postgres
+
+  mysql:
+    type: dokploy:index:MySQL
+    properties:
+      name: mvp-mysql
+      environmentId: ${environment.environmentId}
+      databaseName: app
+      databaseUser: app
+      databasePassword:
+        fn::secret: ${mysqlPassword}
+      environment:
+        fn::secret: MYSQL_HOST=mysql
+
+  mariadb:
+    type: dokploy:index:MariaDB
+    properties:
+      name: mvp-mariadb
+      environmentId: ${environment.environmentId}
+      databaseName: app
+      databaseUser: app
+      databasePassword:
+        fn::secret: ${mariadbPassword}
+      environment:
+        fn::secret: MARIADB_HOST=mariadb
+
+  mongodb:
+    type: dokploy:index:MongoDB
+    properties:
+      name: mvp-mongodb
+      environmentId: ${environment.environmentId}
+      databaseUser: app
+      databasePassword:
+        fn::secret: ${mongodbPassword}
+      environment:
+        fn::secret: MONGODB_HOST=mongodb
 
   redis:
     type: dokploy:index:Redis

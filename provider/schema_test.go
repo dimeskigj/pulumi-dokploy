@@ -32,7 +32,8 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	require.NotNil(t, spec.Resources)
 	require.ElementsMatch(t, []string{
 		"dokploy:index:Project", "dokploy:index:Environment", "dokploy:index:Application",
-		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:Redis", "dokploy:index:Domain",
+		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB",
+		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -52,6 +53,9 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 	spec := providerSchema(t)
 	require.True(t, spec.Config.Variables["apiKey"].Secret)
 	require.Equal(t, "postgres:18", spec.Resources["dokploy:index:Postgres"].InputProperties["dockerImage"].Default)
+	require.Equal(t, "mysql:8", spec.Resources["dokploy:index:MySQL"].InputProperties["dockerImage"].Default)
+	require.Equal(t, "mariadb:11", spec.Resources["dokploy:index:MariaDB"].InputProperties["dockerImage"].Default)
+	require.Equal(t, "mongo:8", spec.Resources["dokploy:index:MongoDB"].InputProperties["dockerImage"].Default)
 	require.Equal(t, "redis:8", spec.Resources["dokploy:index:Redis"].InputProperties["dockerImage"].Default)
 	require.Equal(t, "docker-compose", spec.Resources["dokploy:index:Compose"].InputProperties["composeType"].Default)
 	require.Equal(t, true, spec.Resources["dokploy:index:Domain"].InputProperties["https"].Default)
@@ -62,6 +66,9 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 		"dokploy:index:Application.environment", "dokploy:index:Application.buildArgs", "dokploy:index:Application.buildSecrets",
 		"dokploy:index:Application.source.docker.password", "dokploy:index:Postgres.databasePassword",
 		"dokploy:index:Postgres.environment", "dokploy:index:Redis.databasePassword", "dokploy:index:Redis.environment",
+		"dokploy:index:MySQL.databasePassword", "dokploy:index:MySQL.databaseRootPassword", "dokploy:index:MySQL.environment",
+		"dokploy:index:MariaDB.databasePassword", "dokploy:index:MariaDB.databaseRootPassword", "dokploy:index:MariaDB.environment",
+		"dokploy:index:MongoDB.databasePassword", "dokploy:index:MongoDB.environment",
 		"dokploy:index:Compose.environment",
 	}
 	for _, path := range secrets {
@@ -72,7 +79,7 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 
 func TestSchemaReplacementFlags(t *testing.T) {
 	spec := providerSchema(t)
-	for _, resource := range []string{"Application", "Compose", "Postgres", "Redis"} {
+	for _, resource := range []string{"Application", "Compose", "Postgres", "MySQL", "MariaDB", "MongoDB", "Redis"} {
 		props := spec.Resources["dokploy:index:"+resource].InputProperties
 		for _, property := range []string{"environmentId", "serverId"} {
 			require.True(t, props[property].ReplaceOnChanges, resource+"."+property)

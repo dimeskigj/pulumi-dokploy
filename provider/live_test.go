@@ -221,6 +221,76 @@ func TestLivePostgresLifecycleDeploysAndReportsStatus(t *testing.T) {
 	require.Equal(t, statusDone, created.Output.Status)
 }
 
+func TestLiveMySQLLifecycleDeploysAndReportsStatus(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 10*time.Minute)
+	_, environmentID := liveProject(t, ctx, api)
+
+	rootPassword := "live-test-root-password"
+	created, err := (MySQL{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[MySQLArgs]{Inputs: MySQLArgs{
+		Name: "db", EnvironmentID: environmentID, DatabaseName: "app", DatabaseUser: "app", DatabasePassword: "live-test-password", DatabaseRootPassword: &rootPassword, DockerImage: "mysql:8",
+	}})
+	if created.ID != "" {
+		id := created.ID
+		t.Cleanup(func() {
+			if _, err := (MySQL{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[MySQLState]{ID: id}); err != nil {
+				t.Errorf("cleanup: mysql.remove for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err, "Create must survive mysql.deploy's empty response body and poll the shared applicationStatus field")
+	require.Equal(t, statusDone, created.Output.Status)
+
+	read, err := (MySQL{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[MySQLArgs, MySQLState]{ID: created.ID})
+	require.NoError(t, err, "Read must reconstruct the observed databaseRootPassword")
+	require.NotNil(t, read.Inputs.DatabaseRootPassword)
+	require.Equal(t, rootPassword, *read.Inputs.DatabaseRootPassword)
+}
+
+func TestLiveMariaDBLifecycleDeploysAndReportsStatus(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 10*time.Minute)
+	_, environmentID := liveProject(t, ctx, api)
+
+	created, err := (MariaDB{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[MariaDBArgs]{Inputs: MariaDBArgs{
+		Name: "db", EnvironmentID: environmentID, DatabaseName: "app", DatabaseUser: "app", DatabasePassword: "live-test-password", DockerImage: "mariadb:11",
+	}})
+	if created.ID != "" {
+		id := created.ID
+		t.Cleanup(func() {
+			if _, err := (MariaDB{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[MariaDBState]{ID: id}); err != nil {
+				t.Errorf("cleanup: mariadb.remove for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err, "Create must survive mariadb.deploy's empty response body and poll the shared applicationStatus field")
+	require.Equal(t, statusDone, created.Output.Status)
+}
+
+func TestLiveMongoDBLifecycleDeploysAndReportsStatus(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 10*time.Minute)
+	_, environmentID := liveProject(t, ctx, api)
+
+	created, err := (MongoDB{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[MongoDBArgs]{Inputs: MongoDBArgs{
+		Name: "db", EnvironmentID: environmentID, DatabaseUser: "app", DatabasePassword: "live-test-password", DockerImage: "mongo:8",
+	}})
+	if created.ID != "" {
+		id := created.ID
+		t.Cleanup(func() {
+			if _, err := (MongoDB{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[MongoDBState]{ID: id}); err != nil {
+				t.Errorf("cleanup: mongo.remove for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err, "Create must survive mongo.deploy's empty response body and poll the shared applicationStatus field")
+	require.Equal(t, statusDone, created.Output.Status)
+
+	read, err := (MongoDB{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[MongoDBArgs, MongoDBState]{ID: created.ID})
+	require.NoError(t, err, "Read must reconstruct the MongoDB entity without a databaseName field")
+	require.Equal(t, "app", read.Inputs.DatabaseUser)
+}
+
 func TestLiveRedisLifecycleDeploysAndReportsStatus(t *testing.T) {
 	// This closes the report's explicit open follow-up: Redis's status field
 	// name (applicationStatus, shared with Postgres) was inferred by

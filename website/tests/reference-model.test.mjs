@@ -92,7 +92,7 @@ test("loads and validates the real provider schema", async () => {
   const model = parseSchema(
     await loadSchema(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url)),
   );
-  assert.equal(model.resources.length, 7);
+  assert.equal(model.resources.length, 10);
   assert.equal(model.config.find(({ name }) => name === "apiKey").secret, true);
   assert.equal(
     model.resources
