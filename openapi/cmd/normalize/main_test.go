@@ -117,6 +117,17 @@ func TestNormalizeRetainsCorrectionTransitiveReferences(t *testing.T) {
 	require.Contains(t, d.Components.Schemas, "UpstreamLeaf")
 }
 
+func TestNormalizeEmptyStringCorrectionRemovesResponseContent(t *testing.T) {
+	c := contractWithout()
+	c.Paths["/application.deploy"].Post.Raw["responses"] = map[string]any{"200": map[string]any{"content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "string"}}}}}
+	corr := Corrections{Responses: map[string]string{"application.deploy": ""}}
+	d, err := normalize(c, []string{"application.deploy"}, corr)
+	require.NoError(t, err)
+	responses := d.Paths["/application.deploy"].Post.Raw["responses"].(map[string]any)
+	response := responses["200"].(map[string]any)
+	require.NotContains(t, response, "content")
+}
+
 func TestNormalizeUsesDefinedSecurityScheme(t *testing.T) {
 	c := normalizeFixture(t)
 	c.Components.SecuritySchemes = map[string]json.RawMessage{"apiKey": json.RawMessage(`{"type":"apiKey","in":"header","name":"x-api-key"}`)}

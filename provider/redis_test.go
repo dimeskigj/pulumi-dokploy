@@ -21,6 +21,15 @@ func TestRedisCheckDefaultsImage(t *testing.T) {
 	require.Equal(t, "redis:8", got.Inputs.DockerImage)
 }
 
+func TestRedisCheckAllowsComputedEnvironmentIdDuringPreview(t *testing.T) {
+	r := Redis{}
+	got, err := r.Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"name": property.New("cache"), "environmentId": property.New(property.Computed), "databasePassword": property.New("pw"),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, got.Failures)
+}
+
 func TestRedisProviderRegistrationAndStatusValidation(t *testing.T) {
 	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
 	require.NoError(t, err)
@@ -49,7 +58,7 @@ func TestRedisCreateConfiguresBeforeDeployAndPolls(t *testing.T) {
 		expectPOST("/api/redis.saveEnvironment", `{"env":"REDIS_ENV","redisId":"r1"}`, `true`),
 		expectPOST("/api/redis.saveExternalPort", `{"externalPort":6380,"redisId":"r1"}`, `true`),
 		expectPOST("/api/redis.deploy", `{"redisId":"r1"}`, `"running"`),
-		expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","status":"done"}`),
+		expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","applicationStatus":"done"}`),
 	)
 	got, err := (Redis{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[RedisArgs]{Inputs: RedisArgs{Name: "cache", EnvironmentID: "env", DatabasePassword: "password", Environment: &env, ExternalPort: &port, DockerImage: "redis:8"}})
 	require.NoError(t, err)
@@ -74,7 +83,7 @@ func TestRedisRuntimeUpdateClearsValuesAndDeploys(t *testing.T) {
 		expectPOST("/api/redis.saveEnvironment", `{"env":null,"redisId":"r1"}`, `true`),
 		expectPOST("/api/redis.saveExternalPort", `{"externalPort":null,"redisId":"r1"}`, `true`),
 		expectPOST("/api/redis.deploy", `{"redisId":"r1"}`, `"running"`),
-		expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","status":"done"}`),
+		expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","applicationStatus":"done"}`),
 	)
 	_, err := (Redis{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[RedisArgs, RedisState]{ID: "r1", Inputs: RedisArgs{Name: "cache", EnvironmentID: "env", DatabasePassword: newPassword, DockerImage: "redis:8"}, State: RedisState{RedisArgs: RedisArgs{Name: "cache", EnvironmentID: "env", DatabasePassword: oldPassword, DockerImage: oldImage, Environment: &oldEnv, ExternalPort: &oldPort}}})
 	require.NoError(t, err)
@@ -82,7 +91,7 @@ func TestRedisRuntimeUpdateClearsValuesAndDeploys(t *testing.T) {
 
 func TestRedisReadPreservesSecretsImportAndHandlesNotFound(t *testing.T) {
 	pw, env := "PASSWORD", "ENVIRONMENT"
-	s := newScriptedServer(t, scriptedRequest{Method: http.MethodGet, Path: "/api/redis.one", Query: map[string][]string{"redisId": {"r1"}}, Status: http.StatusOK, Response: []byte(`{"redisId":"r1","name":"cache","environmentId":"env","image":"redis:8","status":"running"}`)})
+	s := newScriptedServer(t, scriptedRequest{Method: http.MethodGet, Path: "/api/redis.one", Query: map[string][]string{"redisId": {"r1"}}, Status: http.StatusOK, Response: []byte(`{"redisId":"r1","name":"cache","environmentId":"env","image":"redis:8","applicationStatus":"running"}`)})
 	got, err := (Redis{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[RedisArgs, RedisState]{ID: "r1", State: RedisState{RedisArgs: RedisArgs{DatabasePassword: pw, Environment: &env}}})
 	require.NoError(t, err)
 	require.Equal(t, pw, got.Inputs.DatabasePassword)
@@ -97,7 +106,7 @@ func TestRedisReadPreservesSecretsImportAndHandlesNotFound(t *testing.T) {
 }
 
 func TestRedisImportReconstructsObservablePassword(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","databasePassword":"observed-password","env":"observed-env","status":"done"}`))
+	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","databasePassword":"observed-password","env":"observed-env","applicationStatus":"done"}`))
 	got, err := (Redis{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[RedisArgs, RedisState]{ID: "r1"})
 	require.NoError(t, err)
 	require.Equal(t, "observed-password", got.Inputs.DatabasePassword)
@@ -105,14 +114,14 @@ func TestRedisImportReconstructsObservablePassword(t *testing.T) {
 }
 
 func TestRedisImportAllowsMissingPasswordWithoutInventingSecret(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","status":"done"}`))
+	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","applicationStatus":"done"}`))
 	got, err := (Redis{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[RedisArgs, RedisState]{ID: "r1"})
 	require.NoError(t, err)
 	require.Empty(t, got.Inputs.DatabasePassword)
 }
 
 func TestRedisRefreshPreservesPriorPasswordWhenAPIOmitsIt(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","status":"done"}`))
+	s := newScriptedServer(t, expectGET("/api/redis.one", map[string][]string{"redisId": {"r1"}}, http.StatusOK, `{"redisId":"r1","name":"cache","environmentId":"env","applicationStatus":"done"}`))
 	got, err := (Redis{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[RedisArgs, RedisState]{ID: "r1", State: RedisState{RedisArgs: RedisArgs{DatabasePassword: "prior"}}})
 	require.NoError(t, err)
 	require.Equal(t, "prior", got.Inputs.DatabasePassword)

@@ -159,13 +159,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -250,13 +243,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeploymentStatus"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -427,13 +413,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeploymentStatus"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -2834,13 +2813,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -2925,13 +2897,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeploymentStatus"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -3013,7 +2978,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "type": "string"
                 }
               }
             },
@@ -3187,13 +3152,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeploymentStatus"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -4061,13 +4019,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -4608,13 +4559,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -4924,13 +4868,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeploymentStatus"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -5095,13 +5032,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -6232,13 +6162,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -6547,13 +6470,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeploymentStatus"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -6718,13 +6634,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -7661,12 +7570,8 @@
           "serverId": {
             "type": "string"
           },
-          "status": {
+          "applicationStatus": {
             "type": "string"
-          },
-          "source": {
-            "type": "object",
-            "additionalProperties": true
           },
           "env": {
             "type": "string"
@@ -7707,10 +7612,6 @@
           "composeType": {
             "type": "string"
           },
-          "source": {
-            "type": "object",
-            "additionalProperties": true
-          },
           "env": {
             "type": "string"
           },
@@ -7735,15 +7636,6 @@
           }
         },
         "additionalProperties": true
-      },
-      "DeploymentStatus": {
-        "type": "string",
-        "enum": [
-          "idle",
-          "running",
-          "done",
-          "error"
-        ]
       },
       "Domain": {
         "type": "object",

@@ -64,7 +64,7 @@ func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.C
 	if inputs.Name == "" {
 		failures = append(failures, p.CheckFailure{Property: "name", Reason: "name must not be empty"})
 	}
-	if inputs.EnvironmentID == "" {
+	if inputs.EnvironmentID == "" && !req.NewInputs.Get("environmentId").HasComputed() {
 		failures = append(failures, p.CheckFailure{Property: "environmentId", Reason: "environmentId must not be empty"})
 	}
 	if err := inputs.Source.validate(); err != nil {
@@ -197,10 +197,10 @@ func applicationStatus(ctx context.Context, api *client.Client, id string) (stri
 	if err != nil {
 		return "", err
 	}
-	if response.JSON200 == nil || response.JSON200.Status == nil {
+	if response.JSON200 == nil || response.JSON200.ApplicationStatus == nil {
 		return "", fmt.Errorf("application.one returned incomplete application")
 	}
-	return *response.JSON200.Status, nil
+	return *response.JSON200.ApplicationStatus, nil
 }
 
 func (r Application) Read(ctx context.Context, req infer.ReadRequest[ApplicationArgs, ApplicationState]) (infer.ReadResponse[ApplicationArgs, ApplicationState], error) {
@@ -221,20 +221,19 @@ func (r Application) Read(ctx context.Context, req infer.ReadRequest[Application
 	if a.CreateEnvFile != nil {
 		args.CreateEnvFile = *a.CreateEnvFile
 	}
-	decoded, err := decodeApplicationSource(a.Source, args.Source)
+	decoded, err := decodeApplicationSource(a.AdditionalProperties, args.Source)
 	if err != nil {
 		return infer.ReadResponse[ApplicationArgs, ApplicationState]{}, err
 	}
 	args.Source = decoded
-	state := ApplicationState{ApplicationArgs: args, ApplicationID: *a.ApplicationId, Status: value(a.Status)}
+	state := ApplicationState{ApplicationArgs: args, ApplicationID: *a.ApplicationId, Status: value(a.ApplicationStatus)}
 	return infer.ReadResponse[ApplicationArgs, ApplicationState]{ID: *a.ApplicationId, Inputs: args, State: state}, nil
 }
 
-func decodeApplicationSource(raw *map[string]interface{}, prior ApplicationSource) (ApplicationSource, error) {
-	if raw == nil {
+func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) (ApplicationSource, error) {
+	if m == nil {
 		return ApplicationSource{}, fmt.Errorf("application.one omitted source data required to reconstruct application source")
 	}
-	m := *raw
 	kind := stringValue(m, "type", "sourceType")
 	if kind == "" {
 		if prior.Type != "" {

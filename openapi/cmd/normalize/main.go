@@ -199,8 +199,12 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 				response = map[string]any{}
 				responses["200"] = response
 			}
-			content := map[string]any{"application/json": map[string]any{"schema": schemaRef(schema)}}
-			response["content"] = content
+			if schema == "" {
+				delete(response, "content")
+			} else {
+				content := map[string]any{"application/json": map[string]any{"schema": schemaRef(schema)}}
+				response["content"] = content
+			}
 			responses["200"] = response
 		}
 		out.Paths[path] = &b

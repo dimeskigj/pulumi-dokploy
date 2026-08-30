@@ -14,10 +14,10 @@ func TestComposeStatusPreservesAPIStatusAndRejectsMissingStatus(t *testing.T) {
 	for _, tc := range []struct {
 		name, body, want string
 	}{
-		{"running", `{"composeId":"c1","status":"running"}`, "running"},
-		{"done", `{"composeId":"c1","status":"done"}`, "done"},
-		{"error", `{"composeId":"c1","status":"error"}`, "error"},
-		{"unknown", `{"composeId":"c1","status":"paused"}`, "paused"},
+		{"running", `{"composeId":"c1","composeStatus":"running"}`, "running"},
+		{"done", `{"composeId":"c1","composeStatus":"done"}`, "done"},
+		{"error", `{"composeId":"c1","composeStatus":"error"}`, "error"},
+		{"unknown", `{"composeId":"c1","composeStatus":"paused"}`, "paused"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, tc.body))
@@ -32,7 +32,7 @@ func TestComposeStatusPreservesAPIStatusAndRejectsMissingStatus(t *testing.T) {
 }
 
 func TestComposeStatusRejectsUnparseableStatus(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","status":42}`))
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","composeStatus":42}`))
 	_, err := composeStatus(t.Context(), s.API(), "c1")
 	require.EqualError(t, err, "compose.one returned invalid status 42")
 }
@@ -44,14 +44,14 @@ func TestComposeGitUpdateClearingSSHKeySendsNull(t *testing.T) {
 }
 
 func TestComposeReadPreservesAPIStatus(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","name":"demo","environmentId":"e1","status":"running","source":{"type":"raw","composeFile":"services: {}"}}`))
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"running","type":"raw","composeFile":"services: {}"}`))
 	got, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1"})
 	require.NoError(t, err)
 	require.Equal(t, "running", got.State.Status)
 }
 
 func TestComposeReadMissingStatusFails(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","name":"demo","environmentId":"e1","source":{"type":"raw","composeFile":"services: {}"}}`))
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","name":"demo","environmentId":"e1","type":"raw","composeFile":"services: {}"}`))
 	_, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1"})
 	require.EqualError(t, err, "compose.one returned compose without a status")
 }
@@ -62,9 +62,10 @@ func TestComposeCreateErrorStatusReturnsPartialInitializationFailure(t *testing.
 	t.Cleanup(func() { waitPollInterval = old })
 	s := newScriptedServer(t,
 		expectPOST("/api/compose.create", `{"composeFile":"services: {}","composeType":"docker-compose","environmentId":"e1","name":"demo"}`, `{"composeId":"c1"}`),
+		expectPOST("/api/compose.update", `{"composeId":"c1","composeFile":"services: {}","sourceType":"raw"}`, `{}`),
 		expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":null}`, `true`),
 		expectPOST("/api/compose.deploy", `{"composeId":"c1"}`, `"running"`),
-		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","status":"error"}`),
+		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","composeStatus":"error"}`),
 	)
 	got, err := (Compose{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ComposeArgs]{Inputs: ComposeArgs{Name: "demo", EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {}"}}}})
 	require.Error(t, err)
@@ -78,12 +79,12 @@ func TestComposeSourceSchemaDoesNotExposeRawComposePath(t *testing.T) {
 }
 
 func TestComposeImportReconstructsGitAndGitLabSources(t *testing.T) {
-	git, err := decodeComposeSource(&map[string]interface{}{"type": "git", "customGitUrl": "https://git.test/repo", "customGitBranch": "main", "composePath": "app.yml", "customGitSSHKeyId": "key", "watchPaths": []interface{}{"app/**"}, "enableSubmodules": true}, ComposeSource{})
+	git, err := decodeComposeSource(map[string]interface{}{"type": "git", "customGitUrl": "https://git.test/repo", "customGitBranch": "main", "composePath": "app.yml", "customGitSSHKeyId": "key", "watchPaths": []interface{}{"app/**"}, "enableSubmodules": true}, ComposeSource{})
 	require.NoError(t, err)
 	require.Equal(t, "https://git.test/repo", git.Git.URL)
 	require.Equal(t, "app.yml", git.Git.ComposePath)
 	require.Equal(t, "key", *git.Git.SSHKeyID)
-	gitlab, err := decodeComposeSource(&map[string]interface{}{"type": "gitlab", "gitlabId": "i1", "gitlabProjectId": float64(42), "gitlabOwner": "owner", "gitlabPathNamespace": "namespace", "gitlabRepository": "repo", "gitlabBranch": "main"}, ComposeSource{})
+	gitlab, err := decodeComposeSource(map[string]interface{}{"type": "gitlab", "gitlabId": "i1", "gitlabProjectId": float64(42), "gitlabOwner": "owner", "gitlabPathNamespace": "namespace", "gitlabRepository": "repo", "gitlabBranch": "main"}, ComposeSource{})
 	require.NoError(t, err)
 	require.Equal(t, 42, gitlab.GitLab.ProjectID)
 	require.Equal(t, "./docker-compose.yml", gitlab.GitLab.ComposePath)
@@ -121,9 +122,10 @@ func TestComposeRawCreateOrdersEnvironmentBeforeDeploy(t *testing.T) {
 	t.Cleanup(func() { waitPollInterval = old })
 	s := newScriptedServer(t,
 		expectPOST("/api/compose.create", `{"composeFile":"services: {}","composeType":"docker-compose","environmentId":"e1","name":"demo"}`, `{"composeId":"c1"}`),
+		expectPOST("/api/compose.update", `{"composeId":"c1","composeFile":"services: {}","sourceType":"raw"}`, `{}`),
 		expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":null}`, `true`),
 		expectPOST("/api/compose.deploy", `{"composeId":"c1"}`, `"running"`),
-		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","status":"done"}`),
+		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","composeStatus":"done"}`),
 	)
 	got, err := (Compose{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ComposeArgs]{Inputs: ComposeArgs{Name: "demo", EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {}"}}}})
 	require.NoError(t, err)
@@ -144,10 +146,10 @@ func TestComposeGitCreateConfiguresFetchEnvironmentDeployAndPoll(t *testing.T) {
 	s := newScriptedServer(t,
 		expectPOST("/api/compose.create", `{"composeType":"docker-compose","environmentId":"e1","name":"demo"}`, `{"composeId":"c1"}`),
 		expectPOST("/api/compose.update", `{"composeId":"c1","composePath":"app/compose.yml","customGitBranch":"main","customGitSSHKeyId":null,"customGitUrl":"https://example.test/repo","enableSubmodules":true,"sourceType":"git","watchPaths":["app/**"]}`, `{}`),
-		expectPOST("/api/compose.fetchSourceType", `{"composeId":"c1"}`, `true`),
+		expectPOST("/api/compose.fetchSourceType", `{"composeId":"c1"}`, `"git"`),
 		expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":"ENV-SECRET"}`, `true`),
 		expectPOST("/api/compose.deploy", `{"composeId":"c1"}`, `"running"`),
-		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","status":"done"}`),
+		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","composeStatus":"done"}`),
 	)
 	env := "ENV-SECRET"
 	args := ComposeArgs{Name: "demo", EnvironmentID: "e1", Environment: &env, Source: ComposeSource{Type: ComposeSourceGit, Git: &GitComposeSource{URL: "https://example.test/repo", Branch: "main", ComposePath: "app/compose.yml", WatchPaths: []string{"app/**"}, EnableSubmodules: true}}}
@@ -162,10 +164,10 @@ func TestComposeGitLabRuntimeUpdateConfiguresFetchEnvironmentRedeployAndPoll(t *
 	t.Cleanup(func() { waitPollInterval = old })
 	s := newScriptedServer(t,
 		expectPOST("/api/compose.update", `{"composeId":"c1","composePath":"./docker-compose.yml","enableSubmodules":false,"gitlabBranch":"main","gitlabId":"i1","gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabProjectId":42,"gitlabRepository":"repo","sourceType":"gitlab","watchPaths":null}`, `{}`),
-		expectPOST("/api/compose.fetchSourceType", `{"composeId":"c1"}`, `true`),
+		expectPOST("/api/compose.fetchSourceType", `{"composeId":"c1"}`, `"gitlab"`),
 		expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":null}`, `true`),
 		expectPOST("/api/compose.redeploy", `{"composeId":"c1"}`, `"running"`),
-		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","status":"done"}`),
+		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","composeStatus":"done"}`),
 	)
 	newArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceGitLab, GitLab: &GitLabComposeSource{IntegrationID: "i1", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "repo", Branch: "main"}}}
 	oldArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceGitLab, GitLab: &GitLabComposeSource{IntegrationID: "i1", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "old", Branch: "main"}}}
@@ -178,10 +180,10 @@ func TestComposeUpdateErrorStatusReturnsError(t *testing.T) {
 	waitPollInterval = 0
 	t.Cleanup(func() { waitPollInterval = old })
 	s := newScriptedServer(t,
-		expectPOST("/api/compose.update", `{"composeFile":"new","composeId":"c1"}`, `{}`),
+		expectPOST("/api/compose.update", `{"composeFile":"new","composeId":"c1","sourceType":"raw"}`, `{}`),
 		expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":null}`, `true`),
 		expectPOST("/api/compose.redeploy", `{"composeId":"c1"}`, `"running"`),
-		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","status":"error"}`),
+		expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","composeStatus":"error"}`),
 	)
 	newArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "new"}}}
 	oldArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "old"}}}
@@ -208,7 +210,8 @@ func TestComposeGitAndGitLabEnvironmentErrorsAreRedactedAcrossLifecycle(t *testi
 				if stage == "source" {
 					expectations = append(expectations, scriptedRequest{Method: http.MethodPost, Path: tc.providerPath, Body: json.RawMessage(tc.providerBody), Status: http.StatusBadRequest, Response: []byte(`{"code":"SOURCE_FAILED","message":"failed ENVIRONMENT-SECRET"}`)})
 				} else {
-					expectations = append(expectations, expectPOST(tc.providerPath, tc.providerBody, `{}`), expectPOST("/api/compose.fetchSourceType", `{"composeId":"c1"}`, `true`))
+					fetchResponse := `"` + string(tc.source.Type) + `"`
+					expectations = append(expectations, expectPOST(tc.providerPath, tc.providerBody, `{}`), expectPOST("/api/compose.fetchSourceType", `{"composeId":"c1"}`, fetchResponse))
 					if stage == "saveEnvironment" {
 						expectations = append(expectations, scriptedRequest{Method: http.MethodPost, Path: "/api/compose.saveEnvironment", Body: json.RawMessage(`{"composeId":"c1","env":"ENVIRONMENT-SECRET"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"ENV_FAILED","message":"failed ENVIRONMENT-SECRET"}`)})
 					} else {
@@ -253,7 +256,7 @@ func TestComposeDiffMarksSourceEnvironmentAndServerReplacements(t *testing.T) {
 
 func TestComposeReadReconstructsGitAndPreservesEnvironmentSecret(t *testing.T) {
 	secret := "ENV-SECRET"
-	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","name":"demo","environmentId":"e1","status":"done","source":{"type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","composePath":"app.yml","watchPaths":["app/**"],"enableSubmodules":true}}`))
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"done","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","composePath":"app.yml","watchPaths":["app/**"],"enableSubmodules":true}`))
 	got, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1", State: ComposeState{ComposeArgs: ComposeArgs{Environment: &secret}}})
 	require.NoError(t, err)
 	require.Equal(t, secret, *got.Inputs.Environment)

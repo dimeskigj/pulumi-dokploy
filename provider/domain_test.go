@@ -63,6 +63,22 @@ func TestDomainCheckPreservesExplicitDisabled(t *testing.T) {
 	require.False(t, checked.Inputs.Enabled)
 }
 
+func TestDomainCheckDefersTargetValidationWhileApplicationIdIsComputed(t *testing.T) {
+	checked, err := (Domain{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"applicationId": property.New(property.Computed), "host": property.New("app.example.com"),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, checked.Failures)
+}
+
+func TestDomainCheckDefersTargetValidationWhileComposeIdIsComputed(t *testing.T) {
+	checked, err := (Domain{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"composeId": property.New(property.Computed), "host": property.New("app.example.com"),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, checked.Failures)
+}
+
 func TestDomainDiff(t *testing.T) {
 	old := DomainArgs{ApplicationID: stringPtr("a1"), Host: "old.example.com", Path: stringPtr("/")}
 	in := DomainArgs{ApplicationID: stringPtr("a1"), Host: "new.example.com", Path: stringPtr("/api"), HTTPS: true}

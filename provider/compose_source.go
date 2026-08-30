@@ -156,7 +156,7 @@ func composePath(path string) string {
 
 func configureComposeSource(ctx context.Context, api *client.Client, id string, source ComposeSource) error {
 	if source.Type == ComposeSourceRaw {
-		_, err := api.ComposeUpdateWithResponse(ctx, generated.ComposeUpdateJSONRequestBody{ComposeId: id, ComposeFile: ptr(source.Raw.ComposeFile)})
+		_, err := api.ComposeUpdateWithResponse(ctx, generated.ComposeUpdateJSONRequestBody{ComposeId: id, SourceType: ptr(generated.ComposeUpdateJSONBodySourceType(ComposeSourceRaw)), ComposeFile: ptr(source.Raw.ComposeFile)})
 		return err
 	}
 	b := generated.ComposeUpdateJSONRequestBody{ComposeId: id, SourceType: ptr(generated.ComposeUpdateJSONBodySourceType(source.Type)), ComposePath: ptr(composeSourcePath(source))}

@@ -74,7 +74,7 @@ func (r Compose) Check(ctx context.Context, req infer.CheckRequest) (infer.Check
 	if in.Name == "" {
 		failures = append(failures, p.CheckFailure{Property: "name", Reason: "name must not be empty"})
 	}
-	if in.EnvironmentID == "" {
+	if in.EnvironmentID == "" && !req.NewInputs.Get("environmentId").HasComputed() {
 		failures = append(failures, p.CheckFailure{Property: "environmentId", Reason: "environmentId must not be empty"})
 	}
 	if err := in.Source.validate(); err != nil {
@@ -158,10 +158,8 @@ func (r Compose) Create(ctx context.Context, req infer.CreateRequest[ComposeArgs
 		return infer.CreateResponse[ComposeState]{ID: state.ComposeID, Output: state}, e
 	}
 	api := r.client(ctx)
-	if req.Inputs.Source.Type != ComposeSourceRaw {
-		if err := configureComposeSource(ctx, api, state.ComposeID, req.Inputs.Source); err != nil {
-			return fail(sanitizeComposeError(err, req.Inputs))
-		}
+	if err := configureComposeSource(ctx, api, state.ComposeID, req.Inputs.Source); err != nil {
+		return fail(sanitizeComposeError(err, req.Inputs))
 	}
 	if err := fetchComposeSource(ctx, api, state.ComposeID, req.Inputs.Source.Type); err != nil {
 		return fail(sanitizeComposeError(err, req.Inputs))
@@ -208,7 +206,7 @@ func composeStatusValue(c *generated.Compose) (string, error) {
 	if c.AdditionalProperties == nil {
 		return "", fmt.Errorf("compose.one returned compose without a status")
 	}
-	v, ok := c.AdditionalProperties["status"]
+	v, ok := c.AdditionalProperties["composeStatus"]
 	if !ok {
 		return "", fmt.Errorf("compose.one returned compose without a status")
 	}
@@ -243,7 +241,7 @@ func (r Compose) Read(ctx context.Context, req infer.ReadRequest[ComposeArgs, Co
 	if c.CreateEnvFile != nil {
 		a.CreateEnvFile = *c.CreateEnvFile
 	}
-	src, e := decodeComposeSource(c.Source, a.Source)
+	src, e := decodeComposeSource(c.AdditionalProperties, a.Source)
 	if e != nil {
 		return infer.ReadResponse[ComposeArgs, ComposeState]{}, e
 	}
@@ -256,11 +254,10 @@ func (r Compose) Read(ctx context.Context, req infer.ReadRequest[ComposeArgs, Co
 	return infer.ReadResponse[ComposeArgs, ComposeState]{ID: *c.ComposeId, Inputs: a, State: st}, nil
 }
 
-func decodeComposeSource(raw *map[string]interface{}, prior ComposeSource) (ComposeSource, error) {
-	if raw == nil {
+func decodeComposeSource(m map[string]interface{}, prior ComposeSource) (ComposeSource, error) {
+	if m == nil {
 		return ComposeSource{}, fmt.Errorf("compose.one omitted source data required to reconstruct compose source")
 	}
-	m := *raw
 	k := stringValue(m, "type", "sourceType")
 	if k == "" {
 		k = string(prior.Type)

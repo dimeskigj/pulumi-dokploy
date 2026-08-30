@@ -64,7 +64,7 @@ func (r Redis) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRe
 	if in.Name == "" {
 		failures = append(failures, p.CheckFailure{Property: "name", Reason: "name must not be empty"})
 	}
-	if in.EnvironmentID == "" {
+	if in.EnvironmentID == "" && !req.NewInputs.Get("environmentId").HasComputed() {
 		failures = append(failures, p.CheckFailure{Property: "environmentId", Reason: "environmentId must not be empty"})
 	}
 	return infer.CheckResponse[RedisArgs]{Inputs: in, Failures: failures}, nil
@@ -195,7 +195,7 @@ func redisStatusValue(v *generated.Redis) (string, error) {
 	if v.AdditionalProperties == nil {
 		return "", fmt.Errorf("redis.one returned redis without a status")
 	}
-	raw, ok := v.AdditionalProperties["status"]
+	raw, ok := v.AdditionalProperties["applicationStatus"]
 	if !ok {
 		return "", fmt.Errorf("redis.one returned redis without a status")
 	}

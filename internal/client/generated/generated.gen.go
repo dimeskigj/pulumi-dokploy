@@ -21,30 +21,6 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
-// Defines values for DeploymentStatus.
-const (
-	DeploymentStatusDone    DeploymentStatus = "done"
-	DeploymentStatusError   DeploymentStatus = "error"
-	DeploymentStatusIdle    DeploymentStatus = "idle"
-	DeploymentStatusRunning DeploymentStatus = "running"
-)
-
-// Valid indicates whether the value is a known member of the DeploymentStatus enum.
-func (e DeploymentStatus) Valid() bool {
-	switch e {
-	case DeploymentStatusDone:
-		return true
-	case DeploymentStatusError:
-		return true
-	case DeploymentStatusIdle:
-		return true
-	case DeploymentStatusRunning:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ApplicationSaveBuildTypeJSONBodyBuildType.
 const (
 	ApplicationSaveBuildTypeJSONBodyBuildTypeDockerfile       ApplicationSaveBuildTypeJSONBodyBuildType = "dockerfile"
@@ -443,34 +419,32 @@ func (e RedisUpdateJSONBodyApplicationStatus) Valid() bool {
 
 // Application defines model for Application.
 type Application struct {
-	AppName              *string                 `json:"appName,omitempty"`
-	ApplicationId        *string                 `json:"applicationId,omitempty"`
-	BuildArgs            *string                 `json:"buildArgs,omitempty"`
-	BuildSecrets         *string                 `json:"buildSecrets,omitempty"`
-	CreateEnvFile        *bool                   `json:"createEnvFile,omitempty"`
-	Description          *string                 `json:"description,omitempty"`
-	Env                  *string                 `json:"env,omitempty"`
-	EnvironmentId        *string                 `json:"environmentId,omitempty"`
-	Name                 *string                 `json:"name,omitempty"`
-	ServerId             *string                 `json:"serverId,omitempty"`
-	Source               *map[string]interface{} `json:"source,omitempty"`
-	Status               *string                 `json:"status,omitempty"`
-	AdditionalProperties map[string]interface{}  `json:"-"`
+	AppName              *string                `json:"appName,omitempty"`
+	ApplicationId        *string                `json:"applicationId,omitempty"`
+	ApplicationStatus    *string                `json:"applicationStatus,omitempty"`
+	BuildArgs            *string                `json:"buildArgs,omitempty"`
+	BuildSecrets         *string                `json:"buildSecrets,omitempty"`
+	CreateEnvFile        *bool                  `json:"createEnvFile,omitempty"`
+	Description          *string                `json:"description,omitempty"`
+	Env                  *string                `json:"env,omitempty"`
+	EnvironmentId        *string                `json:"environmentId,omitempty"`
+	Name                 *string                `json:"name,omitempty"`
+	ServerId             *string                `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // Compose defines model for Compose.
 type Compose struct {
-	AppName              *string                 `json:"appName,omitempty"`
-	ComposeId            *string                 `json:"composeId,omitempty"`
-	ComposeType          *string                 `json:"composeType,omitempty"`
-	CreateEnvFile        *bool                   `json:"createEnvFile,omitempty"`
-	Description          *string                 `json:"description,omitempty"`
-	Env                  *string                 `json:"env,omitempty"`
-	EnvironmentId        *string                 `json:"environmentId,omitempty"`
-	Name                 *string                 `json:"name,omitempty"`
-	ServerId             *string                 `json:"serverId,omitempty"`
-	Source               *map[string]interface{} `json:"source,omitempty"`
-	AdditionalProperties map[string]interface{}  `json:"-"`
+	AppName              *string                `json:"appName,omitempty"`
+	ComposeId            *string                `json:"composeId,omitempty"`
+	ComposeType          *string                `json:"composeType,omitempty"`
+	CreateEnvFile        *bool                  `json:"createEnvFile,omitempty"`
+	Description          *string                `json:"description,omitempty"`
+	Env                  *string                `json:"env,omitempty"`
+	EnvironmentId        *string                `json:"environmentId,omitempty"`
+	Name                 *string                `json:"name,omitempty"`
+	ServerId             *string                `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // CreateProjectResult defines model for CreateProjectResult.
@@ -479,9 +453,6 @@ type CreateProjectResult struct {
 	Project              Project                `json:"project"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
-
-// DeploymentStatus defines model for DeploymentStatus.
-type DeploymentStatus string
 
 // Domain defines model for Domain.
 type Domain struct {
@@ -1568,6 +1539,14 @@ func (a *Application) UnmarshalJSON(b []byte) error {
 		delete(object, "applicationId")
 	}
 
+	if raw, found := object["applicationStatus"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationStatus)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationStatus': %w", err)
+		}
+		delete(object, "applicationStatus")
+	}
+
 	if raw, found := object["buildArgs"]; found {
 		err = json.Unmarshal(raw, &a.BuildArgs)
 		if err != nil {
@@ -1632,22 +1611,6 @@ func (a *Application) UnmarshalJSON(b []byte) error {
 		delete(object, "serverId")
 	}
 
-	if raw, found := object["source"]; found {
-		err = json.Unmarshal(raw, &a.Source)
-		if err != nil {
-			return fmt.Errorf("error reading 'source': %w", err)
-		}
-		delete(object, "source")
-	}
-
-	if raw, found := object["status"]; found {
-		err = json.Unmarshal(raw, &a.Status)
-		if err != nil {
-			return fmt.Errorf("error reading 'status': %w", err)
-		}
-		delete(object, "status")
-	}
-
 	if len(object) != 0 {
 		a.AdditionalProperties = make(map[string]interface{})
 		for fieldName, fieldBuf := range object {
@@ -1678,6 +1641,13 @@ func (a Application) MarshalJSON() ([]byte, error) {
 		object["applicationId"], err = json.Marshal(a.ApplicationId)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	if a.ApplicationStatus != nil {
+		object["applicationStatus"], err = json.Marshal(a.ApplicationStatus)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationStatus': %w", err)
 		}
 	}
 
@@ -1734,20 +1704,6 @@ func (a Application) MarshalJSON() ([]byte, error) {
 		object["serverId"], err = json.Marshal(a.ServerId)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
-		}
-	}
-
-	if a.Source != nil {
-		object["source"], err = json.Marshal(a.Source)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'source': %w", err)
-		}
-	}
-
-	if a.Status != nil {
-		object["status"], err = json.Marshal(a.Status)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'status': %w", err)
 		}
 	}
 
@@ -1857,14 +1813,6 @@ func (a *Compose) UnmarshalJSON(b []byte) error {
 		delete(object, "serverId")
 	}
 
-	if raw, found := object["source"]; found {
-		err = json.Unmarshal(raw, &a.Source)
-		if err != nil {
-			return fmt.Errorf("error reading 'source': %w", err)
-		}
-		delete(object, "source")
-	}
-
 	if len(object) != 0 {
 		a.AdditionalProperties = make(map[string]interface{})
 		for fieldName, fieldBuf := range object {
@@ -1944,13 +1892,6 @@ func (a Compose) MarshalJSON() ([]byte, error) {
 		object["serverId"], err = json.Marshal(a.ServerId)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
-		}
-	}
-
-	if a.Source != nil {
-		object["source"], err = json.Marshal(a.Source)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'source': %w", err)
 		}
 	}
 
@@ -6980,8 +6921,6 @@ func (r ApplicationCreateResponse) ContentType() string {
 type ApplicationDeleteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -6990,11 +6929,6 @@ type ApplicationDeleteResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ApplicationDeleteResponse) GetJSON200() *bool {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -7049,8 +6983,6 @@ func (r ApplicationDeleteResponse) ContentType() string {
 type ApplicationDeployResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *DeploymentStatus
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -7059,11 +6991,6 @@ type ApplicationDeployResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ApplicationDeployResponse) GetJSON200() *DeploymentStatus {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -7194,8 +7121,6 @@ func (r ApplicationOneResponse) ContentType() string {
 type ApplicationRedeployResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *DeploymentStatus
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -7204,11 +7129,6 @@ type ApplicationRedeployResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ApplicationRedeployResponse) GetJSON200() *DeploymentStatus {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -7815,8 +7735,6 @@ func (r ComposeCreateResponse) ContentType() string {
 type ComposeDeleteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -7825,11 +7743,6 @@ type ComposeDeleteResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ComposeDeleteResponse) GetJSON200() *bool {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -7884,8 +7797,6 @@ func (r ComposeDeleteResponse) ContentType() string {
 type ComposeDeployResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *DeploymentStatus
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -7894,11 +7805,6 @@ type ComposeDeployResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ComposeDeployResponse) GetJSON200() *DeploymentStatus {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -7954,7 +7860,7 @@ type ComposeFetchSourceTypeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
+	JSON200 *string
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -7966,7 +7872,7 @@ type ComposeFetchSourceTypeResponse struct {
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ComposeFetchSourceTypeResponse) GetJSON200() *bool {
+func (r ComposeFetchSourceTypeResponse) GetJSON200() *string {
 	return r.JSON200
 }
 
@@ -8098,8 +8004,6 @@ func (r ComposeOneResponse) ContentType() string {
 type ComposeRedeployResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *DeploymentStatus
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -8108,11 +8012,6 @@ type ComposeRedeployResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ComposeRedeployResponse) GetJSON200() *DeploymentStatus {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -8374,8 +8273,6 @@ func (r DomainCreateResponse) ContentType() string {
 type DomainDeleteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -8384,11 +8281,6 @@ type DomainDeleteResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r DomainDeleteResponse) GetJSON200() *bool {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -8733,8 +8625,6 @@ func (r EnvironmentOneResponse) ContentType() string {
 type EnvironmentRemoveResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -8743,11 +8633,6 @@ type EnvironmentRemoveResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r EnvironmentRemoveResponse) GetJSON200() *bool {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -8940,8 +8825,6 @@ func (r PostgresCreateResponse) ContentType() string {
 type PostgresDeployResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *DeploymentStatus
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -8950,11 +8833,6 @@ type PostgresDeployResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r PostgresDeployResponse) GetJSON200() *DeploymentStatus {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -9085,8 +8963,6 @@ func (r PostgresOneResponse) ContentType() string {
 type PostgresRemoveResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -9095,11 +8971,6 @@ type PostgresRemoveResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r PostgresRemoveResponse) GetJSON200() *bool {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -9506,8 +9377,6 @@ func (r ProjectOneResponse) ContentType() string {
 type ProjectRemoveResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -9516,11 +9385,6 @@ type ProjectRemoveResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ProjectRemoveResponse) GetJSON200() *bool {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -9713,8 +9577,6 @@ func (r RedisCreateResponse) ContentType() string {
 type RedisDeployResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *DeploymentStatus
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -9723,11 +9585,6 @@ type RedisDeployResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r RedisDeployResponse) GetJSON200() *DeploymentStatus {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -9858,8 +9715,6 @@ func (r RedisOneResponse) ContentType() string {
 type RedisRemoveResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *bool
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *ErrorBADREQUEST
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -9868,11 +9723,6 @@ type RedisRemoveResponse struct {
 	JSON403 *ErrorFORBIDDEN
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *ErrorINTERNALSERVERERROR
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r RedisRemoveResponse) GetJSON200() *bool {
-	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -11134,12 +10984,8 @@ func ParseApplicationDeleteResponse(rsp *http.Response) (*ApplicationDeleteRespo
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -11188,12 +11034,8 @@ func ParseApplicationDeployResponse(rsp *http.Response) (*ApplicationDeployRespo
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DeploymentStatus
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -11303,12 +11145,8 @@ func ParseApplicationRedeployResponse(rsp *http.Response) (*ApplicationRedeployR
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DeploymentStatus
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -11789,12 +11627,8 @@ func ParseComposeDeleteResponse(rsp *http.Response) (*ComposeDeleteResponse, err
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -11843,12 +11677,8 @@ func ParseComposeDeployResponse(rsp *http.Response) (*ComposeDeployResponse, err
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DeploymentStatus
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -11898,7 +11728,7 @@ func ParseComposeFetchSourceTypeResponse(rsp *http.Response) (*ComposeFetchSourc
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
+		var dest string
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12012,12 +11842,8 @@ func ParseComposeRedeployResponse(rsp *http.Response) (*ComposeRedeployResponse,
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DeploymentStatus
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -12228,12 +12054,8 @@ func ParseDomainDeleteResponse(rsp *http.Response) (*DomainDeleteResponse, error
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -12512,12 +12334,8 @@ func ParseEnvironmentRemoveResponse(rsp *http.Response) (*EnvironmentRemoveRespo
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -12674,12 +12492,8 @@ func ParsePostgresDeployResponse(rsp *http.Response) (*PostgresDeployResponse, e
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DeploymentStatus
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -12789,12 +12603,8 @@ func ParsePostgresRemoveResponse(rsp *http.Response) (*PostgresRemoveResponse, e
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -13120,12 +12930,8 @@ func ParseProjectRemoveResponse(rsp *http.Response) (*ProjectRemoveResponse, err
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -13282,12 +13088,8 @@ func ParseRedisDeployResponse(rsp *http.Response) (*RedisDeployResponse, error) 
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DeploymentStatus
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -13397,12 +13199,8 @@ func ParseRedisRemoveResponse(rsp *http.Response) (*RedisRemoveResponse, error) 
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest bool
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -13604,96 +13402,94 @@ func ParseRedisUpdateResponse(rsp *http.Response) (*RedisUpdateResponse, error) 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
-	"R1ygyIddn4Z7KMaSxf4vAAD//w==",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

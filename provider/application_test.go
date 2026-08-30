@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,13 +39,23 @@ func TestApplicationCreateDockerOrdersConfigurationBeforeDeployment(t *testing.T
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"","registryUrl":"","username":""}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`),
-		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","status":"done"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
 	)
 	r := Application{client: fixedClient(s.API())}
 	got, err := r.Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}})
 	require.NoError(t, err)
 	require.Equal(t, "a1", got.ID)
 	require.Equal(t, "done", got.Output.Status)
+}
+
+func TestApplicationCheckAllowsComputedEnvironmentIdDuringPreview(t *testing.T) {
+	checked, err := (Application{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"name":          property.New("demo"),
+		"environmentId": property.New(property.Computed),
+		"source":        property.New(map[string]property.Value{"type": property.New("docker"), "docker": property.New(map[string]property.Value{"image": property.New("nginx")})}),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, checked.Failures)
 }
 
 func TestApplicationDiffUsesReplacementForParentAndSourceType(t *testing.T) {
@@ -57,7 +69,7 @@ func TestApplicationDiffUsesReplacementForParentAndSourceType(t *testing.T) {
 }
 
 func TestApplicationReadPreservesWriteOnlySecrets(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","name":"demo","environmentId":"e1","status":"done","source":{"type":"docker","dockerImage":"nginx"}}`))
+	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"docker","dockerImage":"nginx"}`))
 	secret := "keep"
 	r := Application{client: fixedClient(s.API())}
 	got, err := r.Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1", State: ApplicationState{ApplicationArgs: ApplicationArgs{Environment: &secret, BuildArgs: &secret, BuildSecrets: &secret}}})
@@ -107,7 +119,8 @@ func TestApplicationReadReconstructsObservableFieldsAndPreservesSecrets(t *testi
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","name":"demo","appName":"app","description":"description","environmentId":"e1","serverId":"s1","createEnvFile":true,"status":"done","source":`+tc.source+`}`))
+			flattened := strings.TrimSuffix(strings.TrimPrefix(tc.source, "{"), "}")
+			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","name":"demo","appName":"app","description":"description","environmentId":"e1","serverId":"s1","createEnvFile":true,"applicationStatus":"done",`+flattened+`}`))
 			got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1", State: ApplicationState{ApplicationArgs: ApplicationArgs{Environment: &password, BuildArgs: &password, BuildSecrets: &password, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Password: &password}}}}})
 			require.NoError(t, err)
 			require.Equal(t, "app", *got.Inputs.AppName)
@@ -138,7 +151,7 @@ func TestApplicationRuntimeSourceUpdateConfiguresProviderAndBuildBeforeEnvironme
 		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
-		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","status":"done"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
 	)
 	buildPath := "src"
 	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://example.test/repo", Branch: "main", BuildPath: &buildPath, Build: ApplicationBuild{Type: BuildNixpacks}}}}
@@ -155,7 +168,7 @@ func TestApplicationRuntimeDockerImageUpdateRedeploysAfterEnvironment(t *testing
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"redis","password":"","registryUrl":"","username":""}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
-		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","status":"done"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
 	)
 	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
 	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "redis"}}}
@@ -172,7 +185,7 @@ func TestApplicationRuntimeGitLabUpdateOrdersProviderBuildEnvironmentAndRedeploy
 		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"dockerfile","dockerBuildStage":"prod","dockerContextPath":".","dockerfile":"Containerfile","herokuVersion":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":true,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
-		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","status":"done"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
 	)
 	args := ApplicationArgs{Name: "demo", EnvironmentID: "e1", CreateEnvFile: true, Source: ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "integration", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "repo", Branch: "main", BuildPath: stringPtr("app"), WatchPaths: []string{"app/**"}, EnableSubmodules: true, Build: ApplicationBuild{Type: BuildDockerfile, Dockerfile: stringPtr("Containerfile"), DockerContextPath: stringPtr("."), DockerBuildStage: stringPtr("prod")}}}}
 	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: args, State: ApplicationState{ApplicationArgs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "integration", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "old", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}}}})
@@ -184,12 +197,12 @@ func TestApplicationReadReconstructsGitAndGitLabSources(t *testing.T) {
 		name, response string
 		check          func(*testing.T, ApplicationSource)
 	}{
-		{"git", `{"applicationId":"a1","name":"demo","environmentId":"e1","source":{"type":"git","customGitUrl":"https://example.test/repo","customGitBranch":"main","customGitBuildPath":"app","watchPaths":["src/**"],"enableSubmodules":true,"buildType":"dockerfile","dockerfile":"Dockerfile","dockerContextPath":".","dockerBuildStage":"prod"}}`, func(t *testing.T, s ApplicationSource) {
+		{"git", `{"applicationId":"a1","name":"demo","environmentId":"e1","type":"git","customGitUrl":"https://example.test/repo","customGitBranch":"main","customGitBuildPath":"app","watchPaths":["src/**"],"enableSubmodules":true,"buildType":"dockerfile","dockerfile":"Dockerfile","dockerContextPath":".","dockerBuildStage":"prod"}`, func(t *testing.T, s ApplicationSource) {
 			require.Equal(t, "https://example.test/repo", s.Git.URL)
 			require.Equal(t, "Dockerfile", *s.Git.Build.Dockerfile)
 			require.True(t, s.Git.EnableSubmodules)
 		}},
-		{"gitlab", `{"applicationId":"a1","name":"demo","environmentId":"e1","source":{"type":"gitlab","gitlabId":"i1","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","gitlabBuildPath":"app","watchPaths":["src/**"],"enableSubmodules":true,"buildType":"nixpacks"}}`, func(t *testing.T, s ApplicationSource) {
+		{"gitlab", `{"applicationId":"a1","name":"demo","environmentId":"e1","type":"gitlab","gitlabId":"i1","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","gitlabBuildPath":"app","watchPaths":["src/**"],"enableSubmodules":true,"buildType":"nixpacks"}`, func(t *testing.T, s ApplicationSource) {
 			require.Equal(t, 42, s.GitLab.ProjectID)
 			require.Equal(t, "namespace", s.GitLab.Namespace)
 			require.Equal(t, BuildNixpacks, s.GitLab.Build.Type)
@@ -219,7 +232,7 @@ func TestApplicationImportReconstructsAllSourceVariants(t *testing.T) {
 		{SourceGitLab, map[string]interface{}{"type": "gitlab", "gitlabId": "i", "gitlabProjectId": float64(1), "gitlabOwner": "o", "gitlabPathNamespace": "n", "gitlabRepository": "r", "gitlabBranch": "main"}},
 	} {
 		t.Run(string(tc.kind), func(t *testing.T) {
-			got, err := decodeApplicationSource(&tc.raw, ApplicationSource{})
+			got, err := decodeApplicationSource(tc.raw, ApplicationSource{})
 			require.NoError(t, err)
 			require.Equal(t, tc.kind, got.Type)
 		})
@@ -239,7 +252,7 @@ func TestApplicationImportReconstructsObservableFieldsWithoutInventingSecrets(t 
 		t.Run(tc.name, func(t *testing.T) {
 			var raw map[string]interface{}
 			require.NoError(t, json.Unmarshal([]byte(tc.raw), &raw))
-			got, err := decodeApplicationSource(&raw, ApplicationSource{})
+			got, err := decodeApplicationSource(raw, ApplicationSource{})
 			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 			if got.Docker != nil {
@@ -259,7 +272,7 @@ func TestApplicationCreateGitLabOrdersProviderBuildEnvironmentAndDeploy(t *testi
 		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"dockerfile","dockerBuildStage":"production","dockerContextPath":".","dockerfile":"Dockerfile","herokuVersion":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`),
-		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","status":"done"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
 	)
 	r := Application{client: fixedClient(s.API())}
 	got, err := r.Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "integration", ProjectID: 42, Owner: "owner", Namespace: "namespace", Repository: "repo", Branch: "main", BuildPath: stringPtr("app"), Build: ApplicationBuild{Type: BuildDockerfile, Dockerfile: stringPtr("Dockerfile"), DockerContextPath: stringPtr("."), DockerBuildStage: stringPtr("production")}}}}})
@@ -277,7 +290,7 @@ func TestApplicationCreateGitOrdersProviderBuildEnvironmentAndDeploy(t *testing.
 		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":true,"env":null}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`),
-		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","status":"done"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
 	)
 	buildPath := "app"
 	args := ApplicationArgs{Name: "demo", EnvironmentID: "e1", CreateEnvFile: true, Source: ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://example.test/repo", Branch: "main", BuildPath: &buildPath, WatchPaths: []string{"src/**"}, EnableSubmodules: true, Build: ApplicationBuild{Type: BuildNixpacks}}}}
@@ -484,7 +497,7 @@ func TestApplicationCreateDeployErrorRedactsEchoedSecrets(t *testing.T) {
 		expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"PASSWORD-SECRET","registryUrl":"","username":""}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`, `true`),
-		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `{"code":"DEPLOY_FAILED","message":"PASSWORD-SECRET ENV-SECRET"}`),
+		scriptedRequest{Method: http.MethodPost, Path: "/api/application.deploy", Body: json.RawMessage(`{"applicationId":"a1"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"DEPLOY_FAILED","message":"PASSWORD-SECRET ENV-SECRET"}`)},
 	)
 	got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &env, BuildArgs: &buildArgs, BuildSecrets: &buildSecrets, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx", Password: &password}}}})
 	require.Error(t, err)

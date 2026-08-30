@@ -75,6 +75,14 @@ func TestComposeGitLabSourceDefaultsComposePath(t *testing.T) {
 	}
 }
 
+func TestComposeCheckAllowsComputedEnvironmentIdDuringPreview(t *testing.T) {
+	source := property.New(map[string]property.Value{"type": property.New("raw"), "raw": property.New(map[string]property.Value{"composeFile": property.New("services: {}")})})
+	got, err := (Compose{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{"name": property.New("demo"), "environmentId": property.New(property.Computed), "source": source})})
+	if err != nil || len(got.Failures) != 0 {
+		t.Fatalf("Check() = %#v, %v", got.Failures, err)
+	}
+}
+
 func TestComposeInferredSchemaHasVariantSpecificComposePaths(t *testing.T) {
 	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
 	if err != nil {

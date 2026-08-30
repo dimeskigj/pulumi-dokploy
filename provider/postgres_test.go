@@ -22,6 +22,16 @@ func TestPostgresCheckDefaultsImage(t *testing.T) {
 	require.Equal(t, "postgres:18", got.Inputs.DockerImage)
 }
 
+func TestPostgresCheckAllowsComputedEnvironmentIdDuringPreview(t *testing.T) {
+	r := Postgres{}
+	got, err := r.Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"name": property.New("db"), "environmentId": property.New(property.Computed),
+		"databaseName": property.New("app"), "databaseUser": property.New("user"), "databasePassword": property.New("secret"),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, got.Failures)
+}
+
 func TestPostgresProviderRegistrationAndStatusValidation(t *testing.T) {
 	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
 	require.NoError(t, err)
@@ -42,12 +52,12 @@ func TestPostgresDiffReplacesEnvironmentAndServerOnly(t *testing.T) {
 
 func TestPostgresStatusPreservesValuesAndRejectsUnknown(t *testing.T) {
 	for _, status := range []string{"running", "done", "error", "paused"} {
-		v := &generated.Postgres{AdditionalProperties: map[string]interface{}{"status": status}}
+		v := &generated.Postgres{AdditionalProperties: map[string]interface{}{"applicationStatus": status}}
 		got, err := postgresStatusValue(v)
 		require.NoError(t, err)
 		require.Equal(t, status, got)
 	}
-	v := &generated.Postgres{AdditionalProperties: map[string]interface{}{"status": 42}}
+	v := &generated.Postgres{AdditionalProperties: map[string]interface{}{"applicationStatus": 42}}
 	_, err := postgresStatusValue(v)
 	require.EqualError(t, err, "postgres.one returned invalid status 42")
 }
@@ -62,7 +72,7 @@ func TestPostgresCreateOrdersOptionalConfigurationBeforeDeploy(t *testing.T) {
 		expectPOST("/api/postgres.saveEnvironment", `{"env":"POSTGRES_ENV","postgresId":"p1"}`, `true`),
 		expectPOST("/api/postgres.saveExternalPort", `{"externalPort":5433,"postgresId":"p1"}`, `true`),
 		expectPOST("/api/postgres.deploy", `{"postgresId":"p1"}`, `"running"`),
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","status":"done"}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","applicationStatus":"done"}`),
 	)
 	got, err := (Postgres{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[PostgresArgs]{Inputs: PostgresArgs{Name: "db", EnvironmentID: "env", DatabaseName: "app", DatabaseUser: "user", DatabasePassword: "password", Environment: &env, ExternalPort: &port, DockerImage: "postgres:18"}})
 	require.NoError(t, err)
@@ -84,7 +94,7 @@ func TestPostgresRuntimeUpdateClearsOptionalValuesAndDeploys(t *testing.T) {
 		expectPOST("/api/postgres.saveEnvironment", `{"env":null,"postgresId":"p1"}`, `true`),
 		expectPOST("/api/postgres.saveExternalPort", `{"externalPort":null,"postgresId":"p1"}`, `true`),
 		expectPOST("/api/postgres.deploy", `{"postgresId":"p1"}`, `"running"`),
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","status":"done"}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","applicationStatus":"done"}`),
 	)
 	_, err := (Postgres{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[PostgresArgs, PostgresState]{ID: "p1", Inputs: PostgresArgs{Name: "db", EnvironmentID: "env", DatabaseName: "newdb", DatabaseUser: "user", DatabasePassword: pw, DockerImage: "postgres:18"}, State: PostgresState{PostgresArgs: PostgresArgs{Name: "db", EnvironmentID: "env", DatabaseName: "db", DatabaseUser: "user", DatabasePassword: pw, DockerImage: "postgres:18", Environment: &oldEnv, ExternalPort: &oldPort}}})
 	require.NoError(t, err)
@@ -92,7 +102,7 @@ func TestPostgresRuntimeUpdateClearsOptionalValuesAndDeploys(t *testing.T) {
 
 func TestPostgresReadPreservesWriteOnlyFieldsAndHandlesNotFound(t *testing.T) {
 	pw, env := "PASSWORD", "ENVIRONMENT"
-	s := newScriptedServer(t, scriptedRequest{Method: http.MethodGet, Path: "/api/postgres.one", Query: map[string][]string{"postgresId": {"p1"}}, Status: http.StatusOK, Response: []byte(`{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","image":"postgres:18","status":"running"}`)})
+	s := newScriptedServer(t, scriptedRequest{Method: http.MethodGet, Path: "/api/postgres.one", Query: map[string][]string{"postgresId": {"p1"}}, Status: http.StatusOK, Response: []byte(`{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","image":"postgres:18","applicationStatus":"running"}`)})
 	got, err := (Postgres{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[PostgresArgs, PostgresState]{ID: "p1", State: PostgresState{PostgresArgs: PostgresArgs{DatabasePassword: pw, Environment: &env}}})
 	require.NoError(t, err)
 	require.Equal(t, pw, got.Inputs.DatabasePassword)
@@ -108,7 +118,7 @@ func TestPostgresReadPreservesWriteOnlyFieldsAndHandlesNotFound(t *testing.T) {
 }
 
 func TestPostgresImportReconstructsObservableSecrets(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","databasePassword":"observed-password","env":"observed-env","status":"done"}`))
+	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","databasePassword":"observed-password","env":"observed-env","applicationStatus":"done"}`))
 	got, err := (Postgres{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[PostgresArgs, PostgresState]{ID: "p1"})
 	require.NoError(t, err)
 	require.Equal(t, "observed-password", got.Inputs.DatabasePassword)
@@ -116,14 +126,14 @@ func TestPostgresImportReconstructsObservableSecrets(t *testing.T) {
 }
 
 func TestPostgresImportAllowsMissingPasswordWithoutInventingSecret(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","status":"done"}`))
+	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","applicationStatus":"done"}`))
 	got, err := (Postgres{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[PostgresArgs, PostgresState]{ID: "p1"})
 	require.NoError(t, err)
 	require.Empty(t, got.Inputs.DatabasePassword)
 }
 
 func TestPostgresRefreshPreservesPriorPasswordWhenAPIOmitsIt(t *testing.T) {
-	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","status":"done"}`))
+	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"env","databaseName":"app","databaseUser":"user","applicationStatus":"done"}`))
 	got, err := (Postgres{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[PostgresArgs, PostgresState]{ID: "p1", State: PostgresState{PostgresArgs: PostgresArgs{DatabasePassword: "prior"}}})
 	require.NoError(t, err)
 	require.Equal(t, "prior", got.Inputs.DatabasePassword)

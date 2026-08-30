@@ -288,10 +288,10 @@ func lifecycleTranscript() []lifecycleRequest {
 	secretEcho := func(secrets []string) string {
 		return `{"message":"redeploy failed ` + strings.Join(secrets, " ") + `"}`
 	}
-	appOne := `{"applicationId":"a1","name":"app","environmentId":"e1","status":"done","source":{"type":"docker","image":"nginx"}}`
-	composeOne := `{"composeId":"c1","name":"stack","environmentId":"e1","composeType":"raw","source":{"type":"raw","composeFile":"services: {}"},"status":"done"}`
-	postgresOne := `{"postgresId":"pg1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","databasePassword":"DB-PASSWORD","status":"done"}`
-	redisOne := `{"redisId":"r1","name":"cache","environmentId":"e1","databasePassword":"REDIS-PASSWORD","status":"done"}`
+	appOne := `{"applicationId":"a1","name":"app","environmentId":"e1","applicationStatus":"done","type":"docker","image":"nginx"}`
+	composeOne := `{"composeId":"c1","name":"stack","environmentId":"e1","composeType":"raw","type":"raw","composeFile":"services: {}","composeStatus":"done"}`
+	postgresOne := `{"postgresId":"pg1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","databasePassword":"DB-PASSWORD","applicationStatus":"done"}`
+	redisOne := `{"redisId":"r1","name":"cache","environmentId":"e1","databasePassword":"REDIS-PASSWORD","applicationStatus":"done"}`
 	return []lifecycleRequest{
 		r(http.MethodPost, "/api/project.create", nil, `{"name":"demo"}`, `{"project":{"projectId":"p1","name":"demo"},"environment":{"environmentId":"e1","name":"production","isDefault":true}}`),
 		r(http.MethodPost, "/api/environment.create", nil, `{"name":"staging","projectId":"p1"}`, `{"environmentId":"e2","projectId":"p1","name":"staging","isDefault":false}`),
@@ -301,6 +301,7 @@ func lifecycleTranscript() []lifecycleRequest {
 		r(http.MethodPost, "/api/application.deploy", nil, `{"applicationId":"a1"}`, `"running"`),
 		get("/api/application.one", "applicationId", "a1", appOne),
 		r(http.MethodPost, "/api/compose.create", nil, `{"composeFile":"services: {}","composeType":"docker-compose","environmentId":"e1","name":"stack"}`, `{"composeId":"c1"}`),
+		r(http.MethodPost, "/api/compose.update", nil, `{"composeId":"c1","composeFile":"services: {}","sourceType":"raw"}`, `{}`),
 		r(http.MethodPost, "/api/compose.saveEnvironment", nil, `{"composeId":"c1","env":"COMPOSE-ENV-SECRET"}`, trueResponse),
 		r(http.MethodPost, "/api/compose.deploy", nil, `{"composeId":"c1"}`, `"running"`),
 		get("/api/compose.one", "composeId", "c1", composeOne),

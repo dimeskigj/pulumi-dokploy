@@ -122,8 +122,11 @@ func (r Domain) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckR
 	if in.CertificateType != CertificateLetsencrypt && in.CertificateType != CertificateNone && in.CertificateType != CertificateCustom {
 		failures = append(failures, p.CheckFailure{Property: "certificateType", Reason: "certificateType must be one of letsencrypt, none, custom"})
 	}
-	if err := in.validate(); err != nil {
-		failures = append(failures, p.CheckFailure{Property: "target", Reason: err.Error()})
+	targetComputed := req.NewInputs.Get("applicationId").HasComputed() || req.NewInputs.Get("composeId").HasComputed()
+	if !targetComputed {
+		if err := in.validate(); err != nil {
+			failures = append(failures, p.CheckFailure{Property: "target", Reason: err.Error()})
+		}
 	}
 	return infer.CheckResponse[DomainArgs]{Inputs: in, Failures: failures}, nil
 }
