@@ -48,6 +48,15 @@ func runMVP(t *testing.T, ctx context.Context, cfg liveConfig) {
 			t.Fatal(err)
 		}
 	}
+	// On a stack with no prior state, every resource that chains an output
+	// from another (environmentId from the project, applicationId/composeId
+	// on the domains) previews with genuinely unresolved values. This
+	// reproduces the exact failure reported against the shipped example:
+	// Check() rejecting a computed environmentId/target as if it were an
+	// empty user input.
+	if _, err := stack.Preview(ctx); err != nil {
+		t.Fatalf("preview with unresolved chained outputs: %v", err)
+	}
 	if _, err := stack.Up(ctx); err != nil {
 		t.Fatal(err)
 	}
