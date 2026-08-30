@@ -18,6 +18,9 @@ return await Deployment.RunAsync(() =>
     var gitBranch = config.Get("gitBranch") ?? "main";
     var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("replace-with-a-registry-password");
     var databasePassword = config.GetSecret("databasePassword") ?? Output.CreateSecret("replace-with-a-database-password");
+    var mysqlPassword = config.GetSecret("mysqlPassword") ?? Output.CreateSecret("replace-with-a-mysql-password");
+    var mariadbPassword = config.GetSecret("mariadbPassword") ?? Output.CreateSecret("replace-with-a-mariadb-password");
+    var mongodbPassword = config.GetSecret("mongodbPassword") ?? Output.CreateSecret("replace-with-a-mongodb-password");
     var redisPassword = config.GetSecret("redisPassword") ?? Output.CreateSecret("replace-with-a-redis-password");
     var projectResource = new Dokploy.Project("project", new()
     {
@@ -79,6 +82,35 @@ return await Deployment.RunAsync(() =>
         DatabaseUser = "app",
         DatabasePassword = Output.CreateSecret(databasePassword),
         Environment = Output.CreateSecret("POSTGRES_HOST=postgres"),
+    });
+
+    var mysql = new Dokploy.MySQL("mysql", new()
+    {
+        Name = "mvp-mysql",
+        EnvironmentId = environment.EnvironmentId,
+        DatabaseName = "app",
+        DatabaseUser = "app",
+        DatabasePassword = Output.CreateSecret(mysqlPassword),
+        Environment = Output.CreateSecret("MYSQL_HOST=mysql"),
+    });
+
+    var mariadb = new Dokploy.MariaDB("mariadb", new()
+    {
+        Name = "mvp-mariadb",
+        EnvironmentId = environment.EnvironmentId,
+        DatabaseName = "app",
+        DatabaseUser = "app",
+        DatabasePassword = Output.CreateSecret(mariadbPassword),
+        Environment = Output.CreateSecret("MARIADB_HOST=mariadb"),
+    });
+
+    var mongodb = new Dokploy.MongoDB("mongodb", new()
+    {
+        Name = "mvp-mongodb",
+        EnvironmentId = environment.EnvironmentId,
+        DatabaseUser = "app",
+        DatabasePassword = Output.CreateSecret(mongodbPassword),
+        Environment = Output.CreateSecret("MONGODB_HOST=mongodb"),
     });
 
     var redis = new Dokploy.Redis("redis", new()

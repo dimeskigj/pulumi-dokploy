@@ -53,6 +53,18 @@ func main() {
 		if param := cfg.Get("databasePassword"); param != "" {
 			databasePassword = param
 		}
+		mysqlPassword := "replace-with-a-mysql-password"
+		if param := cfg.Get("mysqlPassword"); param != "" {
+			mysqlPassword = param
+		}
+		mariadbPassword := "replace-with-a-mariadb-password"
+		if param := cfg.Get("mariadbPassword"); param != "" {
+			mariadbPassword = param
+		}
+		mongodbPassword := "replace-with-a-mongodb-password"
+		if param := cfg.Get("mongodbPassword"); param != "" {
+			mongodbPassword = param
+		}
 		redisPassword := "replace-with-a-redis-password"
 		if param := cfg.Get("redisPassword"); param != "" {
 			redisPassword = param
@@ -116,6 +128,38 @@ func main() {
 			DatabaseUser:     pulumi.String("app"),
 			DatabasePassword: pulumi.ToSecret(databasePassword).(pulumi.StringOutput),
 			Environment:      pulumi.ToSecret("POSTGRES_HOST=postgres").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewMySQL(ctx, "mysql", &dokploy.MySQLArgs{
+			Name:             pulumi.String("mvp-mysql"),
+			EnvironmentId:    environment.EnvironmentId,
+			DatabaseName:     pulumi.String("app"),
+			DatabaseUser:     pulumi.String("app"),
+			DatabasePassword: pulumi.ToSecret(mysqlPassword).(pulumi.StringOutput),
+			Environment:      pulumi.ToSecret("MYSQL_HOST=mysql").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewMariaDB(ctx, "mariadb", &dokploy.MariaDBArgs{
+			Name:             pulumi.String("mvp-mariadb"),
+			EnvironmentId:    environment.EnvironmentId,
+			DatabaseName:     pulumi.String("app"),
+			DatabaseUser:     pulumi.String("app"),
+			DatabasePassword: pulumi.ToSecret(mariadbPassword).(pulumi.StringOutput),
+			Environment:      pulumi.ToSecret("MARIADB_HOST=mariadb").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewMongoDB(ctx, "mongodb", &dokploy.MongoDBArgs{
+			Name:             pulumi.String("mvp-mongodb"),
+			EnvironmentId:    environment.EnvironmentId,
+			DatabaseUser:     pulumi.String("app"),
+			DatabasePassword: pulumi.ToSecret(mongodbPassword).(pulumi.StringOutput),
+			Environment:      pulumi.ToSecret("MONGODB_HOST=mongodb").(pulumi.StringOutput),
 		})
 		if err != nil {
 			return err

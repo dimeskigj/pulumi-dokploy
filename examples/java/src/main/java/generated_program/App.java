@@ -17,6 +17,12 @@ import net.dimeski.pulumi.dokploy.inputs.ComposeSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.RawComposeSourceArgs;
 import net.dimeski.pulumi.dokploy.Postgres;
 import net.dimeski.pulumi.dokploy.PostgresArgs;
+import net.dimeski.pulumi.dokploy.MySQL;
+import net.dimeski.pulumi.dokploy.MySQLArgs;
+import net.dimeski.pulumi.dokploy.MariaDB;
+import net.dimeski.pulumi.dokploy.MariaDBArgs;
+import net.dimeski.pulumi.dokploy.MongoDB;
+import net.dimeski.pulumi.dokploy.MongoDBArgs;
 import net.dimeski.pulumi.dokploy.Redis;
 import net.dimeski.pulumi.dokploy.RedisArgs;
 import net.dimeski.pulumi.dokploy.Domain;
@@ -47,6 +53,9 @@ public class App {
         final var gitBranch = config.get("gitBranch").orElse("main");
         final var registryPassword = config.getSecret("registryPassword").applyValue(v -> v.orElse("replace-with-a-registry-password"));
         final var databasePassword = config.getSecret("databasePassword").applyValue(v -> v.orElse("replace-with-a-database-password"));
+        final var mysqlPassword = config.getSecret("mysqlPassword").applyValue(v -> v.orElse("replace-with-a-mysql-password"));
+        final var mariadbPassword = config.getSecret("mariadbPassword").applyValue(v -> v.orElse("replace-with-a-mariadb-password"));
+        final var mongodbPassword = config.getSecret("mongodbPassword").applyValue(v -> v.orElse("replace-with-a-mongodb-password"));
         final var redisPassword = config.getSecret("redisPassword").applyValue(v -> v.orElse("replace-with-a-redis-password"));
         var projectResource = new Project("projectResource", ProjectArgs.builder()
             .name("dokploy-mvp")
@@ -100,6 +109,32 @@ services:
             .databaseUser("app")
             .databasePassword(databasePassword.asSecret())
             .environment(Output.ofSecret("POSTGRES_HOST=postgres"))
+            .build());
+
+        var mysql = new MySQL("mysql", MySQLArgs.builder()
+            .name("mvp-mysql")
+            .environmentId(environment.environmentId())
+            .databaseName("app")
+            .databaseUser("app")
+            .databasePassword(mysqlPassword.asSecret())
+            .environment(Output.ofSecret("MYSQL_HOST=mysql"))
+            .build());
+
+        var mariadb = new MariaDB("mariadb", MariaDBArgs.builder()
+            .name("mvp-mariadb")
+            .environmentId(environment.environmentId())
+            .databaseName("app")
+            .databaseUser("app")
+            .databasePassword(mariadbPassword.asSecret())
+            .environment(Output.ofSecret("MARIADB_HOST=mariadb"))
+            .build());
+
+        var mongodb = new MongoDB("mongodb", MongoDBArgs.builder()
+            .name("mvp-mongodb")
+            .environmentId(environment.environmentId())
+            .databaseUser("app")
+            .databasePassword(mongodbPassword.asSecret())
+            .environment(Output.ofSecret("MONGODB_HOST=mongodb"))
             .build());
 
         var redis = new Redis("redis", RedisArgs.builder()

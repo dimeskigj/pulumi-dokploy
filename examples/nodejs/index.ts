@@ -14,6 +14,9 @@ const gitlabRepositoryConfig = config.get("gitlabRepository") || "application";
 const gitBranchConfig = config.get("gitBranch") || "main";
 const registryPassword = config.getSecret("registryPassword") || pulumi.secret("replace-with-a-registry-password");
 const databasePassword = config.getSecret("databasePassword") || pulumi.secret("replace-with-a-database-password");
+const mysqlPassword = config.getSecret("mysqlPassword") || pulumi.secret("replace-with-a-mysql-password");
+const mariadbPassword = config.getSecret("mariadbPassword") || pulumi.secret("replace-with-a-mariadb-password");
+const mongodbPassword = config.getSecret("mongodbPassword") || pulumi.secret("replace-with-a-mongodb-password");
 const redisPassword = config.getSecret("redisPassword") || pulumi.secret("replace-with-a-redis-password");
 const projectResource = new dokploy.Project("project", {
     name: "dokploy-mvp",
@@ -62,6 +65,29 @@ const postgres = new dokploy.Postgres("postgres", {
     databaseUser: "app",
     databasePassword: pulumi.secret(databasePassword),
     environment: pulumi.secret("POSTGRES_HOST=postgres"),
+});
+const mysql = new dokploy.MySQL("mysql", {
+    name: "mvp-mysql",
+    environmentId: environment.environmentId,
+    databaseName: "app",
+    databaseUser: "app",
+    databasePassword: pulumi.secret(mysqlPassword),
+    environment: pulumi.secret("MYSQL_HOST=mysql"),
+});
+const mariadb = new dokploy.MariaDB("mariadb", {
+    name: "mvp-mariadb",
+    environmentId: environment.environmentId,
+    databaseName: "app",
+    databaseUser: "app",
+    databasePassword: pulumi.secret(mariadbPassword),
+    environment: pulumi.secret("MARIADB_HOST=mariadb"),
+});
+const mongodb = new dokploy.MongoDB("mongodb", {
+    name: "mvp-mongodb",
+    environmentId: environment.environmentId,
+    databaseUser: "app",
+    databasePassword: pulumi.secret(mongodbPassword),
+    environment: pulumi.secret("MONGODB_HOST=mongodb"),
 });
 const redis = new dokploy.Redis("redis", {
     name: "mvp-redis",

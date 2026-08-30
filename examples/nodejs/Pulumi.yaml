@@ -35,6 +35,18 @@ config:
   gitlabRepository:
     type: string
     default: application
+  mariadbPassword:
+    type: string
+    default: replace-with-a-mariadb-password
+    secret: true
+  mongodbPassword:
+    type: string
+    default: replace-with-a-mongodb-password
+    secret: true
+  mysqlPassword:
+    type: string
+    default: replace-with-a-mysql-password
+    secret: true
   redisPassword:
     type: string
     default: replace-with-a-redis-password

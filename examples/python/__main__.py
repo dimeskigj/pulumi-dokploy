@@ -34,6 +34,15 @@ if registry_password is None:
 database_password = config.get_secret("databasePassword")
 if database_password is None:
     database_password = "replace-with-a-database-password"
+mysql_password = config.get_secret("mysqlPassword")
+if mysql_password is None:
+    mysql_password = "replace-with-a-mysql-password"
+mariadb_password = config.get_secret("mariadbPassword")
+if mariadb_password is None:
+    mariadb_password = "replace-with-a-mariadb-password"
+mongodb_password = config.get_secret("mongodbPassword")
+if mongodb_password is None:
+    mongodb_password = "replace-with-a-mongodb-password"
 redis_password = config.get_secret("redisPassword")
 if redis_password is None:
     redis_password = "replace-with-a-redis-password"
@@ -80,6 +89,26 @@ postgres = dokploy.Postgres("postgres",
     database_user="app",
     database_password=pulumi.Output.secret(database_password),
     environment=pulumi.Output.secret("POSTGRES_HOST=postgres"))
+mysql = dokploy.MySQL("mysql",
+    name="mvp-mysql",
+    environment_id=environment.environment_id,
+    database_name="app",
+    database_user="app",
+    database_password=pulumi.Output.secret(mysql_password),
+    environment=pulumi.Output.secret("MYSQL_HOST=mysql"))
+mariadb = dokploy.MariaDB("mariadb",
+    name="mvp-mariadb",
+    environment_id=environment.environment_id,
+    database_name="app",
+    database_user="app",
+    database_password=pulumi.Output.secret(mariadb_password),
+    environment=pulumi.Output.secret("MARIADB_HOST=mariadb"))
+mongodb = dokploy.MongoDB("mongodb",
+    name="mvp-mongodb",
+    environment_id=environment.environment_id,
+    database_user="app",
+    database_password=pulumi.Output.secret(mongodb_password),
+    environment=pulumi.Output.secret("MONGODB_HOST=mongodb"))
 redis = dokploy.Redis("redis",
     name="mvp-redis",
     environment_id=environment.environment_id,
