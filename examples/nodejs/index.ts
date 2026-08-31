@@ -18,6 +18,8 @@ const mysqlPassword = config.getSecret("mysqlPassword") || pulumi.secret("replac
 const mariadbPassword = config.getSecret("mariadbPassword") || pulumi.secret("replace-with-a-mariadb-password");
 const mongodbPassword = config.getSecret("mongodbPassword") || pulumi.secret("replace-with-a-mongodb-password");
 const redisPassword = config.getSecret("redisPassword") || pulumi.secret("replace-with-a-redis-password");
+const destinationAccessKey = config.get("destinationAccessKey") || "replace-with-a-destination-access-key";
+const destinationSecretAccessKey = config.getSecret("destinationSecretAccessKey") || pulumi.secret("replace-with-a-destination-secret-access-key");
 const projectResource = new dokploy.Project("project", {
     name: "dokploy-mvp",
     description: "Canonical Dokploy provider example",
@@ -94,6 +96,39 @@ const redis = new dokploy.Redis("redis", {
     environmentId: environment.environmentId,
     databasePassword: pulumi.secret(redisPassword),
     environment: pulumi.secret("REDIS_HOST=redis"),
+});
+const destination = new dokploy.Destination("destination", {
+    name: "mvp-destination",
+    provider: "s3",
+    accessKey: destinationAccessKey,
+    secretAccessKey: pulumi.secret(destinationSecretAccessKey),
+    bucket: "dokploy-mvp-backups",
+    region: "us-east-1",
+    endpoint: "https://s3.us-east-1.amazonaws.com",
+});
+const postgresBackup = new dokploy.Backup("postgresBackup", {
+    schedule: "0 0 * * *",
+    prefix: "postgres-",
+    destinationId: destination.destinationId,
+    database: "app",
+    postgresId: postgres.postgresId,
+});
+const applicationVolumeBackup = new dokploy.VolumeBackup("applicationVolumeBackup", {
+    name: "mvp-application-volume-backup",
+    volumeName: "mvp-application-data",
+    prefix: "application-",
+    destinationId: destination.destinationId,
+    cronExpression: "0 0 * * *",
+    applicationId: application.applicationId,
+});
+const composeVolumeBackup = new dokploy.VolumeBackup("composeVolumeBackup", {
+    name: "mvp-compose-volume-backup",
+    volumeName: "mvp-compose-data",
+    prefix: "compose-",
+    destinationId: destination.destinationId,
+    cronExpression: "0 0 * * *",
+    composeId: compose.composeId,
+    serviceName: "web",
 });
 const applicationDomain = new dokploy.Domain("applicationDomain", {
     applicationId: application.applicationId,

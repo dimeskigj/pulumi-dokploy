@@ -12,6 +12,13 @@ config:
     type: string
     default: replace-with-a-database-password
     secret: true
+  destinationAccessKey:
+    type: string
+    default: replace-with-a-destination-access-key
+  destinationSecretAccessKey:
+    type: string
+    default: replace-with-a-destination-secret-access-key
+    secret: true
   dokploy:apiKey:
     value: replace-with-a-dokploy-api-key
     secret: true

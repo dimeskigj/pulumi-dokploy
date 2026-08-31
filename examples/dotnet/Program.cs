@@ -22,6 +22,8 @@ return await Deployment.RunAsync(() =>
     var mariadbPassword = config.GetSecret("mariadbPassword") ?? Output.CreateSecret("replace-with-a-mariadb-password");
     var mongodbPassword = config.GetSecret("mongodbPassword") ?? Output.CreateSecret("replace-with-a-mongodb-password");
     var redisPassword = config.GetSecret("redisPassword") ?? Output.CreateSecret("replace-with-a-redis-password");
+    var destinationAccessKey = config.Get("destinationAccessKey") ?? "replace-with-a-destination-access-key";
+    var destinationSecretAccessKey = config.GetSecret("destinationSecretAccessKey") ?? Output.CreateSecret("replace-with-a-destination-secret-access-key");
     var projectResource = new Dokploy.Project("project", new()
     {
         Name = "dokploy-mvp",
@@ -119,6 +121,47 @@ return await Deployment.RunAsync(() =>
         EnvironmentId = environment.EnvironmentId,
         DatabasePassword = Output.CreateSecret(redisPassword),
         Environment = Output.CreateSecret("REDIS_HOST=redis"),
+    });
+
+    var destination = new Dokploy.Destination("destination", new()
+    {
+        Name = "mvp-destination",
+        Provider = "s3",
+        AccessKey = destinationAccessKey,
+        SecretAccessKey = Output.CreateSecret(destinationSecretAccessKey),
+        Bucket = "dokploy-mvp-backups",
+        Region = "us-east-1",
+        Endpoint = "https://s3.us-east-1.amazonaws.com",
+    });
+
+    var postgresBackup = new Dokploy.Backup("postgresBackup", new()
+    {
+        Schedule = "0 0 * * *",
+        Prefix = "postgres-",
+        DestinationId = destination.DestinationId,
+        Database = "app",
+        PostgresId = postgres.PostgresId,
+    });
+
+    var applicationVolumeBackup = new Dokploy.VolumeBackup("applicationVolumeBackup", new()
+    {
+        Name = "mvp-application-volume-backup",
+        VolumeName = "mvp-application-data",
+        Prefix = "application-",
+        DestinationId = destination.DestinationId,
+        CronExpression = "0 0 * * *",
+        ApplicationId = application.ApplicationId,
+    });
+
+    var composeVolumeBackup = new Dokploy.VolumeBackup("composeVolumeBackup", new()
+    {
+        Name = "mvp-compose-volume-backup",
+        VolumeName = "mvp-compose-data",
+        Prefix = "compose-",
+        DestinationId = destination.DestinationId,
+        CronExpression = "0 0 * * *",
+        ComposeId = compose.ComposeId,
+        ServiceName = "web",
     });
 
     var applicationDomain = new Dokploy.Domain("applicationDomain", new()

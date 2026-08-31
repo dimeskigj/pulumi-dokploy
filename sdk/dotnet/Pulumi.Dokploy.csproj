@@ -4,7 +4,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>dimeskigj</Authors>
     <Company>dimeskigj</Company>
-    <Description>Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, and domains.</Description>
+    <Description>Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, backup destinations, database backups, and volume backups.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/dimeskigj/pulumi-dokploy</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dimeskigj/pulumi-dokploy</RepositoryUrl>

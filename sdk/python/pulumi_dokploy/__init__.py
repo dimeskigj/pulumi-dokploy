@@ -7,7 +7,9 @@ from . import _utilities
 import typing
 # Export this package's modules as members:
 from .application import *
+from .backup import *
 from .compose import *
+from .destination import *
 from .domain import *
 from .environment import *
 from .maria_db import *
@@ -17,6 +19,7 @@ from .postgres import *
 from .project import *
 from .provider import *
 from .redis import *
+from .volume_backup import *
 from ._inputs import *
 from . import outputs
 
@@ -36,7 +39,9 @@ _utilities.register(
   "fqn": "pulumi_dokploy",
   "classes": {
    "dokploy:index:Application": "Application",
+   "dokploy:index:Backup": "Backup",
    "dokploy:index:Compose": "Compose",
+   "dokploy:index:Destination": "Destination",
    "dokploy:index:Domain": "Domain",
    "dokploy:index:Environment": "Environment",
    "dokploy:index:MariaDB": "MariaDB",
@@ -44,7 +49,8 @@ _utilities.register(
    "dokploy:index:MySQL": "MySQL",
    "dokploy:index:Postgres": "Postgres",
    "dokploy:index:Project": "Project",
-   "dokploy:index:Redis": "Redis"
+   "dokploy:index:Redis": "Redis",
+   "dokploy:index:VolumeBackup": "VolumeBackup"
   }
  }
 ]

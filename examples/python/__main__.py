@@ -46,6 +46,12 @@ if mongodb_password is None:
 redis_password = config.get_secret("redisPassword")
 if redis_password is None:
     redis_password = "replace-with-a-redis-password"
+destination_access_key = config.get("destinationAccessKey")
+if destination_access_key is None:
+    destination_access_key = "replace-with-a-destination-access-key"
+destination_secret_access_key = config.get_secret("destinationSecretAccessKey")
+if destination_secret_access_key is None:
+    destination_secret_access_key = "replace-with-a-destination-secret-access-key"
 project_resource = dokploy.Project("project",
     name="dokploy-mvp",
     description="Canonical Dokploy provider example")
@@ -114,6 +120,35 @@ redis = dokploy.Redis("redis",
     environment_id=environment.environment_id,
     database_password=pulumi.Output.secret(redis_password),
     environment=pulumi.Output.secret("REDIS_HOST=redis"))
+destination = dokploy.Destination("destination",
+    name="mvp-destination",
+    provider="s3",
+    access_key=destination_access_key,
+    secret_access_key=pulumi.Output.secret(destination_secret_access_key),
+    bucket="dokploy-mvp-backups",
+    region="us-east-1",
+    endpoint="https://s3.us-east-1.amazonaws.com")
+postgres_backup = dokploy.Backup("postgresBackup",
+    schedule="0 0 * * *",
+    prefix="postgres-",
+    destination_id=destination.destination_id,
+    database="app",
+    postgres_id=postgres.postgres_id)
+application_volume_backup = dokploy.VolumeBackup("applicationVolumeBackup",
+    name="mvp-application-volume-backup",
+    volume_name="mvp-application-data",
+    prefix="application-",
+    destination_id=destination.destination_id,
+    cron_expression="0 0 * * *",
+    application_id=application.application_id)
+compose_volume_backup = dokploy.VolumeBackup("composeVolumeBackup",
+    name="mvp-compose-volume-backup",
+    volume_name="mvp-compose-data",
+    prefix="compose-",
+    destination_id=destination.destination_id,
+    cron_expression="0 0 * * *",
+    compose_id=compose.compose_id,
+    service_name="web")
 application_domain = dokploy.Domain("applicationDomain",
     application_id=application.application_id,
     host=app_host,

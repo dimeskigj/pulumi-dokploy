@@ -315,6 +315,206 @@ func TestLiveRedisLifecycleDeploysAndReportsStatus(t *testing.T) {
 	require.Equal(t, statusDone, created.Output.Status)
 }
 
+// liveDestination creates a scratch Destination for a live test run and
+// registers its cleanup.
+func liveDestination(t *testing.T, ctx context.Context, api *client.Client) string {
+	t.Helper()
+	created, err := (Destination{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[DestinationArgs]{Inputs: DestinationArgs{
+		Name: "live-test-" + uuid.NewString(), Provider: stringPtr("s3"), AccessKey: "AKIALIVETEST", SecretAccessKey: "live-test-secret",
+		Bucket: "live-test-bucket", Region: "us-east-1", Endpoint: "https://s3.us-east-1.amazonaws.com",
+	}})
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		if _, err := (Destination{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[DestinationState]{ID: created.ID}); err != nil {
+			t.Errorf("cleanup: destination.remove for %s: %v", created.ID, err)
+		}
+	})
+	return created.ID
+}
+
+func TestLiveDestinationLifecycle(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 2*time.Minute)
+
+	created, err := (Destination{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[DestinationArgs]{Inputs: DestinationArgs{
+		Name: "live-test-" + uuid.NewString(), Provider: stringPtr("s3"), AccessKey: "AKIALIVETEST", SecretAccessKey: "live-test-secret",
+		Bucket: "live-test-bucket", Region: "us-east-1", Endpoint: "https://s3.us-east-1.amazonaws.com",
+	}})
+	if created.ID != "" {
+		id := created.ID
+		t.Cleanup(func() {
+			if _, err := (Destination{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[DestinationState]{ID: id}); err != nil {
+				t.Errorf("cleanup: destination.remove for %s: %v", id, err)
+			}
+		})
+	}
+	require.NoError(t, err)
+	require.NotEmpty(t, created.ID)
+
+	read, err := (Destination{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[DestinationArgs, DestinationState]{ID: created.ID})
+	require.NoError(t, err, "destination.one must echo back secretAccessKey in plaintext")
+	require.Equal(t, "live-test-secret", read.Inputs.SecretAccessKey)
+	require.Equal(t, "live-test-bucket", read.Inputs.Bucket)
+
+	_, err = (Destination{client: fixedClient(api)}).Update(ctx, infer.UpdateRequest[DestinationArgs, DestinationState]{ID: created.ID, Inputs: DestinationArgs{
+		Name: read.Inputs.Name, Provider: stringPtr("s3"), AccessKey: "AKIALIVETEST", SecretAccessKey: "live-test-secret",
+		Bucket: "live-test-bucket-2", Region: "us-east-1", Endpoint: "https://s3.us-east-1.amazonaws.com",
+	}, State: DestinationState{DestinationArgs: read.Inputs, DestinationID: created.ID}})
+	require.NoError(t, err)
+
+	read, err = (Destination{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[DestinationArgs, DestinationState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, "live-test-bucket-2", read.Inputs.Bucket)
+}
+
+func TestLiveBackupLifecycleResolvesIDAfterEmptyCreateResponse(t *testing.T) {
+	// backup.create returns HTTP 200 with an empty body on this Dokploy
+	// instance (confirmed by direct probing), unlike every other create
+	// endpoint this provider calls. This test is the regression guard for
+	// Backup.Create's before/after diff workaround that recovers the new
+	// backupId from the target database's nested backups list.
+	api := liveClient(t)
+	ctx := liveContext(t, 10*time.Minute)
+	_, environmentID := liveProject(t, ctx, api)
+	destinationID := liveDestination(t, ctx, api)
+
+	pg, err := (Postgres{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[PostgresArgs]{Inputs: PostgresArgs{
+		Name: "db", EnvironmentID: environmentID, DatabaseName: "app", DatabaseUser: "app", DatabasePassword: "live-test-password", DockerImage: "postgres:18",
+	}})
+	if pg.ID != "" {
+		id := pg.ID
+		t.Cleanup(func() {
+			if _, err := (Postgres{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[PostgresState]{ID: id}); err != nil {
+				t.Errorf("cleanup: postgres.remove for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err)
+
+	created, err := (Backup{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "live-test-", DestinationID: destinationID, Database: "app", PostgresID: &pg.ID,
+	}})
+	if created.ID != "" {
+		id := created.ID
+		t.Cleanup(func() {
+			if _, err := (Backup{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[BackupState]{ID: id}); err != nil {
+				t.Errorf("cleanup: backup.remove for %s: %v", id, err)
+			}
+		})
+	}
+	require.NoError(t, err, "Create must recover the backupId despite backup.create's empty response body")
+	require.NotEmpty(t, created.ID)
+
+	read, err := (Backup{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[BackupArgs, BackupState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, pg.ID, *read.Inputs.PostgresID)
+	require.Equal(t, "app", read.Inputs.Database)
+
+	_, err = (Backup{client: fixedClient(api)}).Update(ctx, infer.UpdateRequest[BackupArgs, BackupState]{ID: created.ID, Inputs: BackupArgs{
+		Schedule: "0 1 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", PostgresID: &pg.ID,
+	}, State: BackupState{BackupArgs: read.Inputs, BackupID: created.ID}})
+	require.NoError(t, err, "backup.update must succeed despite also returning an empty response body")
+
+	read, err = (Backup{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[BackupArgs, BackupState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, "0 1 * * *", read.Inputs.Schedule)
+	require.False(t, read.Inputs.Enabled)
+}
+
+func TestLiveVolumeBackupLifecycleForApplication(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 10*time.Minute)
+	_, environmentID := liveProject(t, ctx, api)
+	destinationID := liveDestination(t, ctx, api)
+
+	app, err := (Application{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{
+		Name: "app", EnvironmentID: environmentID,
+		Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx:1.27"}},
+	}})
+	if app.ID != "" {
+		id := app.ID
+		t.Cleanup(func() {
+			if _, err := (Application{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[ApplicationState]{ID: id}); err != nil {
+				t.Errorf("cleanup: application.delete for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err)
+
+	created, err := (VolumeBackup{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[VolumeBackupArgs]{Inputs: VolumeBackupArgs{
+		Name: "live-test-" + uuid.NewString(), VolumeName: "live-test-volume", Prefix: "live-test-", DestinationID: destinationID,
+		CronExpression: "0 0 * * *", Enabled: true, ApplicationID: &app.ID,
+	}})
+	if created.ID != "" {
+		id := created.ID
+		t.Cleanup(func() {
+			if _, err := (VolumeBackup{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[VolumeBackupState]{ID: id}); err != nil {
+				t.Errorf("cleanup: volumeBackups.delete for %s: %v", id, err)
+			}
+		})
+	}
+	require.NoError(t, err)
+	require.NotEmpty(t, created.ID)
+
+	read, err := (VolumeBackup{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[VolumeBackupArgs, VolumeBackupState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, app.ID, *read.Inputs.ApplicationID)
+	require.Equal(t, "live-test-volume", read.Inputs.VolumeName)
+
+	_, err = (VolumeBackup{client: fixedClient(api)}).Update(ctx, infer.UpdateRequest[VolumeBackupArgs, VolumeBackupState]{ID: created.ID, Inputs: VolumeBackupArgs{
+		Name: read.Inputs.Name, VolumeName: "live-test-volume", Prefix: "live-test-", DestinationID: destinationID,
+		CronExpression: "0 1 * * *", Enabled: false, ApplicationID: &app.ID,
+	}, State: VolumeBackupState{VolumeBackupArgs: read.Inputs, VolumeBackupID: created.ID}})
+	require.NoError(t, err)
+
+	read, err = (VolumeBackup{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[VolumeBackupArgs, VolumeBackupState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, "0 1 * * *", read.Inputs.CronExpression)
+	require.False(t, read.Inputs.Enabled)
+}
+
+func TestLiveVolumeBackupLifecycleForCompose(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 10*time.Minute)
+	_, environmentID := liveProject(t, ctx, api)
+	destinationID := liveDestination(t, ctx, api)
+
+	compose, err := (Compose{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[ComposeArgs]{Inputs: ComposeArgs{
+		Name: "stack", EnvironmentID: environmentID,
+		Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services:\n  web:\n    image: nginx:1.27\n"}},
+	}})
+	if compose.ID != "" {
+		id := compose.ID
+		t.Cleanup(func() {
+			if _, err := (Compose{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[ComposeState]{ID: id}); err != nil {
+				t.Errorf("cleanup: compose.delete for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err)
+
+	created, err := (VolumeBackup{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[VolumeBackupArgs]{Inputs: VolumeBackupArgs{
+		Name: "live-test-" + uuid.NewString(), VolumeName: "live-test-volume", Prefix: "live-test-", DestinationID: destinationID,
+		CronExpression: "0 0 * * *", Enabled: true, ComposeID: &compose.ID, ServiceName: stringPtr("web"),
+	}})
+	if created.ID != "" {
+		id := created.ID
+		t.Cleanup(func() {
+			if _, err := (VolumeBackup{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[VolumeBackupState]{ID: id}); err != nil {
+				t.Errorf("cleanup: volumeBackups.delete for %s: %v", id, err)
+			}
+		})
+	}
+	require.NoError(t, err)
+	require.NotEmpty(t, created.ID)
+
+	read, err := (VolumeBackup{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[VolumeBackupArgs, VolumeBackupState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, compose.ID, *read.Inputs.ComposeID)
+	require.Equal(t, "web", *read.Inputs.ServiceName)
+	require.Nil(t, read.Inputs.ApplicationID)
+}
+
 func TestLiveEnvironmentLifecycle(t *testing.T) {
 	api := liveClient(t)
 	t.Parallel()

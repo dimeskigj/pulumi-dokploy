@@ -20,9 +20,11 @@
     },
     "files": [
         "application.ts",
+        "backup.ts",
         "compose.ts",
         "config/index.ts",
         "config/vars.ts",
+        "destination.ts",
         "domain.ts",
         "environment.ts",
         "index.ts",
@@ -36,6 +38,7 @@
         "types/index.ts",
         "types/input.ts",
         "types/output.ts",
-        "utilities.ts"
+        "utilities.ts",
+        "volumeBackup.ts"
     ]
 }

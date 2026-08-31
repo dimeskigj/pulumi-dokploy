@@ -64,6 +64,13 @@ config:
     type: string
     secret: true
     default: replace-with-a-redis-password
+  destinationAccessKey:
+    type: string
+    default: replace-with-a-destination-access-key
+  destinationSecretAccessKey:
+    type: string
+    secret: true
+    default: replace-with-a-destination-secret-access-key
 
 resources:
   project:
@@ -190,6 +197,48 @@ resources:
         fn::secret: ${redisPassword}
       environment:
         fn::secret: REDIS_HOST=redis
+
+  destination:
+    type: dokploy:index:Destination
+    properties:
+      name: mvp-destination
+      provider: s3
+      accessKey: ${destinationAccessKey}
+      secretAccessKey:
+        fn::secret: ${destinationSecretAccessKey}
+      bucket: dokploy-mvp-backups
+      region: us-east-1
+      endpoint: https://s3.us-east-1.amazonaws.com
+
+  postgresBackup:
+    type: dokploy:index:Backup
+    properties:
+      schedule: "0 0 * * *"
+      prefix: postgres-
+      destinationId: ${destination.destinationId}
+      database: app
+      postgresId: ${postgres.postgresId}
+
+  applicationVolumeBackup:
+    type: dokploy:index:VolumeBackup
+    properties:
+      name: mvp-application-volume-backup
+      volumeName: mvp-application-data
+      prefix: application-
+      destinationId: ${destination.destinationId}
+      cronExpression: "0 0 * * *"
+      applicationId: ${application.applicationId}
+
+  composeVolumeBackup:
+    type: dokploy:index:VolumeBackup
+    properties:
+      name: mvp-compose-volume-backup
+      volumeName: mvp-compose-data
+      prefix: compose-
+      destinationId: ${destination.destinationId}
+      cronExpression: "0 0 * * *"
+      composeId: ${compose.composeId}
+      serviceName: web
 
   applicationDomain:
     type: dokploy:index:Domain

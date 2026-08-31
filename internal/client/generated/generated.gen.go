@@ -177,6 +177,84 @@ func (e ApplicationUpdateJSONBodyTriggerType) Valid() bool {
 	}
 }
 
+// Defines values for BackupCreateJSONBodyBackupType.
+const (
+	BackupCreateJSONBodyBackupTypeCompose  BackupCreateJSONBodyBackupType = "compose"
+	BackupCreateJSONBodyBackupTypeDatabase BackupCreateJSONBodyBackupType = "database"
+)
+
+// Valid indicates whether the value is a known member of the BackupCreateJSONBodyBackupType enum.
+func (e BackupCreateJSONBodyBackupType) Valid() bool {
+	switch e {
+	case BackupCreateJSONBodyBackupTypeCompose:
+		return true
+	case BackupCreateJSONBodyBackupTypeDatabase:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BackupCreateJSONBodyDatabaseType.
+const (
+	BackupCreateJSONBodyDatabaseTypeLibsql    BackupCreateJSONBodyDatabaseType = "libsql"
+	BackupCreateJSONBodyDatabaseTypeMariadb   BackupCreateJSONBodyDatabaseType = "mariadb"
+	BackupCreateJSONBodyDatabaseTypeMongo     BackupCreateJSONBodyDatabaseType = "mongo"
+	BackupCreateJSONBodyDatabaseTypeMysql     BackupCreateJSONBodyDatabaseType = "mysql"
+	BackupCreateJSONBodyDatabaseTypePostgres  BackupCreateJSONBodyDatabaseType = "postgres"
+	BackupCreateJSONBodyDatabaseTypeWebServer BackupCreateJSONBodyDatabaseType = "web-server"
+)
+
+// Valid indicates whether the value is a known member of the BackupCreateJSONBodyDatabaseType enum.
+func (e BackupCreateJSONBodyDatabaseType) Valid() bool {
+	switch e {
+	case BackupCreateJSONBodyDatabaseTypeLibsql:
+		return true
+	case BackupCreateJSONBodyDatabaseTypeMariadb:
+		return true
+	case BackupCreateJSONBodyDatabaseTypeMongo:
+		return true
+	case BackupCreateJSONBodyDatabaseTypeMysql:
+		return true
+	case BackupCreateJSONBodyDatabaseTypePostgres:
+		return true
+	case BackupCreateJSONBodyDatabaseTypeWebServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BackupUpdateJSONBodyDatabaseType.
+const (
+	BackupUpdateJSONBodyDatabaseTypeLibsql    BackupUpdateJSONBodyDatabaseType = "libsql"
+	BackupUpdateJSONBodyDatabaseTypeMariadb   BackupUpdateJSONBodyDatabaseType = "mariadb"
+	BackupUpdateJSONBodyDatabaseTypeMongo     BackupUpdateJSONBodyDatabaseType = "mongo"
+	BackupUpdateJSONBodyDatabaseTypeMysql     BackupUpdateJSONBodyDatabaseType = "mysql"
+	BackupUpdateJSONBodyDatabaseTypePostgres  BackupUpdateJSONBodyDatabaseType = "postgres"
+	BackupUpdateJSONBodyDatabaseTypeWebServer BackupUpdateJSONBodyDatabaseType = "web-server"
+)
+
+// Valid indicates whether the value is a known member of the BackupUpdateJSONBodyDatabaseType enum.
+func (e BackupUpdateJSONBodyDatabaseType) Valid() bool {
+	switch e {
+	case BackupUpdateJSONBodyDatabaseTypeLibsql:
+		return true
+	case BackupUpdateJSONBodyDatabaseTypeMariadb:
+		return true
+	case BackupUpdateJSONBodyDatabaseTypeMongo:
+		return true
+	case BackupUpdateJSONBodyDatabaseTypeMysql:
+		return true
+	case BackupUpdateJSONBodyDatabaseTypePostgres:
+		return true
+	case BackupUpdateJSONBodyDatabaseTypeWebServer:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ComposeCreateJSONBodyComposeType.
 const (
 	ComposeCreateJSONBodyComposeTypeDockerCompose ComposeCreateJSONBodyComposeType = "docker-compose"
@@ -489,6 +567,78 @@ func (e RedisUpdateJSONBodyApplicationStatus) Valid() bool {
 	}
 }
 
+// Defines values for VolumeBackupsCreateJSONBodyServiceType.
+const (
+	VolumeBackupsCreateJSONBodyServiceTypeApplication VolumeBackupsCreateJSONBodyServiceType = "application"
+	VolumeBackupsCreateJSONBodyServiceTypeCompose     VolumeBackupsCreateJSONBodyServiceType = "compose"
+	VolumeBackupsCreateJSONBodyServiceTypeLibsql      VolumeBackupsCreateJSONBodyServiceType = "libsql"
+	VolumeBackupsCreateJSONBodyServiceTypeMariadb     VolumeBackupsCreateJSONBodyServiceType = "mariadb"
+	VolumeBackupsCreateJSONBodyServiceTypeMongo       VolumeBackupsCreateJSONBodyServiceType = "mongo"
+	VolumeBackupsCreateJSONBodyServiceTypeMysql       VolumeBackupsCreateJSONBodyServiceType = "mysql"
+	VolumeBackupsCreateJSONBodyServiceTypePostgres    VolumeBackupsCreateJSONBodyServiceType = "postgres"
+	VolumeBackupsCreateJSONBodyServiceTypeRedis       VolumeBackupsCreateJSONBodyServiceType = "redis"
+)
+
+// Valid indicates whether the value is a known member of the VolumeBackupsCreateJSONBodyServiceType enum.
+func (e VolumeBackupsCreateJSONBodyServiceType) Valid() bool {
+	switch e {
+	case VolumeBackupsCreateJSONBodyServiceTypeApplication:
+		return true
+	case VolumeBackupsCreateJSONBodyServiceTypeCompose:
+		return true
+	case VolumeBackupsCreateJSONBodyServiceTypeLibsql:
+		return true
+	case VolumeBackupsCreateJSONBodyServiceTypeMariadb:
+		return true
+	case VolumeBackupsCreateJSONBodyServiceTypeMongo:
+		return true
+	case VolumeBackupsCreateJSONBodyServiceTypeMysql:
+		return true
+	case VolumeBackupsCreateJSONBodyServiceTypePostgres:
+		return true
+	case VolumeBackupsCreateJSONBodyServiceTypeRedis:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VolumeBackupsUpdateJSONBodyServiceType.
+const (
+	VolumeBackupsUpdateJSONBodyServiceTypeApplication VolumeBackupsUpdateJSONBodyServiceType = "application"
+	VolumeBackupsUpdateJSONBodyServiceTypeCompose     VolumeBackupsUpdateJSONBodyServiceType = "compose"
+	VolumeBackupsUpdateJSONBodyServiceTypeLibsql      VolumeBackupsUpdateJSONBodyServiceType = "libsql"
+	VolumeBackupsUpdateJSONBodyServiceTypeMariadb     VolumeBackupsUpdateJSONBodyServiceType = "mariadb"
+	VolumeBackupsUpdateJSONBodyServiceTypeMongo       VolumeBackupsUpdateJSONBodyServiceType = "mongo"
+	VolumeBackupsUpdateJSONBodyServiceTypeMysql       VolumeBackupsUpdateJSONBodyServiceType = "mysql"
+	VolumeBackupsUpdateJSONBodyServiceTypePostgres    VolumeBackupsUpdateJSONBodyServiceType = "postgres"
+	VolumeBackupsUpdateJSONBodyServiceTypeRedis       VolumeBackupsUpdateJSONBodyServiceType = "redis"
+)
+
+// Valid indicates whether the value is a known member of the VolumeBackupsUpdateJSONBodyServiceType enum.
+func (e VolumeBackupsUpdateJSONBodyServiceType) Valid() bool {
+	switch e {
+	case VolumeBackupsUpdateJSONBodyServiceTypeApplication:
+		return true
+	case VolumeBackupsUpdateJSONBodyServiceTypeCompose:
+		return true
+	case VolumeBackupsUpdateJSONBodyServiceTypeLibsql:
+		return true
+	case VolumeBackupsUpdateJSONBodyServiceTypeMariadb:
+		return true
+	case VolumeBackupsUpdateJSONBodyServiceTypeMongo:
+		return true
+	case VolumeBackupsUpdateJSONBodyServiceTypeMysql:
+		return true
+	case VolumeBackupsUpdateJSONBodyServiceTypePostgres:
+		return true
+	case VolumeBackupsUpdateJSONBodyServiceTypeRedis:
+		return true
+	default:
+		return false
+	}
+}
+
 // Application defines model for Application.
 type Application struct {
 	AppName              *string                `json:"appName,omitempty"`
@@ -502,6 +652,23 @@ type Application struct {
 	EnvironmentId        *string                `json:"environmentId,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	ServerId             *string                `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// Backup defines model for Backup.
+type Backup struct {
+	BackupId             *string                `json:"backupId,omitempty"`
+	Database             *string                `json:"database,omitempty"`
+	DatabaseType         *string                `json:"databaseType,omitempty"`
+	DestinationId        *string                `json:"destinationId,omitempty"`
+	Enabled              *bool                  `json:"enabled,omitempty"`
+	KeepLatestCount      *int                   `json:"keepLatestCount,omitempty"`
+	MariadbId            *string                `json:"mariadbId,omitempty"`
+	MongoId              *string                `json:"mongoId,omitempty"`
+	MysqlId              *string                `json:"mysqlId,omitempty"`
+	PostgresId           *string                `json:"postgresId,omitempty"`
+	Prefix               *string                `json:"prefix,omitempty"`
+	Schedule             *string                `json:"schedule,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -523,6 +690,21 @@ type Compose struct {
 type CreateProjectResult struct {
 	Environment          Environment            `json:"environment"`
 	Project              Project                `json:"project"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// Destination defines model for Destination.
+type Destination struct {
+	AccessKey            *string                `json:"accessKey,omitempty"`
+	AdditionalFlags      *[]string              `json:"additionalFlags,omitempty"`
+	Bucket               *string                `json:"bucket,omitempty"`
+	DestinationId        *string                `json:"destinationId,omitempty"`
+	Endpoint             *string                `json:"endpoint,omitempty"`
+	Name                 *string                `json:"name,omitempty"`
+	Provider             *string                `json:"provider,omitempty"`
+	Region               *string                `json:"region,omitempty"`
+	SecretAccessKey      *string                `json:"secretAccessKey,omitempty"`
+	ServerId             *string                `json:"serverId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -638,6 +820,25 @@ type Redis struct {
 	Name                 *string                `json:"name,omitempty"`
 	RedisId              *string                `json:"redisId,omitempty"`
 	ServerId             *string                `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// VolumeBackup defines model for VolumeBackup.
+type VolumeBackup struct {
+	AppName              *string                `json:"appName,omitempty"`
+	ApplicationId        *string                `json:"applicationId,omitempty"`
+	ComposeId            *string                `json:"composeId,omitempty"`
+	CronExpression       *string                `json:"cronExpression,omitempty"`
+	DestinationId        *string                `json:"destinationId,omitempty"`
+	Enabled              *bool                  `json:"enabled,omitempty"`
+	KeepLatestCount      *int                   `json:"keepLatestCount,omitempty"`
+	Name                 *string                `json:"name,omitempty"`
+	Prefix               *string                `json:"prefix,omitempty"`
+	ServiceName          *string                `json:"serviceName,omitempty"`
+	ServiceType          *string                `json:"serviceType,omitempty"`
+	TurnOff              *bool                  `json:"turnOff,omitempty"`
+	VolumeBackupId       *string                `json:"volumeBackupId,omitempty"`
+	VolumeName           *string                `json:"volumeName,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -991,6 +1192,62 @@ type ApplicationUpdateJSONBodySourceType string
 // ApplicationUpdateJSONBodyTriggerType defines parameters for ApplicationUpdate.
 type ApplicationUpdateJSONBodyTriggerType string
 
+// BackupCreateJSONBody defines parameters for BackupCreate.
+type BackupCreateJSONBody struct {
+	BackupType           *BackupCreateJSONBodyBackupType  `json:"backupType,omitempty"`
+	ComposeId            nullable.Nullable[string]        `json:"composeId,omitempty"`
+	Database             string                           `json:"database"`
+	DatabaseType         BackupCreateJSONBodyDatabaseType `json:"databaseType"`
+	DestinationId        string                           `json:"destinationId"`
+	Enabled              nullable.Nullable[bool]          `json:"enabled,omitempty"`
+	IncludeEncryptionKey *bool                            `json:"includeEncryptionKey,omitempty"`
+	KeepLatestCount      nullable.Nullable[float32]       `json:"keepLatestCount,omitempty"`
+	LibsqlId             nullable.Nullable[string]        `json:"libsqlId,omitempty"`
+	MariadbId            nullable.Nullable[string]        `json:"mariadbId,omitempty"`
+	Metadata             nullable.Nullable[interface{}]   `json:"metadata,omitempty"`
+	MongoId              nullable.Nullable[string]        `json:"mongoId,omitempty"`
+	MysqlId              nullable.Nullable[string]        `json:"mysqlId,omitempty"`
+	PostgresId           nullable.Nullable[string]        `json:"postgresId,omitempty"`
+	Prefix               string                           `json:"prefix"`
+	Schedule             string                           `json:"schedule"`
+	ServiceName          nullable.Nullable[string]        `json:"serviceName,omitempty"`
+	UserId               nullable.Nullable[string]        `json:"userId,omitempty"`
+}
+
+// BackupCreateJSONBodyBackupType defines parameters for BackupCreate.
+type BackupCreateJSONBodyBackupType string
+
+// BackupCreateJSONBodyDatabaseType defines parameters for BackupCreate.
+type BackupCreateJSONBodyDatabaseType string
+
+// BackupOneParams defines parameters for BackupOne.
+type BackupOneParams struct {
+	BackupId string `form:"backupId" json:"backupId"`
+}
+
+// BackupRemoveJSONBody defines parameters for BackupRemove.
+type BackupRemoveJSONBody struct {
+	BackupId string `json:"backupId"`
+}
+
+// BackupUpdateJSONBody defines parameters for BackupUpdate.
+type BackupUpdateJSONBody struct {
+	BackupId             string                           `json:"backupId"`
+	Database             string                           `json:"database"`
+	DatabaseType         BackupUpdateJSONBodyDatabaseType `json:"databaseType"`
+	DestinationId        string                           `json:"destinationId"`
+	Enabled              nullable.Nullable[bool]          `json:"enabled"`
+	IncludeEncryptionKey *bool                            `json:"includeEncryptionKey,omitempty"`
+	KeepLatestCount      nullable.Nullable[float32]       `json:"keepLatestCount"`
+	Metadata             nullable.Nullable[interface{}]   `json:"metadata"`
+	Prefix               string                           `json:"prefix"`
+	Schedule             string                           `json:"schedule"`
+	ServiceName          nullable.Nullable[string]        `json:"serviceName"`
+}
+
+// BackupUpdateJSONBodyDatabaseType defines parameters for BackupUpdate.
+type BackupUpdateJSONBodyDatabaseType string
+
 // ComposeCreateJSONBody defines parameters for ComposeCreate.
 type ComposeCreateJSONBody struct {
 	AppName       *string                           `json:"appName,omitempty"`
@@ -1105,6 +1362,43 @@ type ComposeUpdateJSONBodySourceType string
 
 // ComposeUpdateJSONBodyTriggerType defines parameters for ComposeUpdate.
 type ComposeUpdateJSONBodyTriggerType string
+
+// DestinationCreateJSONBody defines parameters for DestinationCreate.
+type DestinationCreateJSONBody struct {
+	AccessKey       string                      `json:"accessKey"`
+	AdditionalFlags nullable.Nullable[[]string] `json:"additionalFlags"`
+	Bucket          string                      `json:"bucket"`
+	Endpoint        string                      `json:"endpoint"`
+	Name            string                      `json:"name"`
+	Provider        nullable.Nullable[string]   `json:"provider"`
+	Region          string                      `json:"region"`
+	SecretAccessKey string                      `json:"secretAccessKey"`
+	ServerId        *string                     `json:"serverId,omitempty"`
+}
+
+// DestinationOneParams defines parameters for DestinationOne.
+type DestinationOneParams struct {
+	DestinationId string `form:"destinationId" json:"destinationId"`
+}
+
+// DestinationRemoveJSONBody defines parameters for DestinationRemove.
+type DestinationRemoveJSONBody struct {
+	DestinationId string `json:"destinationId"`
+}
+
+// DestinationUpdateJSONBody defines parameters for DestinationUpdate.
+type DestinationUpdateJSONBody struct {
+	AccessKey       string                      `json:"accessKey"`
+	AdditionalFlags nullable.Nullable[[]string] `json:"additionalFlags"`
+	Bucket          string                      `json:"bucket"`
+	DestinationId   string                      `json:"destinationId"`
+	Endpoint        string                      `json:"endpoint"`
+	Name            string                      `json:"name"`
+	Provider        nullable.Nullable[string]   `json:"provider"`
+	Region          string                      `json:"region"`
+	SecretAccessKey string                      `json:"secretAccessKey"`
+	ServerId        *string                     `json:"serverId,omitempty"`
+}
 
 // DomainCreateJSONBody defines parameters for DomainCreate.
 type DomainCreateJSONBody struct {
@@ -1934,6 +2228,71 @@ type RedisUpdateJSONBody struct {
 // RedisUpdateJSONBodyApplicationStatus defines parameters for RedisUpdate.
 type RedisUpdateJSONBodyApplicationStatus string
 
+// VolumeBackupsCreateJSONBody defines parameters for VolumeBackupsCreate.
+type VolumeBackupsCreateJSONBody struct {
+	AppName         *string                                 `json:"appName,omitempty"`
+	ApplicationId   nullable.Nullable[string]               `json:"applicationId,omitempty"`
+	ComposeId       nullable.Nullable[string]               `json:"composeId,omitempty"`
+	CreatedAt       *string                                 `json:"createdAt,omitempty"`
+	CronExpression  string                                  `json:"cronExpression"`
+	DestinationId   string                                  `json:"destinationId"`
+	Enabled         nullable.Nullable[bool]                 `json:"enabled,omitempty"`
+	KeepLatestCount nullable.Nullable[float32]              `json:"keepLatestCount,omitempty"`
+	LibsqlId        nullable.Nullable[string]               `json:"libsqlId,omitempty"`
+	MariadbId       nullable.Nullable[string]               `json:"mariadbId,omitempty"`
+	MongoId         nullable.Nullable[string]               `json:"mongoId,omitempty"`
+	MysqlId         nullable.Nullable[string]               `json:"mysqlId,omitempty"`
+	Name            string                                  `json:"name"`
+	PostgresId      nullable.Nullable[string]               `json:"postgresId,omitempty"`
+	Prefix          string                                  `json:"prefix"`
+	RedisId         nullable.Nullable[string]               `json:"redisId,omitempty"`
+	ServiceName     nullable.Nullable[string]               `json:"serviceName,omitempty"`
+	ServiceType     *VolumeBackupsCreateJSONBodyServiceType `json:"serviceType,omitempty"`
+	TurnOff         *bool                                   `json:"turnOff,omitempty"`
+	VolumeName      string                                  `json:"volumeName"`
+}
+
+// VolumeBackupsCreateJSONBodyServiceType defines parameters for VolumeBackupsCreate.
+type VolumeBackupsCreateJSONBodyServiceType string
+
+// VolumeBackupsDeleteJSONBody defines parameters for VolumeBackupsDelete.
+type VolumeBackupsDeleteJSONBody struct {
+	VolumeBackupId string `json:"volumeBackupId"`
+}
+
+// VolumeBackupsOneParams defines parameters for VolumeBackupsOne.
+type VolumeBackupsOneParams struct {
+	VolumeBackupId string `form:"volumeBackupId" json:"volumeBackupId"`
+}
+
+// VolumeBackupsUpdateJSONBody defines parameters for VolumeBackupsUpdate.
+type VolumeBackupsUpdateJSONBody struct {
+	AppName         *string                                 `json:"appName,omitempty"`
+	ApplicationId   nullable.Nullable[string]               `json:"applicationId,omitempty"`
+	ComposeId       nullable.Nullable[string]               `json:"composeId,omitempty"`
+	CreatedAt       *string                                 `json:"createdAt,omitempty"`
+	CronExpression  string                                  `json:"cronExpression"`
+	DestinationId   string                                  `json:"destinationId"`
+	Enabled         nullable.Nullable[bool]                 `json:"enabled,omitempty"`
+	KeepLatestCount nullable.Nullable[float32]              `json:"keepLatestCount,omitempty"`
+	LibsqlId        nullable.Nullable[string]               `json:"libsqlId,omitempty"`
+	MariadbId       nullable.Nullable[string]               `json:"mariadbId,omitempty"`
+	MongoId         nullable.Nullable[string]               `json:"mongoId,omitempty"`
+	MysqlId         nullable.Nullable[string]               `json:"mysqlId,omitempty"`
+	Name            string                                  `json:"name"`
+	PostgresId      nullable.Nullable[string]               `json:"postgresId,omitempty"`
+	Prefix          string                                  `json:"prefix"`
+	RedisId         nullable.Nullable[string]               `json:"redisId,omitempty"`
+	ServiceName     nullable.Nullable[string]               `json:"serviceName,omitempty"`
+	ServiceType     *VolumeBackupsUpdateJSONBodyServiceType `json:"serviceType,omitempty"`
+	TurnOff         *bool                                   `json:"turnOff,omitempty"`
+	VolumeBackupId  string                                  `json:"volumeBackupId"`
+	VolumeName      string                                  `json:"volumeName"`
+}
+
+// VolumeBackupsUpdateJSONBodyServiceType defines parameters for VolumeBackupsUpdate.
+type VolumeBackupsUpdateJSONBodyServiceType string
+
 // ApplicationCreateJSONRequestBody defines body for ApplicationCreate for application/json ContentType.
 type ApplicationCreateJSONRequestBody ApplicationCreateJSONBody
 
@@ -1967,6 +2326,15 @@ type ApplicationSaveGitlabProviderJSONRequestBody ApplicationSaveGitlabProviderJ
 // ApplicationUpdateJSONRequestBody defines body for ApplicationUpdate for application/json ContentType.
 type ApplicationUpdateJSONRequestBody ApplicationUpdateJSONBody
 
+// BackupCreateJSONRequestBody defines body for BackupCreate for application/json ContentType.
+type BackupCreateJSONRequestBody BackupCreateJSONBody
+
+// BackupRemoveJSONRequestBody defines body for BackupRemove for application/json ContentType.
+type BackupRemoveJSONRequestBody BackupRemoveJSONBody
+
+// BackupUpdateJSONRequestBody defines body for BackupUpdate for application/json ContentType.
+type BackupUpdateJSONRequestBody BackupUpdateJSONBody
+
 // ComposeCreateJSONRequestBody defines body for ComposeCreate for application/json ContentType.
 type ComposeCreateJSONRequestBody ComposeCreateJSONBody
 
@@ -1987,6 +2355,15 @@ type ComposeSaveEnvironmentJSONRequestBody ComposeSaveEnvironmentJSONBody
 
 // ComposeUpdateJSONRequestBody defines body for ComposeUpdate for application/json ContentType.
 type ComposeUpdateJSONRequestBody ComposeUpdateJSONBody
+
+// DestinationCreateJSONRequestBody defines body for DestinationCreate for application/json ContentType.
+type DestinationCreateJSONRequestBody DestinationCreateJSONBody
+
+// DestinationRemoveJSONRequestBody defines body for DestinationRemove for application/json ContentType.
+type DestinationRemoveJSONRequestBody DestinationRemoveJSONBody
+
+// DestinationUpdateJSONRequestBody defines body for DestinationUpdate for application/json ContentType.
+type DestinationUpdateJSONRequestBody DestinationUpdateJSONBody
 
 // DomainCreateJSONRequestBody defines body for DomainCreate for application/json ContentType.
 type DomainCreateJSONRequestBody DomainCreateJSONBody
@@ -2104,6 +2481,15 @@ type RedisSaveExternalPortJSONRequestBody RedisSaveExternalPortJSONBody
 
 // RedisUpdateJSONRequestBody defines body for RedisUpdate for application/json ContentType.
 type RedisUpdateJSONRequestBody RedisUpdateJSONBody
+
+// VolumeBackupsCreateJSONRequestBody defines body for VolumeBackupsCreate for application/json ContentType.
+type VolumeBackupsCreateJSONRequestBody VolumeBackupsCreateJSONBody
+
+// VolumeBackupsDeleteJSONRequestBody defines body for VolumeBackupsDelete for application/json ContentType.
+type VolumeBackupsDeleteJSONRequestBody VolumeBackupsDeleteJSONBody
+
+// VolumeBackupsUpdateJSONRequestBody defines body for VolumeBackupsUpdate for application/json ContentType.
+type VolumeBackupsUpdateJSONRequestBody VolumeBackupsUpdateJSONBody
 
 // Getter for additional properties for Application. Returns the specified
 // element and whether it was found
@@ -2311,6 +2697,239 @@ func (a Application) MarshalJSON() ([]byte, error) {
 		object["serverId"], err = json.Marshal(a.ServerId)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for Backup. Returns the specified
+// element and whether it was found
+func (a Backup) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Backup
+func (a *Backup) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Backup to handle AdditionalProperties
+func (a *Backup) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["backupId"]; found {
+		err = json.Unmarshal(raw, &a.BackupId)
+		if err != nil {
+			return fmt.Errorf("error reading 'backupId': %w", err)
+		}
+		delete(object, "backupId")
+	}
+
+	if raw, found := object["database"]; found {
+		err = json.Unmarshal(raw, &a.Database)
+		if err != nil {
+			return fmt.Errorf("error reading 'database': %w", err)
+		}
+		delete(object, "database")
+	}
+
+	if raw, found := object["databaseType"]; found {
+		err = json.Unmarshal(raw, &a.DatabaseType)
+		if err != nil {
+			return fmt.Errorf("error reading 'databaseType': %w", err)
+		}
+		delete(object, "databaseType")
+	}
+
+	if raw, found := object["destinationId"]; found {
+		err = json.Unmarshal(raw, &a.DestinationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'destinationId': %w", err)
+		}
+		delete(object, "destinationId")
+	}
+
+	if raw, found := object["enabled"]; found {
+		err = json.Unmarshal(raw, &a.Enabled)
+		if err != nil {
+			return fmt.Errorf("error reading 'enabled': %w", err)
+		}
+		delete(object, "enabled")
+	}
+
+	if raw, found := object["keepLatestCount"]; found {
+		err = json.Unmarshal(raw, &a.KeepLatestCount)
+		if err != nil {
+			return fmt.Errorf("error reading 'keepLatestCount': %w", err)
+		}
+		delete(object, "keepLatestCount")
+	}
+
+	if raw, found := object["mariadbId"]; found {
+		err = json.Unmarshal(raw, &a.MariadbId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mariadbId': %w", err)
+		}
+		delete(object, "mariadbId")
+	}
+
+	if raw, found := object["mongoId"]; found {
+		err = json.Unmarshal(raw, &a.MongoId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mongoId': %w", err)
+		}
+		delete(object, "mongoId")
+	}
+
+	if raw, found := object["mysqlId"]; found {
+		err = json.Unmarshal(raw, &a.MysqlId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mysqlId': %w", err)
+		}
+		delete(object, "mysqlId")
+	}
+
+	if raw, found := object["postgresId"]; found {
+		err = json.Unmarshal(raw, &a.PostgresId)
+		if err != nil {
+			return fmt.Errorf("error reading 'postgresId': %w", err)
+		}
+		delete(object, "postgresId")
+	}
+
+	if raw, found := object["prefix"]; found {
+		err = json.Unmarshal(raw, &a.Prefix)
+		if err != nil {
+			return fmt.Errorf("error reading 'prefix': %w", err)
+		}
+		delete(object, "prefix")
+	}
+
+	if raw, found := object["schedule"]; found {
+		err = json.Unmarshal(raw, &a.Schedule)
+		if err != nil {
+			return fmt.Errorf("error reading 'schedule': %w", err)
+		}
+		delete(object, "schedule")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Backup to handle AdditionalProperties
+func (a Backup) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.BackupId != nil {
+		object["backupId"], err = json.Marshal(a.BackupId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'backupId': %w", err)
+		}
+	}
+
+	if a.Database != nil {
+		object["database"], err = json.Marshal(a.Database)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'database': %w", err)
+		}
+	}
+
+	if a.DatabaseType != nil {
+		object["databaseType"], err = json.Marshal(a.DatabaseType)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'databaseType': %w", err)
+		}
+	}
+
+	if a.DestinationId != nil {
+		object["destinationId"], err = json.Marshal(a.DestinationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'destinationId': %w", err)
+		}
+	}
+
+	if a.Enabled != nil {
+		object["enabled"], err = json.Marshal(a.Enabled)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'enabled': %w", err)
+		}
+	}
+
+	if a.KeepLatestCount != nil {
+		object["keepLatestCount"], err = json.Marshal(a.KeepLatestCount)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'keepLatestCount': %w", err)
+		}
+	}
+
+	if a.MariadbId != nil {
+		object["mariadbId"], err = json.Marshal(a.MariadbId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mariadbId': %w", err)
+		}
+	}
+
+	if a.MongoId != nil {
+		object["mongoId"], err = json.Marshal(a.MongoId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mongoId': %w", err)
+		}
+	}
+
+	if a.MysqlId != nil {
+		object["mysqlId"], err = json.Marshal(a.MysqlId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mysqlId': %w", err)
+		}
+	}
+
+	if a.PostgresId != nil {
+		object["postgresId"], err = json.Marshal(a.PostgresId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'postgresId': %w", err)
+		}
+	}
+
+	if a.Prefix != nil {
+		object["prefix"], err = json.Marshal(a.Prefix)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'prefix': %w", err)
+		}
+	}
+
+	if a.Schedule != nil {
+		object["schedule"], err = json.Marshal(a.Schedule)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'schedule': %w", err)
 		}
 	}
 
@@ -2579,6 +3198,209 @@ func (a CreateProjectResult) MarshalJSON() ([]byte, error) {
 	object["project"], err = json.Marshal(a.Project)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling 'project': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for Destination. Returns the specified
+// element and whether it was found
+func (a Destination) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Destination
+func (a *Destination) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Destination to handle AdditionalProperties
+func (a *Destination) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["accessKey"]; found {
+		err = json.Unmarshal(raw, &a.AccessKey)
+		if err != nil {
+			return fmt.Errorf("error reading 'accessKey': %w", err)
+		}
+		delete(object, "accessKey")
+	}
+
+	if raw, found := object["additionalFlags"]; found {
+		err = json.Unmarshal(raw, &a.AdditionalFlags)
+		if err != nil {
+			return fmt.Errorf("error reading 'additionalFlags': %w", err)
+		}
+		delete(object, "additionalFlags")
+	}
+
+	if raw, found := object["bucket"]; found {
+		err = json.Unmarshal(raw, &a.Bucket)
+		if err != nil {
+			return fmt.Errorf("error reading 'bucket': %w", err)
+		}
+		delete(object, "bucket")
+	}
+
+	if raw, found := object["destinationId"]; found {
+		err = json.Unmarshal(raw, &a.DestinationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'destinationId': %w", err)
+		}
+		delete(object, "destinationId")
+	}
+
+	if raw, found := object["endpoint"]; found {
+		err = json.Unmarshal(raw, &a.Endpoint)
+		if err != nil {
+			return fmt.Errorf("error reading 'endpoint': %w", err)
+		}
+		delete(object, "endpoint")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["provider"]; found {
+		err = json.Unmarshal(raw, &a.Provider)
+		if err != nil {
+			return fmt.Errorf("error reading 'provider': %w", err)
+		}
+		delete(object, "provider")
+	}
+
+	if raw, found := object["region"]; found {
+		err = json.Unmarshal(raw, &a.Region)
+		if err != nil {
+			return fmt.Errorf("error reading 'region': %w", err)
+		}
+		delete(object, "region")
+	}
+
+	if raw, found := object["secretAccessKey"]; found {
+		err = json.Unmarshal(raw, &a.SecretAccessKey)
+		if err != nil {
+			return fmt.Errorf("error reading 'secretAccessKey': %w", err)
+		}
+		delete(object, "secretAccessKey")
+	}
+
+	if raw, found := object["serverId"]; found {
+		err = json.Unmarshal(raw, &a.ServerId)
+		if err != nil {
+			return fmt.Errorf("error reading 'serverId': %w", err)
+		}
+		delete(object, "serverId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Destination to handle AdditionalProperties
+func (a Destination) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AccessKey != nil {
+		object["accessKey"], err = json.Marshal(a.AccessKey)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'accessKey': %w", err)
+		}
+	}
+
+	if a.AdditionalFlags != nil {
+		object["additionalFlags"], err = json.Marshal(a.AdditionalFlags)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'additionalFlags': %w", err)
+		}
+	}
+
+	if a.Bucket != nil {
+		object["bucket"], err = json.Marshal(a.Bucket)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'bucket': %w", err)
+		}
+	}
+
+	if a.DestinationId != nil {
+		object["destinationId"], err = json.Marshal(a.DestinationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'destinationId': %w", err)
+		}
+	}
+
+	if a.Endpoint != nil {
+		object["endpoint"], err = json.Marshal(a.Endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'endpoint': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.Provider != nil {
+		object["provider"], err = json.Marshal(a.Provider)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'provider': %w", err)
+		}
+	}
+
+	if a.Region != nil {
+		object["region"], err = json.Marshal(a.Region)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'region': %w", err)
+		}
+	}
+
+	if a.SecretAccessKey != nil {
+		object["secretAccessKey"], err = json.Marshal(a.SecretAccessKey)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'secretAccessKey': %w", err)
+		}
+	}
+
+	if a.ServerId != nil {
+		object["serverId"], err = json.Marshal(a.ServerId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -4139,6 +4961,269 @@ func (a Redis) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for VolumeBackup. Returns the specified
+// element and whether it was found
+func (a VolumeBackup) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for VolumeBackup
+func (a *VolumeBackup) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for VolumeBackup to handle AdditionalProperties
+func (a *VolumeBackup) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["appName"]; found {
+		err = json.Unmarshal(raw, &a.AppName)
+		if err != nil {
+			return fmt.Errorf("error reading 'appName': %w", err)
+		}
+		delete(object, "appName")
+	}
+
+	if raw, found := object["applicationId"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationId': %w", err)
+		}
+		delete(object, "applicationId")
+	}
+
+	if raw, found := object["composeId"]; found {
+		err = json.Unmarshal(raw, &a.ComposeId)
+		if err != nil {
+			return fmt.Errorf("error reading 'composeId': %w", err)
+		}
+		delete(object, "composeId")
+	}
+
+	if raw, found := object["cronExpression"]; found {
+		err = json.Unmarshal(raw, &a.CronExpression)
+		if err != nil {
+			return fmt.Errorf("error reading 'cronExpression': %w", err)
+		}
+		delete(object, "cronExpression")
+	}
+
+	if raw, found := object["destinationId"]; found {
+		err = json.Unmarshal(raw, &a.DestinationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'destinationId': %w", err)
+		}
+		delete(object, "destinationId")
+	}
+
+	if raw, found := object["enabled"]; found {
+		err = json.Unmarshal(raw, &a.Enabled)
+		if err != nil {
+			return fmt.Errorf("error reading 'enabled': %w", err)
+		}
+		delete(object, "enabled")
+	}
+
+	if raw, found := object["keepLatestCount"]; found {
+		err = json.Unmarshal(raw, &a.KeepLatestCount)
+		if err != nil {
+			return fmt.Errorf("error reading 'keepLatestCount': %w", err)
+		}
+		delete(object, "keepLatestCount")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["prefix"]; found {
+		err = json.Unmarshal(raw, &a.Prefix)
+		if err != nil {
+			return fmt.Errorf("error reading 'prefix': %w", err)
+		}
+		delete(object, "prefix")
+	}
+
+	if raw, found := object["serviceName"]; found {
+		err = json.Unmarshal(raw, &a.ServiceName)
+		if err != nil {
+			return fmt.Errorf("error reading 'serviceName': %w", err)
+		}
+		delete(object, "serviceName")
+	}
+
+	if raw, found := object["serviceType"]; found {
+		err = json.Unmarshal(raw, &a.ServiceType)
+		if err != nil {
+			return fmt.Errorf("error reading 'serviceType': %w", err)
+		}
+		delete(object, "serviceType")
+	}
+
+	if raw, found := object["turnOff"]; found {
+		err = json.Unmarshal(raw, &a.TurnOff)
+		if err != nil {
+			return fmt.Errorf("error reading 'turnOff': %w", err)
+		}
+		delete(object, "turnOff")
+	}
+
+	if raw, found := object["volumeBackupId"]; found {
+		err = json.Unmarshal(raw, &a.VolumeBackupId)
+		if err != nil {
+			return fmt.Errorf("error reading 'volumeBackupId': %w", err)
+		}
+		delete(object, "volumeBackupId")
+	}
+
+	if raw, found := object["volumeName"]; found {
+		err = json.Unmarshal(raw, &a.VolumeName)
+		if err != nil {
+			return fmt.Errorf("error reading 'volumeName': %w", err)
+		}
+		delete(object, "volumeName")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for VolumeBackup to handle AdditionalProperties
+func (a VolumeBackup) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AppName != nil {
+		object["appName"], err = json.Marshal(a.AppName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'appName': %w", err)
+		}
+	}
+
+	if a.ApplicationId != nil {
+		object["applicationId"], err = json.Marshal(a.ApplicationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	if a.ComposeId != nil {
+		object["composeId"], err = json.Marshal(a.ComposeId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'composeId': %w", err)
+		}
+	}
+
+	if a.CronExpression != nil {
+		object["cronExpression"], err = json.Marshal(a.CronExpression)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'cronExpression': %w", err)
+		}
+	}
+
+	if a.DestinationId != nil {
+		object["destinationId"], err = json.Marshal(a.DestinationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'destinationId': %w", err)
+		}
+	}
+
+	if a.Enabled != nil {
+		object["enabled"], err = json.Marshal(a.Enabled)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'enabled': %w", err)
+		}
+	}
+
+	if a.KeepLatestCount != nil {
+		object["keepLatestCount"], err = json.Marshal(a.KeepLatestCount)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'keepLatestCount': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.Prefix != nil {
+		object["prefix"], err = json.Marshal(a.Prefix)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'prefix': %w", err)
+		}
+	}
+
+	if a.ServiceName != nil {
+		object["serviceName"], err = json.Marshal(a.ServiceName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serviceName': %w", err)
+		}
+	}
+
+	if a.ServiceType != nil {
+		object["serviceType"], err = json.Marshal(a.ServiceType)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serviceType': %w", err)
+		}
+	}
+
+	if a.TurnOff != nil {
+		object["turnOff"], err = json.Marshal(a.TurnOff)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'turnOff': %w", err)
+		}
+	}
+
+	if a.VolumeBackupId != nil {
+		object["volumeBackupId"], err = json.Marshal(a.VolumeBackupId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'volumeBackupId': %w", err)
+		}
+	}
+
+	if a.VolumeName != nil {
+		object["volumeName"], err = json.Marshal(a.VolumeName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'volumeName': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // RequestEditorFn is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -4304,6 +5389,33 @@ type ClientInterface interface {
 	// Takes a body of the `application/json` content type.
 	ApplicationUpdate(ctx context.Context, body ApplicationUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BackupCreateWithBody performs a POST /backup.create (the `BackupCreate` operationId) request,
+	// with any type of body and a specified content type.
+	BackupCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BackupCreate performs a POST /backup.create (the `BackupCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	BackupCreate(ctx context.Context, body BackupCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BackupOne performs a GET /backup.one (the `BackupOne` operationId) request.
+	BackupOne(ctx context.Context, params *BackupOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BackupRemoveWithBody performs a POST /backup.remove (the `BackupRemove` operationId) request,
+	// with any type of body and a specified content type.
+	BackupRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BackupRemove performs a POST /backup.remove (the `BackupRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	BackupRemove(ctx context.Context, body BackupRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BackupUpdateWithBody performs a POST /backup.update (the `BackupUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	BackupUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BackupUpdate performs a POST /backup.update (the `BackupUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	BackupUpdate(ctx context.Context, body BackupUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ComposeCreateWithBody performs a POST /compose.create (the `ComposeCreate` operationId) request,
 	// with any type of body and a specified content type.
 	ComposeCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4362,6 +5474,33 @@ type ClientInterface interface {
 	// ComposeUpdate performs a POST /compose.update (the `ComposeUpdate` operationId) request.
 	// Takes a body of the `application/json` content type.
 	ComposeUpdate(ctx context.Context, body ComposeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DestinationCreateWithBody performs a POST /destination.create (the `DestinationCreate` operationId) request,
+	// with any type of body and a specified content type.
+	DestinationCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DestinationCreate performs a POST /destination.create (the `DestinationCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	DestinationCreate(ctx context.Context, body DestinationCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DestinationOne performs a GET /destination.one (the `DestinationOne` operationId) request.
+	DestinationOne(ctx context.Context, params *DestinationOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DestinationRemoveWithBody performs a POST /destination.remove (the `DestinationRemove` operationId) request,
+	// with any type of body and a specified content type.
+	DestinationRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DestinationRemove performs a POST /destination.remove (the `DestinationRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	DestinationRemove(ctx context.Context, body DestinationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DestinationUpdateWithBody performs a POST /destination.update (the `DestinationUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	DestinationUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DestinationUpdate performs a POST /destination.update (the `DestinationUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	DestinationUpdate(ctx context.Context, body DestinationUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DomainCreateWithBody performs a POST /domain.create (the `DomainCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -4698,6 +5837,33 @@ type ClientInterface interface {
 	// RedisUpdate performs a POST /redis.update (the `RedisUpdate` operationId) request.
 	// Takes a body of the `application/json` content type.
 	RedisUpdate(ctx context.Context, body RedisUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VolumeBackupsCreateWithBody performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
+	// with any type of body and a specified content type.
+	VolumeBackupsCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VolumeBackupsCreate performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	VolumeBackupsCreate(ctx context.Context, body VolumeBackupsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VolumeBackupsDeleteWithBody performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request,
+	// with any type of body and a specified content type.
+	VolumeBackupsDeleteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VolumeBackupsDelete performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request.
+	// Takes a body of the `application/json` content type.
+	VolumeBackupsDelete(ctx context.Context, body VolumeBackupsDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VolumeBackupsOne performs a GET /volumeBackups.one (the `VolumeBackupsOne` operationId) request.
+	VolumeBackupsOne(ctx context.Context, params *VolumeBackupsOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VolumeBackupsUpdateWithBody performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	VolumeBackupsUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VolumeBackupsUpdate performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	VolumeBackupsUpdate(ctx context.Context, body VolumeBackupsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 // ApplicationCreateWithBody performs a POST /application.create (the `ApplicationCreate` operationId) request,
@@ -5021,6 +6187,103 @@ func (c *Client) ApplicationUpdate(ctx context.Context, body ApplicationUpdateJS
 	return c.Client.Do(req)
 }
 
+// BackupCreateWithBody performs a POST /backup.create (the `BackupCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) BackupCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBackupCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BackupCreate performs a POST /backup.create (the `BackupCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) BackupCreate(ctx context.Context, body BackupCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBackupCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BackupOne performs a GET /backup.one (the `BackupOne` operationId) request.
+func (c *Client) BackupOne(ctx context.Context, params *BackupOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBackupOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BackupRemoveWithBody performs a POST /backup.remove (the `BackupRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) BackupRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBackupRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BackupRemove performs a POST /backup.remove (the `BackupRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) BackupRemove(ctx context.Context, body BackupRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBackupRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BackupUpdateWithBody performs a POST /backup.update (the `BackupUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) BackupUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBackupUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BackupUpdate performs a POST /backup.update (the `BackupUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) BackupUpdate(ctx context.Context, body BackupUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBackupUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ComposeCreateWithBody performs a POST /compose.create (the `ComposeCreate` operationId) request,
 // with any type of body and a specified content type.
 func (c *Client) ComposeCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5220,6 +6483,103 @@ func (c *Client) ComposeUpdateWithBody(ctx context.Context, contentType string, 
 // Takes a body of the `application/json` content type.
 func (c *Client) ComposeUpdate(ctx context.Context, body ComposeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewComposeUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DestinationCreateWithBody performs a POST /destination.create (the `DestinationCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) DestinationCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDestinationCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DestinationCreate performs a POST /destination.create (the `DestinationCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) DestinationCreate(ctx context.Context, body DestinationCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDestinationCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DestinationOne performs a GET /destination.one (the `DestinationOne` operationId) request.
+func (c *Client) DestinationOne(ctx context.Context, params *DestinationOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDestinationOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DestinationRemoveWithBody performs a POST /destination.remove (the `DestinationRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) DestinationRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDestinationRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DestinationRemove performs a POST /destination.remove (the `DestinationRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) DestinationRemove(ctx context.Context, body DestinationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDestinationRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DestinationUpdateWithBody performs a POST /destination.update (the `DestinationUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) DestinationUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDestinationUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DestinationUpdate performs a POST /destination.update (the `DestinationUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) DestinationUpdate(ctx context.Context, body DestinationUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDestinationUpdateRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6426,6 +7786,103 @@ func (c *Client) RedisUpdate(ctx context.Context, body RedisUpdateJSONRequestBod
 	return c.Client.Do(req)
 }
 
+// VolumeBackupsCreateWithBody performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) VolumeBackupsCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVolumeBackupsCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VolumeBackupsCreate performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) VolumeBackupsCreate(ctx context.Context, body VolumeBackupsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVolumeBackupsCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VolumeBackupsDeleteWithBody performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) VolumeBackupsDeleteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVolumeBackupsDeleteRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VolumeBackupsDelete performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) VolumeBackupsDelete(ctx context.Context, body VolumeBackupsDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVolumeBackupsDeleteRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VolumeBackupsOne performs a GET /volumeBackups.one (the `VolumeBackupsOne` operationId) request.
+func (c *Client) VolumeBackupsOne(ctx context.Context, params *VolumeBackupsOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVolumeBackupsOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VolumeBackupsUpdateWithBody performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) VolumeBackupsUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVolumeBackupsUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VolumeBackupsUpdate performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) VolumeBackupsUpdate(ctx context.Context, body VolumeBackupsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVolumeBackupsUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // NewApplicationCreateRequest calls the generic ApplicationCreate builder with application/json body
 func NewApplicationCreateRequest(server string, body ApplicationCreateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -6916,6 +8373,176 @@ func NewApplicationUpdateRequestWithBody(server string, contentType string, body
 	return req, nil
 }
 
+// NewBackupCreateRequest calls the generic BackupCreate builder with application/json body
+func NewBackupCreateRequest(server string, body BackupCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBackupCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBackupCreateRequestWithBody constructs an http.Request for the BackupCreate method, with any body, and a specified content type
+func NewBackupCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/backup.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewBackupOneRequest constructs an http.Request for the BackupOne method
+func NewBackupOneRequest(server string, params *BackupOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/backup.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "backupId", params.BackupId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewBackupRemoveRequest calls the generic BackupRemove builder with application/json body
+func NewBackupRemoveRequest(server string, body BackupRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBackupRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBackupRemoveRequestWithBody constructs an http.Request for the BackupRemove method, with any body, and a specified content type
+func NewBackupRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/backup.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewBackupUpdateRequest calls the generic BackupUpdate builder with application/json body
+func NewBackupUpdateRequest(server string, body BackupUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBackupUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBackupUpdateRequestWithBody constructs an http.Request for the BackupUpdate method, with any body, and a specified content type
+func NewBackupUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/backup.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewComposeCreateRequest calls the generic ComposeCreate builder with application/json body
 func NewComposeCreateRequest(server string, body ComposeCreateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -7227,6 +8854,176 @@ func NewComposeUpdateRequestWithBody(server string, contentType string, body io.
 	}
 
 	operationPath := fmt.Sprintf("/compose.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDestinationCreateRequest calls the generic DestinationCreate builder with application/json body
+func NewDestinationCreateRequest(server string, body DestinationCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDestinationCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewDestinationCreateRequestWithBody constructs an http.Request for the DestinationCreate method, with any body, and a specified content type
+func NewDestinationCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/destination.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDestinationOneRequest constructs an http.Request for the DestinationOne method
+func NewDestinationOneRequest(server string, params *DestinationOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/destination.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "destinationId", params.DestinationId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDestinationRemoveRequest calls the generic DestinationRemove builder with application/json body
+func NewDestinationRemoveRequest(server string, body DestinationRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDestinationRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewDestinationRemoveRequestWithBody constructs an http.Request for the DestinationRemove method, with any body, and a specified content type
+func NewDestinationRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/destination.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDestinationUpdateRequest calls the generic DestinationUpdate builder with application/json body
+func NewDestinationUpdateRequest(server string, body DestinationUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDestinationUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewDestinationUpdateRequestWithBody constructs an http.Request for the DestinationUpdate method, with any body, and a specified content type
+func NewDestinationUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/destination.update")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9206,6 +11003,176 @@ func NewRedisUpdateRequestWithBody(server string, contentType string, body io.Re
 	return req, nil
 }
 
+// NewVolumeBackupsCreateRequest calls the generic VolumeBackupsCreate builder with application/json body
+func NewVolumeBackupsCreateRequest(server string, body VolumeBackupsCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewVolumeBackupsCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewVolumeBackupsCreateRequestWithBody constructs an http.Request for the VolumeBackupsCreate method, with any body, and a specified content type
+func NewVolumeBackupsCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/volumeBackups.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewVolumeBackupsDeleteRequest calls the generic VolumeBackupsDelete builder with application/json body
+func NewVolumeBackupsDeleteRequest(server string, body VolumeBackupsDeleteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewVolumeBackupsDeleteRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewVolumeBackupsDeleteRequestWithBody constructs an http.Request for the VolumeBackupsDelete method, with any body, and a specified content type
+func NewVolumeBackupsDeleteRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/volumeBackups.delete")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewVolumeBackupsOneRequest constructs an http.Request for the VolumeBackupsOne method
+func NewVolumeBackupsOneRequest(server string, params *VolumeBackupsOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/volumeBackups.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "volumeBackupId", params.VolumeBackupId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewVolumeBackupsUpdateRequest calls the generic VolumeBackupsUpdate builder with application/json body
+func NewVolumeBackupsUpdateRequest(server string, body VolumeBackupsUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewVolumeBackupsUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewVolumeBackupsUpdateRequestWithBody constructs an http.Request for the VolumeBackupsUpdate method, with any body, and a specified content type
+func NewVolumeBackupsUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/volumeBackups.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -9365,6 +11332,41 @@ type ClientWithResponsesInterface interface {
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	ApplicationUpdateWithResponse(ctx context.Context, body ApplicationUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplicationUpdateResponse, error)
 
+	// BackupCreateWithBodyWithResponse performs a POST /backup.create (the `BackupCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	BackupCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BackupCreateResponse, error)
+
+	// BackupCreateWithResponse performs a POST /backup.create (the `BackupCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	BackupCreateWithResponse(ctx context.Context, body BackupCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*BackupCreateResponse, error)
+
+	// BackupOneWithResponse performs a GET /backup.one (the `BackupOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	BackupOneWithResponse(ctx context.Context, params *BackupOneParams, reqEditors ...RequestEditorFn) (*BackupOneResponse, error)
+
+	// BackupRemoveWithBodyWithResponse performs a POST /backup.remove (the `BackupRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	BackupRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BackupRemoveResponse, error)
+
+	// BackupRemoveWithResponse performs a POST /backup.remove (the `BackupRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	BackupRemoveWithResponse(ctx context.Context, body BackupRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*BackupRemoveResponse, error)
+
+	// BackupUpdateWithBodyWithResponse performs a POST /backup.update (the `BackupUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	BackupUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BackupUpdateResponse, error)
+
+	// BackupUpdateWithResponse performs a POST /backup.update (the `BackupUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	BackupUpdateWithResponse(ctx context.Context, body BackupUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*BackupUpdateResponse, error)
+
 	// ComposeCreateWithBodyWithResponse performs a POST /compose.create (the `ComposeCreate` operationId) request,
 	// with any type of body and a specified content type.
 	//
@@ -9439,6 +11441,41 @@ type ClientWithResponsesInterface interface {
 	// ComposeUpdateWithResponse performs a POST /compose.update (the `ComposeUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	ComposeUpdateWithResponse(ctx context.Context, body ComposeUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*ComposeUpdateResponse, error)
+
+	// DestinationCreateWithBodyWithResponse performs a POST /destination.create (the `DestinationCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	DestinationCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DestinationCreateResponse, error)
+
+	// DestinationCreateWithResponse performs a POST /destination.create (the `DestinationCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	DestinationCreateWithResponse(ctx context.Context, body DestinationCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*DestinationCreateResponse, error)
+
+	// DestinationOneWithResponse performs a GET /destination.one (the `DestinationOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	DestinationOneWithResponse(ctx context.Context, params *DestinationOneParams, reqEditors ...RequestEditorFn) (*DestinationOneResponse, error)
+
+	// DestinationRemoveWithBodyWithResponse performs a POST /destination.remove (the `DestinationRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	DestinationRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DestinationRemoveResponse, error)
+
+	// DestinationRemoveWithResponse performs a POST /destination.remove (the `DestinationRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	DestinationRemoveWithResponse(ctx context.Context, body DestinationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*DestinationRemoveResponse, error)
+
+	// DestinationUpdateWithBodyWithResponse performs a POST /destination.update (the `DestinationUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	DestinationUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DestinationUpdateResponse, error)
+
+	// DestinationUpdateWithResponse performs a POST /destination.update (the `DestinationUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	DestinationUpdateWithResponse(ctx context.Context, body DestinationUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*DestinationUpdateResponse, error)
 
 	// DomainCreateWithBodyWithResponse performs a POST /domain.create (the `DomainCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -9869,6 +11906,41 @@ type ClientWithResponsesInterface interface {
 	// RedisUpdateWithResponse performs a POST /redis.update (the `RedisUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	RedisUpdateWithResponse(ctx context.Context, body RedisUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*RedisUpdateResponse, error)
+
+	// VolumeBackupsCreateWithBodyWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	VolumeBackupsCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VolumeBackupsCreateResponse, error)
+
+	// VolumeBackupsCreateWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	VolumeBackupsCreateWithResponse(ctx context.Context, body VolumeBackupsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*VolumeBackupsCreateResponse, error)
+
+	// VolumeBackupsDeleteWithBodyWithResponse performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	VolumeBackupsDeleteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VolumeBackupsDeleteResponse, error)
+
+	// VolumeBackupsDeleteWithResponse performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	VolumeBackupsDeleteWithResponse(ctx context.Context, body VolumeBackupsDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*VolumeBackupsDeleteResponse, error)
+
+	// VolumeBackupsOneWithResponse performs a GET /volumeBackups.one (the `VolumeBackupsOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	VolumeBackupsOneWithResponse(ctx context.Context, params *VolumeBackupsOneParams, reqEditors ...RequestEditorFn) (*VolumeBackupsOneResponse, error)
+
+	// VolumeBackupsUpdateWithBodyWithResponse performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	VolumeBackupsUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VolumeBackupsUpdateResponse, error)
+
+	// VolumeBackupsUpdateWithResponse performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	VolumeBackupsUpdateWithResponse(ctx context.Context, body VolumeBackupsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*VolumeBackupsUpdateResponse, error)
 }
 
 type ApplicationCreateResponse struct {
@@ -10685,6 +12757,268 @@ func (r ApplicationUpdateResponse) ContentType() string {
 	return ""
 }
 
+type BackupCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BackupCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BackupCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BackupCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BackupCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r BackupCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BackupCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BackupCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BackupCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type BackupOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Backup
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r BackupOneResponse) GetJSON200() *Backup {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BackupOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BackupOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BackupOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r BackupOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BackupOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r BackupOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BackupOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BackupOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BackupOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type BackupRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BackupRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BackupRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BackupRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BackupRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r BackupRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BackupRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BackupRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BackupRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type BackupUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BackupUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BackupUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BackupUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BackupUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r BackupUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BackupUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BackupUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BackupUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ComposeCreateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11217,6 +13551,282 @@ func (r ComposeUpdateResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ComposeUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DestinationCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Destination
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DestinationCreateResponse) GetJSON200() *Destination {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DestinationCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DestinationCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DestinationCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DestinationCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DestinationCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DestinationCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DestinationCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DestinationCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DestinationOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Destination
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DestinationOneResponse) GetJSON200() *Destination {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DestinationOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DestinationOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DestinationOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DestinationOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DestinationOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DestinationOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DestinationOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DestinationOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DestinationOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DestinationRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DestinationRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DestinationRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DestinationRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DestinationRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DestinationRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DestinationRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DestinationRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DestinationRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DestinationUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Destination
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DestinationUpdateResponse) GetJSON200() *Destination {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DestinationUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DestinationUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DestinationUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DestinationUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DestinationUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DestinationUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DestinationUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DestinationUpdateResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -14431,6 +17041,282 @@ func (r RedisUpdateResponse) ContentType() string {
 	return ""
 }
 
+type VolumeBackupsCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *VolumeBackup
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r VolumeBackupsCreateResponse) GetJSON200() *VolumeBackup {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r VolumeBackupsCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r VolumeBackupsCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r VolumeBackupsCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r VolumeBackupsCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r VolumeBackupsCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r VolumeBackupsCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VolumeBackupsCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r VolumeBackupsCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type VolumeBackupsDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r VolumeBackupsDeleteResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r VolumeBackupsDeleteResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r VolumeBackupsDeleteResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r VolumeBackupsDeleteResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r VolumeBackupsDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r VolumeBackupsDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VolumeBackupsDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r VolumeBackupsDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type VolumeBackupsOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *VolumeBackup
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r VolumeBackupsOneResponse) GetJSON200() *VolumeBackup {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r VolumeBackupsOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r VolumeBackupsOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r VolumeBackupsOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r VolumeBackupsOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r VolumeBackupsOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r VolumeBackupsOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r VolumeBackupsOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VolumeBackupsOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r VolumeBackupsOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type VolumeBackupsUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *VolumeBackup
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r VolumeBackupsUpdateResponse) GetJSON200() *VolumeBackup {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r VolumeBackupsUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r VolumeBackupsUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r VolumeBackupsUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r VolumeBackupsUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r VolumeBackupsUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r VolumeBackupsUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VolumeBackupsUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r VolumeBackupsUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // ApplicationCreateWithBodyWithResponse performs a POST /application.create (the `ApplicationCreate` operationId) request,
 // with any type of body and a specified content type.
 //
@@ -14684,6 +17570,83 @@ func (c *ClientWithResponses) ApplicationUpdateWithResponse(ctx context.Context,
 	return ParseApplicationUpdateResponse(rsp)
 }
 
+// BackupCreateWithBodyWithResponse performs a POST /backup.create (the `BackupCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BackupCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BackupCreateResponse, error) {
+	rsp, err := c.BackupCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBackupCreateResponse(rsp)
+}
+
+// BackupCreateWithResponse performs a POST /backup.create (the `BackupCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BackupCreateWithResponse(ctx context.Context, body BackupCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*BackupCreateResponse, error) {
+	rsp, err := c.BackupCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBackupCreateResponse(rsp)
+}
+
+// BackupOneWithResponse performs a GET /backup.one (the `BackupOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BackupOneWithResponse(ctx context.Context, params *BackupOneParams, reqEditors ...RequestEditorFn) (*BackupOneResponse, error) {
+	rsp, err := c.BackupOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBackupOneResponse(rsp)
+}
+
+// BackupRemoveWithBodyWithResponse performs a POST /backup.remove (the `BackupRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BackupRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BackupRemoveResponse, error) {
+	rsp, err := c.BackupRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBackupRemoveResponse(rsp)
+}
+
+// BackupRemoveWithResponse performs a POST /backup.remove (the `BackupRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BackupRemoveWithResponse(ctx context.Context, body BackupRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*BackupRemoveResponse, error) {
+	rsp, err := c.BackupRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBackupRemoveResponse(rsp)
+}
+
+// BackupUpdateWithBodyWithResponse performs a POST /backup.update (the `BackupUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BackupUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BackupUpdateResponse, error) {
+	rsp, err := c.BackupUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBackupUpdateResponse(rsp)
+}
+
+// BackupUpdateWithResponse performs a POST /backup.update (the `BackupUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BackupUpdateWithResponse(ctx context.Context, body BackupUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*BackupUpdateResponse, error) {
+	rsp, err := c.BackupUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBackupUpdateResponse(rsp)
+}
+
 // ComposeCreateWithBodyWithResponse performs a POST /compose.create (the `ComposeCreate` operationId) request,
 // with any type of body and a specified content type.
 //
@@ -14847,6 +17810,83 @@ func (c *ClientWithResponses) ComposeUpdateWithResponse(ctx context.Context, bod
 		return nil, err
 	}
 	return ParseComposeUpdateResponse(rsp)
+}
+
+// DestinationCreateWithBodyWithResponse performs a POST /destination.create (the `DestinationCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DestinationCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DestinationCreateResponse, error) {
+	rsp, err := c.DestinationCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDestinationCreateResponse(rsp)
+}
+
+// DestinationCreateWithResponse performs a POST /destination.create (the `DestinationCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DestinationCreateWithResponse(ctx context.Context, body DestinationCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*DestinationCreateResponse, error) {
+	rsp, err := c.DestinationCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDestinationCreateResponse(rsp)
+}
+
+// DestinationOneWithResponse performs a GET /destination.one (the `DestinationOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DestinationOneWithResponse(ctx context.Context, params *DestinationOneParams, reqEditors ...RequestEditorFn) (*DestinationOneResponse, error) {
+	rsp, err := c.DestinationOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDestinationOneResponse(rsp)
+}
+
+// DestinationRemoveWithBodyWithResponse performs a POST /destination.remove (the `DestinationRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DestinationRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DestinationRemoveResponse, error) {
+	rsp, err := c.DestinationRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDestinationRemoveResponse(rsp)
+}
+
+// DestinationRemoveWithResponse performs a POST /destination.remove (the `DestinationRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DestinationRemoveWithResponse(ctx context.Context, body DestinationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*DestinationRemoveResponse, error) {
+	rsp, err := c.DestinationRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDestinationRemoveResponse(rsp)
+}
+
+// DestinationUpdateWithBodyWithResponse performs a POST /destination.update (the `DestinationUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DestinationUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DestinationUpdateResponse, error) {
+	rsp, err := c.DestinationUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDestinationUpdateResponse(rsp)
+}
+
+// DestinationUpdateWithResponse performs a POST /destination.update (the `DestinationUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DestinationUpdateWithResponse(ctx context.Context, body DestinationUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*DestinationUpdateResponse, error) {
+	rsp, err := c.DestinationUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDestinationUpdateResponse(rsp)
 }
 
 // DomainCreateWithBodyWithResponse performs a POST /domain.create (the `DomainCreate` operationId) request,
@@ -15795,6 +18835,83 @@ func (c *ClientWithResponses) RedisUpdateWithResponse(ctx context.Context, body 
 	return ParseRedisUpdateResponse(rsp)
 }
 
+// VolumeBackupsCreateWithBodyWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) VolumeBackupsCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VolumeBackupsCreateResponse, error) {
+	rsp, err := c.VolumeBackupsCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVolumeBackupsCreateResponse(rsp)
+}
+
+// VolumeBackupsCreateWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) VolumeBackupsCreateWithResponse(ctx context.Context, body VolumeBackupsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*VolumeBackupsCreateResponse, error) {
+	rsp, err := c.VolumeBackupsCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVolumeBackupsCreateResponse(rsp)
+}
+
+// VolumeBackupsDeleteWithBodyWithResponse performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) VolumeBackupsDeleteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VolumeBackupsDeleteResponse, error) {
+	rsp, err := c.VolumeBackupsDeleteWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVolumeBackupsDeleteResponse(rsp)
+}
+
+// VolumeBackupsDeleteWithResponse performs a POST /volumeBackups.delete (the `VolumeBackupsDelete` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) VolumeBackupsDeleteWithResponse(ctx context.Context, body VolumeBackupsDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*VolumeBackupsDeleteResponse, error) {
+	rsp, err := c.VolumeBackupsDelete(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVolumeBackupsDeleteResponse(rsp)
+}
+
+// VolumeBackupsOneWithResponse performs a GET /volumeBackups.one (the `VolumeBackupsOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) VolumeBackupsOneWithResponse(ctx context.Context, params *VolumeBackupsOneParams, reqEditors ...RequestEditorFn) (*VolumeBackupsOneResponse, error) {
+	rsp, err := c.VolumeBackupsOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVolumeBackupsOneResponse(rsp)
+}
+
+// VolumeBackupsUpdateWithBodyWithResponse performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) VolumeBackupsUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VolumeBackupsUpdateResponse, error) {
+	rsp, err := c.VolumeBackupsUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVolumeBackupsUpdateResponse(rsp)
+}
+
+// VolumeBackupsUpdateWithResponse performs a POST /volumeBackups.update (the `VolumeBackupsUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) VolumeBackupsUpdateWithResponse(ctx context.Context, body VolumeBackupsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*VolumeBackupsUpdateResponse, error) {
+	rsp, err := c.VolumeBackupsUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVolumeBackupsUpdateResponse(rsp)
+}
+
 // ParseApplicationCreateResponse parses an HTTP response from a ApplicationCreateWithResponse call
 func ParseApplicationCreateResponse(rsp *http.Response) (*ApplicationCreateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -16438,6 +19555,217 @@ func ParseApplicationUpdateResponse(rsp *http.Response) (*ApplicationUpdateRespo
 	return response, nil
 }
 
+// ParseBackupCreateResponse parses an HTTP response from a BackupCreateWithResponse call
+func ParseBackupCreateResponse(rsp *http.Response) (*BackupCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BackupCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBackupOneResponse parses an HTTP response from a BackupOneWithResponse call
+func ParseBackupOneResponse(rsp *http.Response) (*BackupOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BackupOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Backup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBackupRemoveResponse parses an HTTP response from a BackupRemoveWithResponse call
+func ParseBackupRemoveResponse(rsp *http.Response) (*BackupRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BackupRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBackupUpdateResponse parses an HTTP response from a BackupUpdateWithResponse call
+func ParseBackupUpdateResponse(rsp *http.Response) (*BackupUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BackupUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseComposeCreateResponse parses an HTTP response from a ComposeCreateWithResponse call
 func ParseComposeCreateResponse(rsp *http.Response) (*ComposeCreateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -16827,6 +20155,225 @@ func ParseComposeUpdateResponse(rsp *http.Response) (*ComposeUpdateResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Compose
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDestinationCreateResponse parses an HTTP response from a DestinationCreateWithResponse call
+func ParseDestinationCreateResponse(rsp *http.Response) (*DestinationCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DestinationCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Destination
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDestinationOneResponse parses an HTTP response from a DestinationOneWithResponse call
+func ParseDestinationOneResponse(rsp *http.Response) (*DestinationOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DestinationOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Destination
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDestinationRemoveResponse parses an HTTP response from a DestinationRemoveWithResponse call
+func ParseDestinationRemoveResponse(rsp *http.Response) (*DestinationRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DestinationRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDestinationUpdateResponse parses an HTTP response from a DestinationUpdateWithResponse call
+func ParseDestinationUpdateResponse(rsp *http.Response) (*DestinationUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DestinationUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Destination
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -19407,112 +22954,349 @@ func ParseRedisUpdateResponse(rsp *http.Response) (*RedisUpdateResponse, error) 
 	return response, nil
 }
 
+// ParseVolumeBackupsCreateResponse parses an HTTP response from a VolumeBackupsCreateWithResponse call
+func ParseVolumeBackupsCreateResponse(rsp *http.Response) (*VolumeBackupsCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VolumeBackupsCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VolumeBackup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVolumeBackupsDeleteResponse parses an HTTP response from a VolumeBackupsDeleteWithResponse call
+func ParseVolumeBackupsDeleteResponse(rsp *http.Response) (*VolumeBackupsDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VolumeBackupsDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVolumeBackupsOneResponse parses an HTTP response from a VolumeBackupsOneWithResponse call
+func ParseVolumeBackupsOneResponse(rsp *http.Response) (*VolumeBackupsOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VolumeBackupsOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VolumeBackup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVolumeBackupsUpdateResponse parses an HTTP response from a VolumeBackupsUpdateWithResponse call
+func ParseVolumeBackupsUpdateResponse(rsp *http.Response) (*VolumeBackupsUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VolumeBackupsUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VolumeBackup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // Base64 encoded, compressed with deflate, json marshaled OpenAPI spec.
 // Stored as a slice of fixed-width chunks rather than one concatenated
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

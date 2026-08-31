@@ -180,6 +180,7 @@ func TestRegistryMetadata(t *testing.T) {
 		"dokploy:index:Project", "dokploy:index:Environment", "dokploy:index:Application",
 		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB",
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
+		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
 		"GitLab", "pulumi import dokploy:index:Project", "wait", "secret",
 		"SSH", "volume", "partial state",
 		"pulumi config set dokploy:endpoint https://dokploy.example.com",

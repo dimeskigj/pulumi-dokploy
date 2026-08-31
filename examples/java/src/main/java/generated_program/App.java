@@ -25,6 +25,12 @@ import net.dimeski.pulumi.dokploy.MongoDB;
 import net.dimeski.pulumi.dokploy.MongoDBArgs;
 import net.dimeski.pulumi.dokploy.Redis;
 import net.dimeski.pulumi.dokploy.RedisArgs;
+import net.dimeski.pulumi.dokploy.Destination;
+import net.dimeski.pulumi.dokploy.DestinationArgs;
+import net.dimeski.pulumi.dokploy.Backup;
+import net.dimeski.pulumi.dokploy.BackupArgs;
+import net.dimeski.pulumi.dokploy.VolumeBackup;
+import net.dimeski.pulumi.dokploy.VolumeBackupArgs;
 import net.dimeski.pulumi.dokploy.Domain;
 import net.dimeski.pulumi.dokploy.DomainArgs;
 import java.util.ArrayList;
@@ -57,6 +63,8 @@ public class App {
         final var mariadbPassword = config.getSecret("mariadbPassword").applyValue(v -> v.orElse("replace-with-a-mariadb-password"));
         final var mongodbPassword = config.getSecret("mongodbPassword").applyValue(v -> v.orElse("replace-with-a-mongodb-password"));
         final var redisPassword = config.getSecret("redisPassword").applyValue(v -> v.orElse("replace-with-a-redis-password"));
+        final var destinationAccessKey = config.get("destinationAccessKey").orElse("replace-with-a-destination-access-key");
+        final var destinationSecretAccessKey = config.getSecret("destinationSecretAccessKey").applyValue(v -> v.orElse("replace-with-a-destination-secret-access-key"));
         var projectResource = new Project("projectResource", ProjectArgs.builder()
             .name("dokploy-mvp")
             .description("Canonical Dokploy provider example")
@@ -142,6 +150,43 @@ services:
             .environmentId(environment.environmentId())
             .databasePassword(redisPassword.asSecret())
             .environment(Output.ofSecret("REDIS_HOST=redis"))
+            .build());
+
+        var destination = new Destination("destination", DestinationArgs.builder()
+            .name("mvp-destination")
+            .provider("s3")
+            .accessKey(destinationAccessKey)
+            .secretAccessKey(destinationSecretAccessKey.asSecret())
+            .bucket("dokploy-mvp-backups")
+            .region("us-east-1")
+            .endpoint("https://s3.us-east-1.amazonaws.com")
+            .build());
+
+        var postgresBackup = new Backup("postgresBackup", BackupArgs.builder()
+            .schedule("0 0 * * *")
+            .prefix("postgres-")
+            .destinationId(destination.destinationId())
+            .database("app")
+            .postgresId(postgres.postgresId())
+            .build());
+
+        var applicationVolumeBackup = new VolumeBackup("applicationVolumeBackup", VolumeBackupArgs.builder()
+            .name("mvp-application-volume-backup")
+            .volumeName("mvp-application-data")
+            .prefix("application-")
+            .destinationId(destination.destinationId())
+            .cronExpression("0 0 * * *")
+            .applicationId(application.applicationId())
+            .build());
+
+        var composeVolumeBackup = new VolumeBackup("composeVolumeBackup", VolumeBackupArgs.builder()
+            .name("mvp-compose-volume-backup")
+            .volumeName("mvp-compose-data")
+            .prefix("compose-")
+            .destinationId(destination.destinationId())
+            .cronExpression("0 0 * * *")
+            .composeId(compose.composeId())
+            .serviceName("web")
             .build());
 
         var applicationDomain = new Domain("applicationDomain", DomainArgs.builder()

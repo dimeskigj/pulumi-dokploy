@@ -19,7 +19,7 @@ func Provider() p.Provider {
 	return infer.Provider(infer.Options{
 		Metadata: schema.Metadata{
 			DisplayName: "Dokploy",
-			Description: "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, and domains.",
+			Description: "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, backup destinations, database backups, and volume backups.",
 			Namespace:   "dimeskigj",
 			Homepage:    "https://github.com/dimeskigj/pulumi-dokploy",
 			Repository:  "https://github.com/dimeskigj/pulumi-dokploy",
@@ -45,6 +45,9 @@ func Provider() p.Provider {
 			infer.Resource(&MongoDB{client: configuredClient}),
 			infer.Resource(&Redis{client: configuredClient}),
 			infer.Resource(&Domain{client: configuredClient}),
+			infer.Resource(&Destination{client: configuredClient}),
+			infer.Resource(&Backup{client: configuredClient}),
+			infer.Resource(&VolumeBackup{client: configuredClient}),
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{"provider": "index"},
 	})

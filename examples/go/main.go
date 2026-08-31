@@ -69,6 +69,14 @@ func main() {
 		if param := cfg.Get("redisPassword"); param != "" {
 			redisPassword = param
 		}
+		destinationAccessKey := "replace-with-a-destination-access-key"
+		if param := cfg.Get("destinationAccessKey"); param != "" {
+			destinationAccessKey = param
+		}
+		destinationSecretAccessKey := "replace-with-a-destination-secret-access-key"
+		if param := cfg.Get("destinationSecretAccessKey"); param != "" {
+			destinationSecretAccessKey = param
+		}
 		projectResource, err := dokploy.NewProject(ctx, "project", &dokploy.ProjectArgs{
 			Name:        pulumi.String("dokploy-mvp"),
 			Description: pulumi.String("Canonical Dokploy provider example"),
@@ -121,7 +129,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		_, err = dokploy.NewPostgres(ctx, "postgres", &dokploy.PostgresArgs{
+		postgres, err := dokploy.NewPostgres(ctx, "postgres", &dokploy.PostgresArgs{
 			Name:             pulumi.String("mvp-postgres"),
 			EnvironmentId:    environment.EnvironmentId,
 			DatabaseName:     pulumi.String("app"),
@@ -169,6 +177,51 @@ func main() {
 			EnvironmentId:    environment.EnvironmentId,
 			DatabasePassword: pulumi.ToSecret(redisPassword).(pulumi.StringOutput),
 			Environment:      pulumi.ToSecret("REDIS_HOST=redis").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
+		destination, err := dokploy.NewDestination(ctx, "destination", &dokploy.DestinationArgs{
+			Name:            pulumi.String("mvp-destination"),
+			Provider:        pulumi.String("s3"),
+			AccessKey:       pulumi.String(destinationAccessKey),
+			SecretAccessKey: pulumi.ToSecret(destinationSecretAccessKey).(pulumi.StringOutput),
+			Bucket:          pulumi.String("dokploy-mvp-backups"),
+			Region:          pulumi.String("us-east-1"),
+			Endpoint:        pulumi.String("https://s3.us-east-1.amazonaws.com"),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewBackup(ctx, "postgresBackup", &dokploy.BackupArgs{
+			Schedule:      pulumi.String("0 0 * * *"),
+			Prefix:        pulumi.String("postgres-"),
+			DestinationId: destination.DestinationId,
+			Database:      pulumi.String("app"),
+			PostgresId:    postgres.PostgresId,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewVolumeBackup(ctx, "applicationVolumeBackup", &dokploy.VolumeBackupArgs{
+			Name:           pulumi.String("mvp-application-volume-backup"),
+			VolumeName:     pulumi.String("mvp-application-data"),
+			Prefix:         pulumi.String("application-"),
+			DestinationId:  destination.DestinationId,
+			CronExpression: pulumi.String("0 0 * * *"),
+			ApplicationId:  application.ApplicationId,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewVolumeBackup(ctx, "composeVolumeBackup", &dokploy.VolumeBackupArgs{
+			Name:           pulumi.String("mvp-compose-volume-backup"),
+			VolumeName:     pulumi.String("mvp-compose-data"),
+			Prefix:         pulumi.String("compose-"),
+			DestinationId:  destination.DestinationId,
+			CronExpression: pulumi.String("0 0 * * *"),
+			ComposeId:      compose.ComposeId,
+			ServiceName:    pulumi.String("web"),
 		})
 		if err != nil {
 			return err

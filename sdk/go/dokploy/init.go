@@ -23,8 +23,12 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 	switch typ {
 	case "dokploy:index:Application":
 		r = &Application{}
+	case "dokploy:index:Backup":
+		r = &Backup{}
 	case "dokploy:index:Compose":
 		r = &Compose{}
+	case "dokploy:index:Destination":
+		r = &Destination{}
 	case "dokploy:index:Domain":
 		r = &Domain{}
 	case "dokploy:index:Environment":
@@ -41,6 +45,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &Project{}
 	case "dokploy:index:Redis":
 		r = &Redis{}
+	case "dokploy:index:VolumeBackup":
+		r = &VolumeBackup{}
 	default:
 		return nil, fmt.Errorf("unknown resource type: %s", typ)
 	}

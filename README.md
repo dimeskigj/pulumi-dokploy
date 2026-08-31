@@ -40,10 +40,15 @@ redacted in Pulumi diagnostics.
 
 ## Resources
 
-The provider exposes ten resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+The provider exposes thirteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
-`dokploy:index:Redis`, and `dokploy:index:Domain`.
+`dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
+`dokploy:index:Backup`, and `dokploy:index:VolumeBackup`.
+
+`Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
+`VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
+`Destination`. Both require a `Destination` (an S3-compatible storage target) to exist first.
 
 Project owns the default environment. Create explicit `Environment` resources for additional
 environments and use their IDs from dependent resources. Applications and Compose stacks can

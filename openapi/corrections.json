@@ -12,6 +12,10 @@
     "application.saveGitProvider": "boolean",
     "application.saveGitlabProvider": "boolean",
     "application.update": "Application",
+    "backup.create": "",
+    "backup.one": "Backup",
+    "backup.remove": "",
+    "backup.update": "",
     "compose.create": "Compose",
     "compose.delete": "",
     "compose.deploy": "",
@@ -20,6 +24,10 @@
     "compose.redeploy": "",
     "compose.saveEnvironment": "boolean",
     "compose.update": "Compose",
+    "destination.create": "Destination",
+    "destination.one": "Destination",
+    "destination.remove": "",
+    "destination.update": "Destination",
     "domain.create": "Domain",
     "domain.delete": "",
     "domain.one": "Domain",
@@ -66,7 +74,11 @@
     "redis.remove": "",
     "redis.saveEnvironment": "boolean",
     "redis.saveExternalPort": "boolean",
-    "redis.update": "Redis"
+    "redis.update": "Redis",
+    "volumeBackups.create": "VolumeBackup",
+    "volumeBackups.delete": "",
+    "volumeBackups.one": "VolumeBackup",
+    "volumeBackups.update": "VolumeBackup"
   },
   "schemas": {
     "CreateProjectResult": {"type":"object","required":["project","environment"],"properties":{"project":{"$ref":"#/components/schemas/Project"},"environment":{"$ref":"#/components/schemas/Environment"}},"additionalProperties":true},
@@ -79,6 +91,9 @@
     "MariaDB": {"type":"object","properties":{"mariadbId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseName":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"}},"additionalProperties":true},
     "MongoDB": {"type":"object","properties":{"mongoId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"},"replicaSets":{"type":"boolean"}},"additionalProperties":true},
     "Redis": {"type":"object","properties":{"redisId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"}},"additionalProperties":true},
-    "Domain": {"type":"object","properties":{"domainId":{"type":"string"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"serviceName":{"type":"string"},"host":{"type":"string"},"path":{"type":"string"},"internalPath":{"type":"string"},"port":{"type":"integer"},"https":{"type":"boolean"},"certificateType":{"type":"string"},"customCertResolver":{"type":"string"},"stripPath":{"type":"boolean"},"enabled":{"type":"boolean"}},"additionalProperties":true}
+    "Domain": {"type":"object","properties":{"domainId":{"type":"string"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"serviceName":{"type":"string"},"host":{"type":"string"},"path":{"type":"string"},"internalPath":{"type":"string"},"port":{"type":"integer"},"https":{"type":"boolean"},"certificateType":{"type":"string"},"customCertResolver":{"type":"string"},"stripPath":{"type":"boolean"},"enabled":{"type":"boolean"}},"additionalProperties":true},
+    "Destination": {"type":"object","properties":{"destinationId":{"type":"string"},"name":{"type":"string"},"provider":{"type":"string"},"accessKey":{"type":"string"},"secretAccessKey":{"type":"string"},"bucket":{"type":"string"},"region":{"type":"string"},"endpoint":{"type":"string"},"additionalFlags":{"type":"array","items":{"type":"string"}},"serverId":{"type":"string"}},"additionalProperties":true},
+    "Backup": {"type":"object","properties":{"backupId":{"type":"string"},"schedule":{"type":"string"},"enabled":{"type":"boolean"},"prefix":{"type":"string"},"destinationId":{"type":"string"},"database":{"type":"string"},"keepLatestCount":{"type":"integer"},"databaseType":{"type":"string"},"postgresId":{"type":"string"},"mariadbId":{"type":"string"},"mysqlId":{"type":"string"},"mongoId":{"type":"string"}},"additionalProperties":true},
+    "VolumeBackup": {"type":"object","properties":{"volumeBackupId":{"type":"string"},"name":{"type":"string"},"volumeName":{"type":"string"},"prefix":{"type":"string"},"serviceType":{"type":"string"},"appName":{"type":"string"},"serviceName":{"type":"string"},"turnOff":{"type":"boolean"},"cronExpression":{"type":"string"},"keepLatestCount":{"type":"integer"},"enabled":{"type":"boolean"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"destinationId":{"type":"string"}},"additionalProperties":true}
   }
 }

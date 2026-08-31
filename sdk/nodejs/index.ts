@@ -10,10 +10,20 @@ export type Application = import("./application").Application;
 export const Application: typeof import("./application").Application = null as any;
 utilities.lazyLoad(exports, ["Application"], () => require("./application"));
 
+export { BackupArgs } from "./backup";
+export type Backup = import("./backup").Backup;
+export const Backup: typeof import("./backup").Backup = null as any;
+utilities.lazyLoad(exports, ["Backup"], () => require("./backup"));
+
 export { ComposeArgs } from "./compose";
 export type Compose = import("./compose").Compose;
 export const Compose: typeof import("./compose").Compose = null as any;
 utilities.lazyLoad(exports, ["Compose"], () => require("./compose"));
+
+export { DestinationArgs } from "./destination";
+export type Destination = import("./destination").Destination;
+export const Destination: typeof import("./destination").Destination = null as any;
+utilities.lazyLoad(exports, ["Destination"], () => require("./destination"));
 
 export { DomainArgs } from "./domain";
 export type Domain = import("./domain").Domain;
@@ -60,6 +70,11 @@ export type Redis = import("./redis").Redis;
 export const Redis: typeof import("./redis").Redis = null as any;
 utilities.lazyLoad(exports, ["Redis"], () => require("./redis"));
 
+export { VolumeBackupArgs } from "./volumeBackup";
+export type VolumeBackup = import("./volumeBackup").VolumeBackup;
+export const VolumeBackup: typeof import("./volumeBackup").VolumeBackup = null as any;
+utilities.lazyLoad(exports, ["VolumeBackup"], () => require("./volumeBackup"));
+
 
 // Export sub-modules:
 import * as config from "./config";
@@ -76,8 +91,12 @@ const _module = {
         switch (type) {
             case "dokploy:index:Application":
                 return new Application(name, <any>undefined, { urn })
+            case "dokploy:index:Backup":
+                return new Backup(name, <any>undefined, { urn })
             case "dokploy:index:Compose":
                 return new Compose(name, <any>undefined, { urn })
+            case "dokploy:index:Destination":
+                return new Destination(name, <any>undefined, { urn })
             case "dokploy:index:Domain":
                 return new Domain(name, <any>undefined, { urn })
             case "dokploy:index:Environment":
@@ -94,6 +113,8 @@ const _module = {
                 return new Project(name, <any>undefined, { urn })
             case "dokploy:index:Redis":
                 return new Redis(name, <any>undefined, { urn })
+            case "dokploy:index:VolumeBackup":
+                return new VolumeBackup(name, <any>undefined, { urn })
             default:
                 throw new Error(`unknown resource type ${type}`);
         }

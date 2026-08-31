@@ -34,6 +34,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:Project", "dokploy:index:Environment", "dokploy:index:Application",
 		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB",
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
+		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -70,6 +71,7 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 		"dokploy:index:MariaDB.databasePassword", "dokploy:index:MariaDB.databaseRootPassword", "dokploy:index:MariaDB.environment",
 		"dokploy:index:MongoDB.databasePassword", "dokploy:index:MongoDB.environment",
 		"dokploy:index:Compose.environment",
+		"dokploy:index:Destination.secretAccessKey",
 	}
 	for _, path := range secrets {
 		resource, property := splitSchemaPath(path)
@@ -89,6 +91,16 @@ func TestSchemaReplacementFlags(t *testing.T) {
 	require.True(t, props["applicationId"].ReplaceOnChanges)
 	require.True(t, props["composeId"].ReplaceOnChanges)
 	require.True(t, props["serviceName"].ReplaceOnChanges)
+
+	volumeBackupProps := spec.Resources["dokploy:index:VolumeBackup"].InputProperties
+	require.True(t, volumeBackupProps["applicationId"].ReplaceOnChanges)
+	require.True(t, volumeBackupProps["composeId"].ReplaceOnChanges)
+	require.True(t, volumeBackupProps["serviceName"].ReplaceOnChanges)
+
+	backupProps := spec.Resources["dokploy:index:Backup"].InputProperties
+	for _, property := range []string{"postgresId", "mysqlId", "mariadbId", "mongoId"} {
+		require.True(t, backupProps[property].ReplaceOnChanges, property)
+	}
 }
 
 func TestGeneratedDotnetAndJavaPackagesDoNotDuplicateProviderSuffix(t *testing.T) {

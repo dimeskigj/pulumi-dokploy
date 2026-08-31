@@ -14,6 +14,7 @@ const required = [
   "guides/compose.mdx",
   "guides/databases.mdx",
   "guides/domains.mdx",
+  "guides/backups.mdx",
   "guides/imports.mdx",
   "guides/troubleshooting.mdx",
   "contributing.mdx",
@@ -38,7 +39,7 @@ test("secret and destructive lifecycle guidance is explicit", async () => {
 
 test("sidebar keeps the canonical resource order and base-safe links", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
-  const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Configuration", "Complex Types"];
+  const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Configuration", "Complex Types"];
   const resources = config.slice(config.indexOf('label: "Resources"'), config.indexOf('label: "Examples"'));
   let previous = -1;
   for (const label of resourceOrder) {
@@ -70,7 +71,7 @@ test("landing page contains the required hierarchy and release-safe Registry wor
     assert.match(landing, new RegExp(`<Badge text="${language}"`), `landing must advertise ${language} support`);
   }
   const capabilities = landing.slice(landing.indexOf("## From intent to deployment"), landing.indexOf("## Write in the language"));
-  assert.equal((capabilities.match(/<Card title="/g) ?? []).length, 7, "landing must define seven capability cards");
+  assert.equal((capabilities.match(/<Card title="/g) ?? []).length, 8, "landing must define eight capability cards");
   assert.match(landing, /first release is published/i);
   assert.match(landing, /https:\/\/github\.com\/dimeskigj\/pulumi-dokploy/);
   assert.match(landing, /https:\/\/www\.pulumi\.com\/registry\/packages\/dokploy\//);
@@ -124,6 +125,26 @@ test("Domain guide describes only supported targets and lifecycle behavior", asy
   assert.match(domains, /reference\/domain/);
 });
 
+test("Backups guide describes destinations, database backups, and volume backups", async () => {
+  const backups = await readFile(new URL("../src/content/docs/guides/backups.mdx", import.meta.url), "utf8");
+  assert.match(backups, /Destination/);
+  assert.match(backups, /defaults to `"s3"`/);
+  assert.match(backups, /postgresId/);
+  assert.match(backups, /mysqlId/);
+  assert.match(backups, /mariadbId/);
+  assert.match(backups, /mongoId/);
+  assert.match(backups, /no equivalent for Redis/i);
+  assert.match(backups, /applicationId/);
+  assert.match(backups, /composeId/);
+  assert.match(backups, /serviceName/);
+  assert.match(backups, /replaces the Backup/);
+  assert.match(backups, /replaces the VolumeBackup/);
+  assert.match(backups, /write-only secret input/i);
+  assert.match(backups, /reference\/destination/);
+  assert.match(backups, /reference\/backup/);
+  assert.match(backups, /reference\/volume-backup/);
+});
+
 test("curated internal links stay relative and sidebar routes are canonical", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
   const curatedFiles = required.filter((path) => path !== "index.mdx");
@@ -137,9 +158,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/imports/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/imports/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
-    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/configuration/", "/reference/types/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
   ]);
   for (const match of config.matchAll(/link: "(\/[^\"]*)"/g)) {
@@ -147,8 +168,8 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 28);
-  assert.equal(curatedFiles.length, 13);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 32);
+  assert.equal(curatedFiles.length, 14);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {

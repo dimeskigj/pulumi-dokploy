@@ -10,6 +10,10 @@ application.saveEnvironment
 application.saveGitProvider
 application.saveGitlabProvider
 application.update
+backup.create
+backup.one
+backup.remove
+backup.update
 compose.create
 compose.delete
 compose.deploy
@@ -18,6 +22,10 @@ compose.one
 compose.redeploy
 compose.saveEnvironment
 compose.update
+destination.create
+destination.one
+destination.remove
+destination.update
 domain.create
 domain.delete
 domain.one
@@ -65,3 +73,7 @@ redis.remove
 redis.saveEnvironment
 redis.saveExternalPort
 redis.update
+volumeBackups.create
+volumeBackups.delete
+volumeBackups.one
+volumeBackups.update
