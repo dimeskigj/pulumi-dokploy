@@ -60,3 +60,30 @@ Passed with no output.
 ## Concerns
 
 None identified within Task 3 scope.
+
+## Fix Round 1 Evidence
+
+Addressed reviewer findings:
+
+- Delete errors now pass through registry password sanitization, while 404 remains idempotent.
+- Required-field validation now tests `name`, `username`, `password`, and `url` independently with exact empty strings; no whitespace rule was added.
+- Added coverage for delete redaction/404, create and update API failures with current/prior password redaction, incomplete create/read responses, import, read errors containing the prior password, and post-create readback failures.
+- Create now performs a readback after the API returns an ID. Readback errors or an empty read ID return `ResourceInitFailedError` with the populated partial state and ID.
+
+Fix-round verification commands and outcomes:
+
+```text
+mise exec -- go test ./provider -run 'TestRegistry' -count=1
+PASS: ok github.com/dimeskigj/pulumi-dokploy/provider
+
+git diff --check
+PASS: no output
+
+mise exec -- go test ./provider -run 'TestRegistry|TestSchema|TestProvider' -count=1
+PASS: ok github.com/dimeskigj/pulumi-dokploy/provider
+
+mise exec -- go test ./provider -count=1
+PASS: ok github.com/dimeskigj/pulumi-dokploy/provider
+```
+
+Self-review found no unrelated file changes or remaining Task 3 concerns.

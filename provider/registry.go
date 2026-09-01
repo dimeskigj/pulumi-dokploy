@@ -104,7 +104,14 @@ func (r Registry) Create(ctx context.Context, req infer.CreateRequest[RegistryAr
 		return infer.CreateResponse[RegistryState]{}, errors.New("registry.create returned incomplete registry")
 	}
 	state.RegistryID = resp.JSON200.RegistryId
-	return infer.CreateResponse[RegistryState]{ID: state.RegistryID, Output: state}, nil
+	read, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: state.RegistryID, State: state})
+	if err != nil {
+		return infer.CreateResponse[RegistryState]{ID: state.RegistryID, Output: state}, initFailed(sanitizeRegistryError(err, req.Inputs))
+	}
+	if read.ID == "" {
+		return infer.CreateResponse[RegistryState]{ID: state.RegistryID, Output: state}, initFailed(errors.New("registry.one returned not found after create"))
+	}
+	return infer.CreateResponse[RegistryState]{ID: state.RegistryID, Output: read.State}, nil
 }
 
 func sanitizeRegistryError(err error, args RegistryArgs, prior ...RegistryArgs) error {
@@ -163,7 +170,7 @@ func (r Registry) Delete(ctx context.Context, req infer.DeleteRequest[RegistrySt
 	if client.IsNotFound(err) {
 		return infer.DeleteResponse{}, nil
 	}
-	return infer.DeleteResponse{}, err
+	return infer.DeleteResponse{}, sanitizeRegistryError(err, req.State.RegistryArgs)
 }
 func (r Registry) WireDependencies(f infer.FieldSelector, args *RegistryArgs, state *RegistryState) {
 	f.OutputField(&state.RegistryID).DependsOn(f.InputField(&args.Name), f.InputField(&args.Username), f.InputField(&args.Password).Secret(), f.InputField(&args.URL), f.InputField(&args.ImagePrefix), f.InputField(&args.ServerID))
