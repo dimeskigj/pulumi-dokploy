@@ -11,6 +11,18 @@ The Dokploy provider manages self-hosted Dokploy projects and deployments with P
 The provider is built and tested with Go 1.25.13, including the security-fixed
 toolchain used by the release workflows.
 
+### Provider plugin
+
+Install the provider plugin from GitHub Releases before running `pulumi up`:
+
+```bash
+VERSION=0.1.0
+pulumi plugin install resource dokploy "$VERSION" \
+  --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION"
+```
+
+Repeat this installation whenever the provider version changes.
+
 Install the package for your Pulumi language:
 
 | Language | Package |
@@ -21,8 +33,6 @@ Install the package for your Pulumi language:
 | .NET | `Pulumi.Dokploy` |
 | Java | `net.dimeski.pulumi.dokploy` |
 | YAML | `pulumi package add github.com/dimeskigj/pulumi-dokploy dokploy` |
-
-The provider is also available from the Pulumi Registry once a release is published.
 
 ## Configuration
 
@@ -111,8 +121,7 @@ make test
 make build
 make codegen
 make check_openapi
-make ci-mgmt
 ```
 
-Generated SDKs and CI workflows must be regenerated rather than hand-edited. See
+Generated SDKs must be regenerated rather than hand-edited. See
 `CONTRIBUTING.md` for the complete workflow.

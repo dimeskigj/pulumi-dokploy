@@ -93,19 +93,12 @@ func hasExactRunCommand(steps []workflowRunStep, expected string) bool {
 }
 
 var workflowJobPolicy = map[string]map[string]bool{
-	"build.yml":                   {"prerequisites": true, "build_sdks": true, "tag_release_if_labeled_needs_release": false, "test": true, "publish": true, "publish_sdk": true, "lint": true},
-	"command-dispatch.yml":        {"command-dispatch-for-testing": false},
-	"comment-on-stale-issues.yml": {"cleanup": false},
-	"community-moderation.yml":    {"warn_codegen": false},
-	"export-repo-secrets.yml":     {"export-to-esc": false},
-	"lint.yml":                    {"lint": true},
-	"pages.yml":                   {"build": false, "deploy": false},
-	"prerelease.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
-	"pull-request.yml":            {"comment-on-pr": false},
-	"release_command.yml":         {"should_release": false},
-	"release.yml":                 {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true, "dispatch_docs_build": false},
-	"run-acceptance-tests.yml":    {"comment-notification": false, "prerequisites": true, "build_sdks": true, "test": true, "sentinel": false, "lint": true},
-	"weekly-pulumi-update.yml":    {"weekly-pulumi-update": true},
+	"build.yml":                {"prerequisites": true, "build_sdks": true, "test": true, "lint": true},
+	"lint.yml":                 {"lint": true},
+	"pages.yml":                {"build": false, "deploy": false},
+	"prerelease.yml":           {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
+	"release.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true, "dispatch_docs_build": false},
+	"run-acceptance-tests.yml": {"prerequisites": true, "build_sdks": true, "test": true, "lint": true},
 }
 
 func validateWorkflowSemantics(workflow map[string]any, name string) error {
@@ -229,19 +222,34 @@ func TestRegistryMetadata(t *testing.T) {
 				require.Equal(t, releaseGoVersion, version, workflow)
 			}
 		}
+		assertDokploySecretsAreAcceptanceOnly(t, workflow, parsed)
+		if workflow == "release.yml" || workflow == "prerelease.yml" {
+			assertCheckoutJobsHaveReadContents(t, workflow, parsed, "prerequisites", "build_sdks")
+		}
 		require.NoError(t, validateWorkflowSemantics(parsed, workflow), workflow)
 	}
 	require.NotContains(t, allWorkflowText, "1.21.x", "stale workflow Go pin")
 	require.NotContains(t, allWorkflowText, "1.25.11", "stale workflow Go pin")
+	for _, forbidden := range []string{"AWS_" + "ACCESS_KEY_ID", "AWS_" + "SECRET_ACCESS_KEY", "AWS_" + "UPLOAD_ROLE_ARN", "blobs:"} {
+		require.NotContains(t, allWorkflowText, forbidden, "owned workflows must not contain %q", forbidden)
+	}
 	build, buildText := readWorkflow(t, "build.yml")
+	require.NotContains(t, buildText, "  publish:\n")
+	require.NotContains(t, buildText, "  publish_sdk:\n")
+	require.Contains(t, build["on"], "pull_request")
+	require.Contains(t, build["on"], "push")
+	require.Contains(t, buildText, "make docs_check")
+	require.Contains(t, buildText, "make check_openapi && make check_codegen")
+	require.Contains(t, buildText, "make test_race")
+	require.Contains(t, buildText, "make test_examples")
+	require.NotContains(t, buildText, "Configure AWS Credentials")
 	on, ok := build["on"].(map[string]any)
 	require.True(t, ok)
 	push, ok := on["push"].(map[string]any)
 	require.True(t, ok)
-	require.Equal(t, []any{"master", "main", "feature-**"}, push["branches"])
-	require.Equal(t, []any{"v*", "sdk/*"}, push["tags-ignore"])
+	require.Equal(t, []any{"main", "feature-**"}, push["branches"])
+	require.NotContains(t, push, "tags-ignore")
 	require.NotContains(t, push, "paths-ignore")
-	require.NotContains(t, push["tags-ignore"], "**")
 	require.Equal(t, map[string]any{}, on["pull_request"])
 	require.Equal(t, map[string]any{}, on["workflow_dispatch"])
 	require.Equal(t, 1, strings.Count(buildText, "  push:\n"), "build has exactly one push trigger")
@@ -268,16 +276,116 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Contains(t, releaseText, "goreleaser/goreleaser-action@")
 	require.NotContains(t, releaseText, "-f .goreleaser.prerelease.yml")
 	require.Contains(t, prereleaseText, "-f .goreleaser.prerelease.yml")
+	require.Equal(t, []any{"v*.*.*", "!v*.*.*-*"}, release["on"].(map[string]any)["push"].(map[string]any)["tags"])
+	require.Equal(t, []any{"v*.*.*-*"}, prerelease["on"].(map[string]any)["push"].(map[string]any)["tags"])
+	for name, workflow := range map[string]map[string]any{"release.yml": release, "prerelease.yml": prerelease} {
+		jobs := workflow["jobs"].(map[string]any)
+		publish := jobs["publish"].(map[string]any)
+		require.Equal(t, "write", publish["permissions"].(map[string]any)["contents"], name)
+		var goreleaserEnv map[string]any
+		for _, rawStep := range publish["steps"].([]any) {
+			step := rawStep.(map[string]any)
+			if uses, _ := step["uses"].(string); strings.Contains(uses, "goreleaser/goreleaser-action@") {
+				goreleaserEnv = step["env"].(map[string]any)
+			}
+		}
+		require.NotNil(t, goreleaserEnv, name)
+		require.Equal(t, "${{ secrets.GITHUB_TOKEN }}", goreleaserEnv["GITHUB_TOKEN"], name)
+		require.Equal(t, "publish", jobs["publish_sdk"].(map[string]any)["needs"], name)
+		require.Equal(t, "publish_sdk", jobs["publish_go_sdk"].(map[string]any)["needs"], name)
+
+		goSDK := jobs["publish_go_sdk"].(map[string]any)
+		var hasProviderVersionAction bool
+		var goPublisherVersion any
+		for _, rawStep := range goSDK["steps"].([]any) {
+			step := rawStep.(map[string]any)
+			uses, _ := step["uses"].(string)
+			if strings.Contains(uses, "pulumi/provider-version-action@") && step["id"] == "version" {
+				hasProviderVersionAction = true
+			}
+			if strings.Contains(uses, "pulumi/publish-go-sdk-action@") {
+				goPublisherVersion = step["with"].(map[string]any)["version"]
+			}
+		}
+		require.True(t, hasProviderVersionAction, name)
+		require.Equal(t, "${{ steps.version.outputs.version }}", goPublisherVersion, name)
+	}
+	for _, workflowText := range []string{releaseText, prereleaseText} {
+		require.NotContains(t, workflowText, "aws-actions/configure-aws-credentials")
+		require.NotContains(t, workflowText, "AWS_")
+	}
+	for _, configName := range []string{".goreleaser.yml", ".goreleaser.prerelease.yml"} {
+		config, err := os.ReadFile("../" + configName)
+		require.NoError(t, err)
+		configText := string(config)
+		require.NotContains(t, configText, "blobs:", configName)
+		require.Contains(t, configText, "release:\n  prerelease: auto\n  disable: false", configName)
+	}
 	acceptance, acceptanceText := readWorkflow(t, "run-acceptance-tests.yml")
-	require.Contains(t, acceptance["on"], "workflow_dispatch")
+	triggers, ok := acceptance["on"].(map[string]any)
+	require.True(t, ok)
+	require.Contains(t, triggers, "workflow_dispatch")
+	require.Len(t, triggers, 1, "acceptance workflow must only use workflow_dispatch")
 	require.NotContains(t, acceptanceText, "  pull_request:\n")
+	require.NotContains(t, acceptanceText, "repository_dispatch")
+	require.NotContains(t, acceptanceText, "comment-notification")
+	require.NotContains(t, acceptanceText, "sentinel")
+	require.NotContains(t, acceptanceText, "esc-secrets")
 	require.Contains(t, acceptanceText, "environment: dokploy-acceptance")
-	require.Contains(t, acceptanceText, "DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}")
-	require.Contains(t, acceptanceText, "DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}")
+	require.Contains(t, acceptanceText, "DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}")
+	require.Contains(t, acceptanceText, "DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}")
 	require.Contains(t, acceptanceText, `test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"`)
-	dispatch, dispatchText := readWorkflow(t, "command-dispatch.yml")
-	require.NotNil(t, dispatch)
-	require.Contains(t, dispatchText, "repository: dimeskigj/pulumi-dokploy")
+	jobs := acceptance["jobs"].(map[string]any)
+	protectedJobs := make([]string, 0, 2)
+	for jobName, rawJob := range jobs {
+		job := rawJob.(map[string]any)
+		if job["environment"] == "dokploy-acceptance" {
+			protectedJobs = append(protectedJobs, jobName)
+		}
+	}
+	require.ElementsMatch(t, []string{"prerequisites", "test"}, protectedJobs)
+	dokploySecretReferences := map[string]map[string]bool{}
+	for jobName, rawJob := range jobs {
+		job := rawJob.(map[string]any)
+		inspectEnv := func(env map[string]any) {
+			for variable, rawValue := range env {
+				value, _ := rawValue.(string)
+				if strings.Contains(value, "secrets.DOKPLOY_ENDPOINT") || strings.Contains(value, "secrets.DOKPLOY_API_KEY") {
+					if dokploySecretReferences[jobName] == nil {
+						dokploySecretReferences[jobName] = map[string]bool{}
+					}
+					dokploySecretReferences[jobName][variable] = value == "${{ secrets."+variable+" }}"
+				}
+			}
+		}
+		jobEnv, _ := job["env"].(map[string]any)
+		inspectEnv(jobEnv)
+		steps, _ := job["steps"].([]any)
+		for _, rawStep := range steps {
+			step := rawStep.(map[string]any)
+			env, _ := step["env"].(map[string]any)
+			inspectEnv(env)
+		}
+	}
+	require.Equal(t, map[string]map[string]bool{
+		"prerequisites": {"DOKPLOY_ENDPOINT": true, "DOKPLOY_API_KEY": true},
+		"test":          {"DOKPLOY_ENDPOINT": true, "DOKPLOY_API_KEY": true},
+	}, dokploySecretReferences, "only protected acceptance jobs may reference Dokploy secrets")
+	lintJob := jobs["lint"].(map[string]any)
+	require.NotContains(t, lintJob, "environment", "lint must not use the acceptance environment")
+	require.NotContains(t, lintJob, "secrets", "lint must not inherit caller secrets")
+	for _, path := range []string{"../.ci-" + "mgmt.yaml", "../scripts/normalize_ci.py"} {
+		_, err := os.Stat(path)
+		require.ErrorIs(t, err, os.ErrNotExist, path)
+	}
+	for _, section := range []string{
+		"pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"",
+	} {
+		require.Contains(t, docs, section, "README missing %q", section)
+	}
+	installation, err := os.ReadFile("../website/src/content/docs/getting-started/installation.mdx")
+	require.NoError(t, err)
+	require.Contains(t, string(installation), "pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"")
 	for _, file := range []string{".mise.toml", "go.mod", "examples/go/go.mod"} {
 		content, err := os.ReadFile("../" + file)
 		require.NoError(t, err)
@@ -290,6 +398,73 @@ func mustWorkflow(t *testing.T, name string) map[string]any {
 	t.Helper()
 	workflow, _ := readWorkflow(t, name)
 	return workflow
+}
+
+func assertDokploySecretsAreAcceptanceOnly(t *testing.T, name string, workflow map[string]any) {
+	t.Helper()
+	jobs, ok := workflow["jobs"].(map[string]any)
+	require.True(t, ok, name)
+	workflowMetadata := map[string]any{}
+	for key, value := range workflow {
+		if key != "jobs" {
+			workflowMetadata[key] = value
+		}
+	}
+	require.NotContains(t, workflowValueText(workflowMetadata), "secrets.DOKPLOY_", "%s workflow metadata", name)
+	for jobName, rawJob := range jobs {
+		job, ok := rawJob.(map[string]any)
+		require.True(t, ok, "%s job %s", name, jobName)
+		if name == "run-acceptance-tests.yml" && (jobName == "prerequisites" || jobName == "test") {
+			require.Equal(t, "dokploy-acceptance", job["environment"], "%s job %s", name, jobName)
+		} else {
+			require.NotContains(t, workflowValueText(job), "secrets.DOKPLOY_", "%s job %s", name, jobName)
+		}
+	}
+}
+
+func workflowValueText(value any) string {
+	switch value := value.(type) {
+	case map[string]any:
+		var parts []string
+		for key, nested := range value {
+			parts = append(parts, key, workflowValueText(nested))
+		}
+		return strings.Join(parts, " ")
+	case []any:
+		var parts []string
+		for _, nested := range value {
+			parts = append(parts, workflowValueText(nested))
+		}
+		return strings.Join(parts, " ")
+	default:
+		return fmt.Sprint(value)
+	}
+}
+
+func assertCheckoutJobsHaveReadContents(t *testing.T, name string, workflow map[string]any, requiredJobs ...string) {
+	t.Helper()
+	jobs, ok := workflow["jobs"].(map[string]any)
+	require.True(t, ok, name)
+	for _, jobName := range requiredJobs {
+		rawJob, exists := jobs[jobName]
+		require.True(t, exists, "%s job %s", name, jobName)
+		job, ok := rawJob.(map[string]any)
+		require.True(t, ok, "%s job %s", name, jobName)
+		steps, _ := job["steps"].([]any)
+		hasCheckout := false
+		for _, rawStep := range steps {
+			step, _ := rawStep.(map[string]any)
+			uses, _ := step["uses"].(string)
+			if strings.HasPrefix(uses, "actions/checkout@") {
+				hasCheckout = true
+				permissions, ok := job["permissions"].(map[string]any)
+				require.True(t, ok, "%s job %s checkout permissions", name, jobName)
+				require.Equal(t, "read", permissions["contents"], "%s job %s checkout permissions", name, jobName)
+				break
+			}
+		}
+		require.True(t, hasCheckout, "%s job %s must contain checkout", name, jobName)
+	}
 }
 
 func TestWorkflowSemanticFixturesRejectMetadataAndWrongJobs(t *testing.T) {
