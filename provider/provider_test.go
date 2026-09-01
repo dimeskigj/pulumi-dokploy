@@ -16,6 +16,8 @@ var (
 	_ infer.ExplicitDependencies[RedisArgs, RedisState]             = Redis{}
 	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]           = SSHKey{}
 	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]       = Registry{}
+	_ infer.ExplicitDependencies[TagArgs, TagState]                 = Tag{}
+	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]   = ProjectTag{}
 )
 
 func TestProviderSchema(t *testing.T) {

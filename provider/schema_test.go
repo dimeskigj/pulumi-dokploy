@@ -35,7 +35,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB",
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
-		"dokploy:index:SSHKey", "dokploy:index:Registry",
+		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -87,6 +87,9 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 
 func TestSchemaReplacementFlags(t *testing.T) {
 	spec := providerSchema(t)
+	for _, property := range []string{"projectId", "tagId"} {
+		require.True(t, spec.Resources["dokploy:index:ProjectTag"].InputProperties[property].ReplaceOnChanges, property)
+	}
 	for _, resource := range []string{"Application", "Compose", "Postgres", "MySQL", "MariaDB", "MongoDB", "Redis"} {
 		props := spec.Resources["dokploy:index:"+resource].InputProperties
 		for _, property := range []string{"environmentId", "serverId"} {
