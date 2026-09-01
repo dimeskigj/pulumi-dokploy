@@ -109,6 +109,9 @@ func (r SSHKey) Create(ctx context.Context, req infer.CreateRequest[SSHKeyArgs])
 	if err != nil {
 		return infer.CreateResponse[SSHKeyState]{ID: state.SSHKeyID, Output: state}, initFailed(sanitizeSSHKeyError(err, req.Inputs))
 	}
+	if read.ID == "" {
+		return infer.CreateResponse[SSHKeyState]{ID: state.SSHKeyID, Output: state}, initFailed(fmt.Errorf("sshKey.one returned not found after create"))
+	}
 	return infer.CreateResponse[SSHKeyState]{ID: state.SSHKeyID, Output: read.State}, nil
 }
 

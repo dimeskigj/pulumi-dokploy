@@ -2,6 +2,7 @@ package dokploy
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
@@ -58,11 +59,83 @@ func TestSSHKeyCreateReadsAndUpdatesInOrder(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestSSHKeyCreateFailsInitializationWhenPostCreateReadIsGone(t *testing.T) {
+	s := newScriptedServer(t,
+		expectGET("/api/organization.active", nil, http.StatusOK, `{"organizationId":"org1"}`),
+		expectPOST("/api/sshKey.create", `{"description":null,"name":"key","organizationId":"org1","privateKey":"private","publicKey":"public"}`, `{"sshKeyId":"k1"}`),
+		scriptedRequest{Method: http.MethodGet, Path: "/api/sshKey.one", Query: map[string][]string{"sshKeyId": {"k1"}}, Status: http.StatusNotFound, Response: []byte(`{"code":"NOT_FOUND"}`)},
+	)
+	created, err := (SSHKey{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[SSHKeyArgs]{Inputs: SSHKeyArgs{Name: "key", PrivateKey: "private", PublicKey: "public"}})
+	var initErr infer.ResourceInitFailedError
+	require.True(t, errors.As(err, &initErr))
+	require.Equal(t, "k1", created.ID)
+	require.Equal(t, "org1", created.Output.OrganizationID)
+	require.Equal(t, "private", created.Output.PrivateKey)
+}
+
+func TestSSHKeyCreateRejectsIncompleteOrganization(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/organization.active", nil, http.StatusOK, `{}`))
+	_, err := (SSHKey{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[SSHKeyArgs]{Inputs: SSHKeyArgs{Name: "key", PrivateKey: "private", PublicKey: "public"}})
+	require.EqualError(t, err, "organization.active returned incomplete organization")
+}
+
 func TestSSHKeyReadPreservesPrivateKeyWhenOmitted(t *testing.T) {
 	s := newScriptedServer(t, expectGET("/api/sshKey.one", map[string][]string{"sshKeyId": {"k1"}}, http.StatusOK, `{"sshKeyId":"k1","name":"key","organizationId":"org1","publicKey":"public"}`))
 	read, err := (SSHKey{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: "k1", State: SSHKeyState{SSHKeyArgs: SSHKeyArgs{PrivateKey: "prior-private"}}})
 	require.NoError(t, err)
 	require.Equal(t, "prior-private", read.Inputs.PrivateKey)
+}
+
+func TestSSHKeyReadSupportsImport(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/sshKey.one", map[string][]string{"sshKeyId": {"k1"}}, http.StatusOK, `{"sshKeyId":"k1","name":"imported","description":"desc","organizationId":"org1","privateKey":"private","publicKey":"public"}`))
+	read, err := (SSHKey{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: "k1"})
+	require.NoError(t, err)
+	require.Equal(t, "k1", read.State.SSHKeyID)
+	require.Equal(t, "org1", read.State.OrganizationID)
+	require.Equal(t, "imported", read.Inputs.Name)
+	require.Equal(t, "desc", *read.Inputs.Description)
+}
+
+func TestSSHKeyUpdateClearsDescription(t *testing.T) {
+	s := newScriptedServer(t, expectPOST("/api/sshKey.update", `{"sshKeyId":"k1","name":"key","description":null}`, `{}`))
+	_, err := (SSHKey{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[SSHKeyArgs, SSHKeyState]{ID: "k1", Inputs: SSHKeyArgs{Name: "key", PrivateKey: "private", PublicKey: "public"}})
+	require.NoError(t, err)
+}
+
+func TestSSHKeyAPIErrorsRedactCurrentAndPriorSecrets(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		method string
+		path   string
+		body   string
+		call   func(SSHKey, SSHKeyArgs, SSHKeyState) error
+	}{
+		{"create", http.MethodPost, "/api/sshKey.create", `{"description":null,"name":"key","organizationId":"org1","privateKey":"current-private","publicKey":"current-public"}`, func(r SSHKey, a SSHKeyArgs, _ SSHKeyState) error {
+			_, err := r.Create(t.Context(), infer.CreateRequest[SSHKeyArgs]{Inputs: a})
+			return err
+		}},
+		{"update", http.MethodPost, "/api/sshKey.update", `{"sshKeyId":"k1","name":"key","description":null}`, func(r SSHKey, a SSHKeyArgs, s SSHKeyState) error {
+			_, err := r.Update(t.Context(), infer.UpdateRequest[SSHKeyArgs, SSHKeyState]{ID: "k1", Inputs: a, State: s})
+			return err
+		}},
+		{"delete", http.MethodPost, "/api/sshKey.remove", `{"sshKeyId":"k1"}`, func(r SSHKey, _ SSHKeyArgs, s SSHKeyState) error {
+			_, err := r.Delete(t.Context(), infer.DeleteRequest[SSHKeyState]{ID: "k1", State: s})
+			return err
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			expectations := []scriptedRequest{{Method: test.method, Path: test.path, Body: json.RawMessage(test.body), Status: http.StatusBadRequest, Response: []byte(`{"message":"current-private current-public prior-private prior-public"}`)}}
+			if test.name == "create" {
+				expectations = append([]scriptedRequest{{Method: http.MethodGet, Path: "/api/organization.active", Status: http.StatusOK, Response: []byte(`{"organizationId":"org1"}`)}}, expectations...)
+			}
+			s := newScriptedServer(t, expectations...)
+			err := test.call(SSHKey{client: fixedClient(s.API())}, SSHKeyArgs{Name: "key", PrivateKey: "current-private", PublicKey: "current-public"}, SSHKeyState{SSHKeyArgs: SSHKeyArgs{Name: "old", PrivateKey: "prior-private", PublicKey: "prior-public"}})
+			require.Error(t, err)
+			for _, secret := range []string{"current-private", "current-public", "prior-private", "prior-public"} {
+				require.NotContains(t, err.Error(), secret)
+			}
+		})
+	}
 }
 
 func TestSSHKeyReadAndDeleteTreatNotFoundAsGone(t *testing.T) {
