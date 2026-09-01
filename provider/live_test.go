@@ -564,13 +564,16 @@ func TestLiveSSHKeyLifecycle(t *testing.T) {
 	privateKey, publicKey := liveSSHKeyPair(t)
 	r := SSHKey{client: fixedClient(api)}
 	created, err := r.Create(ctx, infer.CreateRequest[SSHKeyArgs]{Inputs: SSHKeyArgs{Name: "live-test-key-" + uuid.NewString(), PrivateKey: privateKey, PublicKey: publicKey}})
+	if created.ID != "" {
+		id, state := created.ID, created.Output
+		t.Cleanup(func() {
+			if _, err := r.Delete(context.Background(), infer.DeleteRequest[SSHKeyState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: sshKey.remove for %s: %v", id, err)
+			}
+		})
+	}
 	requireNoError(t, err)
 	require.NotEmpty(t, created.ID)
-	t.Cleanup(func() {
-		if _, err := r.Delete(context.Background(), infer.DeleteRequest[SSHKeyState]{ID: created.ID, State: created.Output}); err != nil {
-			t.Errorf("cleanup: sshKey.remove for %s: %v", created.ID, err)
-		}
-	})
 
 	read, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID, State: created.Output})
 	require.NoError(t, err)
@@ -593,18 +596,24 @@ func TestLiveRegistryLifecycle(t *testing.T) {
 	ctx := liveContext(t, 5*time.Minute)
 	r := Registry{client: fixedClient(api)}
 	created, err := r.Create(ctx, infer.CreateRequest[RegistryArgs]{Inputs: args})
+	if created.ID != "" {
+		id, state := created.ID, created.Output
+		t.Cleanup(func() {
+			if _, err := r.Delete(context.Background(), infer.DeleteRequest[RegistryState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: registry.remove for %s: %v", id, err)
+			}
+		})
+	}
 	requireNoError(t, err, "registry credential test and create must succeed")
 	require.NotEmpty(t, created.ID)
-	t.Cleanup(func() {
-		if _, err := r.Delete(context.Background(), infer.DeleteRequest[RegistryState]{ID: created.ID, State: created.Output}); err != nil {
-			t.Errorf("cleanup: registry.remove for %s: %v", created.ID, err)
-		}
-	})
 	read, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID, State: created.Output})
 	require.NoError(t, err)
 	read.Inputs.Name += "-updated"
 	_, err = r.Update(ctx, infer.UpdateRequest[RegistryArgs, RegistryState]{ID: created.ID, Inputs: read.Inputs, State: read.State})
 	require.NoError(t, err)
+	updated, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID, State: read.State})
+	require.NoError(t, err)
+	require.Equal(t, read.Inputs.Name, updated.Inputs.Name)
 	imported, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID})
 	require.NoError(t, err)
 	require.Equal(t, created.ID, imported.State.RegistryID)
@@ -618,20 +627,26 @@ func TestLiveTagAndProjectTagLifecycle(t *testing.T) {
 	projectID, _ := liveProject(t, ctx, api)
 	tagResource := Tag{client: fixedClient(api)}
 	tag, err := tagResource.Create(ctx, infer.CreateRequest[TagArgs]{Inputs: TagArgs{Name: "live-test-tag-" + uuid.NewString(), Color: stringPtr("#123456")}})
+	if tag.ID != "" {
+		id, state := tag.ID, tag.Output
+		t.Cleanup(func() {
+			if _, err := tagResource.Delete(context.Background(), infer.DeleteRequest[TagState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: tag.remove for %s: %v", id, err)
+			}
+		})
+	}
 	requireNoError(t, err)
-	t.Cleanup(func() {
-		if _, err := tagResource.Delete(context.Background(), infer.DeleteRequest[TagState]{ID: tag.ID, State: tag.Output}); err != nil {
-			t.Errorf("cleanup: tag.remove for %s: %v", tag.ID, err)
-		}
-	})
 	association := ProjectTag{client: fixedClient(api)}
 	associationState, err := association.Create(ctx, infer.CreateRequest[ProjectTagArgs]{Inputs: ProjectTagArgs{ProjectID: projectID, TagID: tag.ID}})
+	if associationState.ID != "" {
+		id, state := associationState.ID, associationState.Output
+		t.Cleanup(func() {
+			if _, err := association.Delete(context.Background(), infer.DeleteRequest[ProjectTagState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: tag.removeFromProject for %s: %v", id, err)
+			}
+		})
+	}
 	requireNoError(t, err)
-	t.Cleanup(func() {
-		if _, err := association.Delete(context.Background(), infer.DeleteRequest[ProjectTagState]{ID: associationState.ID, State: associationState.Output}); err != nil {
-			t.Errorf("cleanup: tag.removeFromProject for %s: %v", associationState.ID, err)
-		}
-	})
 	observed, err := association.Read(ctx, infer.ReadRequest[ProjectTagArgs, ProjectTagState]{ID: associationState.ID})
 	require.NoError(t, err)
 	require.Equal(t, associationState.ID, observed.ID)
@@ -665,21 +680,37 @@ func TestLiveApplicationMountLifecycleMatrix(t *testing.T) {
 		inputs := inputs
 		t.Run(inputs.Type, func(t *testing.T) {
 			created, err := r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: inputs})
+			if created.ID != "" {
+				id, state := created.ID, created.Output
+				t.Cleanup(func() {
+					if _, err := r.Delete(context.Background(), infer.DeleteRequest[MountState]{ID: id, State: state}); err != nil {
+						t.Errorf("cleanup: mounts.remove for %s: %v", id, err)
+					}
+				})
+			}
 			requireNoError(t, err)
 			require.NotEmpty(t, created.ID)
-			t.Cleanup(func() {
-				if _, err := r.Delete(context.Background(), infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output}); err != nil {
-					t.Errorf("cleanup: mounts.remove for %s: %v", created.ID, err)
-				}
-			})
 			read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
 			require.NoError(t, err)
 			updatedPath := read.Inputs.MountPath + "-updated"
 			updated := read.Inputs
 			updated.MountPath = updatedPath
-			_, err = r.Update(ctx, infer.UpdateRequest[MountArgs, MountState]{ID: created.ID, Inputs: updated, State: read.State})
+			updatedState, err := r.Update(ctx, infer.UpdateRequest[MountArgs, MountState]{ID: created.ID, Inputs: updated, State: read.State})
 			require.NoError(t, err)
-			_, err = r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: read.State})
+			updatedRead, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: updatedState.Output})
+			require.NoError(t, err)
+			require.Equal(t, updatedPath, updatedRead.Inputs.MountPath)
+			require.Equal(t, inputs.Type, updatedRead.Inputs.Type)
+			switch inputs.Type {
+			case "bind":
+				require.Equal(t, inputs.HostPath, updatedRead.Inputs.HostPath)
+			case "volume":
+				require.Equal(t, inputs.VolumeName, updatedRead.Inputs.VolumeName)
+			case "file":
+				require.Equal(t, inputs.FilePath, updatedRead.Inputs.FilePath)
+				require.Equal(t, inputs.Content, updatedRead.Inputs.Content)
+			}
+			_, err = r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: updatedRead.State})
 			require.NoError(t, err)
 		})
 	}
