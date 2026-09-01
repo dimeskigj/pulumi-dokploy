@@ -394,6 +394,35 @@ func TestRegistryMetadata(t *testing.T) {
 	}
 }
 
+func TestWorkflowStepsDoNotHaveEmptyEnvMappings(t *testing.T) {
+	entries, err := os.ReadDir("../.github/workflows")
+	require.NoError(t, err)
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".yml") {
+			continue
+		}
+		workflow, _ := readWorkflow(t, entry.Name())
+		jobs, ok := workflow["jobs"].(map[string]any)
+		require.True(t, ok, entry.Name())
+		for jobName, rawJob := range jobs {
+			job, ok := rawJob.(map[string]any)
+			require.True(t, ok, "%s job %s", entry.Name(), jobName)
+			steps, _ := job["steps"].([]any)
+			for stepIndex, rawStep := range steps {
+				step, ok := rawStep.(map[string]any)
+				require.True(t, ok, "%s job %s step %d", entry.Name(), jobName, stepIndex)
+				env, exists := step["env"]
+				if !exists {
+					continue
+				}
+				envMap, ok := env.(map[string]any)
+				require.True(t, ok, "%s job %s step %d env must be a mapping", entry.Name(), jobName, stepIndex)
+				require.NotEmpty(t, envMap, "%s job %s step %d has an empty env mapping", entry.Name(), jobName, stepIndex)
+			}
+		}
+	}
+}
+
 func mustWorkflow(t *testing.T, name string) map[string]any {
 	t.Helper()
 	workflow, _ := readWorkflow(t, name)
