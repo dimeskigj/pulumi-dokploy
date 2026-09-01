@@ -54,6 +54,12 @@ EXPECTED_BUILD_GATES = (
 RELEASE_ACTION = "pulumi/action-release-by-pr-label@a90569296b805a3179b81c1860f5777073cc7aa2"
 PUBLISH_GO_ACTION = "pulumi/publish-go-sdk-action@0a153fa3c54227a3c0f7c97a57033ecfe94ab3c2"
 GO_VERSION = "1.25.13"
+REGISTRY_ENVIRONMENT_VARIABLES = (
+    "DOKPLOY_REGISTRY_URL",
+    "DOKPLOY_REGISTRY_USERNAME",
+    "DOKPLOY_REGISTRY_PASSWORD",
+    "DOKPLOY_REGISTRY_IMAGE_PREFIX",
+)
 KNOWN_MISE_SHA256 = {
     "mise.toml": "6e4d48dfc6ba5bc647f8de223f35044793ae73aea8ff52f5e989a1dd597f1b08",
     "mise.test.toml": "25d93429d74aefa3c4c59cafc6c33dbbd00b1a876714855eaaadc7a6c8ded0c9",
@@ -164,6 +170,43 @@ def exact_remove(path: Path, old: str) -> None:
     if count != 1:
         raise SystemExit(f"expected at most one removable generated pattern: count={count}")
     path.write_text(text.replace(old, "", 1))
+
+
+def wire_acceptance_live_credentials(path: Path) -> None:
+    credential_step = """    - name: Require Dokploy acceptance credentials
+      env:
+        DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}
+        DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}
+      run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"
+"""
+    gated_credential_step = """    - name: Require Dokploy acceptance credentials
+      env:
+        DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}
+        DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}
+        DOKPLOY_REGISTRY_URL: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_URL }}
+        DOKPLOY_REGISTRY_USERNAME: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_USERNAME }}
+        DOKPLOY_REGISTRY_PASSWORD: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_PASSWORD }}
+        DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
+      run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY" && test -n "$DOKPLOY_REGISTRY_URL" && test -n "$DOKPLOY_REGISTRY_USERNAME" && test -n "$DOKPLOY_REGISTRY_PASSWORD"
+"""
+    text = path.read_text()
+    if gated_credential_step in text:
+        # A previous normalization interrupted after inserting the old step;
+        # remove that stale duplicate while preserving the gated step.
+        exact_remove(path, credential_step)
+    else:
+        exact_once(path, credential_step, gated_credential_step)
+    live_step = """    - name: Test live provider resources
+      run: mise exec -- go test ./provider -run TestLive -v -count=1
+      env:
+        DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}
+        DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}
+        DOKPLOY_REGISTRY_URL: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_URL }}
+        DOKPLOY_REGISTRY_USERNAME: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_USERNAME }}
+        DOKPLOY_REGISTRY_PASSWORD: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_PASSWORD }}
+        DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
+"""
+    insert_in_job(path, "prerequisites", "    - name: Build Provider\n", live_step)
 
 
 def executable_run_lines(text: str) -> list[str]:
@@ -386,13 +429,7 @@ def main() -> None:
         "  prerequisites:\n    runs-on:",
         "  prerequisites:\n    environment: dokploy-acceptance\n    runs-on:",
     )
-    credential_step = """    - name: Require Dokploy acceptance credentials
-      env:
-        DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}
-        DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}
-      run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"
-"""
-    insert_in_job(acceptance, "prerequisites", "    - name: Setup Tools\n", credential_step)
+    wire_acceptance_live_credentials(acceptance)
 
     command_dispatch = WORKFLOWS / "command-dispatch.yml"
     exact_once(command_dispatch, "repository: pulumi/pulumi-dokploy", "repository: dimeskigj/pulumi-dokploy")

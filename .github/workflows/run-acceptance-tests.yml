@@ -86,7 +86,11 @@ jobs:
       env:
         DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}
         DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}
-      run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"
+        DOKPLOY_REGISTRY_URL: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_URL }}
+        DOKPLOY_REGISTRY_USERNAME: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_USERNAME }}
+        DOKPLOY_REGISTRY_PASSWORD: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_PASSWORD }}
+        DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
+      run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY" && test -n "$DOKPLOY_REGISTRY_URL" && test -n "$DOKPLOY_REGISTRY_USERNAME" && test -n "$DOKPLOY_REGISTRY_PASSWORD"
     - name: Setup Tools
       uses: ./.github/actions/setup-tools
       with:
@@ -141,6 +145,15 @@ jobs:
         labels: impact/no-changelog-required
         number: ${{ github.event.issue.number }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Test live provider resources
+      run: mise exec -- go test ./provider -run TestLive -v -count=1
+      env:
+        DOKPLOY_ENDPOINT: ${{ steps.esc-secrets.outputs.DOKPLOY_ENDPOINT }}
+        DOKPLOY_API_KEY: ${{ steps.esc-secrets.outputs.DOKPLOY_API_KEY }}
+        DOKPLOY_REGISTRY_URL: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_URL }}
+        DOKPLOY_REGISTRY_USERNAME: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_USERNAME }}
+        DOKPLOY_REGISTRY_PASSWORD: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_PASSWORD }}
+        DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
     - name: Build Provider
       run: make provider
     - name: Check worktree clean

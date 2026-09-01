@@ -125,6 +125,16 @@ class GateCommandTests(unittest.TestCase):
 
 
 class WorkflowPolicyTests(unittest.TestCase):
+    def test_acceptance_workflow_forwards_registry_credentials_only_to_live_job(self):
+        acceptance = (NORMALIZE.ROOT / ".github" / "workflows" / "run-acceptance-tests.yml").read_text()
+        live = NORMALIZE._job_sections(acceptance)["prerequisites"]
+        for variable in NORMALIZE.REGISTRY_ENVIRONMENT_VARIABLES:
+            self.assertIn(variable, live)
+        self.assertIn("DOKPLOY_REGISTRY_PASSWORD: ${{ steps.esc-secrets.outputs.DOKPLOY_REGISTRY_PASSWORD }}", live)
+        for job, section in NORMALIZE._job_sections(acceptance).items():
+            if job != "prerequisites":
+                self.assertNotIn("DOKPLOY_REGISTRY_", section)
+
     def test_pages_normalizer_restores_missing_and_drifted_workflows(self):
         for initial in (None, NORMALIZE.PAGES_WORKFLOW.replace("group: pages", "group: drifted")):
             with self.subTest(initial=initial):

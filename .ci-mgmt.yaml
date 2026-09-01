@@ -9,6 +9,10 @@ sdkModuleDir: sdk/go/dokploy
 envOverride:
   DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
   DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+  DOKPLOY_REGISTRY_URL: ${{ secrets.DOKPLOY_REGISTRY_URL }}
+  DOKPLOY_REGISTRY_USERNAME: ${{ secrets.DOKPLOY_REGISTRY_USERNAME }}
+  DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
+  DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
 esc:
   enabled: true
   environment: imports/github-secrets
