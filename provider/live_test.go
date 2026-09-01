@@ -664,12 +664,16 @@ func TestLiveApplicationMountLifecycleMatrix(t *testing.T) {
 		Name: "mount-target", EnvironmentID: environmentID,
 		Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx:1.27"}},
 	}})
+	if app.ID != "" {
+		id := app.ID
+		t.Cleanup(func() {
+			if _, err := (Application{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[ApplicationState]{ID: id}); err != nil {
+				t.Errorf("cleanup: application.delete for %s: %v", id, err)
+			}
+		})
+	}
 	requireNoError(t, err)
-	t.Cleanup(func() {
-		if _, err := (Application{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[ApplicationState]{ID: app.ID}); err != nil {
-			t.Errorf("cleanup: application.delete for %s: %v", app.ID, err)
-		}
-	})
+	require.NotEmpty(t, app.ID)
 	mounts := []MountArgs{
 		{Type: "bind", MountPath: "/mnt/bind", HostPath: stringPtr("/tmp/live-test"), ApplicationID: &app.ID},
 		{Type: "volume", MountPath: "/mnt/volume", VolumeName: stringPtr("live-test-volume"), ApplicationID: &app.ID},
