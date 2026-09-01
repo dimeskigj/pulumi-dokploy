@@ -1,10 +1,26 @@
 package dokploy
 
 import (
+	"fmt"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
+	"github.com/oapi-codegen/nullable"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestMountArgsFromReconstructsAndValidatesTarget(t *testing.T) {
+	app := "a1"
+	m := generated.Mount{MountId: "m1", MountPath: stringPtr("/data"), Type: stringPtr("bind"), ServiceType: stringPtr("application"), ApplicationId: nullable.NewNullableWithValue(app)}
+	args, err := mountArgsFrom(&m, MountArgs{})
+	require.NoError(t, err)
+	require.Equal(t, "bind", args.Type)
+	require.Equal(t, app, *args.ApplicationID)
+
+	m.ServiceType = stringPtr("unsupported")
+	_, err = mountArgsFrom(&m, MountArgs{})
+	require.EqualError(t, err, `mounts.one returned unsupported serviceType "unsupported"`)
+}
 
 func TestMountTargetResolvesExactlyOneTypedID(t *testing.T) {
 	for _, test := range []struct {
@@ -32,4 +48,25 @@ func TestMountTargetRejectsZeroOrMultipleIDs(t *testing.T) {
 	require.EqualError(t, err, "exactly one target ID must be set")
 	_, err = mountTargetFor(MountArgs{ApplicationID: stringPtr("a1"), RedisID: stringPtr("r1")})
 	require.EqualError(t, err, "exactly one target ID must be set")
+}
+
+func TestMountArgsFromRejectsAmbiguousTargets(t *testing.T) {
+	m := generated.Mount{MountId: "m1", MountPath: stringPtr("/data"), Type: stringPtr("bind"), ServiceType: stringPtr("application"), ApplicationId: nullable.NewNullableWithValue("a1"), RedisId: nullable.NewNullableWithValue("r1")}
+	_, err := mountArgsFrom(&m, MountArgs{})
+	require.EqualError(t, err, "mounts.one returned ambiguous target IDs")
+}
+
+func TestSanitizeMountErrorRedactsRetainedContent(t *testing.T) {
+	content := "top-secret-content"
+	err := sanitizeMountError(fmt.Errorf("request failed: %s", content), MountArgs{Content: &content})
+	require.NotContains(t, err.Error(), content)
+}
+
+func TestDeployMountTargetSkipsConfirmedMissingTarget(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, 404, `{}`))
+	target, err := mountTargetFor(MountArgs{ApplicationID: stringPtr("a1")})
+	require.NoError(t, err)
+	exists, err := deployMountTarget(t.Context(), s.API(), target)
+	require.NoError(t, err)
+	require.False(t, exists)
 }

@@ -123,6 +123,29 @@ func TestFullLifecycleUsesProjectEnvironmentAcrossResources(t *testing.T) {
 	api.AssertRequests(t)
 }
 
+func TestMountLifecycleOrderingAndImport(t *testing.T) {
+	s := newScriptedServer(t,
+		expectPOST("/api/mounts.create", `{"content":null,"filePath":null,"hostPath":"/host","mountPath":"/data","serviceId":"a1","serviceType":"application","type":"bind","volumeName":null}`, `{"mountId":"m1"}`),
+		expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusOK, `{"mountId":"m1","mountPath":"/data","hostPath":"/host","type":"bind","serviceType":"application","applicationId":"a1"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
+		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `{}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
+		expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusOK, `{"mountId":"m1","mountPath":"/data","hostPath":"/host","type":"bind","serviceType":"application","applicationId":"a1"}`),
+	)
+	provider, err := integration.NewServer(t.Context(), Name, semver.Version{}, integration.WithProvider(Provider()))
+	require.NoError(t, err)
+	require.NoError(t, provider.Configure(p.ConfigureRequest{Args: property.NewMap(map[string]property.Value{
+		"endpoint": property.New(s.server.URL), "apiKey": property.New("test-api-key"),
+	})}))
+	created, err := provider.Create(p.CreateRequest{Urn: lifecycleURN("Mount", "mount"), Properties: property.NewMap(map[string]property.Value{
+		"type": property.New("bind"), "mountPath": property.New("/data"), "hostPath": property.New("/host"), "applicationId": property.New("a1"),
+	})})
+	require.NoError(t, err)
+	imported, err := provider.Read(p.ReadRequest{ID: created.ID, Urn: lifecycleURN("Mount", "mount")})
+	require.NoError(t, err)
+	require.Equal(t, created.ID, imported.ID)
+}
+
 func assertLifecycleSecretsRedacted(t *testing.T, expectedSecrets []string, err error) {
 	t.Helper()
 	for _, secret := range expectedSecrets {

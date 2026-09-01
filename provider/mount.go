@@ -136,8 +136,12 @@ func sanitizeMountError(err error, args MountArgs) error {
 	}
 	return sanitizeError(err, *args.Content)
 }
-func mountArgsFrom(m *generated.Mount, prior MountArgs) MountArgs {
+func mountArgsFrom(m *generated.Mount, prior MountArgs) (MountArgs, error) {
 	a := prior
+	if m.Type == nil || (*m.Type != "bind" && *m.Type != "volume" && *m.Type != "file") {
+		return MountArgs{}, fmt.Errorf("mounts.one returned unsupported type %q", value(m.Type))
+	}
+	a.Type = *m.Type
 	a.MountPath = value(m.MountPath)
 	a.HostPath = nullablePointer(m.HostPath)
 	a.VolumeName = nullablePointer(m.VolumeName)
@@ -149,7 +153,24 @@ func mountArgsFrom(m *generated.Mount, prior MountArgs) MountArgs {
 	a.MySQLID = nullablePointer(m.MysqlId)
 	a.MariaDBID = nullablePointer(m.MariadbId)
 	a.RedisID = nullablePointer(m.RedisId)
-	return a
+	ids := map[string]*string{"application": a.ApplicationID, "compose": a.ComposeID, "postgres": a.PostgresID, "mysql": a.MySQLID, "mariadb": a.MariaDBID, "redis": a.RedisID}
+	if m.ServiceType == nil {
+		return MountArgs{}, fmt.Errorf("mounts.one returned missing serviceType")
+	}
+	selected, ok := ids[*m.ServiceType]
+	if !ok {
+		return MountArgs{}, fmt.Errorf("mounts.one returned unsupported serviceType %q", *m.ServiceType)
+	}
+	count := 0
+	for _, id := range ids {
+		if id != nil && *id != "" {
+			count++
+		}
+	}
+	if count != 1 || selected == nil || *selected == "" {
+		return MountArgs{}, fmt.Errorf("mounts.one returned ambiguous target IDs")
+	}
+	return a, nil
 }
 func (r Mount) read(ctx context.Context, id string, prior MountArgs) (MountState, error) {
 	resp, err := r.client(ctx).MountsOneWithResponse(ctx, &generated.MountsOneParams{MountId: id})
@@ -159,7 +180,11 @@ func (r Mount) read(ctx context.Context, id string, prior MountArgs) (MountState
 	if resp.JSON200 == nil || resp.JSON200.MountId == "" {
 		return MountState{}, fmt.Errorf("mounts.one returned incomplete mount")
 	}
-	return MountState{MountArgs: mountArgsFrom(resp.JSON200, prior), MountID: resp.JSON200.MountId}, nil
+	a, err := mountArgsFrom(resp.JSON200, prior)
+	if err != nil {
+		return MountState{}, err
+	}
+	return MountState{MountArgs: a, MountID: resp.JSON200.MountId}, nil
 }
 func (r Mount) Create(ctx context.Context, req infer.CreateRequest[MountArgs]) (infer.CreateResponse[MountState], error) {
 	state := MountState{MountArgs: req.Inputs}
@@ -219,13 +244,14 @@ func (r Mount) Update(ctx context.Context, req infer.UpdateRequest[MountArgs, Mo
 }
 func (r Mount) Delete(ctx context.Context, req infer.DeleteRequest[MountState]) (infer.DeleteResponse, error) {
 	api := r.client(ctx)
+	retained := req.State.MountArgs
 	_, oneErr := api.MountsOneWithResponse(ctx, &generated.MountsOneParams{MountId: req.ID})
 	if oneErr != nil && !client.IsNotFound(oneErr) {
-		return infer.DeleteResponse{}, oneErr
+		return infer.DeleteResponse{}, sanitizeMountError(oneErr, retained)
 	}
 	if oneErr == nil {
 		if _, err := api.MountsRemoveWithResponse(ctx, generated.MountsRemoveJSONRequestBody{MountId: req.ID}); err != nil && !client.IsNotFound(err) {
-			return infer.DeleteResponse{}, err
+			return infer.DeleteResponse{}, sanitizeMountError(err, retained)
 		}
 	}
 	t, err := mountTargetFor(req.State.MountArgs)
@@ -233,7 +259,7 @@ func (r Mount) Delete(ctx context.Context, req infer.DeleteRequest[MountState]) 
 		return infer.DeleteResponse{}, err
 	}
 	_, err = deployMountTarget(ctx, api, t)
-	return infer.DeleteResponse{}, err
+	return infer.DeleteResponse{}, sanitizeMountError(err, retained)
 }
 func (r Mount) WireDependencies(f infer.FieldSelector, a *MountArgs, s *MountState) {
 	deps := []infer.InputField{f.InputField(&a.Type), f.InputField(&a.MountPath), f.InputField(&a.HostPath), f.InputField(&a.VolumeName), f.InputField(&a.FilePath), f.InputField(&a.Content), f.InputField(&a.ApplicationID), f.InputField(&a.ComposeID), f.InputField(&a.PostgresID), f.InputField(&a.MySQLID), f.InputField(&a.MariaDBID), f.InputField(&a.RedisID)}
