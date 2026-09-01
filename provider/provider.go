@@ -52,6 +52,7 @@ func Provider() p.Provider {
 			infer.Resource(&Registry{client: configuredClient}),
 			infer.Resource(&Tag{client: configuredClient}),
 			infer.Resource(&ProjectTag{client: configuredClient}),
+			infer.Resource(&Mount{client: configuredClient}),
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{"provider": "index"},
 	})

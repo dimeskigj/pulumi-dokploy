@@ -35,7 +35,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB",
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
-		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag",
+		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
