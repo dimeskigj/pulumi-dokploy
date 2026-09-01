@@ -155,6 +155,11 @@ func schemaProperty(spec schema.PackageSpec, resourceToken, property string) sch
 		docker := spec.Types[trimTypeRef(source.Properties["docker"].Ref)]
 		return docker.Properties["password"]
 	}
+	if strings.HasPrefix(property, "source.git.") {
+		source := spec.Types[trimTypeRef(resource.InputProperties["source"].Ref)]
+		git := spec.Types[trimTypeRef(source.Properties["git"].Ref)]
+		return git.Properties[strings.TrimPrefix(property, "source.git.")]
+	}
 	return resource.InputProperties[property]
 }
 

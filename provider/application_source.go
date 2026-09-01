@@ -56,6 +56,7 @@ type GitApplicationSource struct {
 	URL              string           `pulumi:"url"`
 	Branch           string           `pulumi:"branch"`
 	BuildPath        *string          `pulumi:"buildPath,optional"`
+	SSHKeyID         *string          `pulumi:"sshKeyId,optional"`
 	WatchPaths       []string         `pulumi:"watchPaths,optional"`
 	EnableSubmodules bool             `pulumi:"enableSubmodules,optional"`
 	Build            ApplicationBuild `pulumi:"build"`
@@ -66,6 +67,7 @@ func (s *GitApplicationSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.URL, "The Git repository URL.")
 	a.Describe(&s.Branch, "The Git branch.")
 	a.Describe(&s.BuildPath, "The build path.")
+	a.Describe(&s.SSHKeyID, "The SSH key ID.")
 	a.Describe(&s.WatchPaths, "Paths to watch.")
 	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
 	a.Describe(&s.Build, "The build configuration.")
@@ -237,9 +239,12 @@ func configureApplicationSource(ctx context.Context, api *client.Client, id stri
 		_, err = api.ApplicationSaveDockerProviderWithResponse(ctx, body)
 	case SourceGit:
 		s := source.Git
-		body := generated.ApplicationSaveGitProviderJSONRequestBody{ApplicationId: id, CustomGitBranch: s.Branch, EnableSubmodules: &s.EnableSubmodules, CustomGitUrl: nullable.NewNullableWithValue(s.URL), WatchPaths: nullable.NewNullableWithValue(s.WatchPaths)}
+		body := generated.ApplicationSaveGitProviderJSONRequestBody{ApplicationId: id, CustomGitBranch: s.Branch, EnableSubmodules: &s.EnableSubmodules, CustomGitUrl: nullable.NewNullableWithValue(s.URL), WatchPaths: nullable.NewNullableWithValue(s.WatchPaths), CustomGitSSHKeyId: nullable.NewNullNullable[string]()}
 		if s.BuildPath != nil {
 			body.CustomGitBuildPath = nullable.NewNullableWithValue(*s.BuildPath)
+		}
+		if s.SSHKeyID != nil {
+			body.CustomGitSSHKeyId = nullable.NewNullableWithValue(*s.SSHKeyID)
 		}
 		_, err = api.ApplicationSaveGitProviderWithResponse(ctx, body)
 	case SourceGitLab:

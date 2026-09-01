@@ -2,6 +2,7 @@ package dokploy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -14,16 +15,18 @@ import (
 )
 
 type ApplicationArgs struct {
-	Name          string            `pulumi:"name"`
-	AppName       *string           `pulumi:"appName,optional"`
-	Description   *string           `pulumi:"description,optional"`
-	EnvironmentID string            `pulumi:"environmentId" provider:"replaceOnChanges"`
-	ServerID      *string           `pulumi:"serverId,optional" provider:"replaceOnChanges"`
-	Source        ApplicationSource `pulumi:"source"`
-	Environment   *string           `pulumi:"environment,optional" provider:"secret"`
-	BuildArgs     *string           `pulumi:"buildArgs,optional" provider:"secret"`
-	BuildSecrets  *string           `pulumi:"buildSecrets,optional" provider:"secret"`
-	CreateEnvFile bool              `pulumi:"createEnvFile,optional"`
+	Name            string            `pulumi:"name"`
+	AppName         *string           `pulumi:"appName,optional"`
+	Description     *string           `pulumi:"description,optional"`
+	EnvironmentID   string            `pulumi:"environmentId" provider:"replaceOnChanges"`
+	ServerID        *string           `pulumi:"serverId,optional" provider:"replaceOnChanges"`
+	RegistryID      *string           `pulumi:"registryId,optional"`
+	BuildRegistryID *string           `pulumi:"buildRegistryId,optional"`
+	Source          ApplicationSource `pulumi:"source"`
+	Environment     *string           `pulumi:"environment,optional" provider:"secret"`
+	BuildArgs       *string           `pulumi:"buildArgs,optional" provider:"secret"`
+	BuildSecrets    *string           `pulumi:"buildSecrets,optional" provider:"secret"`
+	CreateEnvFile   bool              `pulumi:"createEnvFile,optional"`
 }
 
 type ApplicationState struct {
@@ -49,6 +52,8 @@ func (a *ApplicationArgs) Annotate(annotator infer.Annotator) {
 	annotator.Describe(&a.Description, "An optional application description.")
 	annotator.Describe(&a.EnvironmentID, "The target environment ID.")
 	annotator.Describe(&a.ServerID, "The optional server ID.")
+	annotator.Describe(&a.RegistryID, "The optional deployment registry ID.")
+	annotator.Describe(&a.BuildRegistryID, "The optional build registry ID.")
 	annotator.Describe(&a.Source, "The application source configuration.")
 	annotator.Describe(&a.Environment, "Environment variables for the application.")
 	annotator.Describe(&a.BuildArgs, "Build arguments for the application.")
@@ -80,6 +85,12 @@ func (r Application) Diff(_ context.Context, req infer.DiffRequest[ApplicationAr
 	}
 	if !sameOptionalString(req.Inputs.ServerID, req.State.ServerID) {
 		d["serverId"] = p.PropertyDiff{Kind: p.UpdateReplace}
+	}
+	if !sameOptionalString(req.Inputs.RegistryID, req.State.RegistryID) {
+		d["registryId"] = p.PropertyDiff{Kind: p.Update}
+	}
+	if !sameOptionalString(req.Inputs.BuildRegistryID, req.State.BuildRegistryID) {
+		d["buildRegistryId"] = p.PropertyDiff{Kind: p.Update}
 	}
 	if req.Inputs.Source.Type != req.State.Source.Type {
 		d["source.type"] = p.PropertyDiff{Kind: p.UpdateReplace}
@@ -144,6 +155,11 @@ func (r Application) Create(ctx context.Context, req infer.CreateRequest[Applica
 	if err := configureApplicationSource(ctx, api, state.ApplicationID, req.Inputs.Source); err != nil {
 		return failSetup(sanitizeApplicationError(err, req.Inputs))
 	}
+	if req.Inputs.RegistryID != nil || req.Inputs.BuildRegistryID != nil {
+		if _, err := api.ApplicationUpdateWithResponse(ctx, applicationRegistryUpdate(state.ApplicationID, req.Inputs)); err != nil {
+			return failSetup(sanitizeApplicationError(err, req.Inputs))
+		}
+	}
 	if err := configureApplicationBuild(ctx, api, state.ApplicationID, req.Inputs.Source); err != nil {
 		return failSetup(sanitizeApplicationError(err, req.Inputs))
 	}
@@ -175,19 +191,33 @@ func configureApplicationEnvironment(ctx context.Context, api *client.Client, id
 	return sanitizeApplicationError(err, args)
 }
 
-func sanitizeApplicationError(err error, args ApplicationArgs) error {
+func applicationNullableString(value *string) nullable.Nullable[string] {
+	if value == nil {
+		return nullable.NewNullNullable[string]()
+	}
+	return nullable.NewNullableWithValue(*value)
+}
+
+func applicationRegistryUpdate(id string, args ApplicationArgs) generated.ApplicationUpdateJSONRequestBody {
+	return generated.ApplicationUpdateJSONRequestBody{ApplicationId: id, RegistryId: applicationNullableString(args.RegistryID), BuildRegistryId: applicationNullableString(args.BuildRegistryID)}
+}
+
+func sanitizeApplicationError(err error, args ApplicationArgs, prior ...ApplicationArgs) error {
 	secrets := []string{}
-	if args.Environment != nil {
-		secrets = append(secrets, *args.Environment)
-	}
-	if args.BuildArgs != nil {
-		secrets = append(secrets, *args.BuildArgs)
-	}
-	if args.BuildSecrets != nil {
-		secrets = append(secrets, *args.BuildSecrets)
-	}
-	if args.Source.Docker != nil && args.Source.Docker.Password != nil {
-		secrets = append(secrets, *args.Source.Docker.Password)
+	allArgs := append([]ApplicationArgs{args}, prior...)
+	for _, current := range allArgs {
+		if current.Environment != nil {
+			secrets = append(secrets, *current.Environment)
+		}
+		if current.BuildArgs != nil {
+			secrets = append(secrets, *current.BuildArgs)
+		}
+		if current.BuildSecrets != nil {
+			secrets = append(secrets, *current.BuildSecrets)
+		}
+		if current.Source.Docker != nil && current.Source.Docker.Password != nil {
+			secrets = append(secrets, *current.Source.Docker.Password)
+		}
 	}
 	return sanitizeError(err, secrets...)
 }
@@ -215,13 +245,20 @@ func (r Application) Read(ctx context.Context, req infer.ReadRequest[Application
 		return infer.ReadResponse[ApplicationArgs, ApplicationState]{}, fmt.Errorf("application.one returned incomplete application")
 	}
 	a := response.JSON200
+	readProperties := a.AdditionalProperties
+	var rawProperties map[string]interface{}
+	if err := json.Unmarshal(response.Body, &rawProperties); err == nil {
+		readProperties = rawProperties
+	}
 	args := req.State.ApplicationArgs
 	args.Name, args.EnvironmentID = value(a.Name), value(a.EnvironmentId)
 	args.AppName, args.Description, args.ServerID = a.AppName, a.Description, a.ServerId
+	args.RegistryID = stringPointer(readProperties, "registryId")
+	args.BuildRegistryID = stringPointer(readProperties, "buildRegistryId")
 	if a.CreateEnvFile != nil {
 		args.CreateEnvFile = *a.CreateEnvFile
 	}
-	decoded, err := decodeApplicationSource(a.AdditionalProperties, args.Source)
+	decoded, err := decodeApplicationSource(readProperties, args.Source)
 	if err != nil {
 		return infer.ReadResponse[ApplicationArgs, ApplicationState]{}, err
 	}
@@ -260,7 +297,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		if url == "" || branch == "" {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required git url or branch")
 		}
-		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: stringPointer(m, "buildPath", "customGitBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: stringPointer(m, "buildPath", "customGitBuildPath"), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
 		result.Git.Build = decodeBuild(m)
 	case SourceGitLab:
 		integration := stringValue(m, "integrationId", "gitlabId")
@@ -334,32 +371,37 @@ func (r Application) Update(ctx context.Context, req infer.UpdateRequest[Applica
 		return infer.UpdateResponse[ApplicationState]{Output: state}, nil
 	}
 	metadataChanged := req.Inputs.Name != req.State.Name || !sameOptionalString(req.Inputs.AppName, req.State.AppName) || !sameOptionalString(req.Inputs.Description, req.State.Description)
-	runtimeChanged := !reflect.DeepEqual(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile
-	if metadataChanged {
+	registryChanged := !sameOptionalString(req.Inputs.RegistryID, req.State.RegistryID) || !sameOptionalString(req.Inputs.BuildRegistryID, req.State.BuildRegistryID)
+	runtimeChanged := !reflect.DeepEqual(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile || registryChanged
+	if metadataChanged || registryChanged {
 		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID, AppName: req.Inputs.AppName, Name: &req.Inputs.Name, Description: nullable.NewNullNullable[string]()}
 		if req.Inputs.Description != nil {
 			body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
 		}
+		if registryChanged {
+			body.RegistryId = applicationNullableString(req.Inputs.RegistryID)
+			body.BuildRegistryId = applicationNullableString(req.Inputs.BuildRegistryID)
+		}
 		if _, err := r.client(ctx).ApplicationUpdateWithResponse(ctx, body); err != nil {
-			return infer.UpdateResponse[ApplicationState]{}, sanitizeApplicationError(err, req.Inputs)
+			return infer.UpdateResponse[ApplicationState]{}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
 	}
 	if runtimeChanged {
 		api := r.client(ctx)
 		if err := configureApplicationSource(ctx, api, req.ID, req.Inputs.Source); err != nil {
-			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
 		if err := configureApplicationBuild(ctx, api, req.ID, req.Inputs.Source); err != nil {
-			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
 		if err := configureApplicationEnvironment(ctx, api, req.ID, req.Inputs); err != nil {
-			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
 		if _, err := api.ApplicationRedeployWithResponse(ctx, generated.ApplicationRedeployJSONRequestBody{ApplicationId: req.ID}); err != nil {
-			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
 		if err := waitForDone(ctx, "application", req.ID, func(ctx context.Context) (string, error) { return applicationStatus(ctx, api, req.ID) }); err != nil {
-			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs)
+			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
 		state.Status = statusDone
 	}
@@ -376,7 +418,7 @@ func (r Application) Delete(ctx context.Context, req infer.DeleteRequest[Applica
 
 func (r Application) WireDependencies(f infer.FieldSelector, args *ApplicationArgs, state *ApplicationState) {
 	deps := []infer.InputField{
-		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.CreateEnvFile),
+		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.RegistryID), f.InputField(&args.BuildRegistryID), f.InputField(&args.CreateEnvFile),
 	}
 	f.OutputField(&state.ApplicationID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)

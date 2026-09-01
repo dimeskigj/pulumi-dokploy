@@ -80,6 +80,57 @@ func TestApplicationReadPreservesWriteOnlySecrets(t *testing.T) {
 	require.Equal(t, "nginx", got.Inputs.Source.Docker.Image)
 }
 
+func TestApplicationReadRestoresSSHAndRegistries(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","customGitSSHKeyId":"key-1","buildType":"nixpacks","registryId":"registry-1","buildRegistryId":"build-registry-1"}`))
+	got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1"})
+	require.NoError(t, err)
+	require.Equal(t, "key-1", *got.Inputs.Source.Git.SSHKeyID)
+	require.NotNil(t, got.Inputs.RegistryID)
+	require.NotNil(t, got.Inputs.BuildRegistryID)
+	require.Equal(t, "registry-1", *got.Inputs.RegistryID)
+	require.Equal(t, "build-registry-1", *got.Inputs.BuildRegistryID)
+}
+
+func TestApplicationRegistryUpdateRedeploysAndPolls(t *testing.T) {
+	oldPoll := waitPollInterval
+	waitPollInterval = 0
+	t.Cleanup(func() { waitPollInterval = oldPoll })
+	s := newScriptedServer(t,
+		expectPOST("/api/application.update", `{"applicationId":"a1","buildRegistryId":"build-registry-1","description":null,"name":"demo","registryId":"registry-1"}`, `{}`),
+		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"","registryUrl":"","username":""}`, `true`),
+		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
+		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
+	)
+	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", RegistryID: stringPtr("registry-1"), BuildRegistryID: stringPtr("build-registry-1"), Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
+	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
+	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs}})
+	require.NoError(t, err)
+}
+
+func TestApplicationRegistryClearingSendsExplicitNulls(t *testing.T) {
+	s := newScriptedServer(t,
+		expectPOST("/api/application.update", `{"applicationId":"a1","buildRegistryId":null,"description":null,"name":"demo","registryId":null}`, `{}`),
+		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"","registryUrl":"","username":""}`, `true`),
+		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
+		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
+	)
+	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", RegistryID: stringPtr("registry-1"), BuildRegistryID: stringPtr("build-registry-1"), Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
+	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
+	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs}})
+	require.NoError(t, err)
+}
+
+func TestApplicationUpdateSanitizesPriorSecrets(t *testing.T) {
+	s := newScriptedServer(t, scriptedRequest{Method: http.MethodPost, Path: "/api/application.update", Body: json.RawMessage(`{"applicationId":"a1","description":"new","name":"demo"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"old-secret"}`)})
+	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Description: stringPtr("new")}
+	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: stringPtr("old-secret")}
+	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs}})
+	require.Error(t, err)
+	require.NotContains(t, err.Error(), "old-secret")
+}
+
 func TestApplicationReadReconstructsObservableFieldsAndPreservesSecrets(t *testing.T) {
 	password := "prior-password"
 	tests := []struct {
@@ -147,7 +198,7 @@ func TestApplicationRuntimeSourceUpdateConfiguresProviderAndBuildBeforeEnvironme
 	waitPollInterval = 0
 	t.Cleanup(func() { waitPollInterval = oldInterval })
 	s := newScriptedServer(t,
-		expectPOST("/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"src","customGitUrl":"https://example.test/repo","enableSubmodules":false,"watchPaths":null}`, `true`),
+		expectPOST("/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"src","customGitSSHKeyId":null,"customGitUrl":"https://example.test/repo","enableSubmodules":false,"watchPaths":null}`, `true`),
 		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
@@ -286,7 +337,7 @@ func TestApplicationCreateGitOrdersProviderBuildEnvironmentAndDeploy(t *testing.
 	t.Cleanup(func() { waitPollInterval = oldInterval })
 	s := newScriptedServer(t,
 		expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
-		expectPOST("/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"app","customGitUrl":"https://example.test/repo","enableSubmodules":true,"watchPaths":["src/**"]}`, `true`),
+		expectPOST("/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"app","customGitSSHKeyId":null,"customGitUrl":"https://example.test/repo","enableSubmodules":true,"watchPaths":["src/**"]}`, `true`),
 		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":true,"env":null}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`),
@@ -342,9 +393,9 @@ func TestApplicationCreateGitAndGitLabSetupFailuresCleanUp(t *testing.T) {
 		provider     string
 		providerBody string
 	}{
-		{"git-source", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "source", "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
-		{"git-build", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "build", "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
-		{"git-environment", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "environment", "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"git-source", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "source", "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitSSHKeyId":null,"customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"git-build", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "build", "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitSSHKeyId":null,"customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"git-environment", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "environment", "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitSSHKeyId":null,"customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
 		{"gitlab-source", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "source", "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
 		{"gitlab-build", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "build", "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
 		{"gitlab-environment", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "environment", "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
@@ -390,7 +441,7 @@ func TestApplicationCreateGitAndGitLabDeployFailuresReturnPartialStateWithoutSec
 		path   string
 		body   string
 	}{
-		{"git", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"git", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitSSHKeyId":null,"customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
 		{"gitlab", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
 	}
 	for _, tc := range tests {
@@ -415,7 +466,7 @@ func TestApplicationCreateGitAndGitLabPollFailuresRedactEnvironmentAndBuildValue
 		path   string
 		body   string
 	}{
-		{"git", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"git", ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitSSHKeyId":null,"customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
 		{"gitlab", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "i", ProjectID: 42, Owner: "o", Namespace: "n", Repository: "r", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, "/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"","gitlabId":"i","gitlabOwner":"o","gitlabPathNamespace":"n","gitlabProjectId":42,"gitlabRepository":"r","watchPaths":null}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
