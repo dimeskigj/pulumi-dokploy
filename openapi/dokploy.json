@@ -8190,6 +8190,551 @@
         ]
       }
     },
+    "/mounts.create": {
+      "post": {
+        "operationId": "mounts-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "content": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "filePath": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "hostPath": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mountPath": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "serviceId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "serviceType": {
+                    "enum": [
+                      "application",
+                      "postgres",
+                      "mysql",
+                      "mariadb",
+                      "mongo",
+                      "redis",
+                      "compose",
+                      "libsql"
+                    ],
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": [
+                      "bind",
+                      "volume",
+                      "file"
+                    ],
+                    "type": "string"
+                  },
+                  "volumeName": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "mountPath",
+                  "serviceId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mount"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mounts"
+        ]
+      }
+    },
+    "/mounts.one": {
+      "get": {
+        "operationId": "mounts-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mountId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mount"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mounts"
+        ]
+      }
+    },
+    "/mounts.remove": {
+      "post": {
+        "operationId": "mounts-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mountId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mountId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mounts"
+        ]
+      }
+    },
+    "/mounts.update": {
+      "post": {
+        "operationId": "mounts-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "applicationId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "composeId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "content": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "filePath": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "hostPath": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "libsqlId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mariadbId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mongoId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mountId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "mountPath": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "mysqlId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "postgresId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "redisId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "serviceType": {
+                    "enum": [
+                      "application",
+                      "postgres",
+                      "mysql",
+                      "mariadb",
+                      "mongo",
+                      "redis",
+                      "compose",
+                      "libsql"
+                    ],
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": [
+                      "bind",
+                      "volume",
+                      "file"
+                    ],
+                    "type": "string"
+                  },
+                  "volumeName": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mountId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mount"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "mounts"
+        ]
+      }
+    },
     "/mysql.create": {
       "post": {
         "operationId": "mysql-create",
@@ -9438,6 +9983,81 @@
         ],
         "tags": [
           "mysql"
+        ]
+      }
+    },
+    "/organization.active": {
+      "get": {
+        "operationId": "organization-active",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "organization"
         ]
       }
     },
@@ -12277,6 +12897,1384 @@
         ]
       }
     },
+    "/registry.create": {
+      "post": {
+        "operationId": "registry-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "imagePrefix": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "password": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "registryName": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "registryType": {
+                    "enum": [
+                      "cloud"
+                    ],
+                    "type": "string"
+                  },
+                  "registryUrl": {
+                    "type": "string"
+                  },
+                  "serverId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "registryName",
+                  "username",
+                  "password",
+                  "registryUrl",
+                  "registryType",
+                  "imagePrefix"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/registry.one": {
+      "get": {
+        "operationId": "registry-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "registryId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/registry.remove": {
+      "post": {
+        "operationId": "registry-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "registryId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "registryId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/registry.testRegistry": {
+      "post": {
+        "operationId": "registry-testRegistry",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "imagePrefix": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "password": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "registryName": {
+                    "type": "string"
+                  },
+                  "registryType": {
+                    "enum": [
+                      "cloud"
+                    ],
+                    "type": "string"
+                  },
+                  "registryUrl": {
+                    "type": "string"
+                  },
+                  "serverId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "password",
+                  "registryUrl",
+                  "registryType"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/registry.update": {
+      "post": {
+        "operationId": "registry-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/sshKey.create": {
+      "post": {
+        "operationId": "sshKey-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "privateKey": {
+                    "type": "string"
+                  },
+                  "publicKey": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "privateKey",
+                  "publicKey",
+                  "organizationId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SSHKey"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "sshKey"
+        ]
+      }
+    },
+    "/sshKey.one": {
+      "get": {
+        "operationId": "sshKey-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sshKeyId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SSHKey"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "sshKey"
+        ]
+      }
+    },
+    "/sshKey.remove": {
+      "post": {
+        "operationId": "sshKey-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sshKeyId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sshKeyId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "sshKey"
+        ]
+      }
+    },
+    "/sshKey.update": {
+      "post": {
+        "operationId": "sshKey-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "lastUsedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "sshKeyId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sshKeyId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SSHKey"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "sshKey"
+        ]
+      }
+    },
+    "/tag.assignToProject": {
+      "post": {
+        "operationId": "tag-assignToProject",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "projectId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tagId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "projectId",
+                  "tagId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "tag"
+        ]
+      }
+    },
+    "/tag.create": {
+      "post": {
+        "operationId": "tag-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "color": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tag"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "tag"
+        ]
+      }
+    },
+    "/tag.one": {
+      "get": {
+        "operationId": "tag-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tagId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tag"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "tag"
+        ]
+      }
+    },
+    "/tag.remove": {
+      "post": {
+        "operationId": "tag-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "tagId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tagId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "tag"
+        ]
+      }
+    },
+    "/tag.removeFromProject": {
+      "post": {
+        "operationId": "tag-removeFromProject",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "projectId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tagId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "projectId",
+                  "tagId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "tag"
+        ]
+      }
+    },
+    "/tag.update": {
+      "post": {
+        "operationId": "tag-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "color": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "tagId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tagId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tag"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "tag"
+        ]
+      }
+    },
     "/volumeBackups.create": {
       "post": {
         "operationId": "volumeBackups-create",
@@ -12916,139 +14914,166 @@
   "components": {
     "schemas": {
       "Application": {
-        "type": "object",
+        "additionalProperties": true,
         "properties": {
-          "applicationId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
           "appName": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
-          "environmentId": {
-            "type": "string"
-          },
-          "serverId": {
+          "applicationId": {
             "type": "string"
           },
           "applicationStatus": {
             "type": "string"
           },
-          "env": {
-            "type": "string"
-          },
           "buildArgs": {
             "type": "string"
+          },
+          "buildRegistryId": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "buildSecrets": {
             "type": "string"
           },
           "createEnvFile": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": true
-      },
-      "Backup": {
-        "type": "object",
-        "properties": {
-          "backupId": {
-            "type": "string"
-          },
-          "schedule": {
-            "type": "string"
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "prefix": {
-            "type": "string"
-          },
-          "destinationId": {
-            "type": "string"
-          },
-          "database": {
-            "type": "string"
-          },
-          "keepLatestCount": {
-            "type": "integer"
-          },
-          "databaseType": {
-            "type": "string"
-          },
-          "postgresId": {
-            "type": "string"
-          },
-          "mariadbId": {
-            "type": "string"
-          },
-          "mysqlId": {
-            "type": "string"
-          },
-          "mongoId": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": true
-      },
-      "Compose": {
-        "type": "object",
-        "properties": {
-          "composeId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "appName": {
-            "type": "string"
           },
           "description": {
-            "type": "string"
-          },
-          "environmentId": {
-            "type": "string"
-          },
-          "serverId": {
-            "type": "string"
-          },
-          "composeType": {
             "type": "string"
           },
           "env": {
             "type": "string"
           },
-          "createEnvFile": {
-            "type": "boolean"
+          "environmentId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "registryId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serverId": {
+            "type": "string"
           }
         },
-        "additionalProperties": true
+        "type": "object"
+      },
+      "Backup": {
+        "additionalProperties": true,
+        "properties": {
+          "backupId": {
+            "type": "string"
+          },
+          "database": {
+            "type": "string"
+          },
+          "databaseType": {
+            "type": "string"
+          },
+          "destinationId": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLatestCount": {
+            "type": "integer"
+          },
+          "mariadbId": {
+            "type": "string"
+          },
+          "mongoId": {
+            "type": "string"
+          },
+          "mysqlId": {
+            "type": "string"
+          },
+          "postgresId": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "schedule": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Compose": {
+        "additionalProperties": true,
+        "properties": {
+          "appName": {
+            "type": "string"
+          },
+          "composeId": {
+            "type": "string"
+          },
+          "composeType": {
+            "type": "string"
+          },
+          "createEnvFile": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "env": {
+            "type": "string"
+          },
+          "environmentId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "serverId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
       },
       "CreateProjectResult": {
-        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "environment": {
+            "$ref": "#/components/schemas/Environment"
+          },
+          "project": {
+            "$ref": "#/components/schemas/Project"
+          }
+        },
         "required": [
           "project",
           "environment"
         ],
-        "properties": {
-          "project": {
-            "$ref": "#/components/schemas/Project"
-          },
-          "environment": {
-            "$ref": "#/components/schemas/Environment"
-          }
-        },
-        "additionalProperties": true
+        "type": "object"
       },
       "Destination": {
-        "type": "object",
+        "additionalProperties": true,
         "properties": {
+          "accessKey": {
+            "type": "string"
+          },
+          "additionalFlags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "bucket": {
+            "type": "string"
+          },
           "destinationId": {
+            "type": "string"
+          },
+          "endpoint": {
             "type": "string"
           },
           "name": {
@@ -13057,193 +15082,295 @@
           "provider": {
             "type": "string"
           },
-          "accessKey": {
+          "region": {
             "type": "string"
           },
           "secretAccessKey": {
             "type": "string"
           },
-          "bucket": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "endpoint": {
-            "type": "string"
-          },
-          "additionalFlags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
           "serverId": {
             "type": "string"
           }
         },
-        "additionalProperties": true
+        "type": "object"
       },
       "Domain": {
-        "type": "object",
+        "additionalProperties": true,
         "properties": {
-          "domainId": {
+          "applicationId": {
             "type": "string"
           },
-          "applicationId": {
+          "certificateType": {
             "type": "string"
           },
           "composeId": {
             "type": "string"
           },
-          "serviceName": {
+          "customCertResolver": {
             "type": "string"
           },
+          "domainId": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
           "host": {
+            "type": "string"
+          },
+          "https": {
+            "type": "boolean"
+          },
+          "internalPath": {
             "type": "string"
           },
           "path": {
             "type": "string"
           },
-          "internalPath": {
-            "type": "string"
-          },
           "port": {
             "type": "integer"
           },
-          "https": {
-            "type": "boolean"
-          },
-          "certificateType": {
-            "type": "string"
-          },
-          "customCertResolver": {
+          "serviceName": {
             "type": "string"
           },
           "stripPath": {
             "type": "boolean"
-          },
-          "enabled": {
-            "type": "boolean"
           }
         },
-        "additionalProperties": true
+        "type": "object"
       },
       "Environment": {
-        "type": "object",
+        "additionalProperties": true,
         "properties": {
-          "environmentId": {
+          "description": {
             "type": "string"
           },
-          "projectId": {
+          "environmentId": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "description": {
+          "projectId": {
             "type": "string"
           }
         },
-        "additionalProperties": true
+        "type": "object"
       },
       "MariaDB": {
-        "type": "object",
+        "additionalProperties": true,
         "properties": {
+          "appName": {
+            "type": "string"
+          },
+          "databaseName": {
+            "type": "string"
+          },
+          "databaseUser": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "env": {
+            "type": "string"
+          },
+          "environmentId": {
+            "type": "string"
+          },
+          "externalPort": {
+            "type": "integer"
+          },
+          "image": {
+            "type": "string"
+          },
           "mariadbId": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "appName": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "environmentId": {
-            "type": "string"
-          },
           "serverId": {
             "type": "string"
-          },
-          "databaseName": {
+          }
+        },
+        "type": "object"
+      },
+      "MongoDB": {
+        "additionalProperties": true,
+        "properties": {
+          "appName": {
             "type": "string"
           },
           "databaseUser": {
             "type": "string"
           },
-          "image": {
+          "description": {
             "type": "string"
           },
           "env": {
             "type": "string"
           },
+          "environmentId": {
+            "type": "string"
+          },
           "externalPort": {
             "type": "integer"
-          }
-        },
-        "additionalProperties": true
-      },
-      "MongoDB": {
-        "type": "object",
-        "properties": {
+          },
+          "image": {
+            "type": "string"
+          },
           "mongoId": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
+          "replicaSets": {
+            "type": "boolean"
+          },
+          "serverId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Mount": {
+        "additionalProperties": true,
+        "properties": {
+          "applicationId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "composeId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "filePath": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hostPath": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mariadbId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mountId": {
+            "type": "string"
+          },
+          "mountPath": {
+            "type": "string"
+          },
+          "mysqlId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "postgresId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "redisId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "volumeName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "mountId"
+        ],
+        "type": "object"
+      },
+      "MySQL": {
+        "additionalProperties": true,
+        "properties": {
           "appName": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
-          "environmentId": {
-            "type": "string"
-          },
-          "serverId": {
+          "databaseName": {
             "type": "string"
           },
           "databaseUser": {
             "type": "string"
           },
-          "image": {
+          "description": {
             "type": "string"
           },
           "env": {
             "type": "string"
           },
+          "environmentId": {
+            "type": "string"
+          },
           "externalPort": {
             "type": "integer"
           },
-          "replicaSets": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": true
-      },
-      "MySQL": {
-        "type": "object",
-        "properties": {
+          "image": {
+            "type": "string"
+          },
           "mysqlId": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "appName": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "environmentId": {
-            "type": "string"
-          },
           "serverId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Organization": {
+        "additionalProperties": true,
+        "properties": {
+          "organizationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "organizationId"
+        ],
+        "type": "object"
+      },
+      "Postgres": {
+        "additionalProperties": true,
+        "properties": {
+          "appName": {
             "type": "string"
           },
           "databaseName": {
@@ -13252,28 +15379,37 @@
           "databaseUser": {
             "type": "string"
           },
-          "image": {
+          "description": {
             "type": "string"
           },
           "env": {
             "type": "string"
           },
+          "environmentId": {
+            "type": "string"
+          },
           "externalPort": {
             "type": "integer"
-          }
-        },
-        "additionalProperties": true
-      },
-      "Postgres": {
-        "type": "object",
-        "properties": {
+          },
+          "image": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
           "postgresId": {
             "type": "string"
           },
-          "name": {
+          "serverId": {
             "type": "string"
-          },
-          "appName": {
+          }
+        },
+        "type": "object"
+      },
+      "Project": {
+        "additionalProperties": true,
+        "properties": {
+          "defaultEnvironmentId": {
             "type": "string"
           },
           "description": {
@@ -13282,116 +15418,203 @@
           "environmentId": {
             "type": "string"
           },
-          "serverId": {
+          "name": {
             "type": "string"
           },
-          "databaseName": {
-            "type": "string"
-          },
-          "databaseUser": {
-            "type": "string"
-          },
-          "image": {
-            "type": "string"
-          },
-          "env": {
-            "type": "string"
-          },
-          "externalPort": {
-            "type": "integer"
-          }
-        },
-        "additionalProperties": true
-      },
-      "Project": {
-        "type": "object",
-        "properties": {
           "projectId": {
             "type": "string"
           },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "environmentId": {
-            "type": "string"
-          },
-          "defaultEnvironmentId": {
-            "type": "string"
+          "tags": {
+            "items": {
+              "additionalProperties": true,
+              "properties": {
+                "tagId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "tagId"
+              ],
+              "type": "object"
+            },
+            "type": "array"
           }
         },
-        "additionalProperties": true
+        "type": "object"
       },
       "Redis": {
-        "type": "object",
+        "additionalProperties": true,
         "properties": {
-          "redisId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
           "appName": {
             "type": "string"
           },
           "description": {
-            "type": "string"
-          },
-          "environmentId": {
-            "type": "string"
-          },
-          "serverId": {
-            "type": "string"
-          },
-          "image": {
             "type": "string"
           },
           "env": {
             "type": "string"
           },
+          "environmentId": {
+            "type": "string"
+          },
           "externalPort": {
             "type": "integer"
-          }
-        },
-        "additionalProperties": true
-      },
-      "VolumeBackup": {
-        "type": "object",
-        "properties": {
-          "volumeBackupId": {
+          },
+          "image": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "volumeName": {
+          "redisId": {
             "type": "string"
           },
-          "prefix": {
+          "serverId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Registry": {
+        "additionalProperties": true,
+        "properties": {
+          "imagePrefix": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "password": {
             "type": "string"
           },
-          "serviceType": {
+          "registryId": {
             "type": "string"
           },
+          "registryName": {
+            "type": "string"
+          },
+          "registryType": {
+            "type": "string"
+          },
+          "registryUrl": {
+            "type": "string"
+          },
+          "serverId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "registryId"
+        ],
+        "type": "object"
+      },
+      "RegistryUpdateRequest": {
+        "additionalProperties": true,
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "imagePrefix": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "registryId": {
+            "type": "string"
+          },
+          "registryName": {
+            "type": "string"
+          },
+          "registryType": {
+            "type": "string"
+          },
+          "registryUrl": {
+            "type": "string"
+          },
+          "serverId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "registryId"
+        ],
+        "type": "object"
+      },
+      "SSHKey": {
+        "additionalProperties": true,
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "privateKey": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          },
+          "sshKeyId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sshKeyId"
+        ],
+        "type": "object"
+      },
+      "Tag": {
+        "additionalProperties": true,
+        "properties": {
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "tagId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tagId"
+        ],
+        "type": "object"
+      },
+      "VolumeBackup": {
+        "additionalProperties": true,
+        "properties": {
           "appName": {
             "type": "string"
-          },
-          "serviceName": {
-            "type": "string"
-          },
-          "turnOff": {
-            "type": "boolean"
-          },
-          "cronExpression": {
-            "type": "string"
-          },
-          "keepLatestCount": {
-            "type": "integer"
-          },
-          "enabled": {
-            "type": "boolean"
           },
           "applicationId": {
             "type": "string"
@@ -13399,11 +15622,41 @@
           "composeId": {
             "type": "string"
           },
+          "cronExpression": {
+            "type": "string"
+          },
           "destinationId": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLatestCount": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "turnOff": {
+            "type": "boolean"
+          },
+          "volumeBackupId": {
+            "type": "string"
+          },
+          "volumeName": {
             "type": "string"
           }
         },
-        "additionalProperties": true
+        "type": "object"
       },
       "error.BAD_REQUEST": {
         "type": "object",

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -39,7 +40,69 @@ func contractWithout(names ...string) *Document {
 	return d
 }
 func corrections() Corrections {
-	return Corrections{Responses: map[string]string{"project.create": "CreateProjectResult"}, Schemas: map[string]json.RawMessage{"CreateProjectResult": json.RawMessage(`{"type":"object"}`)}}
+	return Corrections{Responses: map[string]string{"project.create": "CreateProjectResult"}, Schemas: map[string]any{"CreateProjectResult": map[string]any{"type": "object"}}}
+}
+
+var newResourceOperations = []string{
+	"organization.active", "sshKey.create", "sshKey.one", "sshKey.update", "sshKey.remove",
+	"registry.create", "registry.one", "registry.update", "registry.remove", "registry.testRegistry",
+	"tag.create", "tag.one", "tag.update", "tag.remove", "tag.assignToProject", "tag.removeFromProject",
+	"mounts.create", "mounts.one", "mounts.update", "mounts.remove",
+}
+
+func newResourceFixture(t *testing.T) *Document {
+	t.Helper()
+	d := normalizeFixture(t)
+	for _, n := range newResourceOperations {
+		op := &Operation{OperationID: strings.Replace(n, ".", "-", 1), Raw: map[string]any{"responses": map[string]any{"200": map[string]any{}}}}
+		if n == "registry.update" {
+			op.Raw["requestBody"] = map[string]any{"content": map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object"}}}}
+		}
+		d.Paths["/"+n] = &PathItem{Post: op, Methods: map[string]*Operation{"post": op}}
+	}
+	return d
+}
+
+func normalizedOperationIDs(t *testing.T, d *Document) []string {
+	t.Helper()
+	ids := make([]string, 0, len(d.Paths))
+	for _, path := range d.Paths {
+		for _, operation := range allOperations(path) {
+			ids = append(ids, operation.OperationID)
+		}
+	}
+	return ids
+}
+
+func operationRequestSchema(t *testing.T, d *Document, operationID string) map[string]any {
+	t.Helper()
+	for _, path := range d.Paths {
+		for _, operation := range allOperations(path) {
+			if operation.OperationID != strings.Replace(operationID, ".", "-", 1) {
+				continue
+			}
+			requestBody := operation.Raw["requestBody"].(map[string]any)
+			content := requestBody["content"].(map[string]any)
+			applicationJSON := content["application/json"].(map[string]any)
+			schema := applicationJSON["schema"].(map[string]any)
+			if ref, ok := schema["$ref"].(string); ok {
+				name := strings.TrimPrefix(ref, "#/components/schemas/")
+				var resolved map[string]any
+				require.NoError(t, json.Unmarshal(d.Components.Schemas[name], &resolved))
+				return resolved
+			}
+			return schema
+		}
+	}
+	t.Fatalf("operation %s not found", operationID)
+	return nil
+}
+
+func schemaPropertyTypes(t *testing.T, schema map[string]any, property string) []any {
+	t.Helper()
+	properties := schema["properties"].(map[string]any)
+	propertySchema := properties[property].(map[string]any)
+	return propertySchema["type"].([]any)
 }
 func responseSchema(t *testing.T, d *Document, path, method, status string) struct {
 	Ref string `json:"$ref"`
@@ -107,8 +170,8 @@ func TestNormalizeRetainsCorrectionTransitiveReferences(t *testing.T) {
 	c.Components.Schemas["UpstreamLeaf"] = json.RawMessage(`{"type":"string"}`)
 	corr := Corrections{
 		Responses: map[string]string{"project.create": "Corrected"},
-		Schemas: map[string]json.RawMessage{
-			"Corrected": json.RawMessage(`{"type":"object","properties":{"value":{"$ref":"#/components/schemas/UpstreamLeaf"}}}`),
+		Schemas: map[string]any{
+			"Corrected": map[string]any{"type": "object", "properties": map[string]any{"value": map[string]any{"$ref": "#/components/schemas/UpstreamLeaf"}}},
 		},
 	}
 	d, err := normalize(c, []string{"project.create"}, corr)
@@ -141,4 +204,21 @@ func TestNormalizeUsesDefinedSecurityScheme(t *testing.T) {
 			require.Equal(t, "apiKey", name)
 		}
 	}
+}
+
+func TestNormalizeSelectsNewResourceOperations(t *testing.T) {
+	output, err := normalize(newResourceFixture(t), newResourceOperations, Corrections{})
+	require.NoError(t, err)
+	for _, operation := range newResourceOperations {
+		require.Contains(t, normalizedOperationIDs(t, output), strings.Replace(operation, ".", "-", 1), operation)
+	}
+}
+
+func TestNormalizeCorrectsRegistryUpdateServerIDToNullable(t *testing.T) {
+	var c Corrections
+	require.NoError(t, json.Unmarshal([]byte(`{"requests":{"registry.update":"RegistryUpdateRequest"},"schemas":{"RegistryUpdateRequest":{"type":"object","properties":{"serverId":{"type":["string","null"]}}}}}`), &c))
+	output, err := normalize(newResourceFixture(t), newResourceOperations, c)
+	require.NoError(t, err)
+	schema := operationRequestSchema(t, output, "registry.update")
+	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, schema, "serverId"))
 }

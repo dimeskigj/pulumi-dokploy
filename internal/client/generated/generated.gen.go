@@ -495,6 +495,120 @@ func (e MongoUpdateJSONBodyApplicationStatus) Valid() bool {
 	}
 }
 
+// Defines values for MountsCreateJSONBodyServiceType.
+const (
+	MountsCreateJSONBodyServiceTypeApplication MountsCreateJSONBodyServiceType = "application"
+	MountsCreateJSONBodyServiceTypeCompose     MountsCreateJSONBodyServiceType = "compose"
+	MountsCreateJSONBodyServiceTypeLibsql      MountsCreateJSONBodyServiceType = "libsql"
+	MountsCreateJSONBodyServiceTypeMariadb     MountsCreateJSONBodyServiceType = "mariadb"
+	MountsCreateJSONBodyServiceTypeMongo       MountsCreateJSONBodyServiceType = "mongo"
+	MountsCreateJSONBodyServiceTypeMysql       MountsCreateJSONBodyServiceType = "mysql"
+	MountsCreateJSONBodyServiceTypePostgres    MountsCreateJSONBodyServiceType = "postgres"
+	MountsCreateJSONBodyServiceTypeRedis       MountsCreateJSONBodyServiceType = "redis"
+)
+
+// Valid indicates whether the value is a known member of the MountsCreateJSONBodyServiceType enum.
+func (e MountsCreateJSONBodyServiceType) Valid() bool {
+	switch e {
+	case MountsCreateJSONBodyServiceTypeApplication:
+		return true
+	case MountsCreateJSONBodyServiceTypeCompose:
+		return true
+	case MountsCreateJSONBodyServiceTypeLibsql:
+		return true
+	case MountsCreateJSONBodyServiceTypeMariadb:
+		return true
+	case MountsCreateJSONBodyServiceTypeMongo:
+		return true
+	case MountsCreateJSONBodyServiceTypeMysql:
+		return true
+	case MountsCreateJSONBodyServiceTypePostgres:
+		return true
+	case MountsCreateJSONBodyServiceTypeRedis:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MountsCreateJSONBodyType.
+const (
+	MountsCreateJSONBodyTypeBind   MountsCreateJSONBodyType = "bind"
+	MountsCreateJSONBodyTypeFile   MountsCreateJSONBodyType = "file"
+	MountsCreateJSONBodyTypeVolume MountsCreateJSONBodyType = "volume"
+)
+
+// Valid indicates whether the value is a known member of the MountsCreateJSONBodyType enum.
+func (e MountsCreateJSONBodyType) Valid() bool {
+	switch e {
+	case MountsCreateJSONBodyTypeBind:
+		return true
+	case MountsCreateJSONBodyTypeFile:
+		return true
+	case MountsCreateJSONBodyTypeVolume:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MountsUpdateJSONBodyServiceType.
+const (
+	MountsUpdateJSONBodyServiceTypeApplication MountsUpdateJSONBodyServiceType = "application"
+	MountsUpdateJSONBodyServiceTypeCompose     MountsUpdateJSONBodyServiceType = "compose"
+	MountsUpdateJSONBodyServiceTypeLibsql      MountsUpdateJSONBodyServiceType = "libsql"
+	MountsUpdateJSONBodyServiceTypeMariadb     MountsUpdateJSONBodyServiceType = "mariadb"
+	MountsUpdateJSONBodyServiceTypeMongo       MountsUpdateJSONBodyServiceType = "mongo"
+	MountsUpdateJSONBodyServiceTypeMysql       MountsUpdateJSONBodyServiceType = "mysql"
+	MountsUpdateJSONBodyServiceTypePostgres    MountsUpdateJSONBodyServiceType = "postgres"
+	MountsUpdateJSONBodyServiceTypeRedis       MountsUpdateJSONBodyServiceType = "redis"
+)
+
+// Valid indicates whether the value is a known member of the MountsUpdateJSONBodyServiceType enum.
+func (e MountsUpdateJSONBodyServiceType) Valid() bool {
+	switch e {
+	case MountsUpdateJSONBodyServiceTypeApplication:
+		return true
+	case MountsUpdateJSONBodyServiceTypeCompose:
+		return true
+	case MountsUpdateJSONBodyServiceTypeLibsql:
+		return true
+	case MountsUpdateJSONBodyServiceTypeMariadb:
+		return true
+	case MountsUpdateJSONBodyServiceTypeMongo:
+		return true
+	case MountsUpdateJSONBodyServiceTypeMysql:
+		return true
+	case MountsUpdateJSONBodyServiceTypePostgres:
+		return true
+	case MountsUpdateJSONBodyServiceTypeRedis:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MountsUpdateJSONBodyType.
+const (
+	MountsUpdateJSONBodyTypeBind   MountsUpdateJSONBodyType = "bind"
+	MountsUpdateJSONBodyTypeFile   MountsUpdateJSONBodyType = "file"
+	MountsUpdateJSONBodyTypeVolume MountsUpdateJSONBodyType = "volume"
+)
+
+// Valid indicates whether the value is a known member of the MountsUpdateJSONBodyType enum.
+func (e MountsUpdateJSONBodyType) Valid() bool {
+	switch e {
+	case MountsUpdateJSONBodyTypeBind:
+		return true
+	case MountsUpdateJSONBodyTypeFile:
+		return true
+	case MountsUpdateJSONBodyTypeVolume:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for MysqlUpdateJSONBodyApplicationStatus.
 const (
 	MysqlUpdateJSONBodyApplicationStatusDone    MysqlUpdateJSONBodyApplicationStatus = "done"
@@ -561,6 +675,36 @@ func (e RedisUpdateJSONBodyApplicationStatus) Valid() bool {
 	case RedisUpdateJSONBodyApplicationStatusIdle:
 		return true
 	case RedisUpdateJSONBodyApplicationStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegistryCreateJSONBodyRegistryType.
+const (
+	RegistryCreateJSONBodyRegistryTypeCloud RegistryCreateJSONBodyRegistryType = "cloud"
+)
+
+// Valid indicates whether the value is a known member of the RegistryCreateJSONBodyRegistryType enum.
+func (e RegistryCreateJSONBodyRegistryType) Valid() bool {
+	switch e {
+	case RegistryCreateJSONBodyRegistryTypeCloud:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegistryTestRegistryJSONBodyRegistryType.
+const (
+	RegistryTestRegistryJSONBodyRegistryTypeCloud RegistryTestRegistryJSONBodyRegistryType = "cloud"
+)
+
+// Valid indicates whether the value is a known member of the RegistryTestRegistryJSONBodyRegistryType enum.
+func (e RegistryTestRegistryJSONBodyRegistryType) Valid() bool {
+	switch e {
+	case RegistryTestRegistryJSONBodyRegistryTypeCloud:
 		return true
 	default:
 		return false
@@ -641,18 +785,20 @@ func (e VolumeBackupsUpdateJSONBodyServiceType) Valid() bool {
 
 // Application defines model for Application.
 type Application struct {
-	AppName              *string                `json:"appName,omitempty"`
-	ApplicationId        *string                `json:"applicationId,omitempty"`
-	ApplicationStatus    *string                `json:"applicationStatus,omitempty"`
-	BuildArgs            *string                `json:"buildArgs,omitempty"`
-	BuildSecrets         *string                `json:"buildSecrets,omitempty"`
-	CreateEnvFile        *bool                  `json:"createEnvFile,omitempty"`
-	Description          *string                `json:"description,omitempty"`
-	Env                  *string                `json:"env,omitempty"`
-	EnvironmentId        *string                `json:"environmentId,omitempty"`
-	Name                 *string                `json:"name,omitempty"`
-	ServerId             *string                `json:"serverId,omitempty"`
-	AdditionalProperties map[string]interface{} `json:"-"`
+	AppName              *string                   `json:"appName,omitempty"`
+	ApplicationId        *string                   `json:"applicationId,omitempty"`
+	ApplicationStatus    *string                   `json:"applicationStatus,omitempty"`
+	BuildArgs            *string                   `json:"buildArgs,omitempty"`
+	BuildRegistryId      nullable.Nullable[string] `json:"buildRegistryId,omitempty"`
+	BuildSecrets         *string                   `json:"buildSecrets,omitempty"`
+	CreateEnvFile        *bool                     `json:"createEnvFile,omitempty"`
+	Description          *string                   `json:"description,omitempty"`
+	Env                  *string                   `json:"env,omitempty"`
+	EnvironmentId        *string                   `json:"environmentId,omitempty"`
+	Name                 *string                   `json:"name,omitempty"`
+	RegistryId           nullable.Nullable[string] `json:"registryId,omitempty"`
+	ServerId             *string                   `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
 }
 
 // Backup defines model for Backup.
@@ -767,6 +913,25 @@ type MongoDB struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// Mount defines model for Mount.
+type Mount struct {
+	ApplicationId        nullable.Nullable[string] `json:"applicationId,omitempty"`
+	ComposeId            nullable.Nullable[string] `json:"composeId,omitempty"`
+	Content              nullable.Nullable[string] `json:"content,omitempty"`
+	FilePath             nullable.Nullable[string] `json:"filePath,omitempty"`
+	HostPath             nullable.Nullable[string] `json:"hostPath,omitempty"`
+	MariadbId            nullable.Nullable[string] `json:"mariadbId,omitempty"`
+	MountId              string                    `json:"mountId"`
+	MountPath            *string                   `json:"mountPath,omitempty"`
+	MysqlId              nullable.Nullable[string] `json:"mysqlId,omitempty"`
+	PostgresId           nullable.Nullable[string] `json:"postgresId,omitempty"`
+	RedisId              nullable.Nullable[string] `json:"redisId,omitempty"`
+	ServiceType          *string                   `json:"serviceType,omitempty"`
+	Type                 *string                   `json:"type,omitempty"`
+	VolumeName           nullable.Nullable[string] `json:"volumeName,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
 // MySQL defines model for MySQL.
 type MySQL struct {
 	AppName              *string                `json:"appName,omitempty"`
@@ -780,6 +945,12 @@ type MySQL struct {
 	MysqlId              *string                `json:"mysqlId,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	ServerId             *string                `json:"serverId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// Organization defines model for Organization.
+type Organization struct {
+	OrganizationId       string                 `json:"organizationId"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -806,6 +977,13 @@ type Project struct {
 	EnvironmentId        *string                `json:"environmentId,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	ProjectId            *string                `json:"projectId,omitempty"`
+	Tags                 *[]Project_Tags_Item   `json:"tags,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// Project_Tags_Item defines model for Project.tags.Item.
+type Project_Tags_Item struct {
+	TagId                string                 `json:"tagId"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -821,6 +999,53 @@ type Redis struct {
 	RedisId              *string                `json:"redisId,omitempty"`
 	ServerId             *string                `json:"serverId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// Registry defines model for Registry.
+type Registry struct {
+	ImagePrefix          nullable.Nullable[string] `json:"imagePrefix,omitempty"`
+	Password             *string                   `json:"password,omitempty"`
+	RegistryId           string                    `json:"registryId"`
+	RegistryName         *string                   `json:"registryName,omitempty"`
+	RegistryType         *string                   `json:"registryType,omitempty"`
+	RegistryUrl          *string                   `json:"registryUrl,omitempty"`
+	ServerId             nullable.Nullable[string] `json:"serverId,omitempty"`
+	Username             *string                   `json:"username,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// RegistryUpdateRequest defines model for RegistryUpdateRequest.
+type RegistryUpdateRequest struct {
+	CreatedAt            *string                   `json:"createdAt,omitempty"`
+	ImagePrefix          nullable.Nullable[string] `json:"imagePrefix,omitempty"`
+	OrganizationId       *string                   `json:"organizationId,omitempty"`
+	Password             *string                   `json:"password,omitempty"`
+	RegistryId           string                    `json:"registryId"`
+	RegistryName         *string                   `json:"registryName,omitempty"`
+	RegistryType         *string                   `json:"registryType,omitempty"`
+	RegistryUrl          *string                   `json:"registryUrl,omitempty"`
+	ServerId             nullable.Nullable[string] `json:"serverId,omitempty"`
+	Username             *string                   `json:"username,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// SSHKey defines model for SSHKey.
+type SSHKey struct {
+	Description          nullable.Nullable[string] `json:"description,omitempty"`
+	Name                 *string                   `json:"name,omitempty"`
+	OrganizationId       *string                   `json:"organizationId,omitempty"`
+	PrivateKey           *string                   `json:"privateKey,omitempty"`
+	PublicKey            *string                   `json:"publicKey,omitempty"`
+	SshKeyId             string                    `json:"sshKeyId"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// Tag defines model for Tag.
+type Tag struct {
+	Color                nullable.Nullable[string] `json:"color,omitempty"`
+	Name                 *string                   `json:"name,omitempty"`
+	TagId                string                    `json:"tagId"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
 }
 
 // VolumeBackup defines model for VolumeBackup.
@@ -1774,6 +1999,60 @@ type MongoUpdateJSONBody struct {
 // MongoUpdateJSONBodyApplicationStatus defines parameters for MongoUpdate.
 type MongoUpdateJSONBodyApplicationStatus string
 
+// MountsCreateJSONBody defines parameters for MountsCreate.
+type MountsCreateJSONBody struct {
+	Content     nullable.Nullable[string]        `json:"content,omitempty"`
+	FilePath    nullable.Nullable[string]        `json:"filePath,omitempty"`
+	HostPath    nullable.Nullable[string]        `json:"hostPath,omitempty"`
+	MountPath   string                           `json:"mountPath"`
+	ServiceId   string                           `json:"serviceId"`
+	ServiceType *MountsCreateJSONBodyServiceType `json:"serviceType,omitempty"`
+	Type        MountsCreateJSONBodyType         `json:"type"`
+	VolumeName  nullable.Nullable[string]        `json:"volumeName,omitempty"`
+}
+
+// MountsCreateJSONBodyServiceType defines parameters for MountsCreate.
+type MountsCreateJSONBodyServiceType string
+
+// MountsCreateJSONBodyType defines parameters for MountsCreate.
+type MountsCreateJSONBodyType string
+
+// MountsOneParams defines parameters for MountsOne.
+type MountsOneParams struct {
+	MountId string `form:"mountId" json:"mountId"`
+}
+
+// MountsRemoveJSONBody defines parameters for MountsRemove.
+type MountsRemoveJSONBody struct {
+	MountId string `json:"mountId"`
+}
+
+// MountsUpdateJSONBody defines parameters for MountsUpdate.
+type MountsUpdateJSONBody struct {
+	ApplicationId nullable.Nullable[string]        `json:"applicationId,omitempty"`
+	ComposeId     nullable.Nullable[string]        `json:"composeId,omitempty"`
+	Content       nullable.Nullable[string]        `json:"content,omitempty"`
+	FilePath      nullable.Nullable[string]        `json:"filePath,omitempty"`
+	HostPath      nullable.Nullable[string]        `json:"hostPath,omitempty"`
+	LibsqlId      nullable.Nullable[string]        `json:"libsqlId,omitempty"`
+	MariadbId     nullable.Nullable[string]        `json:"mariadbId,omitempty"`
+	MongoId       nullable.Nullable[string]        `json:"mongoId,omitempty"`
+	MountId       string                           `json:"mountId"`
+	MountPath     *string                          `json:"mountPath,omitempty"`
+	MysqlId       nullable.Nullable[string]        `json:"mysqlId,omitempty"`
+	PostgresId    nullable.Nullable[string]        `json:"postgresId,omitempty"`
+	RedisId       nullable.Nullable[string]        `json:"redisId,omitempty"`
+	ServiceType   *MountsUpdateJSONBodyServiceType `json:"serviceType,omitempty"`
+	Type          *MountsUpdateJSONBodyType        `json:"type,omitempty"`
+	VolumeName    nullable.Nullable[string]        `json:"volumeName,omitempty"`
+}
+
+// MountsUpdateJSONBodyServiceType defines parameters for MountsUpdate.
+type MountsUpdateJSONBodyServiceType string
+
+// MountsUpdateJSONBodyType defines parameters for MountsUpdate.
+type MountsUpdateJSONBodyType string
+
 // MysqlCreateJSONBody defines parameters for MysqlCreate.
 type MysqlCreateJSONBody struct {
 	AppName              *string                   `json:"appName,omitempty"`
@@ -2228,6 +2507,108 @@ type RedisUpdateJSONBody struct {
 // RedisUpdateJSONBodyApplicationStatus defines parameters for RedisUpdate.
 type RedisUpdateJSONBodyApplicationStatus string
 
+// RegistryCreateJSONBody defines parameters for RegistryCreate.
+type RegistryCreateJSONBody struct {
+	ImagePrefix  nullable.Nullable[string]          `json:"imagePrefix"`
+	Password     string                             `json:"password"`
+	RegistryName string                             `json:"registryName"`
+	RegistryType RegistryCreateJSONBodyRegistryType `json:"registryType"`
+	RegistryUrl  string                             `json:"registryUrl"`
+	ServerId     *string                            `json:"serverId,omitempty"`
+	Username     string                             `json:"username"`
+}
+
+// RegistryCreateJSONBodyRegistryType defines parameters for RegistryCreate.
+type RegistryCreateJSONBodyRegistryType string
+
+// RegistryOneParams defines parameters for RegistryOne.
+type RegistryOneParams struct {
+	RegistryId string `form:"registryId" json:"registryId"`
+}
+
+// RegistryRemoveJSONBody defines parameters for RegistryRemove.
+type RegistryRemoveJSONBody struct {
+	RegistryId string `json:"registryId"`
+}
+
+// RegistryTestRegistryJSONBody defines parameters for RegistryTestRegistry.
+type RegistryTestRegistryJSONBody struct {
+	ImagePrefix  nullable.Nullable[string]                `json:"imagePrefix,omitempty"`
+	Password     string                                   `json:"password"`
+	RegistryName *string                                  `json:"registryName,omitempty"`
+	RegistryType RegistryTestRegistryJSONBodyRegistryType `json:"registryType"`
+	RegistryUrl  string                                   `json:"registryUrl"`
+	ServerId     *string                                  `json:"serverId,omitempty"`
+	Username     string                                   `json:"username"`
+}
+
+// RegistryTestRegistryJSONBodyRegistryType defines parameters for RegistryTestRegistry.
+type RegistryTestRegistryJSONBodyRegistryType string
+
+// SshKeyCreateJSONBody defines parameters for SshKeyCreate.
+type SshKeyCreateJSONBody struct {
+	Description    nullable.Nullable[string] `json:"description,omitempty"`
+	Name           string                    `json:"name"`
+	OrganizationId string                    `json:"organizationId"`
+	PrivateKey     string                    `json:"privateKey"`
+	PublicKey      string                    `json:"publicKey"`
+}
+
+// SshKeyOneParams defines parameters for SshKeyOne.
+type SshKeyOneParams struct {
+	SshKeyId string `form:"sshKeyId" json:"sshKeyId"`
+}
+
+// SshKeyRemoveJSONBody defines parameters for SshKeyRemove.
+type SshKeyRemoveJSONBody struct {
+	SshKeyId string `json:"sshKeyId"`
+}
+
+// SshKeyUpdateJSONBody defines parameters for SshKeyUpdate.
+type SshKeyUpdateJSONBody struct {
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+	LastUsedAt  nullable.Nullable[string] `json:"lastUsedAt,omitempty"`
+	Name        *string                   `json:"name,omitempty"`
+	SshKeyId    string                    `json:"sshKeyId"`
+}
+
+// TagAssignToProjectJSONBody defines parameters for TagAssignToProject.
+type TagAssignToProjectJSONBody struct {
+	ProjectId string `json:"projectId"`
+	TagId     string `json:"tagId"`
+}
+
+// TagCreateJSONBody defines parameters for TagCreate.
+type TagCreateJSONBody struct {
+	Color nullable.Nullable[string] `json:"color,omitempty"`
+	Name  string                    `json:"name"`
+}
+
+// TagOneParams defines parameters for TagOne.
+type TagOneParams struct {
+	TagId string `form:"tagId" json:"tagId"`
+}
+
+// TagRemoveJSONBody defines parameters for TagRemove.
+type TagRemoveJSONBody struct {
+	TagId string `json:"tagId"`
+}
+
+// TagRemoveFromProjectJSONBody defines parameters for TagRemoveFromProject.
+type TagRemoveFromProjectJSONBody struct {
+	ProjectId string `json:"projectId"`
+	TagId     string `json:"tagId"`
+}
+
+// TagUpdateJSONBody defines parameters for TagUpdate.
+type TagUpdateJSONBody struct {
+	Color          nullable.Nullable[string] `json:"color,omitempty"`
+	CreatedAt      *string                   `json:"createdAt,omitempty"`
+	Name           *string                   `json:"name,omitempty"`
+	OrganizationId *string                   `json:"organizationId,omitempty"`
+	TagId          string                    `json:"tagId"`
+}
+
 // VolumeBackupsCreateJSONBody defines parameters for VolumeBackupsCreate.
 type VolumeBackupsCreateJSONBody struct {
 	AppName         *string                                 `json:"appName,omitempty"`
@@ -2419,6 +2800,15 @@ type MongoSaveExternalPortJSONRequestBody MongoSaveExternalPortJSONBody
 // MongoUpdateJSONRequestBody defines body for MongoUpdate for application/json ContentType.
 type MongoUpdateJSONRequestBody MongoUpdateJSONBody
 
+// MountsCreateJSONRequestBody defines body for MountsCreate for application/json ContentType.
+type MountsCreateJSONRequestBody MountsCreateJSONBody
+
+// MountsRemoveJSONRequestBody defines body for MountsRemove for application/json ContentType.
+type MountsRemoveJSONRequestBody MountsRemoveJSONBody
+
+// MountsUpdateJSONRequestBody defines body for MountsUpdate for application/json ContentType.
+type MountsUpdateJSONRequestBody MountsUpdateJSONBody
+
 // MysqlCreateJSONRequestBody defines body for MysqlCreate for application/json ContentType.
 type MysqlCreateJSONRequestBody MysqlCreateJSONBody
 
@@ -2481,6 +2871,42 @@ type RedisSaveExternalPortJSONRequestBody RedisSaveExternalPortJSONBody
 
 // RedisUpdateJSONRequestBody defines body for RedisUpdate for application/json ContentType.
 type RedisUpdateJSONRequestBody RedisUpdateJSONBody
+
+// RegistryCreateJSONRequestBody defines body for RegistryCreate for application/json ContentType.
+type RegistryCreateJSONRequestBody RegistryCreateJSONBody
+
+// RegistryRemoveJSONRequestBody defines body for RegistryRemove for application/json ContentType.
+type RegistryRemoveJSONRequestBody RegistryRemoveJSONBody
+
+// RegistryTestRegistryJSONRequestBody defines body for RegistryTestRegistry for application/json ContentType.
+type RegistryTestRegistryJSONRequestBody RegistryTestRegistryJSONBody
+
+// RegistryUpdateJSONRequestBody defines body for RegistryUpdate for application/json ContentType.
+type RegistryUpdateJSONRequestBody = RegistryUpdateRequest
+
+// SshKeyCreateJSONRequestBody defines body for SshKeyCreate for application/json ContentType.
+type SshKeyCreateJSONRequestBody SshKeyCreateJSONBody
+
+// SshKeyRemoveJSONRequestBody defines body for SshKeyRemove for application/json ContentType.
+type SshKeyRemoveJSONRequestBody SshKeyRemoveJSONBody
+
+// SshKeyUpdateJSONRequestBody defines body for SshKeyUpdate for application/json ContentType.
+type SshKeyUpdateJSONRequestBody SshKeyUpdateJSONBody
+
+// TagAssignToProjectJSONRequestBody defines body for TagAssignToProject for application/json ContentType.
+type TagAssignToProjectJSONRequestBody TagAssignToProjectJSONBody
+
+// TagCreateJSONRequestBody defines body for TagCreate for application/json ContentType.
+type TagCreateJSONRequestBody TagCreateJSONBody
+
+// TagRemoveJSONRequestBody defines body for TagRemove for application/json ContentType.
+type TagRemoveJSONRequestBody TagRemoveJSONBody
+
+// TagRemoveFromProjectJSONRequestBody defines body for TagRemoveFromProject for application/json ContentType.
+type TagRemoveFromProjectJSONRequestBody TagRemoveFromProjectJSONBody
+
+// TagUpdateJSONRequestBody defines body for TagUpdate for application/json ContentType.
+type TagUpdateJSONRequestBody TagUpdateJSONBody
 
 // VolumeBackupsCreateJSONRequestBody defines body for VolumeBackupsCreate for application/json ContentType.
 type VolumeBackupsCreateJSONRequestBody VolumeBackupsCreateJSONBody
@@ -2548,6 +2974,14 @@ func (a *Application) UnmarshalJSON(b []byte) error {
 		delete(object, "buildArgs")
 	}
 
+	if raw, found := object["buildRegistryId"]; found {
+		err = json.Unmarshal(raw, &a.BuildRegistryId)
+		if err != nil {
+			return fmt.Errorf("error reading 'buildRegistryId': %w", err)
+		}
+		delete(object, "buildRegistryId")
+	}
+
 	if raw, found := object["buildSecrets"]; found {
 		err = json.Unmarshal(raw, &a.BuildSecrets)
 		if err != nil {
@@ -2594,6 +3028,14 @@ func (a *Application) UnmarshalJSON(b []byte) error {
 			return fmt.Errorf("error reading 'name': %w", err)
 		}
 		delete(object, "name")
+	}
+
+	if raw, found := object["registryId"]; found {
+		err = json.Unmarshal(raw, &a.RegistryId)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryId': %w", err)
+		}
+		delete(object, "registryId")
 	}
 
 	if raw, found := object["serverId"]; found {
@@ -2651,6 +3093,13 @@ func (a Application) MarshalJSON() ([]byte, error) {
 		}
 	}
 
+	if a.BuildRegistryId != nil {
+		object["buildRegistryId"], err = json.Marshal(a.BuildRegistryId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'buildRegistryId': %w", err)
+		}
+	}
+
 	if a.BuildSecrets != nil {
 		object["buildSecrets"], err = json.Marshal(a.BuildSecrets)
 		if err != nil {
@@ -2690,6 +3139,13 @@ func (a Application) MarshalJSON() ([]byte, error) {
 		object["name"], err = json.Marshal(a.Name)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.RegistryId != nil {
+		object["registryId"], err = json.Marshal(a.RegistryId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'registryId': %w", err)
 		}
 	}
 
@@ -4209,6 +4665,267 @@ func (a MongoDB) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for Mount. Returns the specified
+// element and whether it was found
+func (a Mount) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Mount
+func (a *Mount) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Mount to handle AdditionalProperties
+func (a *Mount) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["applicationId"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationId': %w", err)
+		}
+		delete(object, "applicationId")
+	}
+
+	if raw, found := object["composeId"]; found {
+		err = json.Unmarshal(raw, &a.ComposeId)
+		if err != nil {
+			return fmt.Errorf("error reading 'composeId': %w", err)
+		}
+		delete(object, "composeId")
+	}
+
+	if raw, found := object["content"]; found {
+		err = json.Unmarshal(raw, &a.Content)
+		if err != nil {
+			return fmt.Errorf("error reading 'content': %w", err)
+		}
+		delete(object, "content")
+	}
+
+	if raw, found := object["filePath"]; found {
+		err = json.Unmarshal(raw, &a.FilePath)
+		if err != nil {
+			return fmt.Errorf("error reading 'filePath': %w", err)
+		}
+		delete(object, "filePath")
+	}
+
+	if raw, found := object["hostPath"]; found {
+		err = json.Unmarshal(raw, &a.HostPath)
+		if err != nil {
+			return fmt.Errorf("error reading 'hostPath': %w", err)
+		}
+		delete(object, "hostPath")
+	}
+
+	if raw, found := object["mariadbId"]; found {
+		err = json.Unmarshal(raw, &a.MariadbId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mariadbId': %w", err)
+		}
+		delete(object, "mariadbId")
+	}
+
+	if raw, found := object["mountId"]; found {
+		err = json.Unmarshal(raw, &a.MountId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mountId': %w", err)
+		}
+		delete(object, "mountId")
+	}
+
+	if raw, found := object["mountPath"]; found {
+		err = json.Unmarshal(raw, &a.MountPath)
+		if err != nil {
+			return fmt.Errorf("error reading 'mountPath': %w", err)
+		}
+		delete(object, "mountPath")
+	}
+
+	if raw, found := object["mysqlId"]; found {
+		err = json.Unmarshal(raw, &a.MysqlId)
+		if err != nil {
+			return fmt.Errorf("error reading 'mysqlId': %w", err)
+		}
+		delete(object, "mysqlId")
+	}
+
+	if raw, found := object["postgresId"]; found {
+		err = json.Unmarshal(raw, &a.PostgresId)
+		if err != nil {
+			return fmt.Errorf("error reading 'postgresId': %w", err)
+		}
+		delete(object, "postgresId")
+	}
+
+	if raw, found := object["redisId"]; found {
+		err = json.Unmarshal(raw, &a.RedisId)
+		if err != nil {
+			return fmt.Errorf("error reading 'redisId': %w", err)
+		}
+		delete(object, "redisId")
+	}
+
+	if raw, found := object["serviceType"]; found {
+		err = json.Unmarshal(raw, &a.ServiceType)
+		if err != nil {
+			return fmt.Errorf("error reading 'serviceType': %w", err)
+		}
+		delete(object, "serviceType")
+	}
+
+	if raw, found := object["type"]; found {
+		err = json.Unmarshal(raw, &a.Type)
+		if err != nil {
+			return fmt.Errorf("error reading 'type': %w", err)
+		}
+		delete(object, "type")
+	}
+
+	if raw, found := object["volumeName"]; found {
+		err = json.Unmarshal(raw, &a.VolumeName)
+		if err != nil {
+			return fmt.Errorf("error reading 'volumeName': %w", err)
+		}
+		delete(object, "volumeName")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Mount to handle AdditionalProperties
+func (a Mount) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ApplicationId != nil {
+		object["applicationId"], err = json.Marshal(a.ApplicationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	if a.ComposeId != nil {
+		object["composeId"], err = json.Marshal(a.ComposeId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'composeId': %w", err)
+		}
+	}
+
+	if a.Content != nil {
+		object["content"], err = json.Marshal(a.Content)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'content': %w", err)
+		}
+	}
+
+	if a.FilePath != nil {
+		object["filePath"], err = json.Marshal(a.FilePath)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'filePath': %w", err)
+		}
+	}
+
+	if a.HostPath != nil {
+		object["hostPath"], err = json.Marshal(a.HostPath)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'hostPath': %w", err)
+		}
+	}
+
+	if a.MariadbId != nil {
+		object["mariadbId"], err = json.Marshal(a.MariadbId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mariadbId': %w", err)
+		}
+	}
+
+	object["mountId"], err = json.Marshal(a.MountId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'mountId': %w", err)
+	}
+
+	if a.MountPath != nil {
+		object["mountPath"], err = json.Marshal(a.MountPath)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mountPath': %w", err)
+		}
+	}
+
+	if a.MysqlId != nil {
+		object["mysqlId"], err = json.Marshal(a.MysqlId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'mysqlId': %w", err)
+		}
+	}
+
+	if a.PostgresId != nil {
+		object["postgresId"], err = json.Marshal(a.PostgresId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'postgresId': %w", err)
+		}
+	}
+
+	if a.RedisId != nil {
+		object["redisId"], err = json.Marshal(a.RedisId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'redisId': %w", err)
+		}
+	}
+
+	if a.ServiceType != nil {
+		object["serviceType"], err = json.Marshal(a.ServiceType)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serviceType': %w", err)
+		}
+	}
+
+	if a.Type != nil {
+		object["type"], err = json.Marshal(a.Type)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'type': %w", err)
+		}
+	}
+
+	if a.VolumeName != nil {
+		object["volumeName"], err = json.Marshal(a.VolumeName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'volumeName': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for MySQL. Returns the specified
 // element and whether it was found
 func (a MySQL) Get(fieldName string) (value interface{}, found bool) {
@@ -4416,6 +5133,72 @@ func (a MySQL) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
 		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for Organization. Returns the specified
+// element and whether it was found
+func (a Organization) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Organization
+func (a *Organization) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Organization to handle AdditionalProperties
+func (a *Organization) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+		delete(object, "organizationId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Organization to handle AdditionalProperties
+func (a Organization) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["organizationId"], err = json.Marshal(a.OrganizationId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -4710,6 +5493,14 @@ func (a *Project) UnmarshalJSON(b []byte) error {
 		delete(object, "projectId")
 	}
 
+	if raw, found := object["tags"]; found {
+		err = json.Unmarshal(raw, &a.Tags)
+		if err != nil {
+			return fmt.Errorf("error reading 'tags': %w", err)
+		}
+		delete(object, "tags")
+	}
+
 	if len(object) != 0 {
 		a.AdditionalProperties = make(map[string]interface{})
 		for fieldName, fieldBuf := range object {
@@ -4762,6 +5553,79 @@ func (a Project) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
+	}
+
+	if a.Tags != nil {
+		object["tags"], err = json.Marshal(a.Tags)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'tags': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for Project_Tags_Item. Returns the specified
+// element and whether it was found
+func (a Project_Tags_Item) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Project_Tags_Item
+func (a *Project_Tags_Item) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Project_Tags_Item to handle AdditionalProperties
+func (a *Project_Tags_Item) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["tagId"]; found {
+		err = json.Unmarshal(raw, &a.TagId)
+		if err != nil {
+			return fmt.Errorf("error reading 'tagId': %w", err)
+		}
+		delete(object, "tagId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Project_Tags_Item to handle AdditionalProperties
+func (a Project_Tags_Item) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["tagId"], err = json.Marshal(a.TagId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'tagId': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -4950,6 +5814,615 @@ func (a Redis) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
 		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for Registry. Returns the specified
+// element and whether it was found
+func (a Registry) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Registry
+func (a *Registry) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Registry to handle AdditionalProperties
+func (a *Registry) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["imagePrefix"]; found {
+		err = json.Unmarshal(raw, &a.ImagePrefix)
+		if err != nil {
+			return fmt.Errorf("error reading 'imagePrefix': %w", err)
+		}
+		delete(object, "imagePrefix")
+	}
+
+	if raw, found := object["password"]; found {
+		err = json.Unmarshal(raw, &a.Password)
+		if err != nil {
+			return fmt.Errorf("error reading 'password': %w", err)
+		}
+		delete(object, "password")
+	}
+
+	if raw, found := object["registryId"]; found {
+		err = json.Unmarshal(raw, &a.RegistryId)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryId': %w", err)
+		}
+		delete(object, "registryId")
+	}
+
+	if raw, found := object["registryName"]; found {
+		err = json.Unmarshal(raw, &a.RegistryName)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryName': %w", err)
+		}
+		delete(object, "registryName")
+	}
+
+	if raw, found := object["registryType"]; found {
+		err = json.Unmarshal(raw, &a.RegistryType)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryType': %w", err)
+		}
+		delete(object, "registryType")
+	}
+
+	if raw, found := object["registryUrl"]; found {
+		err = json.Unmarshal(raw, &a.RegistryUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryUrl': %w", err)
+		}
+		delete(object, "registryUrl")
+	}
+
+	if raw, found := object["serverId"]; found {
+		err = json.Unmarshal(raw, &a.ServerId)
+		if err != nil {
+			return fmt.Errorf("error reading 'serverId': %w", err)
+		}
+		delete(object, "serverId")
+	}
+
+	if raw, found := object["username"]; found {
+		err = json.Unmarshal(raw, &a.Username)
+		if err != nil {
+			return fmt.Errorf("error reading 'username': %w", err)
+		}
+		delete(object, "username")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Registry to handle AdditionalProperties
+func (a Registry) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ImagePrefix != nil {
+		object["imagePrefix"], err = json.Marshal(a.ImagePrefix)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'imagePrefix': %w", err)
+		}
+	}
+
+	if a.Password != nil {
+		object["password"], err = json.Marshal(a.Password)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'password': %w", err)
+		}
+	}
+
+	object["registryId"], err = json.Marshal(a.RegistryId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'registryId': %w", err)
+	}
+
+	if a.RegistryName != nil {
+		object["registryName"], err = json.Marshal(a.RegistryName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'registryName': %w", err)
+		}
+	}
+
+	if a.RegistryType != nil {
+		object["registryType"], err = json.Marshal(a.RegistryType)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'registryType': %w", err)
+		}
+	}
+
+	if a.RegistryUrl != nil {
+		object["registryUrl"], err = json.Marshal(a.RegistryUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'registryUrl': %w", err)
+		}
+	}
+
+	if a.ServerId != nil {
+		object["serverId"], err = json.Marshal(a.ServerId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
+	}
+
+	if a.Username != nil {
+		object["username"], err = json.Marshal(a.Username)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'username': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for RegistryUpdateRequest. Returns the specified
+// element and whether it was found
+func (a RegistryUpdateRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for RegistryUpdateRequest
+func (a *RegistryUpdateRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for RegistryUpdateRequest to handle AdditionalProperties
+func (a *RegistryUpdateRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["createdAt"]; found {
+		err = json.Unmarshal(raw, &a.CreatedAt)
+		if err != nil {
+			return fmt.Errorf("error reading 'createdAt': %w", err)
+		}
+		delete(object, "createdAt")
+	}
+
+	if raw, found := object["imagePrefix"]; found {
+		err = json.Unmarshal(raw, &a.ImagePrefix)
+		if err != nil {
+			return fmt.Errorf("error reading 'imagePrefix': %w", err)
+		}
+		delete(object, "imagePrefix")
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+		delete(object, "organizationId")
+	}
+
+	if raw, found := object["password"]; found {
+		err = json.Unmarshal(raw, &a.Password)
+		if err != nil {
+			return fmt.Errorf("error reading 'password': %w", err)
+		}
+		delete(object, "password")
+	}
+
+	if raw, found := object["registryId"]; found {
+		err = json.Unmarshal(raw, &a.RegistryId)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryId': %w", err)
+		}
+		delete(object, "registryId")
+	}
+
+	if raw, found := object["registryName"]; found {
+		err = json.Unmarshal(raw, &a.RegistryName)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryName': %w", err)
+		}
+		delete(object, "registryName")
+	}
+
+	if raw, found := object["registryType"]; found {
+		err = json.Unmarshal(raw, &a.RegistryType)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryType': %w", err)
+		}
+		delete(object, "registryType")
+	}
+
+	if raw, found := object["registryUrl"]; found {
+		err = json.Unmarshal(raw, &a.RegistryUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'registryUrl': %w", err)
+		}
+		delete(object, "registryUrl")
+	}
+
+	if raw, found := object["serverId"]; found {
+		err = json.Unmarshal(raw, &a.ServerId)
+		if err != nil {
+			return fmt.Errorf("error reading 'serverId': %w", err)
+		}
+		delete(object, "serverId")
+	}
+
+	if raw, found := object["username"]; found {
+		err = json.Unmarshal(raw, &a.Username)
+		if err != nil {
+			return fmt.Errorf("error reading 'username': %w", err)
+		}
+		delete(object, "username")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for RegistryUpdateRequest to handle AdditionalProperties
+func (a RegistryUpdateRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.CreatedAt != nil {
+		object["createdAt"], err = json.Marshal(a.CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'createdAt': %w", err)
+		}
+	}
+
+	if a.ImagePrefix != nil {
+		object["imagePrefix"], err = json.Marshal(a.ImagePrefix)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'imagePrefix': %w", err)
+		}
+	}
+
+	if a.OrganizationId != nil {
+		object["organizationId"], err = json.Marshal(a.OrganizationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
+		}
+	}
+
+	if a.Password != nil {
+		object["password"], err = json.Marshal(a.Password)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'password': %w", err)
+		}
+	}
+
+	object["registryId"], err = json.Marshal(a.RegistryId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'registryId': %w", err)
+	}
+
+	if a.RegistryName != nil {
+		object["registryName"], err = json.Marshal(a.RegistryName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'registryName': %w", err)
+		}
+	}
+
+	if a.RegistryType != nil {
+		object["registryType"], err = json.Marshal(a.RegistryType)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'registryType': %w", err)
+		}
+	}
+
+	if a.RegistryUrl != nil {
+		object["registryUrl"], err = json.Marshal(a.RegistryUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'registryUrl': %w", err)
+		}
+	}
+
+	if a.ServerId != nil {
+		object["serverId"], err = json.Marshal(a.ServerId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
+	}
+
+	if a.Username != nil {
+		object["username"], err = json.Marshal(a.Username)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'username': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for SSHKey. Returns the specified
+// element and whether it was found
+func (a SSHKey) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for SSHKey
+func (a *SSHKey) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for SSHKey to handle AdditionalProperties
+func (a *SSHKey) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["description"]; found {
+		err = json.Unmarshal(raw, &a.Description)
+		if err != nil {
+			return fmt.Errorf("error reading 'description': %w", err)
+		}
+		delete(object, "description")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+		delete(object, "organizationId")
+	}
+
+	if raw, found := object["privateKey"]; found {
+		err = json.Unmarshal(raw, &a.PrivateKey)
+		if err != nil {
+			return fmt.Errorf("error reading 'privateKey': %w", err)
+		}
+		delete(object, "privateKey")
+	}
+
+	if raw, found := object["publicKey"]; found {
+		err = json.Unmarshal(raw, &a.PublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading 'publicKey': %w", err)
+		}
+		delete(object, "publicKey")
+	}
+
+	if raw, found := object["sshKeyId"]; found {
+		err = json.Unmarshal(raw, &a.SshKeyId)
+		if err != nil {
+			return fmt.Errorf("error reading 'sshKeyId': %w", err)
+		}
+		delete(object, "sshKeyId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for SSHKey to handle AdditionalProperties
+func (a SSHKey) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Description != nil {
+		object["description"], err = json.Marshal(a.Description)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'description': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.OrganizationId != nil {
+		object["organizationId"], err = json.Marshal(a.OrganizationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
+		}
+	}
+
+	if a.PrivateKey != nil {
+		object["privateKey"], err = json.Marshal(a.PrivateKey)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'privateKey': %w", err)
+		}
+	}
+
+	if a.PublicKey != nil {
+		object["publicKey"], err = json.Marshal(a.PublicKey)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'publicKey': %w", err)
+		}
+	}
+
+	object["sshKeyId"], err = json.Marshal(a.SshKeyId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'sshKeyId': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for Tag. Returns the specified
+// element and whether it was found
+func (a Tag) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Tag
+func (a *Tag) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Tag to handle AdditionalProperties
+func (a *Tag) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["color"]; found {
+		err = json.Unmarshal(raw, &a.Color)
+		if err != nil {
+			return fmt.Errorf("error reading 'color': %w", err)
+		}
+		delete(object, "color")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["tagId"]; found {
+		err = json.Unmarshal(raw, &a.TagId)
+		if err != nil {
+			return fmt.Errorf("error reading 'tagId': %w", err)
+		}
+		delete(object, "tagId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Tag to handle AdditionalProperties
+func (a Tag) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Color != nil {
+		object["color"], err = json.Marshal(a.Color)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'color': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	object["tagId"], err = json.Marshal(a.TagId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'tagId': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -5658,6 +7131,33 @@ type ClientInterface interface {
 	// Takes a body of the `application/json` content type.
 	MongoUpdate(ctx context.Context, body MongoUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MountsCreateWithBody performs a POST /mounts.create (the `MountsCreate` operationId) request,
+	// with any type of body and a specified content type.
+	MountsCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MountsCreate performs a POST /mounts.create (the `MountsCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MountsCreate(ctx context.Context, body MountsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MountsOne performs a GET /mounts.one (the `MountsOne` operationId) request.
+	MountsOne(ctx context.Context, params *MountsOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MountsRemoveWithBody performs a POST /mounts.remove (the `MountsRemove` operationId) request,
+	// with any type of body and a specified content type.
+	MountsRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MountsRemove performs a POST /mounts.remove (the `MountsRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MountsRemove(ctx context.Context, body MountsRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MountsUpdateWithBody performs a POST /mounts.update (the `MountsUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	MountsUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MountsUpdate performs a POST /mounts.update (the `MountsUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	MountsUpdate(ctx context.Context, body MountsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MysqlCreateWithBody performs a POST /mysql.create (the `MysqlCreate` operationId) request,
 	// with any type of body and a specified content type.
 	MysqlCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5708,6 +7208,9 @@ type ClientInterface interface {
 	// MysqlUpdate performs a POST /mysql.update (the `MysqlUpdate` operationId) request.
 	// Takes a body of the `application/json` content type.
 	MysqlUpdate(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// OrganizationActive performs a GET /organization.active (the `OrganizationActive` operationId) request.
+	OrganizationActive(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PostgresCreateWithBody performs a POST /postgres.create (the `PostgresCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -5837,6 +7340,111 @@ type ClientInterface interface {
 	// RedisUpdate performs a POST /redis.update (the `RedisUpdate` operationId) request.
 	// Takes a body of the `application/json` content type.
 	RedisUpdate(ctx context.Context, body RedisUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryCreateWithBody performs a POST /registry.create (the `RegistryCreate` operationId) request,
+	// with any type of body and a specified content type.
+	RegistryCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryCreate performs a POST /registry.create (the `RegistryCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	RegistryCreate(ctx context.Context, body RegistryCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryOne performs a GET /registry.one (the `RegistryOne` operationId) request.
+	RegistryOne(ctx context.Context, params *RegistryOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryRemoveWithBody performs a POST /registry.remove (the `RegistryRemove` operationId) request,
+	// with any type of body and a specified content type.
+	RegistryRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryRemove performs a POST /registry.remove (the `RegistryRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	RegistryRemove(ctx context.Context, body RegistryRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryTestRegistryWithBody performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request,
+	// with any type of body and a specified content type.
+	RegistryTestRegistryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryTestRegistry performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request.
+	// Takes a body of the `application/json` content type.
+	RegistryTestRegistry(ctx context.Context, body RegistryTestRegistryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryUpdateWithBody performs a POST /registry.update (the `RegistryUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	RegistryUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegistryUpdate performs a POST /registry.update (the `RegistryUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	RegistryUpdate(ctx context.Context, body RegistryUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SshKeyCreateWithBody performs a POST /sshKey.create (the `SshKeyCreate` operationId) request,
+	// with any type of body and a specified content type.
+	SshKeyCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SshKeyCreate performs a POST /sshKey.create (the `SshKeyCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	SshKeyCreate(ctx context.Context, body SshKeyCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SshKeyOne performs a GET /sshKey.one (the `SshKeyOne` operationId) request.
+	SshKeyOne(ctx context.Context, params *SshKeyOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SshKeyRemoveWithBody performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request,
+	// with any type of body and a specified content type.
+	SshKeyRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SshKeyRemove performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	SshKeyRemove(ctx context.Context, body SshKeyRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SshKeyUpdateWithBody performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	SshKeyUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SshKeyUpdate performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	SshKeyUpdate(ctx context.Context, body SshKeyUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagAssignToProjectWithBody performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request,
+	// with any type of body and a specified content type.
+	TagAssignToProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagAssignToProject performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request.
+	// Takes a body of the `application/json` content type.
+	TagAssignToProject(ctx context.Context, body TagAssignToProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagCreateWithBody performs a POST /tag.create (the `TagCreate` operationId) request,
+	// with any type of body and a specified content type.
+	TagCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagCreate performs a POST /tag.create (the `TagCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	TagCreate(ctx context.Context, body TagCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagOne performs a GET /tag.one (the `TagOne` operationId) request.
+	TagOne(ctx context.Context, params *TagOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagRemoveWithBody performs a POST /tag.remove (the `TagRemove` operationId) request,
+	// with any type of body and a specified content type.
+	TagRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagRemove performs a POST /tag.remove (the `TagRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	TagRemove(ctx context.Context, body TagRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagRemoveFromProjectWithBody performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request,
+	// with any type of body and a specified content type.
+	TagRemoveFromProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagRemoveFromProject performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request.
+	// Takes a body of the `application/json` content type.
+	TagRemoveFromProject(ctx context.Context, body TagRemoveFromProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagUpdateWithBody performs a POST /tag.update (the `TagUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	TagUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TagUpdate performs a POST /tag.update (the `TagUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	TagUpdate(ctx context.Context, body TagUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// VolumeBackupsCreateWithBody performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -7146,6 +8754,103 @@ func (c *Client) MongoUpdate(ctx context.Context, body MongoUpdateJSONRequestBod
 	return c.Client.Do(req)
 }
 
+// MountsCreateWithBody performs a POST /mounts.create (the `MountsCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MountsCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMountsCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MountsCreate performs a POST /mounts.create (the `MountsCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MountsCreate(ctx context.Context, body MountsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMountsCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MountsOne performs a GET /mounts.one (the `MountsOne` operationId) request.
+func (c *Client) MountsOne(ctx context.Context, params *MountsOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMountsOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MountsRemoveWithBody performs a POST /mounts.remove (the `MountsRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MountsRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMountsRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MountsRemove performs a POST /mounts.remove (the `MountsRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MountsRemove(ctx context.Context, body MountsRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMountsRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MountsUpdateWithBody performs a POST /mounts.update (the `MountsUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) MountsUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMountsUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MountsUpdate performs a POST /mounts.update (the `MountsUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) MountsUpdate(ctx context.Context, body MountsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMountsUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // MysqlCreateWithBody performs a POST /mysql.create (the `MysqlCreate` operationId) request,
 // with any type of body and a specified content type.
 func (c *Client) MysqlCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -7317,6 +9022,19 @@ func (c *Client) MysqlUpdateWithBody(ctx context.Context, contentType string, bo
 // Takes a body of the `application/json` content type.
 func (c *Client) MysqlUpdate(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMysqlUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// OrganizationActive performs a GET /organization.active (the `OrganizationActive` operationId) request.
+func (c *Client) OrganizationActive(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewOrganizationActiveRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -7776,6 +9494,381 @@ func (c *Client) RedisUpdateWithBody(ctx context.Context, contentType string, bo
 // Takes a body of the `application/json` content type.
 func (c *Client) RedisUpdate(ctx context.Context, body RedisUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRedisUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryCreateWithBody performs a POST /registry.create (the `RegistryCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) RegistryCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryCreate performs a POST /registry.create (the `RegistryCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) RegistryCreate(ctx context.Context, body RegistryCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryOne performs a GET /registry.one (the `RegistryOne` operationId) request.
+func (c *Client) RegistryOne(ctx context.Context, params *RegistryOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryRemoveWithBody performs a POST /registry.remove (the `RegistryRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) RegistryRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryRemove performs a POST /registry.remove (the `RegistryRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) RegistryRemove(ctx context.Context, body RegistryRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryTestRegistryWithBody performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) RegistryTestRegistryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryTestRegistryRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryTestRegistry performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) RegistryTestRegistry(ctx context.Context, body RegistryTestRegistryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryTestRegistryRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryUpdateWithBody performs a POST /registry.update (the `RegistryUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) RegistryUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegistryUpdate performs a POST /registry.update (the `RegistryUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) RegistryUpdate(ctx context.Context, body RegistryUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegistryUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SshKeyCreateWithBody performs a POST /sshKey.create (the `SshKeyCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) SshKeyCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSshKeyCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SshKeyCreate performs a POST /sshKey.create (the `SshKeyCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) SshKeyCreate(ctx context.Context, body SshKeyCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSshKeyCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SshKeyOne performs a GET /sshKey.one (the `SshKeyOne` operationId) request.
+func (c *Client) SshKeyOne(ctx context.Context, params *SshKeyOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSshKeyOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SshKeyRemoveWithBody performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) SshKeyRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSshKeyRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SshKeyRemove performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) SshKeyRemove(ctx context.Context, body SshKeyRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSshKeyRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SshKeyUpdateWithBody performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) SshKeyUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSshKeyUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SshKeyUpdate performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) SshKeyUpdate(ctx context.Context, body SshKeyUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSshKeyUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagAssignToProjectWithBody performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) TagAssignToProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagAssignToProjectRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagAssignToProject performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) TagAssignToProject(ctx context.Context, body TagAssignToProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagAssignToProjectRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagCreateWithBody performs a POST /tag.create (the `TagCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) TagCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagCreate performs a POST /tag.create (the `TagCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) TagCreate(ctx context.Context, body TagCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagOne performs a GET /tag.one (the `TagOne` operationId) request.
+func (c *Client) TagOne(ctx context.Context, params *TagOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagRemoveWithBody performs a POST /tag.remove (the `TagRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) TagRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagRemove performs a POST /tag.remove (the `TagRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) TagRemove(ctx context.Context, body TagRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagRemoveFromProjectWithBody performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) TagRemoveFromProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagRemoveFromProjectRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagRemoveFromProject performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) TagRemoveFromProject(ctx context.Context, body TagRemoveFromProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagRemoveFromProjectRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagUpdateWithBody performs a POST /tag.update (the `TagUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) TagUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TagUpdate performs a POST /tag.update (the `TagUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) TagUpdate(ctx context.Context, body TagUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTagUpdateRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -9963,6 +12056,176 @@ func NewMongoUpdateRequestWithBody(server string, contentType string, body io.Re
 	return req, nil
 }
 
+// NewMountsCreateRequest calls the generic MountsCreate builder with application/json body
+func NewMountsCreateRequest(server string, body MountsCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMountsCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMountsCreateRequestWithBody constructs an http.Request for the MountsCreate method, with any body, and a specified content type
+func NewMountsCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mounts.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMountsOneRequest constructs an http.Request for the MountsOne method
+func NewMountsOneRequest(server string, params *MountsOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mounts.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "mountId", params.MountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMountsRemoveRequest calls the generic MountsRemove builder with application/json body
+func NewMountsRemoveRequest(server string, body MountsRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMountsRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMountsRemoveRequestWithBody constructs an http.Request for the MountsRemove method, with any body, and a specified content type
+func NewMountsRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mounts.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMountsUpdateRequest calls the generic MountsUpdate builder with application/json body
+func NewMountsUpdateRequest(server string, body MountsUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMountsUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMountsUpdateRequestWithBody constructs an http.Request for the MountsUpdate method, with any body, and a specified content type
+func NewMountsUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/mounts.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewMysqlCreateRequest calls the generic MysqlCreate builder with application/json body
 func NewMysqlCreateRequest(server string, body MysqlCreateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -10249,6 +12512,33 @@ func NewMysqlUpdateRequestWithBody(server string, contentType string, body io.Re
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewOrganizationActiveRequest constructs an http.Request for the OrganizationActive method
+func NewOrganizationActiveRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/organization.active")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -11003,6 +13293,636 @@ func NewRedisUpdateRequestWithBody(server string, contentType string, body io.Re
 	return req, nil
 }
 
+// NewRegistryCreateRequest calls the generic RegistryCreate builder with application/json body
+func NewRegistryCreateRequest(server string, body RegistryCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRegistryCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRegistryCreateRequestWithBody constructs an http.Request for the RegistryCreate method, with any body, and a specified content type
+func NewRegistryCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/registry.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRegistryOneRequest constructs an http.Request for the RegistryOne method
+func NewRegistryOneRequest(server string, params *RegistryOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/registry.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "registryId", params.RegistryId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRegistryRemoveRequest calls the generic RegistryRemove builder with application/json body
+func NewRegistryRemoveRequest(server string, body RegistryRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRegistryRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRegistryRemoveRequestWithBody constructs an http.Request for the RegistryRemove method, with any body, and a specified content type
+func NewRegistryRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/registry.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRegistryTestRegistryRequest calls the generic RegistryTestRegistry builder with application/json body
+func NewRegistryTestRegistryRequest(server string, body RegistryTestRegistryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRegistryTestRegistryRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRegistryTestRegistryRequestWithBody constructs an http.Request for the RegistryTestRegistry method, with any body, and a specified content type
+func NewRegistryTestRegistryRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/registry.testRegistry")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRegistryUpdateRequest calls the generic RegistryUpdate builder with application/json body
+func NewRegistryUpdateRequest(server string, body RegistryUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRegistryUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRegistryUpdateRequestWithBody constructs an http.Request for the RegistryUpdate method, with any body, and a specified content type
+func NewRegistryUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/registry.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSshKeyCreateRequest calls the generic SshKeyCreate builder with application/json body
+func NewSshKeyCreateRequest(server string, body SshKeyCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSshKeyCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSshKeyCreateRequestWithBody constructs an http.Request for the SshKeyCreate method, with any body, and a specified content type
+func NewSshKeyCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sshKey.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSshKeyOneRequest constructs an http.Request for the SshKeyOne method
+func NewSshKeyOneRequest(server string, params *SshKeyOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sshKey.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sshKeyId", params.SshKeyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSshKeyRemoveRequest calls the generic SshKeyRemove builder with application/json body
+func NewSshKeyRemoveRequest(server string, body SshKeyRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSshKeyRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSshKeyRemoveRequestWithBody constructs an http.Request for the SshKeyRemove method, with any body, and a specified content type
+func NewSshKeyRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sshKey.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSshKeyUpdateRequest calls the generic SshKeyUpdate builder with application/json body
+func NewSshKeyUpdateRequest(server string, body SshKeyUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSshKeyUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSshKeyUpdateRequestWithBody constructs an http.Request for the SshKeyUpdate method, with any body, and a specified content type
+func NewSshKeyUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sshKey.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTagAssignToProjectRequest calls the generic TagAssignToProject builder with application/json body
+func NewTagAssignToProjectRequest(server string, body TagAssignToProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTagAssignToProjectRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewTagAssignToProjectRequestWithBody constructs an http.Request for the TagAssignToProject method, with any body, and a specified content type
+func NewTagAssignToProjectRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tag.assignToProject")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTagCreateRequest calls the generic TagCreate builder with application/json body
+func NewTagCreateRequest(server string, body TagCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTagCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewTagCreateRequestWithBody constructs an http.Request for the TagCreate method, with any body, and a specified content type
+func NewTagCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tag.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTagOneRequest constructs an http.Request for the TagOne method
+func NewTagOneRequest(server string, params *TagOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tag.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "tagId", params.TagId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewTagRemoveRequest calls the generic TagRemove builder with application/json body
+func NewTagRemoveRequest(server string, body TagRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTagRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewTagRemoveRequestWithBody constructs an http.Request for the TagRemove method, with any body, and a specified content type
+func NewTagRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tag.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTagRemoveFromProjectRequest calls the generic TagRemoveFromProject builder with application/json body
+func NewTagRemoveFromProjectRequest(server string, body TagRemoveFromProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTagRemoveFromProjectRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewTagRemoveFromProjectRequestWithBody constructs an http.Request for the TagRemoveFromProject method, with any body, and a specified content type
+func NewTagRemoveFromProjectRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tag.removeFromProject")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTagUpdateRequest calls the generic TagUpdate builder with application/json body
+func NewTagUpdateRequest(server string, body TagUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTagUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewTagUpdateRequestWithBody constructs an http.Request for the TagUpdate method, with any body, and a specified content type
+func NewTagUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/tag.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewVolumeBackupsCreateRequest calls the generic VolumeBackupsCreate builder with application/json body
 func NewVolumeBackupsCreateRequest(server string, body VolumeBackupsCreateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -11677,6 +14597,41 @@ type ClientWithResponsesInterface interface {
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	MongoUpdateWithResponse(ctx context.Context, body MongoUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MongoUpdateResponse, error)
 
+	// MountsCreateWithBodyWithResponse performs a POST /mounts.create (the `MountsCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MountsCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MountsCreateResponse, error)
+
+	// MountsCreateWithResponse performs a POST /mounts.create (the `MountsCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MountsCreateWithResponse(ctx context.Context, body MountsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MountsCreateResponse, error)
+
+	// MountsOneWithResponse performs a GET /mounts.one (the `MountsOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MountsOneWithResponse(ctx context.Context, params *MountsOneParams, reqEditors ...RequestEditorFn) (*MountsOneResponse, error)
+
+	// MountsRemoveWithBodyWithResponse performs a POST /mounts.remove (the `MountsRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MountsRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MountsRemoveResponse, error)
+
+	// MountsRemoveWithResponse performs a POST /mounts.remove (the `MountsRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MountsRemoveWithResponse(ctx context.Context, body MountsRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MountsRemoveResponse, error)
+
+	// MountsUpdateWithBodyWithResponse performs a POST /mounts.update (the `MountsUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	MountsUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MountsUpdateResponse, error)
+
+	// MountsUpdateWithResponse performs a POST /mounts.update (the `MountsUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	MountsUpdateWithResponse(ctx context.Context, body MountsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MountsUpdateResponse, error)
+
 	// MysqlCreateWithBodyWithResponse performs a POST /mysql.create (the `MysqlCreate` operationId) request,
 	// with any type of body and a specified content type.
 	//
@@ -11741,6 +14696,11 @@ type ClientWithResponsesInterface interface {
 	// MysqlUpdateWithResponse performs a POST /mysql.update (the `MysqlUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	MysqlUpdateWithResponse(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlUpdateResponse, error)
+
+	// OrganizationActiveWithResponse performs a GET /organization.active (the `OrganizationActive` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	OrganizationActiveWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OrganizationActiveResponse, error)
 
 	// PostgresCreateWithBodyWithResponse performs a POST /postgres.create (the `PostgresCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -11906,6 +14866,141 @@ type ClientWithResponsesInterface interface {
 	// RedisUpdateWithResponse performs a POST /redis.update (the `RedisUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	RedisUpdateWithResponse(ctx context.Context, body RedisUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*RedisUpdateResponse, error)
+
+	// RegistryCreateWithBodyWithResponse performs a POST /registry.create (the `RegistryCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	RegistryCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryCreateResponse, error)
+
+	// RegistryCreateWithResponse performs a POST /registry.create (the `RegistryCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	RegistryCreateWithResponse(ctx context.Context, body RegistryCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryCreateResponse, error)
+
+	// RegistryOneWithResponse performs a GET /registry.one (the `RegistryOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	RegistryOneWithResponse(ctx context.Context, params *RegistryOneParams, reqEditors ...RequestEditorFn) (*RegistryOneResponse, error)
+
+	// RegistryRemoveWithBodyWithResponse performs a POST /registry.remove (the `RegistryRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	RegistryRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryRemoveResponse, error)
+
+	// RegistryRemoveWithResponse performs a POST /registry.remove (the `RegistryRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	RegistryRemoveWithResponse(ctx context.Context, body RegistryRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryRemoveResponse, error)
+
+	// RegistryTestRegistryWithBodyWithResponse performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	RegistryTestRegistryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryTestRegistryResponse, error)
+
+	// RegistryTestRegistryWithResponse performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	RegistryTestRegistryWithResponse(ctx context.Context, body RegistryTestRegistryJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryTestRegistryResponse, error)
+
+	// RegistryUpdateWithBodyWithResponse performs a POST /registry.update (the `RegistryUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	RegistryUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryUpdateResponse, error)
+
+	// RegistryUpdateWithResponse performs a POST /registry.update (the `RegistryUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	RegistryUpdateWithResponse(ctx context.Context, body RegistryUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryUpdateResponse, error)
+
+	// SshKeyCreateWithBodyWithResponse performs a POST /sshKey.create (the `SshKeyCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	SshKeyCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SshKeyCreateResponse, error)
+
+	// SshKeyCreateWithResponse performs a POST /sshKey.create (the `SshKeyCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	SshKeyCreateWithResponse(ctx context.Context, body SshKeyCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*SshKeyCreateResponse, error)
+
+	// SshKeyOneWithResponse performs a GET /sshKey.one (the `SshKeyOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	SshKeyOneWithResponse(ctx context.Context, params *SshKeyOneParams, reqEditors ...RequestEditorFn) (*SshKeyOneResponse, error)
+
+	// SshKeyRemoveWithBodyWithResponse performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	SshKeyRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SshKeyRemoveResponse, error)
+
+	// SshKeyRemoveWithResponse performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	SshKeyRemoveWithResponse(ctx context.Context, body SshKeyRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*SshKeyRemoveResponse, error)
+
+	// SshKeyUpdateWithBodyWithResponse performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	SshKeyUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SshKeyUpdateResponse, error)
+
+	// SshKeyUpdateWithResponse performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	SshKeyUpdateWithResponse(ctx context.Context, body SshKeyUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*SshKeyUpdateResponse, error)
+
+	// TagAssignToProjectWithBodyWithResponse performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	TagAssignToProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagAssignToProjectResponse, error)
+
+	// TagAssignToProjectWithResponse performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	TagAssignToProjectWithResponse(ctx context.Context, body TagAssignToProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*TagAssignToProjectResponse, error)
+
+	// TagCreateWithBodyWithResponse performs a POST /tag.create (the `TagCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	TagCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagCreateResponse, error)
+
+	// TagCreateWithResponse performs a POST /tag.create (the `TagCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	TagCreateWithResponse(ctx context.Context, body TagCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*TagCreateResponse, error)
+
+	// TagOneWithResponse performs a GET /tag.one (the `TagOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	TagOneWithResponse(ctx context.Context, params *TagOneParams, reqEditors ...RequestEditorFn) (*TagOneResponse, error)
+
+	// TagRemoveWithBodyWithResponse performs a POST /tag.remove (the `TagRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	TagRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagRemoveResponse, error)
+
+	// TagRemoveWithResponse performs a POST /tag.remove (the `TagRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	TagRemoveWithResponse(ctx context.Context, body TagRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*TagRemoveResponse, error)
+
+	// TagRemoveFromProjectWithBodyWithResponse performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	TagRemoveFromProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagRemoveFromProjectResponse, error)
+
+	// TagRemoveFromProjectWithResponse performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	TagRemoveFromProjectWithResponse(ctx context.Context, body TagRemoveFromProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*TagRemoveFromProjectResponse, error)
+
+	// TagUpdateWithBodyWithResponse performs a POST /tag.update (the `TagUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	TagUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagUpdateResponse, error)
+
+	// TagUpdateWithResponse performs a POST /tag.update (the `TagUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	TagUpdateWithResponse(ctx context.Context, body TagUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TagUpdateResponse, error)
 
 	// VolumeBackupsCreateWithBodyWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -15337,6 +18432,282 @@ func (r MongoUpdateResponse) ContentType() string {
 	return ""
 }
 
+type MountsCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Mount
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MountsCreateResponse) GetJSON200() *Mount {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MountsCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MountsCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MountsCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MountsCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MountsCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MountsCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MountsCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MountsCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MountsOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Mount
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MountsOneResponse) GetJSON200() *Mount {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MountsOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MountsOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MountsOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r MountsOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MountsOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MountsOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MountsOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MountsOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MountsOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MountsRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MountsRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MountsRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MountsRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MountsRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MountsRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MountsRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MountsRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MountsRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MountsUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Mount
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MountsUpdateResponse) GetJSON200() *Mount {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MountsUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MountsUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MountsUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r MountsUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r MountsUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MountsUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MountsUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MountsUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type MysqlCreateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -15807,6 +19178,82 @@ func (r MysqlUpdateResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r MysqlUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type OrganizationActiveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Organization
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r OrganizationActiveResponse) GetJSON200() *Organization {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r OrganizationActiveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r OrganizationActiveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r OrganizationActiveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r OrganizationActiveResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r OrganizationActiveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r OrganizationActiveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r OrganizationActiveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r OrganizationActiveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r OrganizationActiveResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -17035,6 +20482,1020 @@ func (r RedisUpdateResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r RedisUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RegistryCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Registry
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RegistryCreateResponse) GetJSON200() *Registry {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RegistryCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RegistryCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RegistryCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RegistryCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RegistryCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RegistryCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RegistryCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RegistryCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RegistryOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Registry
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RegistryOneResponse) GetJSON200() *Registry {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RegistryOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RegistryOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RegistryOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r RegistryOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RegistryOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RegistryOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RegistryOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RegistryOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RegistryOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RegistryRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RegistryRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RegistryRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RegistryRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RegistryRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RegistryRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RegistryRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RegistryRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RegistryRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RegistryTestRegistryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RegistryTestRegistryResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RegistryTestRegistryResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RegistryTestRegistryResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RegistryTestRegistryResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RegistryTestRegistryResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RegistryTestRegistryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RegistryTestRegistryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RegistryTestRegistryResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RegistryUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Registry
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RegistryUpdateResponse) GetJSON200() *Registry {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RegistryUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RegistryUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RegistryUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RegistryUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RegistryUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RegistryUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RegistryUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RegistryUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SshKeyCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *SSHKey
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SshKeyCreateResponse) GetJSON200() *SSHKey {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SshKeyCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SshKeyCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SshKeyCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SshKeyCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r SshKeyCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SshKeyCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SshKeyCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SshKeyCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SshKeyOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *SSHKey
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SshKeyOneResponse) GetJSON200() *SSHKey {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SshKeyOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SshKeyOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SshKeyOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SshKeyOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SshKeyOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r SshKeyOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SshKeyOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SshKeyOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SshKeyOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SshKeyRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SshKeyRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SshKeyRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SshKeyRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SshKeyRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r SshKeyRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SshKeyRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SshKeyRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SshKeyRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SshKeyUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *SSHKey
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SshKeyUpdateResponse) GetJSON200() *SSHKey {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SshKeyUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SshKeyUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SshKeyUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SshKeyUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r SshKeyUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SshKeyUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SshKeyUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SshKeyUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type TagAssignToProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r TagAssignToProjectResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r TagAssignToProjectResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TagAssignToProjectResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r TagAssignToProjectResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r TagAssignToProjectResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TagAssignToProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TagAssignToProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TagAssignToProjectResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type TagCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Tag
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r TagCreateResponse) GetJSON200() *Tag {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r TagCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r TagCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TagCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r TagCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r TagCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TagCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TagCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TagCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type TagOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Tag
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r TagOneResponse) GetJSON200() *Tag {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r TagOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r TagOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TagOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r TagOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r TagOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r TagOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TagOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TagOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TagOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type TagRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r TagRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r TagRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TagRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r TagRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r TagRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TagRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TagRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TagRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type TagRemoveFromProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r TagRemoveFromProjectResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r TagRemoveFromProjectResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TagRemoveFromProjectResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r TagRemoveFromProjectResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r TagRemoveFromProjectResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TagRemoveFromProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TagRemoveFromProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TagRemoveFromProjectResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type TagUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Tag
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r TagUpdateResponse) GetJSON200() *Tag {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r TagUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r TagUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TagUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r TagUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r TagUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TagUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TagUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TagUpdateResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -18329,6 +22790,83 @@ func (c *ClientWithResponses) MongoUpdateWithResponse(ctx context.Context, body 
 	return ParseMongoUpdateResponse(rsp)
 }
 
+// MountsCreateWithBodyWithResponse performs a POST /mounts.create (the `MountsCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MountsCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MountsCreateResponse, error) {
+	rsp, err := c.MountsCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMountsCreateResponse(rsp)
+}
+
+// MountsCreateWithResponse performs a POST /mounts.create (the `MountsCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MountsCreateWithResponse(ctx context.Context, body MountsCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*MountsCreateResponse, error) {
+	rsp, err := c.MountsCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMountsCreateResponse(rsp)
+}
+
+// MountsOneWithResponse performs a GET /mounts.one (the `MountsOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MountsOneWithResponse(ctx context.Context, params *MountsOneParams, reqEditors ...RequestEditorFn) (*MountsOneResponse, error) {
+	rsp, err := c.MountsOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMountsOneResponse(rsp)
+}
+
+// MountsRemoveWithBodyWithResponse performs a POST /mounts.remove (the `MountsRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MountsRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MountsRemoveResponse, error) {
+	rsp, err := c.MountsRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMountsRemoveResponse(rsp)
+}
+
+// MountsRemoveWithResponse performs a POST /mounts.remove (the `MountsRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MountsRemoveWithResponse(ctx context.Context, body MountsRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*MountsRemoveResponse, error) {
+	rsp, err := c.MountsRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMountsRemoveResponse(rsp)
+}
+
+// MountsUpdateWithBodyWithResponse performs a POST /mounts.update (the `MountsUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MountsUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MountsUpdateResponse, error) {
+	rsp, err := c.MountsUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMountsUpdateResponse(rsp)
+}
+
+// MountsUpdateWithResponse performs a POST /mounts.update (the `MountsUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) MountsUpdateWithResponse(ctx context.Context, body MountsUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MountsUpdateResponse, error) {
+	rsp, err := c.MountsUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMountsUpdateResponse(rsp)
+}
+
 // MysqlCreateWithBodyWithResponse performs a POST /mysql.create (the `MysqlCreate` operationId) request,
 // with any type of body and a specified content type.
 //
@@ -18470,6 +23008,17 @@ func (c *ClientWithResponses) MysqlUpdateWithResponse(ctx context.Context, body 
 		return nil, err
 	}
 	return ParseMysqlUpdateResponse(rsp)
+}
+
+// OrganizationActiveWithResponse performs a GET /organization.active (the `OrganizationActive` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) OrganizationActiveWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OrganizationActiveResponse, error) {
+	rsp, err := c.OrganizationActive(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseOrganizationActiveResponse(rsp)
 }
 
 // PostgresCreateWithBodyWithResponse performs a POST /postgres.create (the `PostgresCreate` operationId) request,
@@ -18833,6 +23382,303 @@ func (c *ClientWithResponses) RedisUpdateWithResponse(ctx context.Context, body 
 		return nil, err
 	}
 	return ParseRedisUpdateResponse(rsp)
+}
+
+// RegistryCreateWithBodyWithResponse performs a POST /registry.create (the `RegistryCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryCreateResponse, error) {
+	rsp, err := c.RegistryCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryCreateResponse(rsp)
+}
+
+// RegistryCreateWithResponse performs a POST /registry.create (the `RegistryCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryCreateWithResponse(ctx context.Context, body RegistryCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryCreateResponse, error) {
+	rsp, err := c.RegistryCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryCreateResponse(rsp)
+}
+
+// RegistryOneWithResponse performs a GET /registry.one (the `RegistryOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryOneWithResponse(ctx context.Context, params *RegistryOneParams, reqEditors ...RequestEditorFn) (*RegistryOneResponse, error) {
+	rsp, err := c.RegistryOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryOneResponse(rsp)
+}
+
+// RegistryRemoveWithBodyWithResponse performs a POST /registry.remove (the `RegistryRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryRemoveResponse, error) {
+	rsp, err := c.RegistryRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryRemoveResponse(rsp)
+}
+
+// RegistryRemoveWithResponse performs a POST /registry.remove (the `RegistryRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryRemoveWithResponse(ctx context.Context, body RegistryRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryRemoveResponse, error) {
+	rsp, err := c.RegistryRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryRemoveResponse(rsp)
+}
+
+// RegistryTestRegistryWithBodyWithResponse performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryTestRegistryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryTestRegistryResponse, error) {
+	rsp, err := c.RegistryTestRegistryWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryTestRegistryResponse(rsp)
+}
+
+// RegistryTestRegistryWithResponse performs a POST /registry.testRegistry (the `RegistryTestRegistry` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryTestRegistryWithResponse(ctx context.Context, body RegistryTestRegistryJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryTestRegistryResponse, error) {
+	rsp, err := c.RegistryTestRegistry(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryTestRegistryResponse(rsp)
+}
+
+// RegistryUpdateWithBodyWithResponse performs a POST /registry.update (the `RegistryUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegistryUpdateResponse, error) {
+	rsp, err := c.RegistryUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryUpdateResponse(rsp)
+}
+
+// RegistryUpdateWithResponse performs a POST /registry.update (the `RegistryUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) RegistryUpdateWithResponse(ctx context.Context, body RegistryUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryUpdateResponse, error) {
+	rsp, err := c.RegistryUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegistryUpdateResponse(rsp)
+}
+
+// SshKeyCreateWithBodyWithResponse performs a POST /sshKey.create (the `SshKeyCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) SshKeyCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SshKeyCreateResponse, error) {
+	rsp, err := c.SshKeyCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSshKeyCreateResponse(rsp)
+}
+
+// SshKeyCreateWithResponse performs a POST /sshKey.create (the `SshKeyCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) SshKeyCreateWithResponse(ctx context.Context, body SshKeyCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*SshKeyCreateResponse, error) {
+	rsp, err := c.SshKeyCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSshKeyCreateResponse(rsp)
+}
+
+// SshKeyOneWithResponse performs a GET /sshKey.one (the `SshKeyOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) SshKeyOneWithResponse(ctx context.Context, params *SshKeyOneParams, reqEditors ...RequestEditorFn) (*SshKeyOneResponse, error) {
+	rsp, err := c.SshKeyOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSshKeyOneResponse(rsp)
+}
+
+// SshKeyRemoveWithBodyWithResponse performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) SshKeyRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SshKeyRemoveResponse, error) {
+	rsp, err := c.SshKeyRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSshKeyRemoveResponse(rsp)
+}
+
+// SshKeyRemoveWithResponse performs a POST /sshKey.remove (the `SshKeyRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) SshKeyRemoveWithResponse(ctx context.Context, body SshKeyRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*SshKeyRemoveResponse, error) {
+	rsp, err := c.SshKeyRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSshKeyRemoveResponse(rsp)
+}
+
+// SshKeyUpdateWithBodyWithResponse performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) SshKeyUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SshKeyUpdateResponse, error) {
+	rsp, err := c.SshKeyUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSshKeyUpdateResponse(rsp)
+}
+
+// SshKeyUpdateWithResponse performs a POST /sshKey.update (the `SshKeyUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) SshKeyUpdateWithResponse(ctx context.Context, body SshKeyUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*SshKeyUpdateResponse, error) {
+	rsp, err := c.SshKeyUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSshKeyUpdateResponse(rsp)
+}
+
+// TagAssignToProjectWithBodyWithResponse performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagAssignToProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagAssignToProjectResponse, error) {
+	rsp, err := c.TagAssignToProjectWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagAssignToProjectResponse(rsp)
+}
+
+// TagAssignToProjectWithResponse performs a POST /tag.assignToProject (the `TagAssignToProject` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagAssignToProjectWithResponse(ctx context.Context, body TagAssignToProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*TagAssignToProjectResponse, error) {
+	rsp, err := c.TagAssignToProject(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagAssignToProjectResponse(rsp)
+}
+
+// TagCreateWithBodyWithResponse performs a POST /tag.create (the `TagCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagCreateResponse, error) {
+	rsp, err := c.TagCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagCreateResponse(rsp)
+}
+
+// TagCreateWithResponse performs a POST /tag.create (the `TagCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagCreateWithResponse(ctx context.Context, body TagCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*TagCreateResponse, error) {
+	rsp, err := c.TagCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagCreateResponse(rsp)
+}
+
+// TagOneWithResponse performs a GET /tag.one (the `TagOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagOneWithResponse(ctx context.Context, params *TagOneParams, reqEditors ...RequestEditorFn) (*TagOneResponse, error) {
+	rsp, err := c.TagOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagOneResponse(rsp)
+}
+
+// TagRemoveWithBodyWithResponse performs a POST /tag.remove (the `TagRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagRemoveResponse, error) {
+	rsp, err := c.TagRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagRemoveResponse(rsp)
+}
+
+// TagRemoveWithResponse performs a POST /tag.remove (the `TagRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagRemoveWithResponse(ctx context.Context, body TagRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*TagRemoveResponse, error) {
+	rsp, err := c.TagRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagRemoveResponse(rsp)
+}
+
+// TagRemoveFromProjectWithBodyWithResponse performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagRemoveFromProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagRemoveFromProjectResponse, error) {
+	rsp, err := c.TagRemoveFromProjectWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagRemoveFromProjectResponse(rsp)
+}
+
+// TagRemoveFromProjectWithResponse performs a POST /tag.removeFromProject (the `TagRemoveFromProject` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagRemoveFromProjectWithResponse(ctx context.Context, body TagRemoveFromProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*TagRemoveFromProjectResponse, error) {
+	rsp, err := c.TagRemoveFromProject(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagRemoveFromProjectResponse(rsp)
+}
+
+// TagUpdateWithBodyWithResponse performs a POST /tag.update (the `TagUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TagUpdateResponse, error) {
+	rsp, err := c.TagUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagUpdateResponse(rsp)
+}
+
+// TagUpdateWithResponse performs a POST /tag.update (the `TagUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) TagUpdateWithResponse(ctx context.Context, body TagUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TagUpdateResponse, error) {
+	rsp, err := c.TagUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTagUpdateResponse(rsp)
 }
 
 // VolumeBackupsCreateWithBodyWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
@@ -21604,6 +26450,225 @@ func ParseMongoUpdateResponse(rsp *http.Response) (*MongoUpdateResponse, error) 
 	return response, nil
 }
 
+// ParseMountsCreateResponse parses an HTTP response from a MountsCreateWithResponse call
+func ParseMountsCreateResponse(rsp *http.Response) (*MountsCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MountsCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Mount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMountsOneResponse parses an HTTP response from a MountsOneWithResponse call
+func ParseMountsOneResponse(rsp *http.Response) (*MountsOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MountsOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Mount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMountsRemoveResponse parses an HTTP response from a MountsRemoveWithResponse call
+func ParseMountsRemoveResponse(rsp *http.Response) (*MountsRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MountsRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMountsUpdateResponse parses an HTTP response from a MountsUpdateWithResponse call
+func ParseMountsUpdateResponse(rsp *http.Response) (*MountsUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MountsUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Mount
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseMysqlCreateResponse parses an HTTP response from a MysqlCreateWithResponse call
 func ParseMysqlCreateResponse(rsp *http.Response) (*MysqlCreateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -21968,6 +27033,67 @@ func ParseMysqlUpdateResponse(rsp *http.Response) (*MysqlUpdateResponse, error) 
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseOrganizationActiveResponse parses an HTTP response from a OrganizationActiveWithResponse call
+func ParseOrganizationActiveResponse(rsp *http.Response) (*OrganizationActiveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &OrganizationActiveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Organization
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ErrorINTERNALSERVERERROR
@@ -22954,6 +28080,813 @@ func ParseRedisUpdateResponse(rsp *http.Response) (*RedisUpdateResponse, error) 
 	return response, nil
 }
 
+// ParseRegistryCreateResponse parses an HTTP response from a RegistryCreateWithResponse call
+func ParseRegistryCreateResponse(rsp *http.Response) (*RegistryCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RegistryCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Registry
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRegistryOneResponse parses an HTTP response from a RegistryOneWithResponse call
+func ParseRegistryOneResponse(rsp *http.Response) (*RegistryOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RegistryOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Registry
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRegistryRemoveResponse parses an HTTP response from a RegistryRemoveWithResponse call
+func ParseRegistryRemoveResponse(rsp *http.Response) (*RegistryRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RegistryRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRegistryTestRegistryResponse parses an HTTP response from a RegistryTestRegistryWithResponse call
+func ParseRegistryTestRegistryResponse(rsp *http.Response) (*RegistryTestRegistryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RegistryTestRegistryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRegistryUpdateResponse parses an HTTP response from a RegistryUpdateWithResponse call
+func ParseRegistryUpdateResponse(rsp *http.Response) (*RegistryUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RegistryUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Registry
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSshKeyCreateResponse parses an HTTP response from a SshKeyCreateWithResponse call
+func ParseSshKeyCreateResponse(rsp *http.Response) (*SshKeyCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SshKeyCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SSHKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSshKeyOneResponse parses an HTTP response from a SshKeyOneWithResponse call
+func ParseSshKeyOneResponse(rsp *http.Response) (*SshKeyOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SshKeyOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SSHKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSshKeyRemoveResponse parses an HTTP response from a SshKeyRemoveWithResponse call
+func ParseSshKeyRemoveResponse(rsp *http.Response) (*SshKeyRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SshKeyRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSshKeyUpdateResponse parses an HTTP response from a SshKeyUpdateWithResponse call
+func ParseSshKeyUpdateResponse(rsp *http.Response) (*SshKeyUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SshKeyUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SSHKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTagAssignToProjectResponse parses an HTTP response from a TagAssignToProjectWithResponse call
+func ParseTagAssignToProjectResponse(rsp *http.Response) (*TagAssignToProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TagAssignToProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTagCreateResponse parses an HTTP response from a TagCreateWithResponse call
+func ParseTagCreateResponse(rsp *http.Response) (*TagCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TagCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Tag
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTagOneResponse parses an HTTP response from a TagOneWithResponse call
+func ParseTagOneResponse(rsp *http.Response) (*TagOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TagOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Tag
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTagRemoveResponse parses an HTTP response from a TagRemoveWithResponse call
+func ParseTagRemoveResponse(rsp *http.Response) (*TagRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TagRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTagRemoveFromProjectResponse parses an HTTP response from a TagRemoveFromProjectWithResponse call
+func ParseTagRemoveFromProjectResponse(rsp *http.Response) (*TagRemoveFromProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TagRemoveFromProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTagUpdateResponse parses an HTTP response from a TagUpdateWithResponse call
+func ParseTagUpdateResponse(rsp *http.Response) (*TagUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TagUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Tag
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseVolumeBackupsCreateResponse parses an HTTP response from a VolumeBackupsCreateWithResponse call
 func ParseVolumeBackupsCreateResponse(rsp *http.Response) (*VolumeBackupsCreateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -23178,125 +29111,142 @@ func ParseVolumeBackupsUpdateResponse(rsp *http.Response) (*VolumeBackupsUpdateR
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"7H37c9u4tf+/omH7nWm78iOv3a99p9M6tpN1m9iu5Gxnmri5EHkkoSYJLgja1ubm/u13QPAt8CnakuXz",
-	"y64j4o3zwDk4n4Nvhskcj7ngCt84/Gb45hwcEv555Hk2NYmgzJX/JJZF5d/EvuTMAy4o+Mah4AEMDS/z",
-	"yzeDeN45cUD+KRYeGIeGLzh1Z8b3ofwWN3pm1ZUYCyICX1tqElDbOuKziq9jMDkIfQGTAxFw6t6+o3Z2",
-	"oBPGbCCuLGKBb3LqxdNfagLc27LfKWeuA64omaFbtjg+8Fvg2lrfh/EvbPIfMIUs/paYN4HXbm8mYZ2S",
-	"gVlEkAnxofLjVfhBVwB8Qd2qrQWXTGyw9Ot9A+B9IAJ8ccwCV2QKUVfADLgs5BBOiTUpad9h7oyVfVv4",
-	"v9ol3zzmixkHv+wzhym91++YOQcrsKHhjh1LXlPr2w87marBkoFHX0t3bCu44DicxCVn8ocR+IEt2q1v",
-	"Zqjyn7/nMDUOjd/tpYJxL5KKe6eZoiFhhJ3W1YrGFg6fw68B5ZIHPifVc6tlXGvmeJKyVkvaMU3w/b/D",
-	"Qi9qk3be2USJUirA0YvM6AfCOVkoGWvegOgsCSyPUVe0owyPs1tqAdd+5DArI1I/1ARHlWvRkupOmENo",
-	"e71Yo/tMWXgqy1QwbTXLB75gzjFwyQrMvi1ZLCscfhcxPWe+ftfmQni+vo4U4FwuEBFz/caWfmC8RBPI",
-	"/aImlEpG+ZdX6DAZkm5HT/NioPm2NhCRXUVhJCEaU+VHqR5P3vanX2KlX1vgk19GaQ+mQOA+oqpSGqEO",
-	"memHXX2O6Es1fZTnkYfYjqe22hXnstK15hBKy3H+CJ+RKm03YzH+xwfkjNq9qjgn98UXl9F5G3ejbjfK",
-	"NUO1ydJ2Q9KDbBu9NyWBLU5rF2CDFOQILNon2T0touFy9v1QzC/MDhzo4oFYzTtUc/rlzD299zj4ftmW",
-	"PIaXooJcyz0JdedZ9b3ULBABdy+mU/2obzO7VTJrVaSkex0FAOeM7749Ovk6Ov3Hp9PxVTkZTIntQ4Fb",
-	"jKs5DMI2BtSdMu4o61ZSPnE85Y4wmSX7zPYxNKjvB7LRz9dDwwHfD7nAOHNviU2tAXW9QAyktI/EQ4by",
-	"VHPfSscRfs8MoNDx0pLFIym2eOQOQit5wKYDVWYg5kQM7oDDgIPvMdenExsGU8YHIu4+27OcW2KJV65p",
-	"fobJeuh2MOt6iAvqnA1FQz/TaNnKxUWyi6fZkWHDUQ3VVsnBUVHSWNTzH17v7//RKCXPdxejt2cnJ6fn",
-	"D0acaQ/lpOkH0yk1KbhioBwyPdBmtl+kzJaUubwhq5DmUmspbb6qoM2z86vT0fnRh6/j09Evp6Ovp6PR",
-	"xejB6FTfWznNquPHQB0LIjpYnWrLRoEU3JKCdduzCg1r2oup+E2lhD2/uPr67uLT+cmDUW7aQxm1njMx",
-	"mLLAtXqg0GxvSJWtqDLdhu6UmLSRytDXFdT36fzo09XPF6Ozf50+HAHmOimjwaNAzBmnv4XNDFwmBtFt",
-	"RR9EWRgB0mUruqzYmu6EWt5oSrkvNJSrrqMCTsVibM7BiY1iGl1MFTbw8mxwA4sBCcQcXBHZxruD9+AC",
-	"JwIGxB3EZaacOYMFC/jghN14NlsMLOLPJ4xwaxC4FvDBGISg7swffAn2919BWPPvsPB3JVXL7uZALJD7",
-	"ryxY436HeHTnBhbpPKKRfv8e3utMmaJnVxDlPooqxiO4AuIYQyPgtmxdCM8/3Nuz1MddkzlLTpTwitwG",
-	"oQZnMTNwwBVqkSWRxg3vDE4g/CPjMvCHA4e4ZAaD2NvnDwfEtQaMm3PwRbhg4QJRd8qJL3hgioDD7uBq",
-	"Tv2wQ2Lb7M6XhQaCyR2dceJI0WAS217EzRPbHhDfA1P4krNya05dXxDXBLmmNjXBVdf90bocecScw+Dl",
-	"7v7SqsyomAcTuSjxAiX/n9hssmcSl/DF3oez49Pz8WnIHhEpxl0fXZ4ZQ+MWuHJ+GC9293f3ZUHmgUs8",
-	"ahwar3ZfhF17RMxDwtvLrN+uigeQP3vRLZ9k6cRXko0IUrfuhuIW8MVbZi1iUohv0NLSe//xlTtGXYmH",
-	"PZQ5hRxy/wHcmZgbhz++GhoOdeN/vgjHLU8qxqHx789k57ejnX/t7xzsft25/uH3OrlY8M8Rd3ExNQ4/",
-	"L7s/kl/cwLaN79etvJL5IVZ61lqMoCCJws6Ko1oWmvlqggcQ/hBKerXUL/f3W21UVWRDNkQs7DrPy+Mg",
-	"NIemgR0rG5AL8rrHESx7oTTj0DuHXu+/6HkYOTWtGUf1GeH1/quex5P6CLSLonVLvOl9c/Q2n3ZEWqMz",
-	"ozFDzol15efr75L+w8CVz9lRGiHz5CSbBVKnNJJsJ6poj5It79KulBYFps9XXoHbkS+RLzeTL+XJpSFf",
-	"hkXXw5f1V33RYewbcjRy9HPmaOaGXDCDam6+cCE0QzhxQAD3w/5CG/TXAPgiNUHzDFNkjmFmfaoV6zUe",
-	"g5E5mzPn6/3XPY8idSxrRpHzYG+nYODQQtmP4sKo7lHdo7rfZK62GbEa8nRYdMNdhnUhaMsMfq48c72x",
-	"euP1WEI14MkD5cSGygmf3MLbgNpWHMBYKy7GuRoPdg7QY4fjUYIbOHJyFjNvgE+pLUcyB85ugq9hQY+Y",
-	"N35oydyAYPnfXHof/+kLIqgpZ0GoLX/MCIgsKkv2Ek56LKKLzlZ3FqqBY7k09yIGP3VoYRrhQVtVVcvy",
-	"S3z91LI29cfhGo09oq2bRrNqKnvBxKb+/IRyMAXji9a9x9vSbfSVh74sRQ3zhLS8XRoaKC7s8mBR16Cu",
-	"QV2T1zUnIRtdZgDDjRROodrjaR3F9mdOF6nvEd+/Y9xqL/VgRn3BF5+43bpu4Mvtc2A1UZmd9nBJcCZ9",
-	"ZOaYHzWKPhR9KPryoq8AZG8k97J1HvmoHSfxaSV9igl+WlVukPYkAu71dwaUDWYnXJhCcVAo11CuoVzL",
-	"y7X3VLQ+z2XrPJ5cU0lY3lPxlhPXnC9fN5T4JL982dn7XYlfMm1Tyo1Otn3SxHj8899hcWZ1b6HLiVHh",
-	"asfBxGFWYENJVoc7Isz5ZRyemnbQODFRW8msWdjCRHODWt5dlNUoq1FWL8lqm0y6iOtstceT2M1k0ywc",
-	"Xo9CPWqws0RX9TsIclXx4s5Vm9OhrhzvOXHA94gJXdvIZu9Yqu8GziTMp1BafwQe82knh++jq5niVuf3",
-	"QDOjzO4ur5d+FwoUiooJFRMqplQxBZ7VFN70SRV9arEKNUFN2tTK8RUntcI7KR64riw+NCwWxmiqDdBd",
-	"V5Ilz0136Tk0SCDYSRIh1u7+b0KFSkea6uZ27qSkfmdVnDTRQRsndbsp5KT6CvpQ08bYDmbt2+m4Aat5",
-	"ArvtmKw5ii4TuuzaKj7IqHInZOBaYxRMyYXHxJxDezY1meMQt4PbwQs+UIeKLhVHIBUJ6QQBbeAoVkWs",
-	"I9HUEdTN3/JknT6rIHAtEMScR+jmcxB3jN+UZCnflMCZbhe4KwTdWJx53YmjmdmbSYjXjt/jLN9jD8zx",
-	"HeFOvonMX80TS3yMcmcs8dol4yKfwrxFq5ecCWYyW9+yii4q71l9B6uQrDExYI0rwmcgSj5/r818oSmx",
-	"vNp6CPsDwN5nVADpKNBU3VX8HUC6uTuAdPZ2AFnhYKXSOnR20XRfZ3QsrcWxNAdii/nxHMybvkReaBLf",
-	"ElsrWkYgOM1J7vTbWBAuLoFTZunFEigzuPmjD1fUARY0lGKNZNSKUaNmsVL6V8bSfrl/8NOLNy+HDZrU",
-	"hqZecrilcKfMUyka/SNT0NsOR+CVwlxtMgHb70BW+szJ8vMiZLWqvW+3nQ44jC+6ndZV3VUO7A6zoC+u",
-	"e2+zSY7nUu2sPv2NTbRfRypxvYhOTM17jCr6Dc8IaT/RSNqcosj9MXPNgHNwS44sTBA7SsZEmdtsUF2p",
-	"pmEmHVfZAGdWj26nqM1KqulyojyyKYl86s3F6wmnt8AvPFHRWy+8HJ1IG6Z6rl1FzbqyTkeAzqGsnk1M",
-	"kJK5L/Y/Zq4vOKGuaLmHH8l9BSMPjUubiCnjTmdb5YibcyogTF2mHdHFuB63lmskrNIkAd8lhylwcE3o",
-	"PPqxxyECDGp+P4ncBYzXT2GpxrVOHi3XaDDTrnLMU+eEt529mdkGuroWozaOl9+Sij2FNggfXJMvPGEM",
-	"DVf5+ZWbR+vzi1vUvi3VZWynHQzTqOrP5c9MRSU+hKek/jRE3GzpmabKnogqdzLC4rqR26BLvyNF/cfM",
-	"tsmEcSIYvwTu0PB9BL8D0Eo1+09qWybpIqbXC9SS4mDKwZ9fsRtwO+Mlzh4XasGr1Anvbqpy8EMDkdnU",
-	"XPSoN1VZLbedgE0W2nl8JPdHQoDjCf08/0ldi931aHhyZtsTYt50teTi+sfMndJZX8tXvkDvCLUDDnK4",
-	"JYv7kdxHhUbSfNIvM3NpXrum3y542duKl4QT2wab+o5+B7JaNls4bvR6xU1a4ZrOZwE3l1SgcssleEsV",
-	"OpME0BiZC1Ej8gEaytmuVZC+YN57TkxQzpZKYqgX3rpJBJMk40ir2XesxelsBjxetLRuvHxe4M+NMO5C",
-	"tx46uJgt1affu5n1c6SFHHJPHTm2g/39n14cHLx88/qn1/sHBy/CEAv1aSe1KTOP9Zw3sz3HbCpW6ajA",
-	"JFHSiLDVoZrFdU+WlwpzQbH0gGKpI/jx0cMOMT8whgZiaGBJaKB6Cr826bl6Na3nfOeq76UInvj9/eSd",
-	"O30ITvYNvHbRApkH/usSoBWe+080f/x2Z/KIrhE9GmpED70aQ+MOJjtqk8Is+BP59Xq44mN8LS9aXNMO",
-	"LDhVbg7K3PzD39VP+rUytdX8OuxG7hHiljclgoRiKlux5EYkeXq3XQ+LbnPKv0va1t0RPY5Yl1DfnIMV",
-	"2NDkHcXWOQ1WzdOfDC6ZUJHMh1k+z7EZ5gdExfrkFKtSZXmdWpUEWOnTxvl/J/GjpZuZ+jd6ARcPt5j1",
-	"95lm/dXxPweH3daeqUeqVL9n6iZJO5OSqHBR4W4Fw9VB2xTD9Yxqm1S9J46m5gOYms3tvnUbU+VWUbzM",
-	"Gfsoc8arMJWKi5cfXmZx0KpCIb9VQj5y+NW6Ko9VuafxNmM0qQK0bum7HuW4E/tHQ9hiWTplfP3xQW93",
-	"InJD4xdF5TpFZXJVkpOVdS8+RsTb82uPuauZ2idmZNe/MDtw9MjLggxI2y7WxRMOsu3WsG31G1EJ2/b6",
-	"OlQ7tu3lZai0S+Re5N4t4d4pCHM+zgVcVrLxu0L5x+fnh+DKtsnTkrHgMRo5esM4uuomN2Lixle52QPs",
-	"Jt7loj2Ll7nP/DJXLwTqn26NWKf3Z1vxYI7SA9X46hzc+F2YiJEf6k2YHD9rbmBXfHUle8KQjWEGZGR/",
-	"ZH+oDQ+JuP6JZD3ehETBmOW3SzrTNP9r1+vgs8racZqFmpNiVLqPHNir31I/UgbZp5f+tWly0o3McYlJ",
-	"KjHJ5MMlmaQ+s6XQSBMS6pljuZyv7oz1xRuGtHRL7cWJazGH/lbS94qJWTovZRxDqNLAlcGy8web5omp",
-	"8xnrmicRKwReVnss8mGQmS5LUmh3SjRQnkfDGKbZNCrTZ3Byp8+eIQ/g9/p16T0RxYMj8B/3Cgn92WiS",
-	"PimTNBPgXRvPepKW7TumNVzVfJx+xsJMEqO8s0kxi58FUxLYQs5ymFEQqQ27s5NasTvXP/zhz1mj9nDv",
-	"rzvXP/zxL1rLtl4IRzJV7zxTyfZXCVb1Mg/2tU5vVuJ298M0hkeVC54Nkq3WdfFz8OkTgelWJsuTjCez",
-	"KssDWd7ndQvsDL2j0EahvU6hnRHTGsFdFRWQIeLGkQFF1M8mRgcgc2KEAEYI1AiGOuB3hol6Rn/X4TsL",
-	"54h8cbzpRxW9ZZxYd+WX4cS+r/22z7ZqAh5/RtbXCiZX8aSXNeTQGkNRj6K+oahnDqENPGhhsf4B4fln",
-	"p9vdJ/f3LkX3RJjm6k9ZqCZOXcEXieRv+eqn3Jvyq400eCCbuzR5g6HhfceU8TvCLcmdp2mCk+WbqnlE",
-	"PzU6al7+/AaNKLzTWxcOtSwb7giHPl/uWBpJ9ey0+SyLj28kCcB/fPPm1ZtM1u+0wQYPc6Q3sl1S2q+Q",
-	"41J+8+ItqkEchzSxdjUcsglqYNTAa9XAigpzyrcuxYCi3J4zDKi+2yMbk3ro60D22wr2q7yECIs0v3+I",
-	"mWNDrx5QBeKtw/O+ddDwf62HMyzWs3OzT+t1Y2zQshSeaKA+QwP1UY3LYS/nUlSyqGS38aCbwanUenoz",
-	"aN2e3b11uPrmt1spXKKN5ZqG/EX11y0pssBoFBcoLtYoLjISQiMzqizkDBE3NpPzuLnNtJWROdFgRoO5",
-	"RjDUhellmKjnML0l6G2bk0Bv6a9RJqDC3kS+rHNpZfiyZ79W3SE/gtnrfm/Bz92MhUcSCnj8QFGz3aIm",
-	"ekWp1pfwUZV7Gu+IxG/9NHzHPy5+SXz/jnGrEGCc9vjX3/2/f38J9vdf/vinP/zx6w9fvuz8+fOXL9ff",
-	"vv/Pfx0Od+WXV2b4X/jL//739Z8qxzZiTDxqh598dZvQLmViy6sD8wb4mUNmoBRIFLodv9V1+KNugE/h",
-	"XZUCTRVWVUNC61Y6Ib+evEWFgwpnnQonfqQvr2zqUsdGyqbnFx1yb6tXHyDTomhRItdtCddVuX4jjmvs",
-	"9k0ZZDNdvqj+0N37zN29eiFQ5+aNBEHPLt6c6m3j3kVFjPy/dTzYOPN6xIwPlXm9S57UTodozLyO7I/s",
-	"n2P/+yjuNArVrOf/bIXeBEBhFO0enu8oCbJ9okhAkYAiYVJ7yRsJgifyGEM6hD7S6RM+6zG8PvPeQDtY",
-	"hRd8oA4VXSqOQFIK6XSlUv0UAF50remiq3G278KVWGmSoLEH5viOcCc/lsxfSSqcywwTT4ntw7DA1x+Z",
-	"pe9M6tx81vEWrV5yJpjJbH3LwcSm/ry8Z/UdrPioUTxgGFeEz0CUfP5em55cU2J53/TvPjzAWxErHazm",
-	"QGwxP56DedMXRYQq65bY2pUfgeA095ZG+m0sCBeXwCmz9LsGSl01T2N/RR1gQcNNbrSFNpmA7XdYqm/a",
-	"ICP5eRE+BFE1n3ZDbO7/GhoOOIwvuikbVXcVfeMwC/qiuvc2m+RoLmVe9elvbKL9OgJ1glC4vxY9RhX9",
-	"hiIk7ScaSRshS+6PmWsGnOef2sjwBhPEPmaOZ4Nss9mgulJYwxCJ/OMT/RypojYrqaaLwjmyKYlsvubi",
-	"5YTTW+AXnqjorRe+jxSW3vht/5aGDsZpExOkkumLH4+Z6wtOqCtaLupHcl/BWUPj0iZiyrjT+WxxxM05",
-	"FWCKgOvPDxfjei9DrpGwSoNXTYxLDlPg4JrQefRjjwOxlu0r9ftJdM5kvH4KSzWudQJiuUaDmXYVLLxq",
-	"4zn44QGB2dRc9EimqqyWEk7AJgvtYD6S+yMhwIl4f+n7P6lrsbseDx6c2faEmDfHzJ3SWV/TL5/gO0Lt",
-	"gMORWbo4H8l9VGgk1b9+mZhL88SYfrvgUa7R5QM84cS2waa+o1/BLFFmC8eNXndcZF8w7z0nJqhTaOUq",
-	"1x+uNR0Etjxq+b2rr5+JsncT7P3B/v5PLw4OXr55/dPr/YODFxkY/k6qq6krYKZ2o6FVP2ZTsUpHhc2L",
-	"AhzDVodqFtc9aTTl5kJ2eTB2eYjbc4zHQe/7lnrfmTtj9cgHWepp4R6eD65A7s3hizcPCiuITsBjEGWp",
-	"6SPF1OS16UfBKGwsKEFuF2oB1AJr1gKSDHM6oBaQEBJuz3AE2Waj6ImoIEZAIq9tAa9VwhBkieYghIgx",
-	"NhSCgMoOIQjPHIKwxPy18ANZqm/wQapoW0EPUO0i128P5zUHHcjiGwU5aHtQRrgBMj0yfcL0zaAGCddv",
-	"HtCgA/8jyAAFAQqCVBDUAgxkKYQXILzgedwnYfg+hu9j+D6G7zcN38eQfAzJb081Df2OGLyPwfsYvI/B",
-	"+w8XvN9P6BIiARAJgEgARAIgEuAJIgFWv8zGoBh0kG+lg3zh/2rXowBkKXz9AJPCdEEpSNo5/P/49sFj",
-	"KZnF+B8fUMWgilmripFMn1MxtSADWapvkIFss1HsRFQQox2R17aA1ypBBrJEc5BBxBgbCjJAVYcQg2cN",
-	"MVhi/VqIgSzVN8QgVbOtIAaodJHrt4fzmkMMZPGNghi0PSYjxACZHpk+YfpmEIOE6zcPYtCB/xFigIIA",
-	"BUEqCGohBrIUQgwQYoCXVQiBQAgEQiAQAoEQCIRAbDcEoqFfFCEQCIFACARCIPD9AkQtIGoBUQuIWkDU",
-	"Qj/34xhlgx737fO4e8wXMw5+LWzhMiqIyIVtABLE23744gmBCVqCB4rTWLfsjzkIxT+K/3WK/5j3ixqg",
-	"DlUQ02/PwIK4/yZBE5myGOmIrLc1rFcFMojZrjHOIMMkmwk1QEWIaIPnjjYokwR1mIOYd3qGHeSVcBvk",
-	"AapkFALbyIiNIQgxR24SCqHjmRqxCCgDUAYUZEAjREJOCGwcKKG7OEBoAsoFlAtFuVAHUIilAWIUEKOA",
-	"11IIGUDIAEIGEDKAkAGEDDwmZACBAAgEQCAAAgF6P/S0uCxB1ACiBhA1gKgBRA08RdRAP3fbGDODLvGt",
-	"dYlzJrmhHj2gyvUMHljFBxl5rroFtuvi09ctIdTaRgs9Aj+wBQoLFBZrFRaKGAuyojLYVZVpHuuqym9u",
-	"qGu0AsiIGOn6XCNdtUKgNs411mP9hrkm4qJtlGtSEYNcURFvCQ/WhrGocj1HsdRESKzrSD80GJ8RN6K/",
-	"kovp9coPPJGgRNpOicTBovUpCEay1NPKP5CN3HocZH+4lIdPENW/sbj9kOxQXqK8XKe8DNk6Jy3r4Poh",
-	"2faM1Q97boIiiAuitYS8tgW8VuWyDPmsscMyZozNdFeiqkNn5bN2Vi6zfp2jMmSZnt2UGTXbxsmAShe5",
-	"fos4rzECP2TBTYLftz4mI/AemR6ZPmH6RpD7lOs3Dm/fhf8RaY+CAAVBKgjqLidD9keAPQLsH/neBaHr",
-	"CF1H6DpC1xG6jtB1hK4jdB2h6whdf0pv2DW7WUDcOuLWEbeOuHXErT9F3HoPF8EYToKu5e1zLd8yO3Dg",
-	"LTFvAq8+3vyXbOmHizuv8hefdXDMyuX2oUvNSteqyZl7eu9x8P0yuWqBL6hbBaABl0xs0A8t9Z1qxnYD",
-	"4H0gAnxxzAK3vWvNppPkAfl2LhTCKbEmXWoyd8a61Ft0G6lbRk/5fFXtHhLgMKX32lYzpkSrJiUPUzNJ",
-	"gdul7lX4e3qHkmEYI52uES2lkWyiEW2KEY3eSLjFiClEe+MiAu5eTKd6P7+SKfF0tFdD1+mfX3d3tPl3",
-	"9diITNvJXixxYpHv1q31s2ITlT8q/3Uq/5zC1x4CLLCh8SHgRBXu6xCQHUn7cM9CbYz6RP7cQv6sgl7k",
-	"eLMxBKPAN5uJxEAlioAMBGQ0ERB1gWI5IfFwAWNoxaMVj1b8E7fiGx/FN9DsH/ZoEOARBo8w221nJFlM",
-	"lJ0QcNs4NOZCeP7h3t6CBXzHUjG+O9T1BXFN2DWZs0c8KmXY/wUAAP//",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,
