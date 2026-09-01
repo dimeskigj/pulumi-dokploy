@@ -35,6 +35,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB",
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
+		"dokploy:index:SSHKey",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -72,11 +73,15 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 		"dokploy:index:MongoDB.databasePassword", "dokploy:index:MongoDB.environment",
 		"dokploy:index:Compose.environment",
 		"dokploy:index:Destination.secretAccessKey",
+		"dokploy:index:SSHKey.privateKey",
 	}
 	for _, path := range secrets {
 		resource, property := splitSchemaPath(path)
 		require.True(t, schemaProperty(spec, resource, property).Secret, path)
 	}
+	sshKeyProps := spec.Resources["dokploy:index:SSHKey"].InputProperties
+	require.True(t, sshKeyProps["privateKey"].ReplaceOnChanges)
+	require.True(t, sshKeyProps["publicKey"].ReplaceOnChanges)
 }
 
 func TestSchemaReplacementFlags(t *testing.T) {
