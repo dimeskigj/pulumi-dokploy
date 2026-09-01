@@ -49,6 +49,7 @@ func Provider() p.Provider {
 			infer.Resource(&Backup{client: configuredClient}),
 			infer.Resource(&VolumeBackup{client: configuredClient}),
 			infer.Resource(&SSHKey{client: configuredClient}),
+			infer.Resource(&Registry{client: configuredClient}),
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{"provider": "index"},
 	})
