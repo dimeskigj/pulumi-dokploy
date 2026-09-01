@@ -2,7 +2,9 @@ package dokploy
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -73,6 +75,114 @@ func TestMountUpdateBodyClearsOptionalValuesWithExplicitNulls(t *testing.T) {
 	got, err := (Mount{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[MountArgs, MountState]{ID: "m1", Inputs: MountArgs{Type: "bind", MountPath: "/data", ApplicationID: stringPtr("a1")}})
 	require.NoError(t, err)
 	require.Nil(t, got.Output.HostPath)
+}
+
+func TestMountUpdateBodyAndRedeployMatrix(t *testing.T) {
+	targets := mountLifecycleTargetCases()
+	mounts := []struct {
+		name, typ, mountFields, updateFields string
+		args                                 MountArgs
+	}{
+		{"bind", "bind", `"hostPath":"/host"`, `"hostPath":"/new-host"`, MountArgs{Type: "bind", MountPath: "/data", HostPath: stringPtr("/new-host")}},
+		{"volume", "volume", `"volumeName":"vol"`, `"volumeName":"new-vol"`, MountArgs{Type: "volume", MountPath: "/data", VolumeName: stringPtr("new-vol")}},
+		{"file", "file", `"filePath":"/etc/config","content":"old"`, `"filePath":"/etc/new-config","content":"new"`, MountArgs{Type: "file", MountPath: "/data", FilePath: stringPtr("/etc/new-config"), Content: stringPtr("new")}},
+	}
+	for _, target := range targets {
+		for _, mount := range mounts {
+			t.Run(target.name+"/"+mount.name, func(t *testing.T) {
+				args := mount.args
+				setMountTarget(&args, target.idField, target.id)
+				mountRead := fmt.Sprintf(`{"mountId":"m1","mountPath":"/data","type":"%s","serviceType":"%s","%s":"%s",%s}`, mount.typ, target.serviceType, target.idField, target.id, mount.mountFields)
+				updateBody := fmt.Sprintf(`{"applicationId":null,"composeId":null,"content":null,"filePath":null,"hostPath":null,"mariadbId":null,"mountId":"m1","mountPath":"/data","mysqlId":null,"postgresId":null,"redisId":null,"serviceType":"%s","type":"%s","volumeName":null}`, target.serviceType, mount.typ)
+				updateBody = replaceMountUpdateField(updateBody, target.idField, target.id)
+				updateBody = replaceMountUpdateField(updateBody, mount.updateFields, "")
+				s := newScriptedServer(t,
+					expectPOST("/api/mounts.update", updateBody, `{}`),
+					expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusOK, mountRead),
+					expectGET(target.statusPath, map[string][]string{target.queryKey: {target.id}}, http.StatusOK, target.statusJSON),
+					expectPOST(target.deployPath, target.deployBody, `{}`),
+					expectGET(target.statusPath, map[string][]string{target.queryKey: {target.id}}, http.StatusOK, target.statusJSON),
+				)
+				got, err := (Mount{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[MountArgs, MountState]{ID: "m1", Inputs: args})
+				require.NoError(t, err)
+				require.Equal(t, "m1", got.Output.MountID)
+				require.Equal(t, mount.typ, got.Output.Type)
+			})
+		}
+	}
+}
+
+func TestMountDeleteBodyAndRedeployMatrix(t *testing.T) {
+	targets := mountLifecycleTargetCases()
+	mounts := []struct {
+		name, typ string
+		args      MountArgs
+	}{
+		{"bind", "bind", MountArgs{Type: "bind", MountPath: "/data", HostPath: stringPtr("/host")}},
+		{"volume", "volume", MountArgs{Type: "volume", MountPath: "/data", VolumeName: stringPtr("vol")}},
+		{"file", "file", MountArgs{Type: "file", MountPath: "/data", FilePath: stringPtr("/etc/config"), Content: stringPtr("secret")}},
+	}
+	for _, target := range targets {
+		for _, mount := range mounts {
+			t.Run(target.name+"/"+mount.name, func(t *testing.T) {
+				args := mount.args
+				setMountTarget(&args, target.idField, target.id)
+				s := newScriptedServer(t,
+					expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusOK, `{"mountId":"m1"}`),
+					expectPOST("/api/mounts.remove", `{"mountId":"m1"}`, `{}`),
+					expectGET(target.statusPath, map[string][]string{target.queryKey: {target.id}}, http.StatusOK, target.statusJSON),
+					expectPOST(target.deployPath, target.deployBody, `{}`),
+					expectGET(target.statusPath, map[string][]string{target.queryKey: {target.id}}, http.StatusOK, target.statusJSON),
+				)
+				_, err := (Mount{client: fixedClient(s.API())}).Delete(t.Context(), infer.DeleteRequest[MountState]{ID: "m1", State: MountState{MountArgs: args}})
+				require.NoError(t, err)
+			})
+		}
+	}
+}
+
+type mountLifecycleTargetCase struct {
+	name, serviceType, idField, id, statusPath, queryKey, statusJSON, deployPath, deployBody string
+}
+
+func mountLifecycleTargetCases() []mountLifecycleTargetCase {
+	return []mountLifecycleTargetCase{
+		{"application", "application", "applicationId", "a1", "/api/application.one", "applicationId", `{"applicationId":"a1","applicationStatus":"done"}`, "/api/application.redeploy", `{"applicationId":"a1"}`},
+		{"compose", "compose", "composeId", "c1", "/api/compose.one", "composeId", `{"composeId":"c1","composeStatus":"done"}`, "/api/compose.redeploy", `{"composeId":"c1"}`},
+		{"postgres", "postgres", "postgresId", "p1", "/api/postgres.one", "postgresId", `{"postgresId":"p1","applicationStatus":"done"}`, "/api/postgres.deploy", `{"postgresId":"p1"}`},
+		{"mysql", "mysql", "mysqlId", "my1", "/api/mysql.one", "mysqlId", `{"mysqlId":"my1","applicationStatus":"done"}`, "/api/mysql.deploy", `{"mysqlId":"my1"}`},
+		{"mariadb", "mariadb", "mariadbId", "ma1", "/api/mariadb.one", "mariadbId", `{"mariadbId":"ma1","applicationStatus":"done"}`, "/api/mariadb.deploy", `{"mariadbId":"ma1"}`},
+		{"redis", "redis", "redisId", "r1", "/api/redis.one", "redisId", `{"redisId":"r1","applicationStatus":"done"}`, "/api/redis.deploy", `{"redisId":"r1"}`},
+	}
+}
+
+func setMountTarget(args *MountArgs, field, id string) {
+	switch field {
+	case "applicationId":
+		args.ApplicationID = stringPtr(id)
+	case "composeId":
+		args.ComposeID = stringPtr(id)
+	case "postgresId":
+		args.PostgresID = stringPtr(id)
+	case "mysqlId":
+		args.MySQLID = stringPtr(id)
+	case "mariadbId":
+		args.MariaDBID = stringPtr(id)
+	case "redisId":
+		args.RedisID = stringPtr(id)
+	}
+}
+
+func replaceMountUpdateField(body, field, value string) string {
+	if value != "" {
+		return strings.Replace(body, `"`+field+`":null`, fmt.Sprintf(`"%s":"%s"`, field, value), 1)
+	}
+	separator := strings.Index(field, `":`)
+	if separator < 1 {
+		return body
+	}
+	name := field[1:separator]
+	return strings.Replace(body, `"`+name+`":null`, field, 1)
 }
 
 func TestMountDeleteRetriesAbsentMountByRedeployingTarget(t *testing.T) {
