@@ -130,6 +130,13 @@ func nullablePointer(v nullable.Nullable[string]) *string {
 	return &x
 }
 
+func nullablePointerPreserving(v nullable.Nullable[string], prior *string) *string {
+	if !v.IsSpecified() {
+		return prior
+	}
+	return nullablePointer(v)
+}
+
 func sanitizeMountError(err error, args MountArgs) error {
 	if err == nil || args.Content == nil {
 		return err
@@ -146,7 +153,7 @@ func mountArgsFrom(m *generated.Mount, prior MountArgs) (MountArgs, error) {
 	a.HostPath = nullablePointer(m.HostPath)
 	a.VolumeName = nullablePointer(m.VolumeName)
 	a.FilePath = nullablePointer(m.FilePath)
-	a.Content = nullablePointer(m.Content)
+	a.Content = nullablePointerPreserving(m.Content, prior.Content)
 	a.ApplicationID = nullablePointer(m.ApplicationId)
 	a.ComposeID = nullablePointer(m.ComposeId)
 	a.PostgresID = nullablePointer(m.PostgresId)
@@ -203,9 +210,12 @@ func (r Mount) Create(ctx context.Context, req infer.CreateRequest[MountArgs]) (
 		return infer.CreateResponse[MountState]{}, fmt.Errorf("mounts.create returned incomplete mount")
 	}
 	state.MountID = resp.JSON200.MountId
-	state, err = r.read(ctx, state.MountID, req.Inputs)
-	if err == nil {
+	readState, readErr := r.read(ctx, state.MountID, req.Inputs)
+	if readErr == nil {
+		state = readState
 		_, err = deployMountTarget(ctx, r.client(ctx), t)
+	} else {
+		err = readErr
 	}
 	if err != nil {
 		return infer.CreateResponse[MountState]{ID: state.MountID, Output: state}, initFailed(sanitizeMountError(err, req.Inputs))
@@ -231,7 +241,12 @@ func (r Mount) Update(ctx context.Context, req infer.UpdateRequest[MountArgs, Mo
 	if err == nil {
 		_, err = r.client(ctx).MountsUpdateWithResponse(ctx, mountUpdateBody(req.ID, req.Inputs, t))
 		if err == nil {
-			s, err = r.read(ctx, req.ID, req.Inputs)
+			readState, readErr := r.read(ctx, req.ID, req.Inputs)
+			if readErr != nil {
+				err = readErr
+			} else {
+				s = readState
+			}
 		}
 		if err == nil {
 			_, err = deployMountTarget(ctx, r.client(ctx), t)

@@ -22,6 +22,15 @@ func TestMountArgsFromReconstructsAndValidatesTarget(t *testing.T) {
 	require.EqualError(t, err, `mounts.one returned unsupported serviceType "unsupported"`)
 }
 
+func TestMountArgsFromPreservesRedactedContent(t *testing.T) {
+	content := "retained-secret"
+	m := generated.Mount{MountId: "m1", MountPath: stringPtr("/data"), Type: stringPtr("file"), ServiceType: stringPtr("application"), ApplicationId: nullable.NewNullableWithValue("a1")}
+	args, err := mountArgsFrom(&m, MountArgs{Content: &content})
+	require.NoError(t, err)
+	require.NotNil(t, args.Content)
+	require.Equal(t, content, *args.Content)
+}
+
 func TestMountTargetResolvesExactlyOneTypedID(t *testing.T) {
 	for _, test := range []struct {
 		name, serviceType, id string
