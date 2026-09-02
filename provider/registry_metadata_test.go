@@ -226,6 +226,9 @@ func TestRegistryMetadata(t *testing.T) {
 		if workflow == "release.yml" || workflow == "prerelease.yml" {
 			assertCheckoutJobsHaveReadContents(t, workflow, parsed, "prerequisites", "build_sdks")
 		}
+		if workflow == "run-acceptance-tests.yml" {
+			require.NoError(t, validateAcceptanceWorkflowContracts(parsed))
+		}
 		require.NoError(t, validateWorkflowSemantics(parsed, workflow), workflow)
 	}
 	require.NotContains(t, allWorkflowText, "1.21.x", "stale workflow Go pin")
@@ -395,6 +398,9 @@ func validateReleaseWorkflowContracts(workflow map[string]any, name string) erro
 		if !ok {
 			return fmt.Errorf("%s job %s has no explicit permissions", name, jobName)
 		}
+		if _, exists := job["continue-on-error"]; exists {
+			return fmt.Errorf("%s job %s must not continue on error", name, jobName)
+		}
 		expected := map[string]any{"contents": "read"}
 		if jobName == "publish" || jobName == "publish_go_sdk" {
 			expected = map[string]any{"contents": "write"}
@@ -448,6 +454,35 @@ func validateReleaseWorkflowContracts(workflow map[string]any, name string) erro
 		expectedName := language + "-sdk.tar.gz"
 		if with["name"] != expectedName || with["path"] != "${{ github.workspace}}/sdk/" {
 			return fmt.Errorf("%s %s SDK artifact consumer contract is incorrect", name, jobName)
+		}
+	}
+	return nil
+}
+
+func validateAcceptanceWorkflowContracts(workflow map[string]any) error {
+	jobs, ok := workflow["jobs"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("acceptance workflow has no jobs")
+	}
+	expectedJobs := map[string]bool{"prerequisites": true, "build_sdks": true, "test": true, "lint": true}
+	if len(jobs) != len(expectedJobs) {
+		return fmt.Errorf("acceptance workflow job set is not exhaustive")
+	}
+	for jobName := range expectedJobs {
+		rawJob, exists := jobs[jobName]
+		if !exists {
+			return fmt.Errorf("acceptance job %s is missing", jobName)
+		}
+		job, ok := rawJob.(map[string]any)
+		if !ok {
+			return fmt.Errorf("acceptance job %s is not a mapping", jobName)
+		}
+		permissions, ok := job["permissions"].(map[string]any)
+		if !ok {
+			return fmt.Errorf("acceptance job %s has no explicit permissions", jobName)
+		}
+		if len(permissions) != 1 || permissions["contents"] != "read" {
+			return fmt.Errorf("acceptance job %s has unexpected permissions", jobName)
 		}
 	}
 	return nil
@@ -519,6 +554,7 @@ func TestReleaseWorkflowContractsRejectRepresentativeDrift(t *testing.T) {
 	for _, name := range []string{"release.yml", "prerelease.yml"} {
 		t.Run(name+" permission drift", func(t *testing.T) {
 			workflow, _ := readWorkflow(t, name)
+			delete(workflow["jobs"].(map[string]any)["publish_java_sdk"].(map[string]any), "continue-on-error")
 			jobs := workflow["jobs"].(map[string]any)
 			prerequisites := jobs["prerequisites"].(map[string]any)
 			permissions := prerequisites["permissions"].(map[string]any)
@@ -528,6 +564,7 @@ func TestReleaseWorkflowContractsRejectRepresentativeDrift(t *testing.T) {
 
 		t.Run(name+" artifact drift", func(t *testing.T) {
 			workflow, _ := readWorkflow(t, name)
+			delete(workflow["jobs"].(map[string]any)["publish_java_sdk"].(map[string]any), "continue-on-error")
 			jobs := workflow["jobs"].(map[string]any)
 			prerequisites := jobs["prerequisites"].(map[string]any)
 			providerUpload := findWorkflowStep(prerequisites, "actions/upload-artifact@")
@@ -535,7 +572,28 @@ func TestReleaseWorkflowContractsRejectRepresentativeDrift(t *testing.T) {
 			providerWith["path"] = "wrong/provider.tar.gz"
 			require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, name), "provider artifact contract")
 		})
+
+		t.Run(name+" Java failure drift", func(t *testing.T) {
+			workflow, _ := readWorkflow(t, name)
+			jobs := workflow["jobs"].(map[string]any)
+			jobs["publish_java_sdk"].(map[string]any)["continue-on-error"] = true
+			require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, name), "must not continue on error")
+		})
 	}
+}
+
+func TestAcceptanceWorkflowContractsRejectRepresentativePermissionDrift(t *testing.T) {
+	workflow, _ := readWorkflow(t, "run-acceptance-tests.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	for jobName := range map[string]bool{"build_sdks": true, "test": true, "lint": true} {
+		jobs[jobName].(map[string]any)["permissions"] = map[string]any{"contents": "read"}
+	}
+	jobs["test"].(map[string]any)["permissions"] = map[string]any{"contents": "write"}
+	require.ErrorContains(t, validateAcceptanceWorkflowContracts(workflow), "unexpected permissions")
+
+	workflow, _ = readWorkflow(t, "run-acceptance-tests.yml")
+	delete(workflow["jobs"].(map[string]any)["lint"].(map[string]any), "permissions")
+	require.ErrorContains(t, validateAcceptanceWorkflowContracts(workflow), "no explicit permissions")
 }
 
 func TestWorkflowStepsDoNotHaveEmptyEnvMappings(t *testing.T) {
