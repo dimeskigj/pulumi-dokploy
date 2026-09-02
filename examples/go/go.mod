@@ -1,6 +1,6 @@
 module dokploy-mvp
 
-go 1.25.13
+go 1.26.0
 
 require (
 	github.com/dimeskigj/pulumi-dokploy v0.0.0
