@@ -332,9 +332,14 @@ func TestRegistryMetadata(t *testing.T) {
 	require.NotContains(t, acceptanceText, "sentinel")
 	require.NotContains(t, acceptanceText, "esc-secrets")
 	require.Contains(t, acceptanceText, "environment: dokploy-acceptance")
-	require.Contains(t, acceptanceText, "DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}")
-	require.Contains(t, acceptanceText, "DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}")
-	require.Contains(t, acceptanceText, `test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"`)
+	require.Contains(t, acceptanceText, "mise exec -- go test ./provider -run TestLive -v -count=1")
+	require.Contains(t, acceptanceText, `test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY" && test -n "$DOKPLOY_REGISTRY_URL" && test -n "$DOKPLOY_REGISTRY_USERNAME" && test -n "$DOKPLOY_REGISTRY_PASSWORD"`)
+	for _, variable := range []string{
+		"DOKPLOY_ENDPOINT", "DOKPLOY_API_KEY", "DOKPLOY_REGISTRY_URL",
+		"DOKPLOY_REGISTRY_USERNAME", "DOKPLOY_REGISTRY_PASSWORD", "DOKPLOY_REGISTRY_IMAGE_PREFIX",
+	} {
+		require.Contains(t, acceptanceText, variable+": ${{ secrets."+variable+" }}")
+	}
 	jobs := acceptance["jobs"].(map[string]any)
 	protectedJobs := make([]string, 0, 2)
 	for jobName, rawJob := range jobs {
@@ -343,34 +348,7 @@ func TestRegistryMetadata(t *testing.T) {
 			protectedJobs = append(protectedJobs, jobName)
 		}
 	}
-	require.ElementsMatch(t, []string{"prerequisites", "test"}, protectedJobs)
-	dokploySecretReferences := map[string]map[string]bool{}
-	for jobName, rawJob := range jobs {
-		job := rawJob.(map[string]any)
-		inspectEnv := func(env map[string]any) {
-			for variable, rawValue := range env {
-				value, _ := rawValue.(string)
-				if strings.Contains(value, "secrets.DOKPLOY_ENDPOINT") || strings.Contains(value, "secrets.DOKPLOY_API_KEY") {
-					if dokploySecretReferences[jobName] == nil {
-						dokploySecretReferences[jobName] = map[string]bool{}
-					}
-					dokploySecretReferences[jobName][variable] = value == "${{ secrets."+variable+" }}"
-				}
-			}
-		}
-		jobEnv, _ := job["env"].(map[string]any)
-		inspectEnv(jobEnv)
-		steps, _ := job["steps"].([]any)
-		for _, rawStep := range steps {
-			step := rawStep.(map[string]any)
-			env, _ := step["env"].(map[string]any)
-			inspectEnv(env)
-		}
-	}
-	require.Equal(t, map[string]map[string]bool{
-		"prerequisites": {"DOKPLOY_ENDPOINT": true, "DOKPLOY_API_KEY": true},
-		"test":          {"DOKPLOY_ENDPOINT": true, "DOKPLOY_API_KEY": true},
-	}, dokploySecretReferences, "only protected acceptance jobs may reference Dokploy secrets")
+	require.ElementsMatch(t, []string{"prerequisites"}, protectedJobs)
 	lintJob := jobs["lint"].(map[string]any)
 	require.NotContains(t, lintJob, "environment", "lint must not use the acceptance environment")
 	require.NotContains(t, lintJob, "secrets", "lint must not inherit caller secrets")
@@ -446,7 +424,7 @@ func assertDokploySecretsAreAcceptanceOnly(t *testing.T, name string, workflow m
 	for jobName, rawJob := range jobs {
 		job, ok := rawJob.(map[string]any)
 		require.True(t, ok, "%s job %s", name, jobName)
-		if name == "run-acceptance-tests.yml" && (jobName == "prerequisites" || jobName == "test") {
+		if name == "run-acceptance-tests.yml" && jobName == "prerequisites" {
 			require.Equal(t, "dokploy-acceptance", job["environment"], "%s job %s", name, jobName)
 		} else {
 			require.NotContains(t, workflowValueText(job), "secrets.DOKPLOY_", "%s job %s", name, jobName)

@@ -43,7 +43,11 @@ jobs:
         env:
           DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-        run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY"
+          DOKPLOY_REGISTRY_URL: ${{ secrets.DOKPLOY_REGISTRY_URL }}
+          DOKPLOY_REGISTRY_USERNAME: ${{ secrets.DOKPLOY_REGISTRY_USERNAME }}
+          DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
+          DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
+        run: test -n "$DOKPLOY_ENDPOINT" && test -n "$DOKPLOY_API_KEY" && test -n "$DOKPLOY_REGISTRY_URL" && test -n "$DOKPLOY_REGISTRY_USERNAME" && test -n "$DOKPLOY_REGISTRY_PASSWORD"
       - name: Setup Tools
         uses: ./.github/actions/setup-tools
         with:
@@ -61,6 +65,15 @@ jobs:
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
           DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Test live provider resources
+        run: mise exec -- go test ./provider -run TestLive -v -count=1
+        env:
+          DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          DOKPLOY_REGISTRY_URL: ${{ secrets.DOKPLOY_REGISTRY_URL }}
+          DOKPLOY_REGISTRY_USERNAME: ${{ secrets.DOKPLOY_REGISTRY_USERNAME }}
+          DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
+          DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
       - name: Tar provider binaries
         run: tar -zcf ${{ github.workspace }}/bin/provider.tar.gz -C ${{ github.workspace }}/bin/ pulumi-resource-${{ env.PROVIDER }} pulumi-gen-${{ env.PROVIDER }}
       - name: Upload artifacts
@@ -108,7 +121,6 @@ jobs:
           path: ${{ github.workspace }}/sdk/${{ matrix.language }}.tar.gz
           retention-days: 30
   test:
-    environment: dokploy-acceptance
     runs-on: pulumi-ubuntu-8core
     needs: build_sdks
     strategy:
@@ -157,8 +169,6 @@ jobs:
       - name: Run tests
         run: cd examples && $GO_TEST_EXEC -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
         env:
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-          DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   lint:
     name: lint
