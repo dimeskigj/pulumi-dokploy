@@ -374,10 +374,13 @@ func TestRegistryMetadata(t *testing.T) {
 	lintJob := jobs["lint"].(map[string]any)
 	require.NotContains(t, lintJob, "environment", "lint must not use the acceptance environment")
 	require.NotContains(t, lintJob, "secrets", "lint must not inherit caller secrets")
-	for _, path := range []string{"../.ci-" + "mgmt.yaml", "../scripts/normalize_ci.py"} {
+	for _, path := range []string{"../.ci-" + "mgmt.yaml", "../scripts/normalize_ci.py", "../scripts/test_normalize_ci.py"} {
 		_, err := os.Stat(path)
 		require.ErrorIs(t, err, os.ErrNotExist, path)
 	}
+	makefile, err := os.ReadFile("../Makefile")
+	require.NoError(t, err)
+	require.NotContains(t, string(makefile), "ci-mgmt:")
 	for _, section := range []string{
 		"pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"",
 	} {
