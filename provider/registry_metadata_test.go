@@ -201,7 +201,7 @@ func TestRegistryMetadata(t *testing.T) {
 	require.NoError(t, err)
 	actualWorkflowNames := make([]string, 0, len(allWorkflowFiles))
 	for _, file := range allWorkflowFiles {
-		if !file.IsDir() && strings.HasSuffix(file.Name(), ".yml") {
+		if !file.IsDir() && (strings.HasSuffix(file.Name(), ".yml") || strings.HasSuffix(file.Name(), ".yaml")) {
 			actualWorkflowNames = append(actualWorkflowNames, file.Name())
 		}
 	}
@@ -259,7 +259,7 @@ func TestRegistryMetadata(t *testing.T) {
 		"lint": "make lint", "race": "make test_race",
 		"openapi and codegen": "make check_openapi && make check_codegen",
 		"SDKs":                "make build_sdks", "examples": "make test_examples",
-		"vulnerability": "make govulncheck", "license": "make license",
+		"provider": "make provider", "vulnerability": "make govulncheck", "license": "make license",
 	}
 	for name, command := range gateRuns {
 		if name == "lint" {
@@ -380,7 +380,7 @@ func TestRegistryMetadata(t *testing.T) {
 	}
 	makefile, err := os.ReadFile("../Makefile")
 	require.NoError(t, err)
-	require.NotContains(t, string(makefile), "ci-mgmt:")
+	require.NotRegexp(t, regexp.MustCompile(`(?m)^ci-mgmt[ \t]*:`), string(makefile))
 	for _, section := range []string{
 		"pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"",
 	} {
