@@ -284,6 +284,15 @@ func TestNormalizeCorrectsRegistryUpdateServerIDToNullable(t *testing.T) {
 func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	output := normalizeRealContract(t)
 	ids := normalizedOperationIDs(t, output)
+	operations, err := os.ReadFile(repositoryOpenAPIPath(t, "operations.txt"))
+	require.NoError(t, err)
+	var expected []string
+	for _, operation := range splitLines(string(operations)) {
+		if operation != "" {
+			expected = append(expected, strings.Replace(operation, ".", "-", 1))
+		}
+	}
+	require.ElementsMatch(t, expected, ids, "normalized operation set must exactly match operations.txt")
 	for _, operation := range newResourceOperations {
 		require.Contains(t, ids, strings.Replace(operation, ".", "-", 1), "missing normalized operation %s", operation)
 	}

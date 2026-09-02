@@ -180,13 +180,6 @@ services:
             .composeId(compose.composeId())
             .build());
 
-        var postgresFileMount = new Mount("postgresFileMount", MountArgs.builder()
-            .type("file")
-            .mountPath("/etc/app/config.toml")
-            .filePath("/tmp/dokploy-config.toml")
-            .content(fileMountContent.asSecret())
-            .build());
-
         var postgres = new Postgres("postgres", PostgresArgs.builder()
             .name("mvp-postgres")
             .environmentId(environment.environmentId())
@@ -194,6 +187,14 @@ services:
             .databaseUser("app")
             .databasePassword(databasePassword.asSecret())
             .environment(Output.ofSecret("POSTGRES_HOST=postgres"))
+            .build());
+
+        var postgresFileMount = new Mount("postgresFileMount", MountArgs.builder()
+            .type("file")
+            .mountPath("/etc/app/config.toml")
+            .filePath("/tmp/dokploy-config.toml")
+            .postgresId(postgres.postgresId())
+            .content(fileMountContent.asSecret())
             .build());
 
         var mysql = new MySQL("mysql", MySQLArgs.builder()

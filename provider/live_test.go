@@ -23,7 +23,8 @@ package dokploy
 import (
 	"context"
 	"crypto/ed25519"
-	"encoding/base64"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"os"
 	"strings"
@@ -35,6 +36,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/ssh"
 )
 
 // requireNoError is require.NoError, except that when err wraps the
@@ -97,7 +99,23 @@ func liveSSHKeyPair(t *testing.T) (privateKey, publicKey string) {
 	t.Helper()
 	public, private, err := ed25519.GenerateKey(nil)
 	require.NoError(t, err)
-	return base64.StdEncoding.EncodeToString(private), base64.StdEncoding.EncodeToString(public)
+	privateBytes, err := x509.MarshalPKCS8PrivateKey(private)
+	require.NoError(t, err)
+	publicKeyData, err := ssh.NewPublicKey(public)
+	require.NoError(t, err)
+	return string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateBytes})), string(ssh.MarshalAuthorizedKey(publicKeyData))
+}
+
+func TestLiveSSHKeyPairUsesDokployKeyFormats(t *testing.T) {
+	privateKey, publicKey := liveSSHKeyPair(t)
+	parsedPublic, _, _, _, err := ssh.ParseAuthorizedKey([]byte(publicKey))
+	require.NoError(t, err)
+	require.Equal(t, ssh.KeyAlgoED25519, parsedPublic.Type())
+	block, _ := pem.Decode([]byte(privateKey))
+	require.NotNil(t, block)
+	parsedPrivate, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	require.NoError(t, err)
+	require.IsType(t, ed25519.PrivateKey{}, parsedPrivate)
 }
 
 // liveProject creates a scratch Project (and its default Environment) for a

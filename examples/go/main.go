@@ -207,15 +207,6 @@ func main() {
 		if err != nil {
 			return err
 		}
-		_, err = dokploy.NewMount(ctx, "postgresFileMount", &dokploy.MountArgs{
-			Type:      pulumi.String("file"),
-			MountPath: pulumi.String("/etc/app/config.toml"),
-			FilePath:  pulumi.String("/tmp/dokploy-config.toml"),
-			Content:   pulumi.ToSecret(fileMountContent).(pulumi.StringOutput),
-		})
-		if err != nil {
-			return err
-		}
 		postgres, err := dokploy.NewPostgres(ctx, "postgres", &dokploy.PostgresArgs{
 			Name:             pulumi.String("mvp-postgres"),
 			EnvironmentId:    environment.EnvironmentId,
@@ -223,6 +214,16 @@ func main() {
 			DatabaseUser:     pulumi.String("app"),
 			DatabasePassword: pulumi.ToSecret(databasePassword).(pulumi.StringOutput),
 			Environment:      pulumi.ToSecret("POSTGRES_HOST=postgres").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewMount(ctx, "postgresFileMount", &dokploy.MountArgs{
+			Type:       pulumi.String("file"),
+			MountPath:  pulumi.String("/etc/app/config.toml"),
+			FilePath:   pulumi.String("/tmp/dokploy-config.toml"),
+			PostgresId: postgres.PostgresId,
+			Content:    pulumi.ToSecret(fileMountContent).(pulumi.StringOutput),
 		})
 		if err != nil {
 			return err

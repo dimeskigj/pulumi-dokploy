@@ -2,12 +2,14 @@ package dokploy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	"github.com/oapi-codegen/nullable"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"strings"
 )
 
 type MountArgs struct {
@@ -58,7 +60,8 @@ func (r Mount) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRe
 	if err != nil {
 		return infer.CheckResponse[MountArgs]{Inputs: in, Failures: failures}, err
 	}
-	if in.Type != mountTypeBind && in.Type != mountTypeVolume && in.Type != mountTypeFile {
+	typeComputed := req.NewInputs.Get("type").HasComputed()
+	if !typeComputed && in.Type != mountTypeBind && in.Type != mountTypeVolume && in.Type != mountTypeFile {
 		failures = append(failures, p.CheckFailure{Property: "type", Reason: "type must be one of bind, volume, file"})
 	}
 	if in.MountPath == "" && !req.NewInputs.Get("mountPath").HasComputed() {
@@ -73,20 +76,43 @@ func (r Mount) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRe
 			failures = append(failures, p.CheckFailure{Property: "target", Reason: e.Error()})
 		}
 	}
+	if typeComputed {
+		return infer.CheckResponse[MountArgs]{Inputs: in, Failures: failures}, nil
+	}
+	provided := func(name string) bool {
+		_, ok := req.NewInputs.AsMap()[name]
+		return ok && !req.NewInputs.Get(name).HasComputed()
+	}
+	wrongFields := map[string][]string{
+		mountTypeBind:   {"volumeName", "filePath", "content"},
+		mountTypeVolume: {"hostPath", "filePath", "content"},
+		mountTypeFile:   {"hostPath", "volumeName"},
+	}
+	for _, name := range wrongFields[in.Type] {
+		if provided(name) {
+			failures = append(failures, p.CheckFailure{Property: name, Reason: fmt.Sprintf("%s must not be set for %s mounts", name, in.Type)})
+		}
+	}
 	switch in.Type {
 	case mountTypeBind:
-		if in.HostPath == nil {
+		if in.HostPath == nil && !req.NewInputs.Get("hostPath").HasComputed() {
 			failures = append(failures, p.CheckFailure{Property: "hostPath", Reason: "hostPath must be set for bind mounts"})
+		} else if in.HostPath != nil && *in.HostPath == "" && !req.NewInputs.Get("hostPath").HasComputed() {
+			failures = append(failures, p.CheckFailure{Property: "hostPath", Reason: "hostPath must not be empty"})
 		}
 	case mountTypeVolume:
-		if in.VolumeName == nil {
+		if in.VolumeName == nil && !req.NewInputs.Get("volumeName").HasComputed() {
 			failures = append(failures, p.CheckFailure{Property: "volumeName", Reason: "volumeName must be set for volume mounts"})
+		} else if in.VolumeName != nil && *in.VolumeName == "" && !req.NewInputs.Get("volumeName").HasComputed() {
+			failures = append(failures, p.CheckFailure{Property: "volumeName", Reason: "volumeName must not be empty"})
 		}
 	case mountTypeFile:
-		if in.FilePath == nil {
+		if in.FilePath == nil && !req.NewInputs.Get("filePath").HasComputed() {
 			failures = append(failures, p.CheckFailure{Property: "filePath", Reason: "filePath must be set for file mounts"})
+		} else if in.FilePath != nil && *in.FilePath == "" && !req.NewInputs.Get("filePath").HasComputed() {
+			failures = append(failures, p.CheckFailure{Property: "filePath", Reason: "filePath must not be empty"})
 		}
-		if in.Content == nil {
+		if in.Content == nil && !req.NewInputs.Get("content").HasComputed() {
 			failures = append(failures, p.CheckFailure{Property: "content", Reason: "content must be set for file mounts"})
 		}
 	}
@@ -144,11 +170,31 @@ func nullablePointerPreserving(v nullable.Nullable[string], prior *string) *stri
 	return nullablePointer(v)
 }
 
-func sanitizeMountError(err error, args MountArgs) error {
-	if err == nil || args.Content == nil {
+func sanitizeMountError(err error, args MountArgs, prior ...MountArgs) error {
+	if err == nil {
 		return err
 	}
-	return sanitizeError(err, *args.Content)
+	secrets := make([]string, 0, 1+len(prior))
+	if args.Content != nil {
+		secrets = append(secrets, *args.Content)
+	}
+	for _, old := range prior {
+		if old.Content != nil {
+			secrets = append(secrets, *old.Content)
+		}
+	}
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) {
+		copy := *apiErr
+		for _, secret := range secrets {
+			if secret != "" {
+				copy.Code = strings.ReplaceAll(copy.Code, secret, "[REDACTED]")
+				copy.Message = strings.ReplaceAll(copy.Message, secret, "[REDACTED]")
+			}
+		}
+		return &copy
+	}
+	return sanitizeError(err, secrets...)
 }
 func mountArgsFrom(m *generated.Mount, prior MountArgs) (MountArgs, error) {
 	a := prior
@@ -189,14 +235,14 @@ func mountArgsFrom(m *generated.Mount, prior MountArgs) (MountArgs, error) {
 func (r Mount) read(ctx context.Context, id string, prior MountArgs) (MountState, error) {
 	resp, err := r.client(ctx).MountsOneWithResponse(ctx, &generated.MountsOneParams{MountId: id})
 	if err != nil {
-		return MountState{}, err
+		return MountState{}, sanitizeMountError(err, prior)
 	}
 	if resp.JSON200 == nil || resp.JSON200.MountId == "" {
-		return MountState{}, fmt.Errorf("mounts.one returned incomplete mount")
+		return MountState{}, sanitizeMountError(fmt.Errorf("mounts.one returned incomplete mount"), prior)
 	}
 	a, err := mountArgsFrom(resp.JSON200, prior)
 	if err != nil {
-		return MountState{}, err
+		return MountState{}, sanitizeMountError(err, prior)
 	}
 	return MountState{MountArgs: a, MountID: resp.JSON200.MountId}, nil
 }
@@ -235,7 +281,7 @@ func (r Mount) Read(ctx context.Context, req infer.ReadRequest[MountArgs, MountS
 		if client.IsNotFound(err) {
 			return infer.ReadResponse[MountArgs, MountState]{ID: ""}, nil
 		}
-		return infer.ReadResponse[MountArgs, MountState]{}, err
+		return infer.ReadResponse[MountArgs, MountState]{}, sanitizeMountError(err, req.Inputs, req.State.MountArgs)
 	}
 	return infer.ReadResponse[MountArgs, MountState]{ID: s.MountID, Inputs: s.MountArgs, State: s}, nil
 }
@@ -260,7 +306,7 @@ func (r Mount) Update(ctx context.Context, req infer.UpdateRequest[MountArgs, Mo
 		}
 	}
 	if err != nil {
-		return infer.UpdateResponse[MountState]{Output: s}, sanitizeMountError(err, req.Inputs)
+		return infer.UpdateResponse[MountState]{Output: s}, sanitizeMountError(err, req.Inputs, req.State.MountArgs)
 	}
 	return infer.UpdateResponse[MountState]{Output: s}, nil
 }

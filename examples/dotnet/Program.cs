@@ -144,14 +144,6 @@ return await Deployment.RunAsync(() =>
         ComposeId = compose.ComposeId,
     });
 
-    var postgresFileMount = new Dokploy.Mount("postgresFileMount", new()
-    {
-        Type = "file",
-        MountPath = "/etc/app/config.toml",
-        FilePath = "/tmp/dokploy-config.toml",
-        Content = Output.CreateSecret(fileMountContent),
-    });
-
     var postgres = new Dokploy.Postgres("postgres", new()
     {
         Name = "mvp-postgres",
@@ -160,6 +152,15 @@ return await Deployment.RunAsync(() =>
         DatabaseUser = "app",
         DatabasePassword = Output.CreateSecret(databasePassword),
         Environment = Output.CreateSecret("POSTGRES_HOST=postgres"),
+    });
+
+    var postgresFileMount = new Dokploy.Mount("postgresFileMount", new()
+    {
+        Type = "file",
+        MountPath = "/etc/app/config.toml",
+        FilePath = "/tmp/dokploy-config.toml",
+        PostgresId = postgres.PostgresId,
+        Content = Output.CreateSecret(fileMountContent),
     });
 
     var mysql = new Dokploy.MySQL("mysql", new()

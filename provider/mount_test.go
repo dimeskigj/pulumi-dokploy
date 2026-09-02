@@ -5,10 +5,19 @@ import (
 	"net/http"
 	"testing"
 
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
+
+func failureProperties(failures []p.CheckFailure) []string {
+	properties := make([]string, 0, len(failures))
+	for _, failure := range failures {
+		properties = append(properties, failure.Property)
+	}
+	return properties
+}
 
 func TestMountCheckRequiresValidTypeAndTarget(t *testing.T) {
 	checked, err := (Mount{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
@@ -22,6 +31,31 @@ func TestMountCheckRequiresValidTypeAndTarget(t *testing.T) {
 	})})
 	require.NoError(t, err)
 	require.NotEmpty(t, checked.Failures)
+}
+
+func TestMountCheckRejectsWrongTypeFieldsAndEmptyValues(t *testing.T) {
+	checked, err := (Mount{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"type": property.New("bind"), "mountPath": property.New("/data"), "hostPath": property.New(""),
+		"volumeName": property.New("wrong"), "filePath": property.New("also-wrong"), "content": property.New("secret"), "applicationId": property.New("a1"),
+	})})
+	require.NoError(t, err)
+	require.ElementsMatch(t, []string{"hostPath", "volumeName", "filePath", "content"}, failureProperties(checked.Failures))
+}
+
+func TestMountCheckAllowsExplicitEmptyFileContent(t *testing.T) {
+	checked, err := (Mount{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"type": property.New("file"), "mountPath": property.New("/data"), "filePath": property.New("/config"), "content": property.New(""), "applicationId": property.New("a1"),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, checked.Failures)
+}
+
+func TestMountCheckDefersTypeDependentValidationWhenComputed(t *testing.T) {
+	checked, err := (Mount{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"type": property.New(property.Computed), "mountPath": property.New("/data"), "applicationId": property.New(property.Computed),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, checked.Failures)
 }
 
 func TestMountCreateReadsMountThenRedeploysTarget(t *testing.T) {
@@ -95,4 +129,22 @@ func TestMountUpdateMalformedReadbackRetainsPartialState(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, "m1", got.Output.MountID)
 	require.Equal(t, "/data", got.Output.MountPath)
+}
+
+func TestMountReadSanitizesCurrentAndPriorContent(t *testing.T) {
+	current, prior := "current-file-content", "prior-file-content"
+	s := newScriptedServer(t, expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusBadRequest, `{"message":"current-file-content prior-file-content"}`))
+	_, err := (Mount{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[MountArgs, MountState]{ID: "m1", Inputs: MountArgs{Content: &current}, State: MountState{MountArgs: MountArgs{Content: &prior}}})
+	require.Error(t, err)
+	require.NotContains(t, err.Error(), current)
+	require.NotContains(t, err.Error(), prior)
+}
+
+func TestMountUpdateSanitizesCurrentAndPriorContent(t *testing.T) {
+	current, prior := "current-update-content", "prior-update-content"
+	s := newScriptedServer(t, scriptedRequest{Method: http.MethodPost, Path: "/api/mounts.update", Body: json.RawMessage(`{"applicationId":"a1","composeId":null,"content":"current-update-content","filePath":"/config","hostPath":null,"mariadbId":null,"mountId":"m1","mountPath":"/data","mysqlId":null,"postgresId":null,"redisId":null,"serviceType":"application","type":"file","volumeName":null}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"current-update-content prior-update-content"}`)})
+	_, err := (Mount{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[MountArgs, MountState]{ID: "m1", Inputs: MountArgs{Type: "file", MountPath: "/data", FilePath: stringPtr("/config"), Content: &current, ApplicationID: stringPtr("a1")}, State: MountState{MountArgs: MountArgs{Content: &prior}}})
+	require.Error(t, err)
+	require.NotContains(t, err.Error(), current)
+	require.NotContains(t, err.Error(), prior)
 }

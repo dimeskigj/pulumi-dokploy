@@ -111,12 +111,6 @@ const composeVolumeMount = new dokploy.Mount("composeVolumeMount", {
     volumeName: "mvp-postgres-data",
     composeId: compose.composeId,
 });
-const postgresFileMount = new dokploy.Mount("postgresFileMount", {
-    type: "file",
-    mountPath: "/etc/app/config.toml",
-    filePath: "/tmp/dokploy-config.toml",
-    content: pulumi.secret(fileMountContent),
-});
 const postgres = new dokploy.Postgres("postgres", {
     name: "mvp-postgres",
     environmentId: environment.environmentId,
@@ -124,6 +118,13 @@ const postgres = new dokploy.Postgres("postgres", {
     databaseUser: "app",
     databasePassword: pulumi.secret(databasePassword),
     environment: pulumi.secret("POSTGRES_HOST=postgres"),
+});
+const postgresFileMount = new dokploy.Mount("postgresFileMount", {
+    type: "file",
+    mountPath: "/etc/app/config.toml",
+    filePath: "/tmp/dokploy-config.toml",
+    postgresId: postgres.postgresId,
+    content: pulumi.secret(fileMountContent),
 });
 const mysql = new dokploy.MySQL("mysql", {
     name: "mvp-mysql",

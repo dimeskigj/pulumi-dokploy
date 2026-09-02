@@ -218,6 +218,7 @@ resources:
       type: file
       mountPath: /etc/app/config.toml
       filePath: /tmp/dokploy-config.toml
+      postgresId: ${postgres.postgresId}
       content:
         fn::secret: ${fileMountContent}
 
