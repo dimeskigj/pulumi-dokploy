@@ -56,7 +56,7 @@ All commands below were run in `/Users/gjorgjidimeski/Projects/pulumi-dokploy/.w
   regenerated Java SDK files; this is generator-owned output and was not hand
   edited. Rerun after commit.
 * `git add ... && git commit -m "docs: publish SSH registry tag and mount resources"` —
-  PASS; committed as `b88a683`.
+  PASS; committed as `52a5e3d`.
 * `mise exec -- make check_codegen` after commit — PASS; regeneration was
   deterministic and the schema/SDK tree matched HEAD. Pulumi repeated the
   existing warning and ephemeral-agent notice.
@@ -97,4 +97,14 @@ All commands below were run in `/Users/gjorgjidimeski/Projects/pulumi-dokploy/.w
   PASS (`ok .../provider`).
 * `git diff --check` — PASS.
 * `git add provider/mount.go provider/mount_test.go .superpowers/sdd/2026-09-01-ssh-registry-tags-mounts/task-8-report.md && git commit -m "lint: clean up mount formatting"` — PASS; committed as
-  `6a770c7`.
+  `f1c4950`.
+
+## Round-1 verification after final example wiring
+
+* `mise exec -- go test ./openapi/cmd/normalize -count=1 && mise exec -- make check_openapi && mise exec -- go test -short -v -count=1 ./provider/... ./internal/... && mise exec -- make test_race && mise exec -- make check_codegen && mise exec -- make build_sdks && mise exec -- make test_examples` — PASS; all commands completed successfully. Existing generated-language warnings were non-fatal.
+* `mise exec -- make docs_check` — PASS; generated docs were deterministic, Astro checks reported 0 errors/warnings/hints, 44 website tests passed, the site built 38 pages, and 2 built-site tests passed.
+* `mise exec -- make docs_build` — PASS; 38 pages built.
+* `python3 -m unittest scripts/test_normalize_ci.py -v` — PASS; 34 tests passed.
+* `mise exec -- make lint` — PASS; `0 issues`.
+* `git diff --check` — PASS.
+* Final implementation commit — `fbaae95` (`docs: wire SSH and secret mount examples`).
