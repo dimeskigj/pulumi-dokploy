@@ -83,3 +83,18 @@ All commands below were run in `/Users/gjorgjidimeski/Projects/pulumi-dokploy/.w
 
 * The requested Luna reviewer/implementer dispatch was unavailable to this
   implementation subagent and was not performed.
+
+## Task 8 concern fix evidence
+
+* Read this report before editing, then reproduced `mise exec -- make lint`:
+  it reported `provider/mount.go:54:16` goconst for `"bind"` and
+  `provider/mount_test.go:63:1` gofmt.
+* `gofmt -w provider/mount.go provider/mount_test.go` — unavailable because
+  the system `gofmt` executable is not on PATH.
+* `mise exec -- gofmt -w provider/mount.go provider/mount_test.go` — PASS.
+* `mise exec -- make lint` — PASS; `0 issues`.
+* `mise exec -- go test ./provider -run 'TestMount|TestRegistryMetadata|TestSchema' -count=1` —
+  PASS (`ok .../provider`).
+* `git diff --check` — PASS.
+* `git add provider/mount.go provider/mount_test.go .superpowers/sdd/2026-09-01-ssh-registry-tags-mounts/task-8-report.md && git commit -m "lint: clean up mount formatting"` — PASS; committed as
+  `6a770c7`.

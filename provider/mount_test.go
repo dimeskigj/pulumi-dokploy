@@ -33,7 +33,7 @@ func TestMountCreateReadsMountThenRedeploysTarget(t *testing.T) {
 		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
 	)
 	r := Mount{client: fixedClient(s.API())}
-	got, err := r.Create(t.Context(), infer.CreateRequest[MountArgs]{Inputs: MountArgs{Type: "bind", MountPath: "/data", HostPath: stringPtr("/host"), ApplicationID: stringPtr("a1")}})
+	got, err := r.Create(t.Context(), infer.CreateRequest[MountArgs]{Inputs: MountArgs{Type: mountTypeBind, MountPath: "/data", HostPath: stringPtr("/host"), ApplicationID: stringPtr("a1")}})
 	require.NoError(t, err)
 	require.Equal(t, "m1", got.ID)
 	require.Equal(t, "bind", got.Output.Type)
@@ -60,13 +60,19 @@ func TestMountDeleteSanitizesEachOperationError(t *testing.T) {
 		{"lookup", []scriptedRequest{expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusBadRequest, `{"message":"delete-secret"}`)}},
 		{"removal", []scriptedRequest{
 			expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusOK, `{"mountId":"m1"}`),
-			scriptedRequest{Method: http.MethodPost, Path: "/api/mounts.remove", Body: json.RawMessage(`{"mountId":"m1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"delete-secret"}`)},
+			{
+				Method:   http.MethodPost,
+				Path:     "/api/mounts.remove",
+				Body:     json.RawMessage(`{"mountId":"m1"}`),
+				Status:   http.StatusBadRequest,
+				Response: []byte(`{"message":"delete-secret"}`),
+			},
 		}},
 		{"redeploy", []scriptedRequest{
 			expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusOK, `{"mountId":"m1"}`),
 			expectPOST("/api/mounts.remove", `{"mountId":"m1"}`, `{}`),
 			expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
-			scriptedRequest{Method: http.MethodPost, Path: "/api/application.redeploy", Body: json.RawMessage(`{"applicationId":"a1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"delete-secret"}`)},
+			{Method: http.MethodPost, Path: "/api/application.redeploy", Body: json.RawMessage(`{"applicationId":"a1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"delete-secret"}`)},
 		}},
 	}
 	for _, tc := range cases {

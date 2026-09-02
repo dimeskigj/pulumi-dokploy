@@ -24,6 +24,13 @@ type MountArgs struct {
 	MariaDBID     *string `pulumi:"mariadbId,optional" provider:"replaceOnChanges"`
 	RedisID       *string `pulumi:"redisId,optional" provider:"replaceOnChanges"`
 }
+
+const (
+	mountTypeBind   = "bind"
+	mountTypeVolume = "volume"
+	mountTypeFile   = "file"
+)
+
 type MountState struct {
 	MountArgs
 	MountID string `pulumi:"mountId"`
@@ -51,7 +58,7 @@ func (r Mount) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRe
 	if err != nil {
 		return infer.CheckResponse[MountArgs]{Inputs: in, Failures: failures}, err
 	}
-	if in.Type != "bind" && in.Type != "volume" && in.Type != "file" {
+	if in.Type != mountTypeBind && in.Type != mountTypeVolume && in.Type != mountTypeFile {
 		failures = append(failures, p.CheckFailure{Property: "type", Reason: "type must be one of bind, volume, file"})
 	}
 	if in.MountPath == "" && !req.NewInputs.Get("mountPath").HasComputed() {
@@ -67,15 +74,15 @@ func (r Mount) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRe
 		}
 	}
 	switch in.Type {
-	case "bind":
+	case mountTypeBind:
 		if in.HostPath == nil {
 			failures = append(failures, p.CheckFailure{Property: "hostPath", Reason: "hostPath must be set for bind mounts"})
 		}
-	case "volume":
+	case mountTypeVolume:
 		if in.VolumeName == nil {
 			failures = append(failures, p.CheckFailure{Property: "volumeName", Reason: "volumeName must be set for volume mounts"})
 		}
-	case "file":
+	case mountTypeFile:
 		if in.FilePath == nil {
 			failures = append(failures, p.CheckFailure{Property: "filePath", Reason: "filePath must be set for file mounts"})
 		}
@@ -145,7 +152,7 @@ func sanitizeMountError(err error, args MountArgs) error {
 }
 func mountArgsFrom(m *generated.Mount, prior MountArgs) (MountArgs, error) {
 	a := prior
-	if m.Type == nil || (*m.Type != "bind" && *m.Type != "volume" && *m.Type != "file") {
+	if m.Type == nil || (*m.Type != mountTypeBind && *m.Type != mountTypeVolume && *m.Type != mountTypeFile) {
 		return MountArgs{}, fmt.Errorf("mounts.one returned unsupported type %q", value(m.Type))
 	}
 	a.Type = *m.Type
