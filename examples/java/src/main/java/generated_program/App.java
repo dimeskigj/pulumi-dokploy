@@ -7,6 +7,8 @@ import net.dimeski.pulumi.dokploy.Project;
 import net.dimeski.pulumi.dokploy.ProjectArgs;
 import net.dimeski.pulumi.dokploy.Environment;
 import net.dimeski.pulumi.dokploy.EnvironmentArgs;
+import net.dimeski.pulumi.dokploy.Registry;
+import net.dimeski.pulumi.dokploy.RegistryArgs;
 import net.dimeski.pulumi.dokploy.Application;
 import net.dimeski.pulumi.dokploy.ApplicationArgs;
 import net.dimeski.pulumi.dokploy.inputs.ApplicationSourceArgs;
@@ -15,6 +17,14 @@ import net.dimeski.pulumi.dokploy.Compose;
 import net.dimeski.pulumi.dokploy.ComposeArgs;
 import net.dimeski.pulumi.dokploy.inputs.ComposeSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.RawComposeSourceArgs;
+import net.dimeski.pulumi.dokploy.SSHKey;
+import net.dimeski.pulumi.dokploy.SSHKeyArgs;
+import net.dimeski.pulumi.dokploy.Tag;
+import net.dimeski.pulumi.dokploy.TagArgs;
+import net.dimeski.pulumi.dokploy.ProjectTag;
+import net.dimeski.pulumi.dokploy.ProjectTagArgs;
+import net.dimeski.pulumi.dokploy.Mount;
+import net.dimeski.pulumi.dokploy.MountArgs;
 import net.dimeski.pulumi.dokploy.Postgres;
 import net.dimeski.pulumi.dokploy.PostgresArgs;
 import net.dimeski.pulumi.dokploy.MySQL;
@@ -57,6 +67,7 @@ public class App {
         final var gitlabNamespace = config.get("gitlabNamespace").orElse("platform");
         final var gitlabRepository = config.get("gitlabRepository").orElse("application");
         final var gitBranch = config.get("gitBranch").orElse("main");
+        final var sshPrivateKey = config.getSecret("sshPrivateKey").applyValue(v -> v.orElse("replace-with-an-ssh-private-key"));
         final var registryPassword = config.getSecret("registryPassword").applyValue(v -> v.orElse("replace-with-a-registry-password"));
         final var databasePassword = config.getSecret("databasePassword").applyValue(v -> v.orElse("replace-with-a-database-password"));
         final var mysqlPassword = config.getSecret("mysqlPassword").applyValue(v -> v.orElse("replace-with-a-mysql-password"));
@@ -76,6 +87,14 @@ public class App {
             .description("Additional non-production environment")
             .build());
 
+        var registry = new Registry("registry", RegistryArgs.builder()
+            .name("mvp-registry")
+            .username("example")
+            .password(registryPassword.asSecret())
+            .url("registry.example.invalid")
+            .imagePrefix("dokploy/")
+            .build());
+
         var application = new Application("application", ApplicationArgs.builder()
             .name("mvp-application")
             .environmentId(projectResource.defaultEnvironmentId())
@@ -89,6 +108,8 @@ public class App {
                 .build())
             .environment(Output.ofSecret(String.format("APP_HOST=%s", appHost)))
             .createEnvFile(true)
+            .registryId(registry.registryId())
+            .buildRegistryId(registry.registryId())
             .build());
 
         var compose = new Compose("compose", ComposeArgs.builder()
@@ -108,6 +129,43 @@ services:
                 .build())
             .environment(Output.ofSecret(String.format("COMPOSE_HOST=%s", composeHost)))
             .createEnvFile(true)
+            .build());
+
+        var sshKey = new SSHKey("sshKey", SSHKeyArgs.builder()
+            .name("mvp-git-ssh")
+            .privateKey(sshPrivateKey.asSecret())
+            .publicKey("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp")
+            .build());
+
+        var tag = new Tag("tag", TagArgs.builder()
+            .name("mvp")
+            .color("#2dd4bf")
+            .build());
+
+        var projectTag = new ProjectTag("projectTag", ProjectTagArgs.builder()
+            .projectId(projectResource.projectId())
+            .tagId(tag.tagId())
+            .build());
+
+        var applicationBindMount = new Mount("applicationBindMount", MountArgs.builder()
+            .type("bind")
+            .mountPath("/var/lib/dokploy")
+            .hostPath("/srv/dokploy")
+            .applicationId(application.applicationId())
+            .build());
+
+        var composeVolumeMount = new Mount("composeVolumeMount", MountArgs.builder()
+            .type("volume")
+            .mountPath("/var/lib/postgresql/data")
+            .volumeName("mvp-postgres-data")
+            .composeId(compose.composeId())
+            .build());
+
+        var postgresFileMount = new Mount("postgresFileMount", MountArgs.builder()
+            .type("file")
+            .mountPath("/etc/app/config.toml")
+            .filePath("/tmp/dokploy-config.toml")
+            .content(Output.ofSecret("APP_ENV=staging"))
             .build());
 
         var postgres = new Postgres("postgres", PostgresArgs.builder()

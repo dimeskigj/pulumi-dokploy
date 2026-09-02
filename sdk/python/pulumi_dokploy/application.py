@@ -26,10 +26,12 @@ class ApplicationArgs:
                  source: pulumi.Input['ApplicationSourceArgs'],
                  app_name: pulumi.Input[Optional[_builtins.str]] = None,
                  build_args: pulumi.Input[Optional[_builtins.str]] = None,
+                 build_registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  build_secrets: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
+                 registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  server_id: pulumi.Input[Optional[_builtins.str]] = None):
         """
         The set of arguments for constructing a Application resource.
@@ -39,10 +41,12 @@ class ApplicationArgs:
         :param pulumi.Input['ApplicationSourceArgs'] source: The application source configuration.
         :param pulumi.Input[_builtins.str] app_name: The optional deployed application name.
         :param pulumi.Input[_builtins.str] build_args: Build arguments for the application.
+        :param pulumi.Input[_builtins.str] build_registry_id: The optional build registry ID.
         :param pulumi.Input[_builtins.str] build_secrets: Build secrets for the application.
         :param pulumi.Input[_builtins.bool] create_env_file: Whether to create an environment file.
         :param pulumi.Input[_builtins.str] description: An optional application description.
         :param pulumi.Input[_builtins.str] environment: Environment variables for the application.
+        :param pulumi.Input[_builtins.str] registry_id: The optional deployment registry ID.
         :param pulumi.Input[_builtins.str] server_id: The optional server ID.
         """
         pulumi.set(__self__, "environment_id", environment_id)
@@ -52,6 +56,8 @@ class ApplicationArgs:
             pulumi.set(__self__, "app_name", app_name)
         if build_args is not None:
             pulumi.set(__self__, "build_args", build_args)
+        if build_registry_id is not None:
+            pulumi.set(__self__, "build_registry_id", build_registry_id)
         if build_secrets is not None:
             pulumi.set(__self__, "build_secrets", build_secrets)
         if create_env_file is not None:
@@ -60,6 +66,8 @@ class ApplicationArgs:
             pulumi.set(__self__, "description", description)
         if environment is not None:
             pulumi.set(__self__, "environment", environment)
+        if registry_id is not None:
+            pulumi.set(__self__, "registry_id", registry_id)
         if server_id is not None:
             pulumi.set(__self__, "server_id", server_id)
 
@@ -124,6 +132,18 @@ class ApplicationArgs:
         pulumi.set(self, "build_args", value)
 
     @_builtins.property
+    @pulumi.getter(name="buildRegistryId")
+    def build_registry_id(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The optional build registry ID.
+        """
+        return pulumi.get(self, "build_registry_id")
+
+    @build_registry_id.setter
+    def build_registry_id(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "build_registry_id", value)
+
+    @_builtins.property
     @pulumi.getter(name="buildSecrets")
     def build_secrets(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
@@ -172,6 +192,18 @@ class ApplicationArgs:
         pulumi.set(self, "environment", value)
 
     @_builtins.property
+    @pulumi.getter(name="registryId")
+    def registry_id(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The optional deployment registry ID.
+        """
+        return pulumi.get(self, "registry_id")
+
+    @registry_id.setter
+    def registry_id(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "registry_id", value)
+
+    @_builtins.property
     @pulumi.getter(name="serverId")
     def server_id(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
@@ -192,12 +224,14 @@ class Application(pulumi.CustomResource):
                  opts: Optional[pulumi.ResourceOptions] = None,
                  app_name: pulumi.Input[Optional[_builtins.str]] = None,
                  build_args: pulumi.Input[Optional[_builtins.str]] = None,
+                 build_registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  build_secrets: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  environment_id: pulumi.Input[Optional[_builtins.str]] = None,
                  name: pulumi.Input[Optional[_builtins.str]] = None,
+                 registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  server_id: pulumi.Input[Optional[_builtins.str]] = None,
                  source: pulumi.Input[Optional[Union['ApplicationSourceArgs', 'ApplicationSourceArgsDict']]] = None,
                  __props__=None):
@@ -208,12 +242,14 @@ class Application(pulumi.CustomResource):
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[_builtins.str] app_name: The optional deployed application name.
         :param pulumi.Input[_builtins.str] build_args: Build arguments for the application.
+        :param pulumi.Input[_builtins.str] build_registry_id: The optional build registry ID.
         :param pulumi.Input[_builtins.str] build_secrets: Build secrets for the application.
         :param pulumi.Input[_builtins.bool] create_env_file: Whether to create an environment file.
         :param pulumi.Input[_builtins.str] description: An optional application description.
         :param pulumi.Input[_builtins.str] environment: Environment variables for the application.
         :param pulumi.Input[_builtins.str] environment_id: The target environment ID.
         :param pulumi.Input[_builtins.str] name: The application name.
+        :param pulumi.Input[_builtins.str] registry_id: The optional deployment registry ID.
         :param pulumi.Input[_builtins.str] server_id: The optional server ID.
         :param pulumi.Input[Union['ApplicationSourceArgs', 'ApplicationSourceArgsDict']] source: The application source configuration.
         """
@@ -243,12 +279,14 @@ class Application(pulumi.CustomResource):
                  opts: Optional[pulumi.ResourceOptions] = None,
                  app_name: pulumi.Input[Optional[_builtins.str]] = None,
                  build_args: pulumi.Input[Optional[_builtins.str]] = None,
+                 build_registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  build_secrets: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  environment_id: pulumi.Input[Optional[_builtins.str]] = None,
                  name: pulumi.Input[Optional[_builtins.str]] = None,
+                 registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  server_id: pulumi.Input[Optional[_builtins.str]] = None,
                  source: pulumi.Input[Optional[Union['ApplicationSourceArgs', 'ApplicationSourceArgsDict']]] = None,
                  __props__=None):
@@ -262,6 +300,7 @@ class Application(pulumi.CustomResource):
 
             __props__.__dict__["app_name"] = app_name
             __props__.__dict__["build_args"] = None if build_args is None else pulumi.Output.secret(build_args)
+            __props__.__dict__["build_registry_id"] = build_registry_id
             __props__.__dict__["build_secrets"] = None if build_secrets is None else pulumi.Output.secret(build_secrets)
             __props__.__dict__["create_env_file"] = create_env_file
             __props__.__dict__["description"] = description
@@ -272,6 +311,7 @@ class Application(pulumi.CustomResource):
             if name is None and not opts.urn:
                 raise TypeError("Missing required property 'name'")
             __props__.__dict__["name"] = name
+            __props__.__dict__["registry_id"] = registry_id
             __props__.__dict__["server_id"] = server_id
             if source is None and not opts.urn:
                 raise TypeError("Missing required property 'source'")
@@ -307,12 +347,14 @@ class Application(pulumi.CustomResource):
         __props__.__dict__["app_name"] = None
         __props__.__dict__["application_id"] = None
         __props__.__dict__["build_args"] = None
+        __props__.__dict__["build_registry_id"] = None
         __props__.__dict__["build_secrets"] = None
         __props__.__dict__["create_env_file"] = None
         __props__.__dict__["description"] = None
         __props__.__dict__["environment"] = None
         __props__.__dict__["environment_id"] = None
         __props__.__dict__["name"] = None
+        __props__.__dict__["registry_id"] = None
         __props__.__dict__["server_id"] = None
         __props__.__dict__["source"] = None
         __props__.__dict__["status"] = None
@@ -341,6 +383,14 @@ class Application(pulumi.CustomResource):
         Build arguments for the application.
         """
         return pulumi.get(self, "build_args")
+
+    @_builtins.property
+    @pulumi.getter(name="buildRegistryId")
+    def build_registry_id(self) -> pulumi.Output[Optional[_builtins.str]]:
+        """
+        The optional build registry ID.
+        """
+        return pulumi.get(self, "build_registry_id")
 
     @_builtins.property
     @pulumi.getter(name="buildSecrets")
@@ -389,6 +439,14 @@ class Application(pulumi.CustomResource):
         The application name.
         """
         return pulumi.get(self, "name")
+
+    @_builtins.property
+    @pulumi.getter(name="registryId")
+    def registry_id(self) -> pulumi.Output[Optional[_builtins.str]]:
+        """
+        The optional deployment registry ID.
+        """
+        return pulumi.get(self, "registry_id")
 
     @_builtins.property
     @pulumi.getter(name="serverId")

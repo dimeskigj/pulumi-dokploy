@@ -2,7 +2,7 @@
   "name": "dokploy",
   "displayName": "Dokploy",
   "version": "0.0.1-alpha.0+dev",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, backup destinations, database backups, and volume backups.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, backup destinations, database backups, and volume backups.",
   "homepage": "https://github.com/dimeskigj/pulumi-dokploy",
   "license": "Apache-2.0",
   "repository": "https://github.com/dimeskigj/pulumi-dokploy",
@@ -175,6 +175,10 @@
         "enableSubmodules": {
           "type": "boolean",
           "description": "Whether to enable submodules."
+        },
+        "sshKeyId": {
+          "type": "string",
+          "description": "The SSH key ID."
         },
         "url": {
           "type": "string",
@@ -426,6 +430,10 @@
           "description": "Build arguments for the application.",
           "secret": true
         },
+        "buildRegistryId": {
+          "type": "string",
+          "description": "The optional build registry ID."
+        },
         "buildSecrets": {
           "type": "string",
           "description": "Build secrets for the application.",
@@ -452,6 +460,10 @@
         "name": {
           "type": "string",
           "description": "The application name."
+        },
+        "registryId": {
+          "type": "string",
+          "description": "The optional deployment registry ID."
         },
         "serverId": {
           "type": "string",
@@ -484,6 +496,10 @@
           "description": "Build arguments for the application.",
           "secret": true
         },
+        "buildRegistryId": {
+          "type": "string",
+          "description": "The optional build registry ID."
+        },
         "buildSecrets": {
           "type": "string",
           "description": "Build secrets for the application.",
@@ -510,6 +526,10 @@
         "name": {
           "type": "string",
           "description": "The application name."
+        },
+        "registryId": {
+          "type": "string",
+          "description": "The optional deployment registry ID."
         },
         "serverId": {
           "type": "string",
@@ -1315,6 +1335,138 @@
         "databasePassword"
       ]
     },
+    "dokploy:index:Mount": {
+      "description": "A Dokploy workload mount.",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The application target.",
+          "replaceOnChanges": true
+        },
+        "composeId": {
+          "type": "string",
+          "description": "The Compose target.",
+          "replaceOnChanges": true
+        },
+        "content": {
+          "type": "string",
+          "description": "The file content.",
+          "secret": true
+        },
+        "filePath": {
+          "type": "string",
+          "description": "The file path."
+        },
+        "hostPath": {
+          "type": "string",
+          "description": "The host path."
+        },
+        "mariadbId": {
+          "type": "string",
+          "description": "The MariaDB target.",
+          "replaceOnChanges": true
+        },
+        "mountId": {
+          "type": "string",
+          "description": "The stable Dokploy mount ID."
+        },
+        "mountPath": {
+          "type": "string",
+          "description": "The path inside the workload."
+        },
+        "mysqlId": {
+          "type": "string",
+          "description": "The MySQL target.",
+          "replaceOnChanges": true
+        },
+        "postgresId": {
+          "type": "string",
+          "description": "The Postgres target.",
+          "replaceOnChanges": true
+        },
+        "redisId": {
+          "type": "string",
+          "description": "The Redis target.",
+          "replaceOnChanges": true
+        },
+        "type": {
+          "type": "string",
+          "description": "The mount type.",
+          "replaceOnChanges": true
+        },
+        "volumeName": {
+          "type": "string",
+          "description": "The volume name."
+        }
+      },
+      "required": [
+        "type",
+        "mountPath",
+        "mountId"
+      ],
+      "inputProperties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The application target.",
+          "replaceOnChanges": true
+        },
+        "composeId": {
+          "type": "string",
+          "description": "The Compose target.",
+          "replaceOnChanges": true
+        },
+        "content": {
+          "type": "string",
+          "description": "The file content.",
+          "secret": true
+        },
+        "filePath": {
+          "type": "string",
+          "description": "The file path."
+        },
+        "hostPath": {
+          "type": "string",
+          "description": "The host path."
+        },
+        "mariadbId": {
+          "type": "string",
+          "description": "The MariaDB target.",
+          "replaceOnChanges": true
+        },
+        "mountPath": {
+          "type": "string",
+          "description": "The path inside the workload."
+        },
+        "mysqlId": {
+          "type": "string",
+          "description": "The MySQL target.",
+          "replaceOnChanges": true
+        },
+        "postgresId": {
+          "type": "string",
+          "description": "The Postgres target.",
+          "replaceOnChanges": true
+        },
+        "redisId": {
+          "type": "string",
+          "description": "The Redis target.",
+          "replaceOnChanges": true
+        },
+        "type": {
+          "type": "string",
+          "description": "The mount type.",
+          "replaceOnChanges": true
+        },
+        "volumeName": {
+          "type": "string",
+          "description": "The volume name."
+        }
+      },
+      "requiredInputs": [
+        "type",
+        "mountPath"
+      ]
+    },
     "dokploy:index:MySQL": {
       "description": "A Dokploy MySQL database.",
       "properties": {
@@ -1624,6 +1776,41 @@
         "name"
       ]
     },
+    "dokploy:index:ProjectTag": {
+      "description": "A Dokploy project-to-tag association.",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "The Dokploy project ID.",
+          "replaceOnChanges": true
+        },
+        "tagId": {
+          "type": "string",
+          "description": "The Dokploy tag ID.",
+          "replaceOnChanges": true
+        }
+      },
+      "required": [
+        "projectId",
+        "tagId"
+      ],
+      "inputProperties": {
+        "projectId": {
+          "type": "string",
+          "description": "The Dokploy project ID.",
+          "replaceOnChanges": true
+        },
+        "tagId": {
+          "type": "string",
+          "description": "The Dokploy tag ID.",
+          "replaceOnChanges": true
+        }
+      },
+      "requiredInputs": [
+        "projectId",
+        "tagId"
+      ]
+    },
     "dokploy:index:Redis": {
       "description": "A Dokploy Redis database.",
       "properties": {
@@ -1732,6 +1919,179 @@
         "name",
         "environmentId",
         "databasePassword"
+      ]
+    },
+    "dokploy:index:Registry": {
+      "description": "A Dokploy container registry.",
+      "properties": {
+        "imagePrefix": {
+          "type": "string",
+          "description": "The optional image prefix."
+        },
+        "name": {
+          "type": "string",
+          "description": "The registry name."
+        },
+        "password": {
+          "type": "string",
+          "description": "The registry password.",
+          "secret": true
+        },
+        "registryId": {
+          "type": "string",
+          "description": "The stable Dokploy registry ID."
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID."
+        },
+        "url": {
+          "type": "string",
+          "description": "The registry URL."
+        },
+        "username": {
+          "type": "string",
+          "description": "The registry username."
+        }
+      },
+      "required": [
+        "name",
+        "username",
+        "password",
+        "url",
+        "registryId"
+      ],
+      "inputProperties": {
+        "imagePrefix": {
+          "type": "string",
+          "description": "The optional image prefix."
+        },
+        "name": {
+          "type": "string",
+          "description": "The registry name."
+        },
+        "password": {
+          "type": "string",
+          "description": "The registry password.",
+          "secret": true
+        },
+        "serverId": {
+          "type": "string",
+          "description": "The optional server ID."
+        },
+        "url": {
+          "type": "string",
+          "description": "The registry URL."
+        },
+        "username": {
+          "type": "string",
+          "description": "The registry username."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "username",
+        "password",
+        "url"
+      ]
+    },
+    "dokploy:index:SSHKey": {
+      "description": "A Dokploy SSH key for Git and registry access.",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "The optional SSH key description."
+        },
+        "name": {
+          "type": "string",
+          "description": "The SSH key name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "The Dokploy organization ID owning this SSH key."
+        },
+        "privateKey": {
+          "type": "string",
+          "description": "The private SSH key material.",
+          "secret": true,
+          "replaceOnChanges": true
+        },
+        "publicKey": {
+          "type": "string",
+          "description": "The public SSH key material.",
+          "replaceOnChanges": true
+        },
+        "sshKeyId": {
+          "type": "string",
+          "description": "The stable Dokploy SSH key ID."
+        }
+      },
+      "required": [
+        "name",
+        "privateKey",
+        "publicKey",
+        "sshKeyId",
+        "organizationId"
+      ],
+      "inputProperties": {
+        "description": {
+          "type": "string",
+          "description": "The optional SSH key description."
+        },
+        "name": {
+          "type": "string",
+          "description": "The SSH key name."
+        },
+        "privateKey": {
+          "type": "string",
+          "description": "The private SSH key material.",
+          "secret": true,
+          "replaceOnChanges": true
+        },
+        "publicKey": {
+          "type": "string",
+          "description": "The public SSH key material.",
+          "replaceOnChanges": true
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "privateKey",
+        "publicKey"
+      ]
+    },
+    "dokploy:index:Tag": {
+      "description": "A reusable Dokploy project tag.",
+      "properties": {
+        "color": {
+          "type": "string",
+          "description": "The optional opaque tag color."
+        },
+        "name": {
+          "type": "string",
+          "description": "The tag name."
+        },
+        "tagId": {
+          "type": "string",
+          "description": "The stable Dokploy tag ID."
+        }
+      },
+      "required": [
+        "name",
+        "tagId"
+      ],
+      "inputProperties": {
+        "color": {
+          "type": "string",
+          "description": "The optional opaque tag color."
+        },
+        "name": {
+          "type": "string",
+          "description": "The tag name."
+        }
+      },
+      "requiredInputs": [
+        "name"
       ]
     },
     "dokploy:index:VolumeBackup": {

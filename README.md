@@ -40,11 +40,13 @@ redacted in Pulumi diagnostics.
 
 ## Resources
 
-The provider exposes thirteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+The provider exposes eighteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
-`dokploy:index:Backup`, and `dokploy:index:VolumeBackup`.
+`dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:SSHKey`,
+`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`, and
+`dokploy:index:Mount`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -65,6 +67,14 @@ those volumes should be deleted.
 Database passwords, environment values, application build arguments/build secrets, and nested
 Docker credentials are secret inputs. Keep them secret in configuration and never log them.
 
+SSH keys, container registries, reusable tags, project-tag associations, and workload mounts are
+managed resources. Use an `SSHKey` output as the `sshKeyId` of a generic Git Application, and a
+`Registry` output as an Application's `registryId` or `buildRegistryId`. Mounts support `bind`,
+`volume`, and `file` targets; automatic mount redeployment occurs after a change. Registry
+credentials, SSH private keys, and file contents are secret inputs; registries are tested before
+create and credential-affecting updates through `testRegistry`. Supply `registryPassword` and `sshPrivateKey` through
+secret configuration. MongoDB and LibSQL are documented exclusions for mounts.
+
 See the [Get Started](https://dimeskigj.github.io/pulumi-dokploy/getting-started/installation/),
 [Resources](https://dimeskigj.github.io/pulumi-dokploy/reference/), and
 [Guides](https://dimeskigj.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
@@ -79,6 +89,14 @@ pulumi import dokploy:index:Project existing p1
 
 After import, review the generated state and supply any write-only secret inputs required for
 future updates.
+
+```bash
+pulumi import dokploy:index:SSHKey key <ssh-key-id>
+pulumi import dokploy:index:Registry registry <registry-id>
+pulumi import dokploy:index:Tag tag <tag-id>
+pulumi import dokploy:index:ProjectTag projectTag <project-id>/<tag-id>
+pulumi import dokploy:index:Mount mount <mount-id>
+```
 
 ## Development
 

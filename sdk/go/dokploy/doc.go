@@ -1,2 +1,2 @@
-// Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, backup destinations, database backups, and volume backups.
+// Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, backup destinations, database backups, and volume backups.
 package dokploy

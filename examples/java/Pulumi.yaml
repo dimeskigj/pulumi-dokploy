@@ -62,3 +62,7 @@ config:
     type: string
     default: replace-with-a-registry-password
     secret: true
+  sshPrivateKey:
+    type: string
+    default: replace-with-an-ssh-private-key
+    secret: true

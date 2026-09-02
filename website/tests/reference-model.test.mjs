@@ -92,14 +92,20 @@ test("loads and validates the real provider schema", async () => {
   const model = parseSchema(
     await loadSchema(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url)),
   );
-  assert.equal(model.resources.length, 13);
+   assert.equal(model.resources.length, 18);
   assert.equal(model.config.find(({ name }) => name === "apiKey").secret, true);
-  assert.equal(
+   assert.equal(
     model.resources
       .find(({ name }) => name === "Application")
       .inputs.find(({ name }) => name === "environmentId").replaceOnChanges,
-    true,
-  );
+     true,
+   );
+   for (const resource of ["SSHKey", "Registry", "Tag", "ProjectTag", "Mount"]) {
+     assert.ok(model.resources.some(({ name }) => name === resource), `${resource} is published`);
+   }
+   assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").secret, true);
+   assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").replaceOnChanges, true);
+   assert.equal(model.resources.find(({ name }) => name === "ProjectTag").inputs.find(({ name }) => name === "projectId").replaceOnChanges, true);
 });
 
 test("rejects duplicate normalized resource names", () => {

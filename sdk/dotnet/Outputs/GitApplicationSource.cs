@@ -33,6 +33,10 @@ namespace Pulumi.Dokploy.Outputs
         /// </summary>
         public readonly bool? EnableSubmodules;
         /// <summary>
+        /// The SSH key ID.
+        /// </summary>
+        public readonly string? SshKeyId;
+        /// <summary>
         /// The Git repository URL.
         /// </summary>
         public readonly string Url;
@@ -51,6 +55,8 @@ namespace Pulumi.Dokploy.Outputs
 
             bool? enableSubmodules,
 
+            string? sshKeyId,
+
             string url,
 
             ImmutableArray<string> watchPaths)
@@ -59,6 +65,7 @@ namespace Pulumi.Dokploy.Outputs
             Build = build;
             BuildPath = buildPath;
             EnableSubmodules = enableSubmodules;
+            SshKeyId = sshKeyId;
             Url = url;
             WatchPaths = watchPaths;
         }

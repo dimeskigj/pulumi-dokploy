@@ -114,6 +114,10 @@ export interface GitApplicationSourceArgs {
      */
     enableSubmodules?: pulumi.Input<boolean | undefined>;
     /**
+     * The SSH key ID.
+     */
+    sshKeyId?: pulumi.Input<string | undefined>;
+    /**
      * The Git repository URL.
      */
     url: pulumi.Input<string>;

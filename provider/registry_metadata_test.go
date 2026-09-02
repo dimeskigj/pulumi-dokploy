@@ -170,6 +170,10 @@ func TestRegistryMetadata(t *testing.T) {
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
 	}
+	require.Len(t, spec.Resources, 18)
+	for _, token := range []string{"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount"} {
+		require.Contains(t, spec.Resources, token)
+	}
 
 	readme, err := os.ReadFile("../README.md")
 	require.NoError(t, err)
@@ -188,6 +192,10 @@ func TestRegistryMetadata(t *testing.T) {
 		"Project owns the default environment", "Source type changes replace",
 		"referenced GitLab integration is not managed", "SSH key references are likewise passed through",
 		"deployment errors preserve partial state", "Compose volumes are preserved",
+		"SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "registryPassword", "sshPrivateKey",
+		"pulumi import dokploy:index:SSHKey", "pulumi import dokploy:index:Registry", "pulumi import dokploy:index:Tag",
+		"pulumi import dokploy:index:ProjectTag", "pulumi import dokploy:index:Mount",
+		"MongoDB", "LibSQL", "automatic mount redeployment", "testRegistry",
 	} {
 		require.True(t, strings.Contains(docs, section), "README missing %q", section)
 	}

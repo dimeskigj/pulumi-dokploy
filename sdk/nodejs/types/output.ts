@@ -114,6 +114,10 @@ export interface GitApplicationSource {
      */
     enableSubmodules?: boolean;
     /**
+     * The SSH key ID.
+     */
+    sshKeyId?: string;
+    /**
      * The Git repository URL.
      */
     url: string;

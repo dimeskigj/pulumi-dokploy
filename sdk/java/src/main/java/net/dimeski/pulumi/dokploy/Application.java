@@ -65,6 +65,20 @@ public class Application extends com.pulumi.resources.CustomResource {
         return Codegen.optional(this.buildArgs);
     }
     /**
+     * The optional build registry ID.
+     * 
+     */
+    @Export(name="buildRegistryId", refs={String.class}, tree="[0]")
+    private Output</* @Nullable */ String> buildRegistryId;
+
+    /**
+     * @return The optional build registry ID.
+     * 
+     */
+    public Output<Optional<String>> buildRegistryId() {
+        return Codegen.optional(this.buildRegistryId);
+    }
+    /**
      * Build secrets for the application.
      * 
      */
@@ -147,6 +161,20 @@ public class Application extends com.pulumi.resources.CustomResource {
      */
     public Output<String> name() {
         return this.name;
+    }
+    /**
+     * The optional deployment registry ID.
+     * 
+     */
+    @Export(name="registryId", refs={String.class}, tree="[0]")
+    private Output</* @Nullable */ String> registryId;
+
+    /**
+     * @return The optional deployment registry ID.
+     * 
+     */
+    public Output<Optional<String>> registryId() {
+        return Codegen.optional(this.registryId);
     }
     /**
      * The optional server ID.

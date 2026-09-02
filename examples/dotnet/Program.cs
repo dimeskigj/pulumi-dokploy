@@ -16,6 +16,7 @@ return await Deployment.RunAsync(() =>
     var gitlabNamespace = config.Get("gitlabNamespace") ?? "platform";
     var gitlabRepository = config.Get("gitlabRepository") ?? "application";
     var gitBranch = config.Get("gitBranch") ?? "main";
+    var sshPrivateKey = config.GetSecret("sshPrivateKey") ?? Output.CreateSecret("replace-with-an-ssh-private-key");
     var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("replace-with-a-registry-password");
     var databasePassword = config.GetSecret("databasePassword") ?? Output.CreateSecret("replace-with-a-database-password");
     var mysqlPassword = config.GetSecret("mysqlPassword") ?? Output.CreateSecret("replace-with-a-mysql-password");
@@ -37,6 +38,15 @@ return await Deployment.RunAsync(() =>
         Description = "Additional non-production environment",
     });
 
+    var registry = new Dokploy.Registry("registry", new()
+    {
+        Name = "mvp-registry",
+        Username = "example",
+        Password = Output.CreateSecret(registryPassword),
+        Url = "registry.example.invalid",
+        ImagePrefix = "dokploy/",
+    });
+
     var application = new Dokploy.Application("application", new()
     {
         Name = "mvp-application",
@@ -53,6 +63,8 @@ return await Deployment.RunAsync(() =>
         },
         Environment = Output.CreateSecret($"APP_HOST={appHost}"),
         CreateEnvFile = true,
+        RegistryId = registry.RegistryId,
+        BuildRegistryId = registry.RegistryId,
     });
 
     var compose = new Dokploy.Compose("compose", new()
@@ -74,6 +86,49 @@ return await Deployment.RunAsync(() =>
         },
         Environment = Output.CreateSecret($"COMPOSE_HOST={composeHost}"),
         CreateEnvFile = true,
+    });
+
+    var sshKey = new Dokploy.SSHKey("sshKey", new()
+    {
+        Name = "mvp-git-ssh",
+        PrivateKey = Output.CreateSecret(sshPrivateKey),
+        PublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp",
+    });
+
+    var tag = new Dokploy.Tag("tag", new()
+    {
+        Name = "mvp",
+        Color = "#2dd4bf",
+    });
+
+    var projectTag = new Dokploy.ProjectTag("projectTag", new()
+    {
+        ProjectId = projectResource.ProjectId,
+        TagId = tag.TagId,
+    });
+
+    var applicationBindMount = new Dokploy.Mount("applicationBindMount", new()
+    {
+        Type = "bind",
+        MountPath = "/var/lib/dokploy",
+        HostPath = "/srv/dokploy",
+        ApplicationId = application.ApplicationId,
+    });
+
+    var composeVolumeMount = new Dokploy.Mount("composeVolumeMount", new()
+    {
+        Type = "volume",
+        MountPath = "/var/lib/postgresql/data",
+        VolumeName = "mvp-postgres-data",
+        ComposeId = compose.ComposeId,
+    });
+
+    var postgresFileMount = new Dokploy.Mount("postgresFileMount", new()
+    {
+        Type = "file",
+        MountPath = "/etc/app/config.toml",
+        FilePath = "/tmp/dokploy-config.toml",
+        Content = Output.CreateSecret("APP_ENV=staging"),
     });
 
     var postgres = new Dokploy.Postgres("postgres", new()
