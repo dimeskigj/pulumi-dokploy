@@ -230,7 +230,11 @@ func TestRegistryMetadata(t *testing.T) {
 	}
 	require.NotContains(t, allWorkflowText, "1.21.x", "stale workflow Go pin")
 	require.NotContains(t, allWorkflowText, "1.25.11", "stale workflow Go pin")
-	for _, forbidden := range []string{"AWS_" + "ACCESS_KEY_ID", "AWS_" + "SECRET_ACCESS_KEY", "AWS_" + "UPLOAD_ROLE_ARN", "blobs:"} {
+	for _, forbidden := range []string{
+		"pulumi-ubuntu-8core", "pulumi-gen-",
+		"pulumi/esc-action@", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY",
+		"AWS_UPLOAD_ROLE_ARN", "blobs:",
+	} {
 		require.NotContains(t, allWorkflowText, forbidden, "owned workflows must not contain %q", forbidden)
 	}
 	build, buildText := readWorkflow(t, "build.yml")
