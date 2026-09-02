@@ -3,7 +3,7 @@ name: build
 on:
   pull_request: {}
   push:
-    branches: [main, feature-**]
+    branches: [main, feature/**]
   workflow_dispatch: {}
 
 env:
@@ -195,9 +195,9 @@ jobs:
       if: ${{ matrix.language != 'yaml' }}
       run: make install_${{ matrix.language }}_sdk
     - name: Run tests
-      run: >-
+      run: |
         set -euo pipefail
-        cd examples && $GO_TEST_EXEC -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
+        cd examples && $GO_TEST_EXEC ./sdk/${{ matrix.language }}/examples/... -v -count=1 -coverprofile=coverage.txt -coverpkg=github.com/dimeskig/pulumi-dokploy/sdk/${{ matrix.language }}/...
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
