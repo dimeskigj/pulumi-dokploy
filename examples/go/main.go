@@ -45,11 +45,15 @@ func main() {
 		if param := cfg.Get("gitBranch"); param != "" {
 			gitBranch = param
 		}
-		sshPrivateKey := "replace-with-an-ssh-private-key"
+		sshPrivateKey := ""
 		if param := cfg.Get("sshPrivateKey"); param != "" {
 			sshPrivateKey = param
 		}
-		registryPassword := "replace-with-a-registry-password"
+		fileMountContent := ""
+		if param := cfg.Get("fileMountContent"); param != "" {
+			fileMountContent = param
+		}
+		registryPassword := ""
 		if param := cfg.Get("registryPassword"); param != "" {
 			registryPassword = param
 		}
@@ -125,6 +129,32 @@ func main() {
 		if err != nil {
 			return err
 		}
+		sshKey, err := dokploy.NewSSHKey(ctx, "sshKey", &dokploy.SSHKeyArgs{
+			Name:       pulumi.String("mvp-git-ssh"),
+			PrivateKey: pulumi.ToSecret(sshPrivateKey).(pulumi.StringOutput),
+			PublicKey:  pulumi.String("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp"),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewApplication(ctx, "genericGitApplication", &dokploy.ApplicationArgs{
+			Name:          pulumi.String("mvp-git-application"),
+			EnvironmentId: projectResource.DefaultEnvironmentId,
+			Source: &dokploy.ApplicationSourceArgs{
+				Type: pulumi.String("git"),
+				Git: &dokploy.GitApplicationSourceArgs{
+					Url:      pulumi.String("https://github.com/example/application.git"),
+					Branch:   pulumi.String("main"),
+					SshKeyId: sshKey.SshKeyId,
+					Build: &dokploy.ApplicationBuildArgs{
+						Type: pulumi.String("nixpacks"),
+					},
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
 		compose, err := dokploy.NewCompose(ctx, "compose", &dokploy.ComposeArgs{
 			Name:          pulumi.String("mvp-compose"),
 			EnvironmentId: projectResource.DefaultEnvironmentId,
@@ -141,14 +171,6 @@ func main() {
 			},
 			Environment:   pulumi.ToSecret(fmt.Sprintf("COMPOSE_HOST=%v", composeHost)).(pulumi.StringOutput),
 			CreateEnvFile: pulumi.Bool(true),
-		})
-		if err != nil {
-			return err
-		}
-		_, err = dokploy.NewSSHKey(ctx, "sshKey", &dokploy.SSHKeyArgs{
-			Name:       pulumi.String("mvp-git-ssh"),
-			PrivateKey: pulumi.ToSecret(sshPrivateKey).(pulumi.StringOutput),
-			PublicKey:  pulumi.String("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp"),
 		})
 		if err != nil {
 			return err
@@ -189,7 +211,7 @@ func main() {
 			Type:      pulumi.String("file"),
 			MountPath: pulumi.String("/etc/app/config.toml"),
 			FilePath:  pulumi.String("/tmp/dokploy-config.toml"),
-			Content:   pulumi.ToSecret("APP_ENV=staging").(pulumi.StringOutput),
+			Content:   pulumi.ToSecret(fileMountContent).(pulumi.StringOutput),
 		})
 		if err != nil {
 			return err

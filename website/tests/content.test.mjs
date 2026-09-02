@@ -237,3 +237,12 @@ test("new resource references and lifecycle guidance are published", async () =>
   assert.match(databases, /MongoDB/);
   assert.match(databases, /LibSQL/);
 });
+
+test("complete example actively wires SSH, registry, and secret mount inputs", async () => {
+  const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
+  assert.match(yaml, /genericGitApplication:[\s\S]*?type: dokploy:index:Application/);
+  assert.match(yaml, /genericGitApplication:[\s\S]*?type: git[\s\S]*?sshKeyId: \$\{sshKey\.sshKeyId\}/);
+  assert.match(yaml, /fileMountContent:[\s\S]*?secret: true/);
+  assert.match(yaml, /content:\s*\n\s*fn::secret: \$\{fileMountContent\}/);
+  assert.doesNotMatch(yaml, /fn::secret: APP_ENV=staging/);
+});

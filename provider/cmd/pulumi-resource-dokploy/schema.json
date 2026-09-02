@@ -2,7 +2,7 @@
   "name": "dokploy",
   "displayName": "Dokploy",
   "version": "0.0.1-alpha.0+dev",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, backup destinations, database backups, and volume backups.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, backup destinations, database backups, and volume backups.",
   "homepage": "https://github.com/dimeskigj/pulumi-dokploy",
   "license": "Apache-2.0",
   "repository": "https://github.com/dimeskigj/pulumi-dokploy",

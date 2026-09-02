@@ -13,12 +13,14 @@ import net.dimeski.pulumi.dokploy.Application;
 import net.dimeski.pulumi.dokploy.ApplicationArgs;
 import net.dimeski.pulumi.dokploy.inputs.ApplicationSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.DockerSourceArgs;
+import net.dimeski.pulumi.dokploy.SSHKey;
+import net.dimeski.pulumi.dokploy.SSHKeyArgs;
+import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
+import net.dimeski.pulumi.dokploy.inputs.ApplicationBuildArgs;
 import net.dimeski.pulumi.dokploy.Compose;
 import net.dimeski.pulumi.dokploy.ComposeArgs;
 import net.dimeski.pulumi.dokploy.inputs.ComposeSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.RawComposeSourceArgs;
-import net.dimeski.pulumi.dokploy.SSHKey;
-import net.dimeski.pulumi.dokploy.SSHKeyArgs;
 import net.dimeski.pulumi.dokploy.Tag;
 import net.dimeski.pulumi.dokploy.TagArgs;
 import net.dimeski.pulumi.dokploy.ProjectTag;
@@ -67,8 +69,9 @@ public class App {
         final var gitlabNamespace = config.get("gitlabNamespace").orElse("platform");
         final var gitlabRepository = config.get("gitlabRepository").orElse("application");
         final var gitBranch = config.get("gitBranch").orElse("main");
-        final var sshPrivateKey = config.getSecret("sshPrivateKey").applyValue(v -> v.orElse("replace-with-an-ssh-private-key"));
-        final var registryPassword = config.getSecret("registryPassword").applyValue(v -> v.orElse("replace-with-a-registry-password"));
+        final var sshPrivateKey = config.getSecret("sshPrivateKey").applyValue(v -> v.orElse(""));
+        final var fileMountContent = config.getSecret("fileMountContent").applyValue(v -> v.orElse(""));
+        final var registryPassword = config.getSecret("registryPassword").applyValue(v -> v.orElse(""));
         final var databasePassword = config.getSecret("databasePassword").applyValue(v -> v.orElse("replace-with-a-database-password"));
         final var mysqlPassword = config.getSecret("mysqlPassword").applyValue(v -> v.orElse("replace-with-a-mysql-password"));
         final var mariadbPassword = config.getSecret("mariadbPassword").applyValue(v -> v.orElse("replace-with-a-mariadb-password"));
@@ -112,6 +115,28 @@ public class App {
             .buildRegistryId(registry.registryId())
             .build());
 
+        var sshKey = new SSHKey("sshKey", SSHKeyArgs.builder()
+            .name("mvp-git-ssh")
+            .privateKey(sshPrivateKey.asSecret())
+            .publicKey("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp")
+            .build());
+
+        var genericGitApplication = new Application("genericGitApplication", ApplicationArgs.builder()
+            .name("mvp-git-application")
+            .environmentId(projectResource.defaultEnvironmentId())
+            .source(ApplicationSourceArgs.builder()
+                .type("git")
+                .git(GitApplicationSourceArgs.builder()
+                    .url("https://github.com/example/application.git")
+                    .branch("main")
+                    .sshKeyId(sshKey.sshKeyId())
+                    .build(ApplicationBuildArgs.builder()
+                        .type("nixpacks")
+                        .build())
+                    .build())
+                .build())
+            .build());
+
         var compose = new Compose("compose", ComposeArgs.builder()
             .name("mvp-compose")
             .environmentId(projectResource.defaultEnvironmentId())
@@ -129,12 +154,6 @@ services:
                 .build())
             .environment(Output.ofSecret(String.format("COMPOSE_HOST=%s", composeHost)))
             .createEnvFile(true)
-            .build());
-
-        var sshKey = new SSHKey("sshKey", SSHKeyArgs.builder()
-            .name("mvp-git-ssh")
-            .privateKey(sshPrivateKey.asSecret())
-            .publicKey("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp")
             .build());
 
         var tag = new Tag("tag", TagArgs.builder()
@@ -165,7 +184,7 @@ services:
             .type("file")
             .mountPath("/etc/app/config.toml")
             .filePath("/tmp/dokploy-config.toml")
-            .content(Output.ofSecret("APP_ENV=staging"))
+            .content(fileMountContent.asSecret())
             .build());
 
         var postgres = new Postgres("postgres", PostgresArgs.builder()

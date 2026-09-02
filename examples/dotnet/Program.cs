@@ -16,8 +16,9 @@ return await Deployment.RunAsync(() =>
     var gitlabNamespace = config.Get("gitlabNamespace") ?? "platform";
     var gitlabRepository = config.Get("gitlabRepository") ?? "application";
     var gitBranch = config.Get("gitBranch") ?? "main";
-    var sshPrivateKey = config.GetSecret("sshPrivateKey") ?? Output.CreateSecret("replace-with-an-ssh-private-key");
-    var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("replace-with-a-registry-password");
+    var sshPrivateKey = config.GetSecret("sshPrivateKey") ?? Output.CreateSecret("");
+    var fileMountContent = config.GetSecret("fileMountContent") ?? Output.CreateSecret("");
+    var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("");
     var databasePassword = config.GetSecret("databasePassword") ?? Output.CreateSecret("replace-with-a-database-password");
     var mysqlPassword = config.GetSecret("mysqlPassword") ?? Output.CreateSecret("replace-with-a-mysql-password");
     var mariadbPassword = config.GetSecret("mariadbPassword") ?? Output.CreateSecret("replace-with-a-mariadb-password");
@@ -67,6 +68,33 @@ return await Deployment.RunAsync(() =>
         BuildRegistryId = registry.RegistryId,
     });
 
+    var sshKey = new Dokploy.SSHKey("sshKey", new()
+    {
+        Name = "mvp-git-ssh",
+        PrivateKey = Output.CreateSecret(sshPrivateKey),
+        PublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp",
+    });
+
+    var genericGitApplication = new Dokploy.Application("genericGitApplication", new()
+    {
+        Name = "mvp-git-application",
+        EnvironmentId = projectResource.DefaultEnvironmentId,
+        Source = new Dokploy.Inputs.ApplicationSourceArgs
+        {
+            Type = "git",
+            Git = new Dokploy.Inputs.GitApplicationSourceArgs
+            {
+                Url = "https://github.com/example/application.git",
+                Branch = "main",
+                SshKeyId = sshKey.SshKeyId,
+                Build = new Dokploy.Inputs.ApplicationBuildArgs
+                {
+                    Type = "nixpacks",
+                },
+            },
+        },
+    });
+
     var compose = new Dokploy.Compose("compose", new()
     {
         Name = "mvp-compose",
@@ -86,13 +114,6 @@ return await Deployment.RunAsync(() =>
         },
         Environment = Output.CreateSecret($"COMPOSE_HOST={composeHost}"),
         CreateEnvFile = true,
-    });
-
-    var sshKey = new Dokploy.SSHKey("sshKey", new()
-    {
-        Name = "mvp-git-ssh",
-        PrivateKey = Output.CreateSecret(sshPrivateKey),
-        PublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp",
     });
 
     var tag = new Dokploy.Tag("tag", new()
@@ -128,7 +149,7 @@ return await Deployment.RunAsync(() =>
         Type = "file",
         MountPath = "/etc/app/config.toml",
         FilePath = "/tmp/dokploy-config.toml",
-        Content = Output.CreateSecret("APP_ENV=staging"),
+        Content = Output.CreateSecret(fileMountContent),
     });
 
     var postgres = new Dokploy.Postgres("postgres", new()

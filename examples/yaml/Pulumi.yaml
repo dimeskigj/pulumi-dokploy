@@ -43,11 +43,15 @@ config:
   sshPrivateKey:
     type: string
     secret: true
-    default: replace-with-an-ssh-private-key
+    default: ""
+  fileMountContent:
+    type: string
+    secret: true
+    default: ""
   registryPassword:
     type: string
     secret: true
-    default: replace-with-a-registry-password
+    default: ""
   databasePassword:
     type: string
     secret: true
@@ -130,6 +134,20 @@ resources:
       #     build:
       #       type: nixpacks
 
+  genericGitApplication:
+    type: dokploy:index:Application
+    properties:
+      name: mvp-git-application
+      environmentId: ${project.defaultEnvironmentId}
+      source:
+        type: git
+        git:
+          url: https://github.com/example/application.git
+          branch: main
+          sshKeyId: ${sshKey.sshKeyId}
+          build:
+            type: nixpacks
+
   compose:
     type: dokploy:index:Compose
     properties:
@@ -201,7 +219,7 @@ resources:
       mountPath: /etc/app/config.toml
       filePath: /tmp/dokploy-config.toml
       content:
-        fn::secret: APP_ENV=staging
+        fn::secret: ${fileMountContent}
 
   postgres:
     type: dokploy:index:Postgres

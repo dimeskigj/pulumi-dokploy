@@ -73,7 +73,9 @@ managed resources. Use an `SSHKey` output as the `sshKeyId` of a generic Git App
 `volume`, and `file` targets; automatic mount redeployment occurs after a change. Registry
 credentials, SSH private keys, and file contents are secret inputs; registries are tested before
 create and credential-affecting updates through `testRegistry`. Supply `registryPassword` and `sshPrivateKey` through
-secret configuration. MongoDB and LibSQL are documented exclusions for mounts.
+secret configuration. File mounts consume a dedicated `fileMountContent` secret configuration input;
+the canonical example has only empty non-credential placeholders required by Pulumi YAML conversion.
+MongoDB and LibSQL are documented exclusions for mounts.
 
 See the [Get Started](https://dimeskigj.github.io/pulumi-dokploy/getting-started/installation/),
 [Resources](https://dimeskigj.github.io/pulumi-dokploy/reference/), and

@@ -34,6 +34,13 @@ source:
 The canonical program deliberately enables the Docker and raw Compose sources
 instead; the alternatives above are documentation only.
 
+The active `genericGitApplication` uses the managed `SSHKey` resource's
+`sshKeyId`; the Docker application remains enabled separately so both source
+shapes are deployable examples. `sshPrivateKey`, `registryPassword`, and
+`fileMountContent` are intentionally secret configuration values. The empty
+defaults are non-credential placeholders required for Pulumi YAML conversion;
+users must replace them with secret configuration before deployment.
+
 ## SSH keys, registries, tags, and mounts
 
 Sensitive values are supplied through Pulumi configuration and remain secret:

@@ -30,10 +30,13 @@ if git_branch is None:
     git_branch = "main"
 ssh_private_key = config.get_secret("sshPrivateKey")
 if ssh_private_key is None:
-    ssh_private_key = "replace-with-an-ssh-private-key"
+    ssh_private_key = ""
+file_mount_content = config.get_secret("fileMountContent")
+if file_mount_content is None:
+    file_mount_content = ""
 registry_password = config.get_secret("registryPassword")
 if registry_password is None:
-    registry_password = "replace-with-a-registry-password"
+    registry_password = ""
 database_password = config.get_secret("databasePassword")
 if database_password is None:
     database_password = "replace-with-a-database-password"
@@ -83,6 +86,24 @@ application = dokploy.Application("application",
     create_env_file=True,
     registry_id=registry.registry_id,
     build_registry_id=registry.registry_id)
+ssh_key = dokploy.SSHKey("sshKey",
+    name="mvp-git-ssh",
+    private_key=pulumi.Output.secret(ssh_private_key),
+    public_key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp")
+generic_git_application = dokploy.Application("genericGitApplication",
+    name="mvp-git-application",
+    environment_id=project_resource.default_environment_id,
+    source={
+        "type": "git",
+        "git": {
+            "url": "https://github.com/example/application.git",
+            "branch": "main",
+            "ssh_key_id": ssh_key.ssh_key_id,
+            "build": {
+                "type": "nixpacks",
+            },
+        },
+    })
 compose = dokploy.Compose("compose",
     name="mvp-compose",
     environment_id=project_resource.default_environment_id,
@@ -99,10 +120,6 @@ compose = dokploy.Compose("compose",
     },
     environment=pulumi.Output.secret(f"COMPOSE_HOST={compose_host}"),
     create_env_file=True)
-ssh_key = dokploy.SSHKey("sshKey",
-    name="mvp-git-ssh",
-    private_key=pulumi.Output.secret(ssh_private_key),
-    public_key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp")
 tag = dokploy.Tag("tag",
     name="mvp",
     color="#2dd4bf")
@@ -123,7 +140,7 @@ postgres_file_mount = dokploy.Mount("postgresFileMount",
     type="file",
     mount_path="/etc/app/config.toml",
     file_path="/tmp/dokploy-config.toml",
-    content=pulumi.Output.secret("APP_ENV=staging"))
+    content=pulumi.Output.secret(file_mount_content))
 postgres = dokploy.Postgres("postgres",
     name="mvp-postgres",
     environment_id=environment.environment_id,

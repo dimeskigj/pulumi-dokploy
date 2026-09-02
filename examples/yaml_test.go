@@ -27,13 +27,13 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 22 {
-		t.Fatalf("canonical YAML has %d managed resources, want 22", len(resources))
+	if len(resources) != 23 {
+		t.Fatalf("canonical YAML has %d managed resources, want 23", len(resources))
 	}
 	want := map[string]int{
 		"dokploy:index:Project":      1,
 		"dokploy:index:Environment":  1,
-		"dokploy:index:Application":  1,
+		"dokploy:index:Application":  2,
 		"dokploy:index:Compose":      1,
 		"dokploy:index:Postgres":     1,
 		"dokploy:index:MySQL":        1,
@@ -44,11 +44,11 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		"dokploy:index:Destination":  1,
 		"dokploy:index:Backup":       1,
 		"dokploy:index:VolumeBackup": 2,
-		"dokploy:index:SSHKey":        1,
-		"dokploy:index:Registry":      1,
-		"dokploy:index:Tag":           1,
-		"dokploy:index:ProjectTag":    1,
-		"dokploy:index:Mount":         3,
+		"dokploy:index:SSHKey":       1,
+		"dokploy:index:Registry":     1,
+		"dokploy:index:Tag":          1,
+		"dokploy:index:ProjectTag":   1,
+		"dokploy:index:Mount":        3,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
