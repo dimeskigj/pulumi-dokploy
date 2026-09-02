@@ -233,7 +233,7 @@ jobs:
     - name: Run tests
       run: |
         set -euo pipefail
-        cd examples && $GO_TEST_EXEC ./sdk/${{ matrix.language }}/examples/... -v -count=1 -coverprofile=coverage.txt -coverpkg=github.com/dimeskig/pulumi-dokploy/sdk/${{ matrix.language }}/...
+        cd examples && $GO_TEST_EXEC -tags=${{ matrix.language }} -v -count=1 -coverprofile=coverage.txt .
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish:

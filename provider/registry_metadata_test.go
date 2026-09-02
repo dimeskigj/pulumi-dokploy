@@ -285,7 +285,7 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Contains(t, prereleaseText, "-f .goreleaser.prerelease.yml")
 	require.Equal(t, []any{"v*.*.*", "!v*.*.*-*"}, release["on"].(map[string]any)["push"].(map[string]any)["tags"])
 	require.Equal(t, []any{"v*.*.*-*"}, prerelease["on"].(map[string]any)["push"].(map[string]any)["tags"])
-	sdkTestCommand := "cd examples && $GO_TEST_EXEC ./sdk/${{ matrix.language }}/examples/... -v -count=1 -coverprofile=coverage.txt -coverpkg=github.com/dimeskig/pulumi-dokploy/sdk/${{ matrix.language }}/..."
+	sdkTestCommand := "cd examples && $GO_TEST_EXEC -tags=${{ matrix.language }} -v -count=1 -coverprofile=coverage.txt ."
 	for name, workflow := range map[string]map[string]any{
 		"build.yml":      build,
 		"release.yml":    release,
