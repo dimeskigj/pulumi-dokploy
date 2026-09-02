@@ -391,16 +391,20 @@ func validateReleaseWorkflowContracts(workflow map[string]any, name string) erro
 		if !ok {
 			return fmt.Errorf("%s job %s is not a mapping", name, jobName)
 		}
-		if jobName == "publish" || jobName == "publish_go_sdk" {
-			continue
-		}
 		permissions, ok := job["permissions"].(map[string]any)
 		if !ok {
-			continue
+			return fmt.Errorf("%s job %s has no explicit permissions", name, jobName)
 		}
-		for permission, value := range permissions {
-			if value == "write" {
-				return fmt.Errorf("%s job %s grants %s write permission", name, jobName, permission)
+		expected := map[string]any{"contents": "read"}
+		if jobName == "publish" || jobName == "publish_go_sdk" {
+			expected = map[string]any{"contents": "write"}
+		}
+		if len(permissions) != len(expected) {
+			return fmt.Errorf("%s job %s has unexpected permissions", name, jobName)
+		}
+		for permission, expectedValue := range expected {
+			if permissions[permission] != expectedValue {
+				return fmt.Errorf("%s job %s permission %s must be %v", name, jobName, permission, expectedValue)
 			}
 		}
 	}
@@ -512,21 +516,26 @@ func findWorkflowStep(job map[string]any, actionPrefix string) map[string]any {
 }
 
 func TestReleaseWorkflowContractsRejectRepresentativeDrift(t *testing.T) {
-	workflow, _ := readWorkflow(t, "release.yml")
-	jobs := workflow["jobs"].(map[string]any)
-	prerequisites := jobs["prerequisites"].(map[string]any)
-	permissions := prerequisites["permissions"].(map[string]any)
-	permissions["pull-requests"] = "write"
-	require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, "release.yml"), "pull-requests write")
+	for _, name := range []string{"release.yml", "prerelease.yml"} {
+		t.Run(name+" permission drift", func(t *testing.T) {
+			workflow, _ := readWorkflow(t, name)
+			jobs := workflow["jobs"].(map[string]any)
+			prerequisites := jobs["prerequisites"].(map[string]any)
+			permissions := prerequisites["permissions"].(map[string]any)
+			permissions["pull-requests"] = "write"
+			require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, name), "unexpected permissions")
+		})
 
-	workflow, _ = readWorkflow(t, "release.yml")
-	jobs = workflow["jobs"].(map[string]any)
-	prerequisites = jobs["prerequisites"].(map[string]any)
-	prerequisites["permissions"].(map[string]any)["pull-requests"] = "read"
-	providerUpload := findWorkflowStep(prerequisites, "actions/upload-artifact@")
-	providerWith := providerUpload["with"].(map[string]any)
-	providerWith["path"] = "wrong/provider.tar.gz"
-	require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, "release.yml"), "provider artifact contract")
+		t.Run(name+" artifact drift", func(t *testing.T) {
+			workflow, _ := readWorkflow(t, name)
+			jobs := workflow["jobs"].(map[string]any)
+			prerequisites := jobs["prerequisites"].(map[string]any)
+			providerUpload := findWorkflowStep(prerequisites, "actions/upload-artifact@")
+			providerWith := providerUpload["with"].(map[string]any)
+			providerWith["path"] = "wrong/provider.tar.gz"
+			require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, name), "provider artifact contract")
+		})
+	}
 }
 
 func TestWorkflowStepsDoNotHaveEmptyEnvMappings(t *testing.T) {
