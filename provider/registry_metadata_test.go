@@ -284,6 +284,7 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Equal(t, []any{"v*.*.*-*"}, prerelease["on"].(map[string]any)["push"].(map[string]any)["tags"])
 	for name, workflow := range map[string]map[string]any{"release.yml": release, "prerelease.yml": prerelease} {
 		jobs := workflow["jobs"].(map[string]any)
+		require.NoError(t, validateReleaseWorkflowContracts(workflow, name))
 		publish := jobs["publish"].(map[string]any)
 		require.Equal(t, "write", publish["permissions"].(map[string]any)["contents"], name)
 		var goreleaserEnv map[string]any
@@ -314,6 +315,7 @@ func TestRegistryMetadata(t *testing.T) {
 		require.True(t, hasProviderVersionAction, name)
 		require.Equal(t, "${{ steps.version.outputs.version }}", goPublisherVersion, name)
 	}
+	require.NoError(t, validateArtifactActionContracts())
 	for _, workflowText := range []string{releaseText, prereleaseText} {
 		require.NotContains(t, workflowText, "aws-actions/configure-aws-credentials")
 		require.NotContains(t, workflowText, "AWS_")
@@ -377,6 +379,154 @@ func TestRegistryMetadata(t *testing.T) {
 		require.Contains(t, string(content), releaseGoVersion, file)
 		require.NotContains(t, string(content), "1.25.11", file)
 	}
+}
+
+func validateReleaseWorkflowContracts(workflow map[string]any, name string) error {
+	j, ok := workflow["jobs"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("%s has no jobs", name)
+	}
+	for jobName, rawJob := range j {
+		job, ok := rawJob.(map[string]any)
+		if !ok {
+			return fmt.Errorf("%s job %s is not a mapping", name, jobName)
+		}
+		if jobName == "publish" || jobName == "publish_go_sdk" {
+			continue
+		}
+		permissions, ok := job["permissions"].(map[string]any)
+		if !ok {
+			continue
+		}
+		for permission, value := range permissions {
+			if value == "write" {
+				return fmt.Errorf("%s job %s grants %s write permission", name, jobName, permission)
+			}
+		}
+	}
+
+	prerequisites, ok := j["prerequisites"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("%s has no prerequisites job", name)
+	}
+	providerUpload := findWorkflowStep(prerequisites, "actions/upload-artifact@")
+	if providerUpload == nil {
+		return fmt.Errorf("%s prerequisites does not upload provider artifact", name)
+	}
+	providerWith, _ := providerUpload["with"].(map[string]any)
+	if providerWith["name"] != "pulumi-${{ env.PROVIDER }}-provider.tar.gz" || providerWith["path"] != "${{ github.workspace }}/bin/provider.tar.gz" {
+		return fmt.Errorf("%s provider artifact contract is incorrect", name)
+	}
+
+	buildSDKs, ok := j["build_sdks"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("%s has no build_sdks job", name)
+	}
+	sdkUpload := findWorkflowStep(buildSDKs, "actions/upload-artifact@")
+	if sdkUpload == nil {
+		return fmt.Errorf("%s build_sdks does not upload SDK artifact", name)
+	}
+	sdkWith, _ := sdkUpload["with"].(map[string]any)
+	if sdkWith["name"] != "${{ matrix.language  }}-sdk.tar.gz" || sdkWith["path"] != "${{ github.workspace}}/sdk/${{ matrix.language }}.tar.gz" {
+		return fmt.Errorf("%s SDK artifact producer contract is incorrect", name)
+	}
+
+	for jobName, language := range map[string]string{"publish_sdk": "python", "publish_java_sdk": "java", "publish_go_sdk": "go"} {
+		job, ok := j[jobName].(map[string]any)
+		if !ok {
+			return fmt.Errorf("%s has no %s job", name, jobName)
+		}
+		download := findWorkflowStep(job, "actions/download-artifact@")
+		if download == nil {
+			return fmt.Errorf("%s %s does not download SDK artifact", name, jobName)
+		}
+		with, _ := download["with"].(map[string]any)
+		expectedName := language + "-sdk.tar.gz"
+		if with["name"] != expectedName || with["path"] != "${{ github.workspace}}/sdk/" {
+			return fmt.Errorf("%s %s SDK artifact consumer contract is incorrect", name, jobName)
+		}
+	}
+	return nil
+}
+
+func validateArtifactActionContracts() error {
+	providerContent, err := os.ReadFile("../.github/actions/download-provider/action.yml")
+	if err != nil {
+		return err
+	}
+	provider := map[string]any{}
+	if err := yaml.Unmarshal(providerContent, &provider); err != nil {
+		return err
+	}
+	providerStep := findCompositeStep(provider, "actions/download-artifact@")
+	if providerStep == nil {
+		return fmt.Errorf("provider artifact consumer action has no download step")
+	}
+	providerWith, _ := providerStep["with"].(map[string]any)
+	if providerWith["name"] != "pulumi-${{ env.PROVIDER }}-provider.tar.gz" || providerWith["path"] != "${{ github.workspace }}/bin" {
+		return fmt.Errorf("provider artifact consumer action contract is incorrect")
+	}
+
+	sdkContent, err := os.ReadFile("../.github/actions/download-sdk/action.yml")
+	if err != nil {
+		return err
+	}
+	sdk := map[string]any{}
+	if err := yaml.Unmarshal(sdkContent, &sdk); err != nil {
+		return err
+	}
+	sdkStep := findCompositeStep(sdk, "actions/download-artifact@")
+	if sdkStep == nil {
+		return fmt.Errorf("SDK artifact consumer action has no download step")
+	}
+	sdkWith, _ := sdkStep["with"].(map[string]any)
+	if sdkWith["name"] != "${{ inputs.language }}-sdk.tar.gz" || sdkWith["path"] != "${{ github.workspace }}/sdk/" {
+		return fmt.Errorf("SDK artifact consumer action contract is incorrect")
+	}
+	return nil
+}
+
+func findCompositeStep(action map[string]any, actionPrefix string) map[string]any {
+	runs, _ := action["runs"].(map[string]any)
+	steps, _ := runs["steps"].([]any)
+	for _, rawStep := range steps {
+		step, _ := rawStep.(map[string]any)
+		uses, _ := step["uses"].(string)
+		if strings.HasPrefix(uses, actionPrefix) {
+			return step
+		}
+	}
+	return nil
+}
+
+func findWorkflowStep(job map[string]any, actionPrefix string) map[string]any {
+	steps, _ := job["steps"].([]any)
+	for _, rawStep := range steps {
+		step, _ := rawStep.(map[string]any)
+		uses, _ := step["uses"].(string)
+		if strings.HasPrefix(uses, actionPrefix) {
+			return step
+		}
+	}
+	return nil
+}
+
+func TestReleaseWorkflowContractsRejectRepresentativeDrift(t *testing.T) {
+	workflow, _ := readWorkflow(t, "release.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	prerequisites := jobs["prerequisites"].(map[string]any)
+	permissions := prerequisites["permissions"].(map[string]any)
+	permissions["pull-requests"] = "write"
+	require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, "release.yml"), "pull-requests write")
+
+	workflow, _ = readWorkflow(t, "release.yml")
+	jobs = workflow["jobs"].(map[string]any)
+	prerequisites = jobs["prerequisites"].(map[string]any)
+	prerequisites["permissions"].(map[string]any)["pull-requests"] = "read"
+	providerUpload := findWorkflowStep(prerequisites, "actions/upload-artifact@")
+	providerWith := providerUpload["with"].(map[string]any)
+	providerWith["path"] = "wrong/provider.tar.gz"
+	require.ErrorContains(t, validateReleaseWorkflowContracts(workflow, "release.yml"), "provider artifact contract")
 }
 
 func TestWorkflowStepsDoNotHaveEmptyEnvMappings(t *testing.T) {
