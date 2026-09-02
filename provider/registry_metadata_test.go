@@ -13,6 +13,8 @@ import (
 
 const releaseGoVersion = "1.26.0"
 
+const minimumGolangciLintVersion = "2.9.0"
+
 func readWorkflow(t *testing.T, name string) (map[string]any, string) {
 	t.Helper()
 	content, err := os.ReadFile("../.github/workflows/" + name)
@@ -20,6 +22,15 @@ func readWorkflow(t *testing.T, name string) (map[string]any, string) {
 	workflow := map[string]any{}
 	require.NoError(t, yaml.Unmarshal(content, &workflow))
 	return workflow, string(content)
+}
+
+func TestLintToolSupportsReleaseGoVersion(t *testing.T) {
+	content, err := os.ReadFile("../.mise.toml")
+	require.NoError(t, err)
+
+	match := regexp.MustCompile(`(?m)^golangci-lint = "([^"]+)"$`).FindStringSubmatch(string(content))
+	require.Len(t, match, 2)
+	require.Equal(t, minimumGolangciLintVersion, match[1])
 }
 
 type workflowRunStep struct {
