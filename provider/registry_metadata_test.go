@@ -639,18 +639,31 @@ func TestWorkflowStepsDoNotHaveEmptyEnvMappings(t *testing.T) {
 	}
 }
 
-func TestExampleTestWorkflowsInvokeMiseManagedGoTestRunner(t *testing.T) {
-	for _, name := range []string{"build.yml", "release.yml", "prerelease.yml", "run-acceptance-tests.yml"} {
-		workflow, _ := readWorkflow(t, name)
+func TestExampleTestWorkflowsRunFromExamplesDirectory(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		requireSet bool
+	}{
+		{name: "build.yml", requireSet: true},
+		{name: "release.yml", requireSet: true},
+		{name: "prerelease.yml", requireSet: true},
+		{name: "run-acceptance-tests.yml"},
+	} {
+		workflow, _ := readWorkflow(t, test.name)
 		steps := workflowRunSteps(workflow)
 		var runTests []string
 		for _, step := range steps {
-			if strings.Contains(step.run, "cd examples") {
+			if strings.Contains(step.run, "GO_TEST_EXEC") {
 				runTests = append(runTests, step.run)
 			}
 		}
-		require.Len(t, runTests, 1, name)
-		require.Contains(t, runTests[0], "mise exec -- $GO_TEST_EXEC", name)
+		require.Len(t, runTests, 1, test.name)
+		if test.requireSet {
+			require.Contains(t, runTests[0], "set -euo pipefail\n", test.name)
+			require.Contains(t, runTests[0], "\ncd examples &&", test.name)
+		} else {
+			require.True(t, strings.HasPrefix(runTests[0], "cd examples &&"), test.name)
+		}
 	}
 }
 

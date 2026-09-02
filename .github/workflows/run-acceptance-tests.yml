@@ -171,7 +171,7 @@ jobs:
         if: matrix.language != 'yaml'
         run: make install_${{ matrix.language }}_sdk
       - name: Run tests
-        run: cd examples && mise exec -- $GO_TEST_EXEC -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
+        run: cd examples && $GO_TEST_EXEC -count=1 -cover -timeout 2h -tags=${{ matrix.language }} -parallel 4 .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   lint:
