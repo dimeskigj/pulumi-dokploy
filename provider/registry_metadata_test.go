@@ -505,6 +505,9 @@ func validateArtifactActionContracts() error {
 	if providerWith["name"] != "pulumi-${{ env.PROVIDER }}-provider.tar.gz" || providerWith["path"] != "${{ github.workspace }}/bin" {
 		return fmt.Errorf("provider artifact consumer action contract is incorrect")
 	}
+	if !strings.Contains(string(providerContent), "pulumi plugin install resource ${{ env.PROVIDER }} 0.0.1-alpha.0+dev --file ${{ github.workspace }}/bin/pulumi-resource-${{ env.PROVIDER }} --reinstall") {
+		return fmt.Errorf("provider artifact consumer action does not install the local provider plugin")
+	}
 
 	sdkContent, err := os.ReadFile("../.github/actions/download-sdk/action.yml")
 	if err != nil {

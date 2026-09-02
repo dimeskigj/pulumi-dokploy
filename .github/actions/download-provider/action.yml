@@ -17,3 +17,7 @@ runs:
     - name: Restore Binary Permissions
       shell: bash
       run: find ${{ github.workspace }} -name "pulumi-*-${{ env.PROVIDER }}" -print -exec chmod +x {} \;
+
+    - name: Install local provider plugin
+      shell: bash
+      run: pulumi plugin install resource ${{ env.PROVIDER }} 0.0.1-alpha.0+dev --file ${{ github.workspace }}/bin/pulumi-resource-${{ env.PROVIDER }} --reinstall
