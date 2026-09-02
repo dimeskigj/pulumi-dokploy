@@ -97,7 +97,7 @@ var workflowJobPolicy = map[string]map[string]bool{
 	"lint.yml":                 {"lint": true},
 	"pages.yml":                {"build": false, "deploy": false},
 	"prerelease.yml":           {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
-	"release.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true, "dispatch_docs_build": false},
+	"release.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"run-acceptance-tests.yml": {"prerequisites": true, "build_sdks": true, "test": true, "lint": true},
 }
 
@@ -285,6 +285,13 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Contains(t, prereleaseText, "-f .goreleaser.prerelease.yml")
 	require.Equal(t, []any{"v*.*.*", "!v*.*.*-*"}, release["on"].(map[string]any)["push"].(map[string]any)["tags"])
 	require.Equal(t, []any{"v*.*.*-*"}, prerelease["on"].(map[string]any)["push"].(map[string]any)["tags"])
+	for _, workflowText := range []string{releaseText, prereleaseText} {
+		for _, unused := range []string{"AZURE_SIGNING_", "SKIP_SIGNING", "JAVA_SIGNING_KEY_ID"} {
+			require.NotContains(t, workflowText, unused)
+		}
+	}
+	require.NotContains(t, releaseText, "dispatch_docs_build")
+	require.NotContains(t, releaseText, "pulumictl create docs-build")
 	sdkTestCommand := "cd examples && $GO_TEST_EXEC -tags=${{ matrix.language }} -v -count=1 -coverprofile=coverage.txt ."
 	for name, workflow := range map[string]map[string]any{
 		"build.yml":      build,
