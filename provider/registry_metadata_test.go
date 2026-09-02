@@ -639,6 +639,21 @@ func TestWorkflowStepsDoNotHaveEmptyEnvMappings(t *testing.T) {
 	}
 }
 
+func TestExampleTestWorkflowsInvokeMiseManagedGoTestRunner(t *testing.T) {
+	for _, name := range []string{"build.yml", "release.yml", "prerelease.yml", "run-acceptance-tests.yml"} {
+		workflow, _ := readWorkflow(t, name)
+		steps := workflowRunSteps(workflow)
+		var runTests []string
+		for _, step := range steps {
+			if strings.Contains(step.run, "cd examples") {
+				runTests = append(runTests, step.run)
+			}
+		}
+		require.Len(t, runTests, 1, name)
+		require.Contains(t, runTests[0], "mise exec -- $GO_TEST_EXEC", name)
+	}
+}
+
 func mustWorkflow(t *testing.T, name string) map[string]any {
 	t.Helper()
 	workflow, _ := readWorkflow(t, name)
