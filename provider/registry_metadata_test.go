@@ -13,6 +13,8 @@ import (
 
 const releaseGoVersion = "1.26.6"
 
+const pulumiScriptsRef = "9aeffd86afa793846dc4f001a6f374b3f135bfef"
+
 const minimumGolangciLintVersion = "2.9.0"
 
 func readWorkflow(t *testing.T, name string) (map[string]any, string) {
@@ -326,7 +328,13 @@ func TestRegistryMetadata(t *testing.T) {
 		require.NotNil(t, goreleaserEnv, name)
 		require.Equal(t, "${{ secrets.GITHUB_TOKEN }}", goreleaserEnv["GITHUB_TOKEN"], name)
 		require.Equal(t, "publish", jobs["publish_sdk"].(map[string]any)["needs"], name)
-		require.Equal(t, "publish_sdk", jobs["publish_go_sdk"].(map[string]any)["needs"], name)
+		require.Equal(t, []any{"publish_sdk", "publish_java_sdk"}, jobs["publish_go_sdk"].(map[string]any)["needs"], name)
+		scriptsCheckout := findWorkflowStepWithRepository(jobs["publish_sdk"].(map[string]any), "actions/checkout@", "pulumi/scripts")
+		require.NotNil(t, scriptsCheckout, name)
+		scriptsWith := scriptsCheckout["with"].(map[string]any)
+		require.Equal(t, "pulumi/scripts", scriptsWith["repository"], name)
+		require.Equal(t, "ci-scripts", scriptsWith["path"], name)
+		require.Equal(t, pulumiScriptsRef, scriptsWith["ref"], name)
 
 		goSDK := jobs["publish_go_sdk"].(map[string]any)
 		var hasProviderVersionAction bool
@@ -590,6 +598,19 @@ func findWorkflowStep(job map[string]any, actionPrefix string) map[string]any {
 		step, _ := rawStep.(map[string]any)
 		uses, _ := step["uses"].(string)
 		if strings.HasPrefix(uses, actionPrefix) {
+			return step
+		}
+	}
+	return nil
+}
+
+func findWorkflowStepWithRepository(job map[string]any, actionPrefix string, repository string) map[string]any {
+	steps, _ := job["steps"].([]any)
+	for _, rawStep := range steps {
+		step, _ := rawStep.(map[string]any)
+		uses, _ := step["uses"].(string)
+		with, _ := step["with"].(map[string]any)
+		if strings.HasPrefix(uses, actionPrefix) && with["repository"] == repository {
 			return step
 		}
 	}

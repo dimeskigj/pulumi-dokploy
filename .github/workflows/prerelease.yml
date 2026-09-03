@@ -289,6 +289,7 @@ jobs:
       with:
         path: ci-scripts
         repository: pulumi/scripts
+        ref: 9aeffd86afa793846dc4f001a6f374b3f135bfef
     - run: echo "ci-scripts" >> .git/info/exclude
     - name: Setup Tools
       uses: ./.github/actions/setup-tools
@@ -379,7 +380,9 @@ jobs:
   publish_go_sdk:
     runs-on: ubuntu-latest
     name: publish-go-sdk
-    needs: publish_sdk
+    needs:
+    - publish_sdk
+    - publish_java_sdk
     permissions:
       contents: write
     steps:
