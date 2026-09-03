@@ -383,6 +383,18 @@ func TestRegistryMetadata(t *testing.T) {
 	makefile, err := os.ReadFile("../Makefile")
 	require.NoError(t, err)
 	require.NotRegexp(t, regexp.MustCompile(`(?m)^ci-mgmt[ \t]*:`), string(makefile))
+	contributing, err := os.ReadFile("../CONTRIBUTING.md")
+	require.NoError(t, err)
+	contributingText := string(contributing)
+	require.Contains(t, contributingText, "Settings > Secrets and variables > Actions")
+	for _, secret := range []string{
+		"NUGET_PUBLISH_KEY", "NPM_TOKEN", "PYPI_API_TOKEN",
+		"JAVA_SIGNING_KEY", "JAVA_SIGNING_PASSWORD",
+		"OSSRH_USERNAME", "OSSRH_PASSWORD", "CODECOV_TOKEN",
+	} {
+		require.Contains(t, contributingText, "`"+secret+"`")
+	}
+	require.Contains(t, contributingText, "`GITHUB_TOKEN` is created automatically")
 	for _, section := range []string{
 		"pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"",
 	} {
