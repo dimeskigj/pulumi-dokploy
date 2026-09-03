@@ -23,6 +23,7 @@ generate_go generate_nodejs generate_python generate_dotnet generate_java: codeg
 local_generate: codegen
 
 sign-goreleaser-exe-%:
+	@:
 
 codegen: provider
 	mkdir -p provider/cmd/$(PROVIDER) sdk
