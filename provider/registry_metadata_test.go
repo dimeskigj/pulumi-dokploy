@@ -395,6 +395,11 @@ func TestRegistryMetadata(t *testing.T) {
 		require.Contains(t, contributingText, "`"+secret+"`")
 	}
 	require.Contains(t, contributingText, "`GITHUB_TOKEN` is created automatically")
+	require.Contains(t, contributingText, "`CODECOV_TOKEN` is optional")
+	require.Contains(t, contributingText, "separate protected")
+	require.Contains(t, contributingText, "`dokploy-acceptance` environment")
+	require.NotContains(t, contributingText, "AZURE_SIGNING_")
+	require.NotContains(t, contributingText, "JAVA_SIGNING_KEY_ID")
 	for _, section := range []string{
 		"pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"",
 	} {
