@@ -13,6 +13,8 @@ import (
 
 const releaseGoVersion = "1.26.6"
 
+const minimumGolangciLintVersion = "2.9.0"
+
 func readWorkflow(t *testing.T, name string) (map[string]any, string) {
 	t.Helper()
 	content, err := os.ReadFile("../.github/workflows/" + name)
@@ -20,6 +22,15 @@ func readWorkflow(t *testing.T, name string) (map[string]any, string) {
 	workflow := map[string]any{}
 	require.NoError(t, yaml.Unmarshal(content, &workflow))
 	return workflow, string(content)
+}
+
+func TestLintToolSupportsReleaseGoVersion(t *testing.T) {
+	content, err := os.ReadFile("../.mise.toml")
+	require.NoError(t, err)
+
+	match := regexp.MustCompile(`(?m)^golangci-lint = "([^"]+)"$`).FindStringSubmatch(string(content))
+	require.Len(t, match, 2)
+	require.Equal(t, minimumGolangciLintVersion, match[1])
 }
 
 type workflowRunStep struct {
@@ -254,7 +265,7 @@ func TestRegistryMetadata(t *testing.T) {
 	require.True(t, ok)
 	push, ok := on["push"].(map[string]any)
 	require.True(t, ok)
-	require.Equal(t, []any{"main", "feat/**"}, push["branches"])
+	require.Equal(t, []any{"main", "feat/**", "fix/**"}, push["branches"])
 	require.NotContains(t, push, "tags-ignore")
 	require.NotContains(t, push, "paths-ignore")
 	require.Equal(t, map[string]any{}, on["pull_request"])
@@ -537,6 +548,9 @@ func validateArtifactActionContracts() error {
 	if providerWith["name"] != "pulumi-${{ env.PROVIDER }}-provider.tar.gz" || providerWith["path"] != "${{ github.workspace }}/bin" {
 		return fmt.Errorf("provider artifact consumer action contract is incorrect")
 	}
+	if !strings.Contains(string(providerContent), "pulumi plugin install resource ${{ env.PROVIDER }} 0.0.1-alpha.0+dev --file ${{ github.workspace }}/bin/pulumi-resource-${{ env.PROVIDER }} --reinstall") {
+		return fmt.Errorf("provider artifact consumer action does not install the local provider plugin")
+	}
 
 	sdkContent, err := os.ReadFile("../.github/actions/download-sdk/action.yml")
 	if err != nil {
@@ -653,6 +667,34 @@ func TestWorkflowStepsDoNotHaveEmptyEnvMappings(t *testing.T) {
 				require.True(t, ok, "%s job %s step %d env must be a mapping", entry.Name(), jobName, stepIndex)
 				require.NotEmpty(t, envMap, "%s job %s step %d has an empty env mapping", entry.Name(), jobName, stepIndex)
 			}
+		}
+	}
+}
+
+func TestExampleTestWorkflowsRunFromExamplesDirectory(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		requireSet bool
+	}{
+		{name: "build.yml", requireSet: true},
+		{name: "release.yml", requireSet: true},
+		{name: "prerelease.yml", requireSet: true},
+		{name: "run-acceptance-tests.yml"},
+	} {
+		workflow, _ := readWorkflow(t, test.name)
+		steps := workflowRunSteps(workflow)
+		var runTests []string
+		for _, step := range steps {
+			if strings.Contains(step.run, "GO_TEST_EXEC") {
+				runTests = append(runTests, step.run)
+			}
+		}
+		require.Len(t, runTests, 1, test.name)
+		if test.requireSet {
+			require.Contains(t, runTests[0], "set -euo pipefail\n", test.name)
+			require.Contains(t, runTests[0], "\ncd examples &&", test.name)
+		} else {
+			require.True(t, strings.HasPrefix(runTests[0], "cd examples &&"), test.name)
 		}
 	}
 }
