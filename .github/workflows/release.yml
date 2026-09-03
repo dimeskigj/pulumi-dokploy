@@ -7,7 +7,7 @@ on:
 env:
   PROVIDER: dokploy
   TRAVIS_OS_NAME: linux
-  GOVERSION: "1.25.13"
+  GOVERSION: "1.26.6"
   NODEVERSION: "20.x"
   PYTHONVERSION: "3.11.15"
   DOTNETVERSION: "8.0.x"

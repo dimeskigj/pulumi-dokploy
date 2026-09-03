@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const releaseGoVersion = "1.25.13"
+const releaseGoVersion = "1.26.6"
 
 func readWorkflow(t *testing.T, name string) (map[string]any, string) {
 	t.Helper()
@@ -254,7 +254,7 @@ func TestRegistryMetadata(t *testing.T) {
 	require.True(t, ok)
 	push, ok := on["push"].(map[string]any)
 	require.True(t, ok)
-	require.Equal(t, []any{"main", "feature/**"}, push["branches"])
+	require.Equal(t, []any{"main", "feat/**"}, push["branches"])
 	require.NotContains(t, push, "tags-ignore")
 	require.NotContains(t, push, "paths-ignore")
 	require.Equal(t, map[string]any{}, on["pull_request"])

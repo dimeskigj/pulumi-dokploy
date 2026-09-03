@@ -1,5 +1,12 @@
 # Feature Branch CI Repair Design
 
+## User-directed amendment
+
+The active branch is `feat/owned-ci-github-releases`, and the active build
+filter is `feat/**`. The retained `feature/owned-ci-github-releases` and
+`feature-owned-ci-github-releases` branches are aliases at the final commit.
+This supersedes earlier `feature/` references in this document.
+
 ## Goal
 
 Adopt the `feature/` branch namespace, repair the owned build workflow's remote

@@ -1,12 +1,19 @@
 # Feature Branch CI Repair Implementation Plan
 
+## User-directed amendment
+
+The active branch is `feat/owned-ci-github-releases`, and the active build
+filter is `feat/**`. The retained `feature/owned-ci-github-releases` and
+`feature-owned-ci-github-releases` branches are aliases at the final commit.
+This supersedes earlier `feature/` references in this document.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Adopt the `feature/` branch namespace, make every remote SDK test job execute from `examples/`, remove nonfunctional external release dependencies, and document the repository secrets needed to publish.
 
 **Architecture:** Extend the existing parsed-YAML workflow contracts before changing the owned workflows, so branch filters, shell command boundaries, release job sets, and secret references remain executable policy. Keep maintainer setup guidance in `CONTRIBUTING.md`, then migrate and push the branch only after all local checks pass.
 
-**Tech Stack:** GitHub Actions YAML, Go 1.25.13, `gopkg.in/yaml.v3`, Testify, Git, GitHub Actions REST API
+**Tech Stack:** GitHub Actions YAML, Go 1.26.6, `gopkg.in/yaml.v3`, Testify, Git, GitHub Actions REST API
 
 ## Global Constraints
 
