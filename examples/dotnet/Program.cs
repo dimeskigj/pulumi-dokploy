@@ -16,7 +16,9 @@ return await Deployment.RunAsync(() =>
     var gitlabNamespace = config.Get("gitlabNamespace") ?? "platform";
     var gitlabRepository = config.Get("gitlabRepository") ?? "application";
     var gitBranch = config.Get("gitBranch") ?? "main";
-    var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("replace-with-a-registry-password");
+    var sshPrivateKey = config.GetSecret("sshPrivateKey") ?? Output.CreateSecret("");
+    var fileMountContent = config.GetSecret("fileMountContent") ?? Output.CreateSecret("");
+    var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("");
     var databasePassword = config.GetSecret("databasePassword") ?? Output.CreateSecret("replace-with-a-database-password");
     var mysqlPassword = config.GetSecret("mysqlPassword") ?? Output.CreateSecret("replace-with-a-mysql-password");
     var mariadbPassword = config.GetSecret("mariadbPassword") ?? Output.CreateSecret("replace-with-a-mariadb-password");
@@ -37,6 +39,15 @@ return await Deployment.RunAsync(() =>
         Description = "Additional non-production environment",
     });
 
+    var registry = new Dokploy.Registry("registry", new()
+    {
+        Name = "mvp-registry",
+        Username = "example",
+        Password = Output.CreateSecret(registryPassword),
+        Url = "registry.example.invalid",
+        ImagePrefix = "dokploy/",
+    });
+
     var application = new Dokploy.Application("application", new()
     {
         Name = "mvp-application",
@@ -53,6 +64,35 @@ return await Deployment.RunAsync(() =>
         },
         Environment = Output.CreateSecret($"APP_HOST={appHost}"),
         CreateEnvFile = true,
+        RegistryId = registry.RegistryId,
+        BuildRegistryId = registry.RegistryId,
+    });
+
+    var sshKey = new Dokploy.SSHKey("sshKey", new()
+    {
+        Name = "mvp-git-ssh",
+        PrivateKey = Output.CreateSecret(sshPrivateKey),
+        PublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp",
+    });
+
+    var genericGitApplication = new Dokploy.Application("genericGitApplication", new()
+    {
+        Name = "mvp-git-application",
+        EnvironmentId = projectResource.DefaultEnvironmentId,
+        Source = new Dokploy.Inputs.ApplicationSourceArgs
+        {
+            Type = "git",
+            Git = new Dokploy.Inputs.GitApplicationSourceArgs
+            {
+                Url = "https://github.com/example/application.git",
+                Branch = "main",
+                SshKeyId = sshKey.SshKeyId,
+                Build = new Dokploy.Inputs.ApplicationBuildArgs
+                {
+                    Type = "nixpacks",
+                },
+            },
+        },
     });
 
     var compose = new Dokploy.Compose("compose", new()
@@ -76,6 +116,34 @@ return await Deployment.RunAsync(() =>
         CreateEnvFile = true,
     });
 
+    var tag = new Dokploy.Tag("tag", new()
+    {
+        Name = "mvp",
+        Color = "#2dd4bf",
+    });
+
+    var projectTag = new Dokploy.ProjectTag("projectTag", new()
+    {
+        ProjectId = projectResource.ProjectId,
+        TagId = tag.TagId,
+    });
+
+    var applicationBindMount = new Dokploy.Mount("applicationBindMount", new()
+    {
+        Type = "bind",
+        MountPath = "/var/lib/dokploy",
+        HostPath = "/srv/dokploy",
+        ApplicationId = application.ApplicationId,
+    });
+
+    var composeVolumeMount = new Dokploy.Mount("composeVolumeMount", new()
+    {
+        Type = "volume",
+        MountPath = "/var/lib/postgresql/data",
+        VolumeName = "mvp-postgres-data",
+        ComposeId = compose.ComposeId,
+    });
+
     var postgres = new Dokploy.Postgres("postgres", new()
     {
         Name = "mvp-postgres",
@@ -84,6 +152,15 @@ return await Deployment.RunAsync(() =>
         DatabaseUser = "app",
         DatabasePassword = Output.CreateSecret(databasePassword),
         Environment = Output.CreateSecret("POSTGRES_HOST=postgres"),
+    });
+
+    var postgresFileMount = new Dokploy.Mount("postgresFileMount", new()
+    {
+        Type = "file",
+        MountPath = "/etc/app/config.toml",
+        FilePath = "/tmp/dokploy-config.toml",
+        PostgresId = postgres.PostgresId,
+        Content = Output.CreateSecret(fileMountContent),
     });
 
     var mysql = new Dokploy.MySQL("mysql", new()

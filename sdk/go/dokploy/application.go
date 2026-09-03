@@ -22,6 +22,8 @@ type Application struct {
 	ApplicationId pulumi.StringOutput `pulumi:"applicationId"`
 	// Build arguments for the application.
 	BuildArgs pulumi.StringPtrOutput `pulumi:"buildArgs"`
+	// The optional build registry ID.
+	BuildRegistryId pulumi.StringPtrOutput `pulumi:"buildRegistryId"`
 	// Build secrets for the application.
 	BuildSecrets pulumi.StringPtrOutput `pulumi:"buildSecrets"`
 	// Whether to create an environment file.
@@ -34,6 +36,8 @@ type Application struct {
 	EnvironmentId pulumi.StringOutput `pulumi:"environmentId"`
 	// The application name.
 	Name pulumi.StringOutput `pulumi:"name"`
+	// The optional deployment registry ID.
+	RegistryId pulumi.StringPtrOutput `pulumi:"registryId"`
 	// The optional server ID.
 	ServerId pulumi.StringPtrOutput `pulumi:"serverId"`
 	// The application source configuration.
@@ -115,6 +119,8 @@ type applicationArgs struct {
 	AppName *string `pulumi:"appName"`
 	// Build arguments for the application.
 	BuildArgs *string `pulumi:"buildArgs"`
+	// The optional build registry ID.
+	BuildRegistryId *string `pulumi:"buildRegistryId"`
 	// Build secrets for the application.
 	BuildSecrets *string `pulumi:"buildSecrets"`
 	// Whether to create an environment file.
@@ -127,6 +133,8 @@ type applicationArgs struct {
 	EnvironmentId string `pulumi:"environmentId"`
 	// The application name.
 	Name string `pulumi:"name"`
+	// The optional deployment registry ID.
+	RegistryId *string `pulumi:"registryId"`
 	// The optional server ID.
 	ServerId *string `pulumi:"serverId"`
 	// The application source configuration.
@@ -139,6 +147,8 @@ type ApplicationArgs struct {
 	AppName pulumi.StringPtrInput
 	// Build arguments for the application.
 	BuildArgs pulumi.StringPtrInput
+	// The optional build registry ID.
+	BuildRegistryId pulumi.StringPtrInput
 	// Build secrets for the application.
 	BuildSecrets pulumi.StringPtrInput
 	// Whether to create an environment file.
@@ -151,6 +161,8 @@ type ApplicationArgs struct {
 	EnvironmentId pulumi.StringInput
 	// The application name.
 	Name pulumi.StringInput
+	// The optional deployment registry ID.
+	RegistryId pulumi.StringPtrInput
 	// The optional server ID.
 	ServerId pulumi.StringPtrInput
 	// The application source configuration.
@@ -209,6 +221,11 @@ func (o ApplicationOutput) BuildArgs() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *Application) pulumi.StringPtrOutput { return v.BuildArgs }).(pulumi.StringPtrOutput)
 }
 
+// The optional build registry ID.
+func (o ApplicationOutput) BuildRegistryId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *Application) pulumi.StringPtrOutput { return v.BuildRegistryId }).(pulumi.StringPtrOutput)
+}
+
 // Build secrets for the application.
 func (o ApplicationOutput) BuildSecrets() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *Application) pulumi.StringPtrOutput { return v.BuildSecrets }).(pulumi.StringPtrOutput)
@@ -237,6 +254,11 @@ func (o ApplicationOutput) EnvironmentId() pulumi.StringOutput {
 // The application name.
 func (o ApplicationOutput) Name() pulumi.StringOutput {
 	return o.ApplyT(func(v *Application) pulumi.StringOutput { return v.Name }).(pulumi.StringOutput)
+}
+
+// The optional deployment registry ID.
+func (o ApplicationOutput) RegistryId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *Application) pulumi.StringPtrOutput { return v.RegistryId }).(pulumi.StringPtrOutput)
 }
 
 // The optional server ID.

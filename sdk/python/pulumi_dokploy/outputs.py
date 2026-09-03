@@ -311,6 +311,8 @@ class GitApplicationSource(dict):
             suggest = "build_path"
         elif key == "enableSubmodules":
             suggest = "enable_submodules"
+        elif key == "sshKeyId":
+            suggest = "ssh_key_id"
         elif key == "watchPaths":
             suggest = "watch_paths"
 
@@ -331,6 +333,7 @@ class GitApplicationSource(dict):
                  url: _builtins.str,
                  build_path: Optional[_builtins.str] = None,
                  enable_submodules: Optional[_builtins.bool] = None,
+                 ssh_key_id: Optional[_builtins.str] = None,
                  watch_paths: Optional[Sequence[_builtins.str]] = None):
         """
         Git source configuration.
@@ -340,6 +343,7 @@ class GitApplicationSource(dict):
         :param _builtins.str url: The Git repository URL.
         :param _builtins.str build_path: The build path.
         :param _builtins.bool enable_submodules: Whether to enable submodules.
+        :param _builtins.str ssh_key_id: The SSH key ID.
         :param Sequence[_builtins.str] watch_paths: Paths to watch.
         """
         pulumi.set(__self__, "branch", branch)
@@ -349,6 +353,8 @@ class GitApplicationSource(dict):
             pulumi.set(__self__, "build_path", build_path)
         if enable_submodules is not None:
             pulumi.set(__self__, "enable_submodules", enable_submodules)
+        if ssh_key_id is not None:
+            pulumi.set(__self__, "ssh_key_id", ssh_key_id)
         if watch_paths is not None:
             pulumi.set(__self__, "watch_paths", watch_paths)
 
@@ -391,6 +397,14 @@ class GitApplicationSource(dict):
         Whether to enable submodules.
         """
         return pulumi.get(self, "enable_submodules")
+
+    @_builtins.property
+    @pulumi.getter(name="sshKeyId")
+    def ssh_key_id(self) -> Optional[_builtins.str]:
+        """
+        The SSH key ID.
+        """
+        return pulumi.get(self, "ssh_key_id")
 
     @_builtins.property
     @pulumi.getter(name="watchPaths")

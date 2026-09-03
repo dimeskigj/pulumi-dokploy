@@ -49,6 +49,21 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
+     * The optional build registry ID.
+     * 
+     */
+    @Import(name="buildRegistryId")
+    private @Nullable Output<String> buildRegistryId;
+
+    /**
+     * @return The optional build registry ID.
+     * 
+     */
+    public Optional<Output<String>> buildRegistryId() {
+        return Optional.ofNullable(this.buildRegistryId);
+    }
+
+    /**
      * Build secrets for the application.
      * 
      */
@@ -139,6 +154,21 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
+     * The optional deployment registry ID.
+     * 
+     */
+    @Import(name="registryId")
+    private @Nullable Output<String> registryId;
+
+    /**
+     * @return The optional deployment registry ID.
+     * 
+     */
+    public Optional<Output<String>> registryId() {
+        return Optional.ofNullable(this.registryId);
+    }
+
+    /**
      * The optional server ID.
      * 
      */
@@ -173,12 +203,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
     private ApplicationArgs(ApplicationArgs $) {
         this.appName = $.appName;
         this.buildArgs = $.buildArgs;
+        this.buildRegistryId = $.buildRegistryId;
         this.buildSecrets = $.buildSecrets;
         this.createEnvFile = $.createEnvFile;
         this.description = $.description;
         this.environment = $.environment;
         this.environmentId = $.environmentId;
         this.name = $.name;
+        this.registryId = $.registryId;
         this.serverId = $.serverId;
         this.source = $.source;
     }
@@ -241,6 +273,27 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder buildArgs(String buildArgs) {
             return buildArgs(Output.of(buildArgs));
+        }
+
+        /**
+         * @param buildRegistryId The optional build registry ID.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder buildRegistryId(@Nullable Output<String> buildRegistryId) {
+            $.buildRegistryId = buildRegistryId;
+            return this;
+        }
+
+        /**
+         * @param buildRegistryId The optional build registry ID.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder buildRegistryId(String buildRegistryId) {
+            return buildRegistryId(Output.of(buildRegistryId));
         }
 
         /**
@@ -367,6 +420,27 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder name(String name) {
             return name(Output.of(name));
+        }
+
+        /**
+         * @param registryId The optional deployment registry ID.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder registryId(@Nullable Output<String> registryId) {
+            $.registryId = registryId;
+            return this;
+        }
+
+        /**
+         * @param registryId The optional deployment registry ID.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder registryId(String registryId) {
+            return registryId(Output.of(registryId));
         }
 
         /**

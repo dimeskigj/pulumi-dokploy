@@ -431,6 +431,10 @@ class GitApplicationSourceArgsDict(TypedDict):
     """
     Whether to enable submodules.
     """
+    ssh_key_id: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The SSH key ID.
+    """
     watch_paths: NotRequired[pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]]
     """
     Paths to watch.
@@ -444,6 +448,7 @@ class GitApplicationSourceArgs:
                  url: pulumi.Input[_builtins.str],
                  build_path: pulumi.Input[Optional[_builtins.str]] = None,
                  enable_submodules: pulumi.Input[Optional[_builtins.bool]] = None,
+                 ssh_key_id: pulumi.Input[Optional[_builtins.str]] = None,
                  watch_paths: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]] = None):
         """
         Git source configuration.
@@ -453,6 +458,7 @@ class GitApplicationSourceArgs:
         :param pulumi.Input[_builtins.str] url: The Git repository URL.
         :param pulumi.Input[_builtins.str] build_path: The build path.
         :param pulumi.Input[_builtins.bool] enable_submodules: Whether to enable submodules.
+        :param pulumi.Input[_builtins.str] ssh_key_id: The SSH key ID.
         :param pulumi.Input[Sequence[pulumi.Input[_builtins.str]]] watch_paths: Paths to watch.
         """
         pulumi.set(__self__, "branch", branch)
@@ -462,6 +468,8 @@ class GitApplicationSourceArgs:
             pulumi.set(__self__, "build_path", build_path)
         if enable_submodules is not None:
             pulumi.set(__self__, "enable_submodules", enable_submodules)
+        if ssh_key_id is not None:
+            pulumi.set(__self__, "ssh_key_id", ssh_key_id)
         if watch_paths is not None:
             pulumi.set(__self__, "watch_paths", watch_paths)
 
@@ -524,6 +532,18 @@ class GitApplicationSourceArgs:
     @enable_submodules.setter
     def enable_submodules(self, value: pulumi.Input[Optional[_builtins.bool]]):
         pulumi.set(self, "enable_submodules", value)
+
+    @_builtins.property
+    @pulumi.getter(name="sshKeyId")
+    def ssh_key_id(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The SSH key ID.
+        """
+        return pulumi.get(self, "ssh_key_id")
+
+    @ssh_key_id.setter
+    def ssh_key_id(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "ssh_key_id", value)
 
     @_builtins.property
     @pulumi.getter(name="watchPaths")

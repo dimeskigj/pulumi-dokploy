@@ -109,8 +109,9 @@ func isHTTPMethod(s string) bool {
 }
 
 type Corrections struct {
-	Responses map[string]string          `json:"responses"`
-	Schemas   map[string]json.RawMessage `json:"schemas"`
+	Responses map[string]string `json:"responses"`
+	Requests  map[string]string `json:"requests"`
+	Schemas   map[string]any    `json:"schemas"`
 }
 
 func allOperations(p *PathItem) map[string]*Operation {
@@ -232,9 +233,46 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 	}
 	refs := map[string]bool{}
 	for n, b := range c.Schemas {
-		out.Components.Schemas[n] = b
+		raw, err := json.Marshal(b)
+		if err != nil {
+			return nil, fmt.Errorf("correction schema %s cannot be encoded: %w", n, err)
+		}
+		out.Components.Schemas[n] = raw
 		refs[n] = true
-		visitBytes(b, refs)
+		visitBytes(raw, refs)
+	}
+	for name, schemaName := range c.Requests {
+		var target *Operation
+		for _, item := range out.Paths {
+			for _, candidate := range allOperations(item) {
+				if candidate.OperationID == strings.Replace(name, ".", "-", 1) {
+					target = candidate
+					break
+				}
+			}
+			if target != nil {
+				break
+			}
+		}
+		if target == nil {
+			return nil, fmt.Errorf("request correction %s targets missing operation", name)
+		}
+		requestBody, ok := target.Raw["requestBody"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("request correction %s operation has no request body", name)
+		}
+		content, ok := requestBody["content"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("request correction %s request body has no content", name)
+		}
+		applicationJSON, ok := content["application/json"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("request correction %s request body has no application/json content", name)
+		}
+		if _, ok := c.Schemas[schemaName]; !ok {
+			return nil, fmt.Errorf("request correction %s names missing schema %s", name, schemaName)
+		}
+		applicationJSON["schema"] = schemaRef(schemaName)
 	}
 	var visit func(any)
 	visit = func(v any) {

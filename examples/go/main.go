@@ -45,7 +45,15 @@ func main() {
 		if param := cfg.Get("gitBranch"); param != "" {
 			gitBranch = param
 		}
-		registryPassword := "replace-with-a-registry-password"
+		sshPrivateKey := ""
+		if param := cfg.Get("sshPrivateKey"); param != "" {
+			sshPrivateKey = param
+		}
+		fileMountContent := ""
+		if param := cfg.Get("fileMountContent"); param != "" {
+			fileMountContent = param
+		}
+		registryPassword := ""
 		if param := cfg.Get("registryPassword"); param != "" {
 			registryPassword = param
 		}
@@ -92,6 +100,16 @@ func main() {
 		if err != nil {
 			return err
 		}
+		registry, err := dokploy.NewRegistry(ctx, "registry", &dokploy.RegistryArgs{
+			Name:        pulumi.String("mvp-registry"),
+			Username:    pulumi.String("example"),
+			Password:    pulumi.ToSecret(registryPassword).(pulumi.StringOutput),
+			Url:         pulumi.String("registry.example.invalid"),
+			ImagePrefix: pulumi.String("dokploy/"),
+		})
+		if err != nil {
+			return err
+		}
 		application, err := dokploy.NewApplication(ctx, "application", &dokploy.ApplicationArgs{
 			Name:          pulumi.String("mvp-application"),
 			EnvironmentId: projectResource.DefaultEnvironmentId,
@@ -103,8 +121,36 @@ func main() {
 					Password: pulumi.ToSecret(registryPassword).(pulumi.StringOutput),
 				},
 			},
-			Environment:   pulumi.ToSecret(fmt.Sprintf("APP_HOST=%v", appHost)).(pulumi.StringOutput),
-			CreateEnvFile: pulumi.Bool(true),
+			Environment:     pulumi.ToSecret(fmt.Sprintf("APP_HOST=%v", appHost)).(pulumi.StringOutput),
+			CreateEnvFile:   pulumi.Bool(true),
+			RegistryId:      registry.RegistryId,
+			BuildRegistryId: registry.RegistryId,
+		})
+		if err != nil {
+			return err
+		}
+		sshKey, err := dokploy.NewSSHKey(ctx, "sshKey", &dokploy.SSHKeyArgs{
+			Name:       pulumi.String("mvp-git-ssh"),
+			PrivateKey: pulumi.ToSecret(sshPrivateKey).(pulumi.StringOutput),
+			PublicKey:  pulumi.String("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp"),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewApplication(ctx, "genericGitApplication", &dokploy.ApplicationArgs{
+			Name:          pulumi.String("mvp-git-application"),
+			EnvironmentId: projectResource.DefaultEnvironmentId,
+			Source: &dokploy.ApplicationSourceArgs{
+				Type: pulumi.String("git"),
+				Git: &dokploy.GitApplicationSourceArgs{
+					Url:      pulumi.String("https://github.com/example/application.git"),
+					Branch:   pulumi.String("main"),
+					SshKeyId: sshKey.SshKeyId,
+					Build: &dokploy.ApplicationBuildArgs{
+						Type: pulumi.String("nixpacks"),
+					},
+				},
+			},
 		})
 		if err != nil {
 			return err
@@ -129,6 +175,38 @@ func main() {
 		if err != nil {
 			return err
 		}
+		tag, err := dokploy.NewTag(ctx, "tag", &dokploy.TagArgs{
+			Name:  pulumi.String("mvp"),
+			Color: pulumi.String("#2dd4bf"),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewProjectTag(ctx, "projectTag", &dokploy.ProjectTagArgs{
+			ProjectId: projectResource.ProjectId,
+			TagId:     tag.TagId,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewMount(ctx, "applicationBindMount", &dokploy.MountArgs{
+			Type:          pulumi.String("bind"),
+			MountPath:     pulumi.String("/var/lib/dokploy"),
+			HostPath:      pulumi.String("/srv/dokploy"),
+			ApplicationId: application.ApplicationId,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewMount(ctx, "composeVolumeMount", &dokploy.MountArgs{
+			Type:       pulumi.String("volume"),
+			MountPath:  pulumi.String("/var/lib/postgresql/data"),
+			VolumeName: pulumi.String("mvp-postgres-data"),
+			ComposeId:  compose.ComposeId,
+		})
+		if err != nil {
+			return err
+		}
 		postgres, err := dokploy.NewPostgres(ctx, "postgres", &dokploy.PostgresArgs{
 			Name:             pulumi.String("mvp-postgres"),
 			EnvironmentId:    environment.EnvironmentId,
@@ -136,6 +214,16 @@ func main() {
 			DatabaseUser:     pulumi.String("app"),
 			DatabasePassword: pulumi.ToSecret(databasePassword).(pulumi.StringOutput),
 			Environment:      pulumi.ToSecret("POSTGRES_HOST=postgres").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewMount(ctx, "postgresFileMount", &dokploy.MountArgs{
+			Type:       pulumi.String("file"),
+			MountPath:  pulumi.String("/etc/app/config.toml"),
+			FilePath:   pulumi.String("/tmp/dokploy-config.toml"),
+			PostgresId: postgres.PostgresId,
+			Content:    pulumi.ToSecret(fileMountContent).(pulumi.StringOutput),
 		})
 		if err != nil {
 			return err

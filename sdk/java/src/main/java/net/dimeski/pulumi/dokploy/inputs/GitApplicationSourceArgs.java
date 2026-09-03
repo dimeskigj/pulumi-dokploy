@@ -84,6 +84,21 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
     }
 
     /**
+     * The SSH key ID.
+     * 
+     */
+    @Import(name="sshKeyId")
+    private @Nullable Output<String> sshKeyId;
+
+    /**
+     * @return The SSH key ID.
+     * 
+     */
+    public Optional<Output<String>> sshKeyId() {
+        return Optional.ofNullable(this.sshKeyId);
+    }
+
+    /**
      * The Git repository URL.
      * 
      */
@@ -120,6 +135,7 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
         this.build = $.build;
         this.buildPath = $.buildPath;
         this.enableSubmodules = $.enableSubmodules;
+        this.sshKeyId = $.sshKeyId;
         this.url = $.url;
         this.watchPaths = $.watchPaths;
     }
@@ -224,6 +240,27 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
          */
         public Builder enableSubmodules(Boolean enableSubmodules) {
             return enableSubmodules(Output.of(enableSubmodules));
+        }
+
+        /**
+         * @param sshKeyId The SSH key ID.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder sshKeyId(@Nullable Output<String> sshKeyId) {
+            $.sshKeyId = sshKeyId;
+            return this;
+        }
+
+        /**
+         * @param sshKeyId The SSH key ID.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder sshKeyId(String sshKeyId) {
+            return sshKeyId(Output.of(sshKeyId));
         }
 
         /**

@@ -14,6 +14,11 @@ var (
 	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState] = Application{}
 	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]       = Postgres{}
 	_ infer.ExplicitDependencies[RedisArgs, RedisState]             = Redis{}
+	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]           = SSHKey{}
+	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]       = Registry{}
+	_ infer.ExplicitDependencies[TagArgs, TagState]                 = Tag{}
+	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]   = ProjectTag{}
+	_ infer.ExplicitDependencies[MountArgs, MountState]             = Mount{}
 )
 
 func TestProviderSchema(t *testing.T) {
@@ -35,6 +40,7 @@ func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {
 	}
 	require.Contains(t, tokens, "dokploy:index:Project")
 	require.Contains(t, tokens, "dokploy:index:Environment")
+	require.Contains(t, tokens, "dokploy:index:SSHKey")
 }
 
 func TestProviderHasNoSampleFunctionsOrComponents(t *testing.T) {

@@ -45,6 +45,11 @@ export type MongoDB = import("./mongoDB").MongoDB;
 export const MongoDB: typeof import("./mongoDB").MongoDB = null as any;
 utilities.lazyLoad(exports, ["MongoDB"], () => require("./mongoDB"));
 
+export { MountArgs } from "./mount";
+export type Mount = import("./mount").Mount;
+export const Mount: typeof import("./mount").Mount = null as any;
+utilities.lazyLoad(exports, ["Mount"], () => require("./mount"));
+
 export { MySQLArgs } from "./mySQL";
 export type MySQL = import("./mySQL").MySQL;
 export const MySQL: typeof import("./mySQL").MySQL = null as any;
@@ -60,6 +65,11 @@ export type Project = import("./project").Project;
 export const Project: typeof import("./project").Project = null as any;
 utilities.lazyLoad(exports, ["Project"], () => require("./project"));
 
+export { ProjectTagArgs } from "./projectTag";
+export type ProjectTag = import("./projectTag").ProjectTag;
+export const ProjectTag: typeof import("./projectTag").ProjectTag = null as any;
+utilities.lazyLoad(exports, ["ProjectTag"], () => require("./projectTag"));
+
 export { ProviderArgs } from "./provider";
 export type Provider = import("./provider").Provider;
 export const Provider: typeof import("./provider").Provider = null as any;
@@ -69,6 +79,21 @@ export { RedisArgs } from "./redis";
 export type Redis = import("./redis").Redis;
 export const Redis: typeof import("./redis").Redis = null as any;
 utilities.lazyLoad(exports, ["Redis"], () => require("./redis"));
+
+export { RegistryArgs } from "./registry";
+export type Registry = import("./registry").Registry;
+export const Registry: typeof import("./registry").Registry = null as any;
+utilities.lazyLoad(exports, ["Registry"], () => require("./registry"));
+
+export { SSHKeyArgs } from "./sshkey";
+export type SSHKey = import("./sshkey").SSHKey;
+export const SSHKey: typeof import("./sshkey").SSHKey = null as any;
+utilities.lazyLoad(exports, ["SSHKey"], () => require("./sshkey"));
+
+export { TagArgs } from "./tag";
+export type Tag = import("./tag").Tag;
+export const Tag: typeof import("./tag").Tag = null as any;
+utilities.lazyLoad(exports, ["Tag"], () => require("./tag"));
 
 export { VolumeBackupArgs } from "./volumeBackup";
 export type VolumeBackup = import("./volumeBackup").VolumeBackup;
@@ -105,14 +130,24 @@ const _module = {
                 return new MariaDB(name, <any>undefined, { urn })
             case "dokploy:index:MongoDB":
                 return new MongoDB(name, <any>undefined, { urn })
+            case "dokploy:index:Mount":
+                return new Mount(name, <any>undefined, { urn })
             case "dokploy:index:MySQL":
                 return new MySQL(name, <any>undefined, { urn })
             case "dokploy:index:Postgres":
                 return new Postgres(name, <any>undefined, { urn })
             case "dokploy:index:Project":
                 return new Project(name, <any>undefined, { urn })
+            case "dokploy:index:ProjectTag":
+                return new ProjectTag(name, <any>undefined, { urn })
             case "dokploy:index:Redis":
                 return new Redis(name, <any>undefined, { urn })
+            case "dokploy:index:Registry":
+                return new Registry(name, <any>undefined, { urn })
+            case "dokploy:index:SSHKey":
+                return new SSHKey(name, <any>undefined, { urn })
+            case "dokploy:index:Tag":
+                return new Tag(name, <any>undefined, { urn })
             case "dokploy:index:VolumeBackup":
                 return new VolumeBackup(name, <any>undefined, { urn })
             default:

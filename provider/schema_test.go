@@ -35,6 +35,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB",
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
+		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -52,6 +53,9 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 
 func TestSchemaSecretsAndDefaults(t *testing.T) {
 	spec := providerSchema(t)
+	for _, term := range []string{"SSH keys", "registries", "tags", "project-tag associations", "mounts"} {
+		require.Contains(t, spec.Description, term)
+	}
 	require.True(t, spec.Config.Variables["apiKey"].Secret)
 	require.Equal(t, "postgres:18", spec.Resources["dokploy:index:Postgres"].InputProperties["dockerImage"].Default)
 	require.Equal(t, "mysql:8", spec.Resources["dokploy:index:MySQL"].InputProperties["dockerImage"].Default)
@@ -72,15 +76,25 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 		"dokploy:index:MongoDB.databasePassword", "dokploy:index:MongoDB.environment",
 		"dokploy:index:Compose.environment",
 		"dokploy:index:Destination.secretAccessKey",
+		"dokploy:index:SSHKey.privateKey",
+		"dokploy:index:Registry.password",
 	}
 	for _, path := range secrets {
 		resource, property := splitSchemaPath(path)
 		require.True(t, schemaProperty(spec, resource, property).Secret, path)
 	}
+	sshKeyProps := spec.Resources["dokploy:index:SSHKey"].InputProperties
+	require.True(t, sshKeyProps["privateKey"].ReplaceOnChanges)
+	require.True(t, sshKeyProps["publicKey"].ReplaceOnChanges)
+	require.True(t, spec.Resources["dokploy:index:Registry"].InputProperties["password"].Secret)
+	require.True(t, spec.Resources["dokploy:index:Mount"].InputProperties["content"].Secret)
 }
 
 func TestSchemaReplacementFlags(t *testing.T) {
 	spec := providerSchema(t)
+	for _, property := range []string{"projectId", "tagId"} {
+		require.True(t, spec.Resources["dokploy:index:ProjectTag"].InputProperties[property].ReplaceOnChanges, property)
+	}
 	for _, resource := range []string{"Application", "Compose", "Postgres", "MySQL", "MariaDB", "MongoDB", "Redis"} {
 		props := spec.Resources["dokploy:index:"+resource].InputProperties
 		for _, property := range []string{"environmentId", "serverId"} {
@@ -101,6 +115,14 @@ func TestSchemaReplacementFlags(t *testing.T) {
 	for _, property := range []string{"postgresId", "mysqlId", "mariadbId", "mongoId"} {
 		require.True(t, backupProps[property].ReplaceOnChanges, property)
 	}
+	for _, property := range []string{"type", "applicationId", "composeId", "postgresId", "mysqlId", "mariadbId", "redisId"} {
+		require.True(t, spec.Resources["dokploy:index:Mount"].InputProperties[property].ReplaceOnChanges, property)
+	}
+	applicationProps := spec.Resources["dokploy:index:Application"].InputProperties
+	require.Contains(t, applicationProps, "registryId")
+	require.Contains(t, applicationProps, "buildRegistryId")
+	gitProps := spec.Types["dokploy:index:GitApplicationSource"].Properties
+	require.Contains(t, gitProps, "sshKeyId")
 }
 
 func TestGeneratedDotnetAndJavaPackagesDoNotDuplicateProviderSuffix(t *testing.T) {
@@ -145,6 +167,11 @@ func schemaProperty(spec schema.PackageSpec, resourceToken, property string) sch
 		source := spec.Types[trimTypeRef(resource.InputProperties["source"].Ref)]
 		docker := spec.Types[trimTypeRef(source.Properties["docker"].Ref)]
 		return docker.Properties["password"]
+	}
+	if strings.HasPrefix(property, "source.git.") {
+		source := spec.Types[trimTypeRef(resource.InputProperties["source"].Ref)]
+		git := spec.Types[trimTypeRef(source.Properties["git"].Ref)]
+		return git.Properties[strings.TrimPrefix(property, "source.git.")]
 	}
 	return resource.InputProperties[property]
 }

@@ -39,7 +39,7 @@ test("secret and destructive lifecycle guidance is explicit", async () => {
 
 test("sidebar keeps the canonical resource order and base-safe links", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
-  const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Configuration", "Complex Types"];
+   const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
   const resources = config.slice(config.indexOf('label: "Resources"'), config.indexOf('label: "Examples"'));
   let previous = -1;
   for (const label of resourceOrder) {
@@ -160,7 +160,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
     "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/imports/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
-    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/configuration/", "/reference/types/",
+     "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
   ]);
   for (const match of config.matchAll(/link: "(\/[^\"]*)"/g)) {
@@ -168,7 +168,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 32);
+   assert.equal((config.match(/link: "\//g) ?? []).length, 37);
   assert.equal(curatedFiles.length, 14);
 });
 
@@ -216,4 +216,33 @@ test("Examples sidebar uses the complete examples routes", async () => {
   assert.match(examples, /label: "Examples", link: "\/examples\/"/);
   assert.match(examples, /label: "Complete example", link: "\/examples\/complete\/"/);
   assert.doesNotMatch(examples, /getting-started\/first-deployment/);
+});
+
+test("new resource references and lifecycle guidance are published", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  for (const route of ["sshkey", "registry", "tag", "project-tag", "mount"]) {
+    assert.match(config, new RegExp(`/reference/${route}/`));
+  }
+  const complete = await readFile(new URL("../src/content/docs/examples/complete.mdx", import.meta.url), "utf8");
+  for (const marker of ["SSHKey", "sshKeyId", "Registry", "registryId", "Tag", "ProjectTag", "Mount", "bind", "volume", "file"]) {
+    assert.match(complete, new RegExp(marker), `complete example documents ${marker}`);
+  }
+  const imports = await readFile(new URL("../src/content/docs/guides/imports.mdx", import.meta.url), "utf8");
+  for (const resource of ["SSHKey", "Registry", "Tag", "ProjectTag", "Mount"]) assert.match(imports, new RegExp(resource));
+  const applications = await readFile(new URL("../src/content/docs/guides/applications.mdx", import.meta.url), "utf8");
+  assert.match(applications, /sshKeyId/);
+  const lifecycle = await readFile(new URL("../src/content/docs/concepts/lifecycle-and-state.mdx", import.meta.url), "utf8");
+  assert.match(lifecycle, /automatic mount redeployment/i);
+  const databases = await readFile(new URL("../src/content/docs/guides/databases.mdx", import.meta.url), "utf8");
+  assert.match(databases, /MongoDB/);
+  assert.match(databases, /LibSQL/);
+});
+
+test("complete example actively wires SSH, registry, and secret mount inputs", async () => {
+  const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
+  assert.match(yaml, /genericGitApplication:[\s\S]*?type: dokploy:index:Application/);
+  assert.match(yaml, /genericGitApplication:[\s\S]*?type: git[\s\S]*?sshKeyId: \$\{sshKey\.sshKeyId\}/);
+  assert.match(yaml, /fileMountContent:[\s\S]*?secret: true/);
+  assert.match(yaml, /content:\s*\n\s*fn::secret: \$\{fileMountContent\}/);
+  assert.doesNotMatch(yaml, /fn::secret: APP_ENV=staging/);
 });

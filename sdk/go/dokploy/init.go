@@ -37,14 +37,24 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &MariaDB{}
 	case "dokploy:index:MongoDB":
 		r = &MongoDB{}
+	case "dokploy:index:Mount":
+		r = &Mount{}
 	case "dokploy:index:MySQL":
 		r = &MySQL{}
 	case "dokploy:index:Postgres":
 		r = &Postgres{}
 	case "dokploy:index:Project":
 		r = &Project{}
+	case "dokploy:index:ProjectTag":
+		r = &ProjectTag{}
 	case "dokploy:index:Redis":
 		r = &Redis{}
+	case "dokploy:index:Registry":
+		r = &Registry{}
+	case "dokploy:index:SSHKey":
+		r = &SSHKey{}
+	case "dokploy:index:Tag":
+		r = &Tag{}
 	case "dokploy:index:VolumeBackup":
 		r = &VolumeBackup{}
 	default:

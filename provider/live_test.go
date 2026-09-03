@@ -22,8 +22,12 @@ package dokploy
 
 import (
 	"context"
+	"crypto/ed25519"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -32,6 +36,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/ssh"
 )
 
 // requireNoError is require.NoError, except that when err wraps the
@@ -70,6 +75,47 @@ func liveContext(t *testing.T, timeout time.Duration) context.Context {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	t.Cleanup(cancel)
 	return ctx
+}
+
+func liveRegistryArgs(t *testing.T) RegistryArgs {
+	t.Helper()
+	missing := make([]string, 0, 3)
+	for _, name := range []string{"DOKPLOY_REGISTRY_URL", "DOKPLOY_REGISTRY_USERNAME", "DOKPLOY_REGISTRY_PASSWORD"} {
+		if os.Getenv(name) == "" {
+			missing = append(missing, name)
+		}
+	}
+	if len(missing) != 0 {
+		t.Fatalf("live Registry tests require: %s", strings.Join(missing, ", "))
+	}
+	var prefix *string
+	if value := os.Getenv("DOKPLOY_REGISTRY_IMAGE_PREFIX"); value != "" {
+		prefix = &value
+	}
+	return RegistryArgs{Name: "live-test-registry-" + uuid.NewString(), URL: os.Getenv("DOKPLOY_REGISTRY_URL"), Username: os.Getenv("DOKPLOY_REGISTRY_USERNAME"), Password: os.Getenv("DOKPLOY_REGISTRY_PASSWORD"), ImagePrefix: prefix}
+}
+
+func liveSSHKeyPair(t *testing.T) (privateKey, publicKey string) {
+	t.Helper()
+	public, private, err := ed25519.GenerateKey(nil)
+	require.NoError(t, err)
+	privateBytes, err := x509.MarshalPKCS8PrivateKey(private)
+	require.NoError(t, err)
+	publicKeyData, err := ssh.NewPublicKey(public)
+	require.NoError(t, err)
+	return string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateBytes})), string(ssh.MarshalAuthorizedKey(publicKeyData))
+}
+
+func TestLiveSSHKeyPairUsesDokployKeyFormats(t *testing.T) {
+	privateKey, publicKey := liveSSHKeyPair(t)
+	parsedPublic, _, _, _, err := ssh.ParseAuthorizedKey([]byte(publicKey))
+	require.NoError(t, err)
+	require.Equal(t, ssh.KeyAlgoED25519, parsedPublic.Type())
+	block, _ := pem.Decode([]byte(privateKey))
+	require.NotNil(t, block)
+	parsedPrivate, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	require.NoError(t, err)
+	require.IsType(t, ed25519.PrivateKey{}, parsedPrivate)
 }
 
 // liveProject creates a scratch Project (and its default Environment) for a
@@ -528,4 +574,166 @@ func TestLiveEnvironmentLifecycle(t *testing.T) {
 
 	_, err = (Environment{client: fixedClient(api)}).Delete(ctx, infer.DeleteRequest[EnvironmentState]{ID: created.ID})
 	require.NoError(t, err, "environment.remove must succeed even though Dokploy echoes back the full entity, not a boolean (bug 3)")
+}
+
+func TestLiveSSHKeyLifecycle(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 5*time.Minute)
+	privateKey, publicKey := liveSSHKeyPair(t)
+	r := SSHKey{client: fixedClient(api)}
+	created, err := r.Create(ctx, infer.CreateRequest[SSHKeyArgs]{Inputs: SSHKeyArgs{Name: "live-test-key-" + uuid.NewString(), PrivateKey: privateKey, PublicKey: publicKey}})
+	if created.ID != "" {
+		id, state := created.ID, created.Output
+		t.Cleanup(func() {
+			if _, err := r.Delete(context.Background(), infer.DeleteRequest[SSHKeyState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: sshKey.remove for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err)
+	require.NotEmpty(t, created.ID)
+
+	read, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID, State: created.Output})
+	require.NoError(t, err)
+	description := "updated by live test"
+	_, err = r.Update(ctx, infer.UpdateRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID, Inputs: SSHKeyArgs{Name: read.Inputs.Name, Description: &description, PrivateKey: privateKey, PublicKey: publicKey}, State: read.State})
+	require.NoError(t, err)
+	read, err = r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, description, *read.Inputs.Description)
+	imported, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, created.ID, imported.State.SSHKeyID)
+	_, err = r.Delete(ctx, infer.DeleteRequest[SSHKeyState]{ID: created.ID, State: imported.State})
+	require.NoError(t, err)
+}
+
+func TestLiveRegistryLifecycle(t *testing.T) {
+	api := liveClient(t)
+	args := liveRegistryArgs(t)
+	ctx := liveContext(t, 5*time.Minute)
+	r := Registry{client: fixedClient(api)}
+	created, err := r.Create(ctx, infer.CreateRequest[RegistryArgs]{Inputs: args})
+	if created.ID != "" {
+		id, state := created.ID, created.Output
+		t.Cleanup(func() {
+			if _, err := r.Delete(context.Background(), infer.DeleteRequest[RegistryState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: registry.remove for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err, "registry credential test and create must succeed")
+	require.NotEmpty(t, created.ID)
+	read, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID, State: created.Output})
+	require.NoError(t, err)
+	read.Inputs.Name += "-updated"
+	_, err = r.Update(ctx, infer.UpdateRequest[RegistryArgs, RegistryState]{ID: created.ID, Inputs: read.Inputs, State: read.State})
+	require.NoError(t, err)
+	updated, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID, State: read.State})
+	require.NoError(t, err)
+	require.Equal(t, read.Inputs.Name, updated.Inputs.Name)
+	imported, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID})
+	require.NoError(t, err)
+	require.Equal(t, created.ID, imported.State.RegistryID)
+	_, err = r.Delete(ctx, infer.DeleteRequest[RegistryState]{ID: created.ID, State: imported.State})
+	require.NoError(t, err)
+}
+
+func TestLiveTagAndProjectTagLifecycle(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 5*time.Minute)
+	projectID, _ := liveProject(t, ctx, api)
+	tagResource := Tag{client: fixedClient(api)}
+	tag, err := tagResource.Create(ctx, infer.CreateRequest[TagArgs]{Inputs: TagArgs{Name: "live-test-tag-" + uuid.NewString(), Color: stringPtr("#123456")}})
+	if tag.ID != "" {
+		id, state := tag.ID, tag.Output
+		t.Cleanup(func() {
+			if _, err := tagResource.Delete(context.Background(), infer.DeleteRequest[TagState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: tag.remove for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err)
+	association := ProjectTag{client: fixedClient(api)}
+	associationState, err := association.Create(ctx, infer.CreateRequest[ProjectTagArgs]{Inputs: ProjectTagArgs{ProjectID: projectID, TagID: tag.ID}})
+	if associationState.ID != "" {
+		id, state := associationState.ID, associationState.Output
+		t.Cleanup(func() {
+			if _, err := association.Delete(context.Background(), infer.DeleteRequest[ProjectTagState]{ID: id, State: state}); err != nil {
+				t.Errorf("cleanup: tag.removeFromProject for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err)
+	observed, err := association.Read(ctx, infer.ReadRequest[ProjectTagArgs, ProjectTagState]{ID: associationState.ID})
+	require.NoError(t, err)
+	require.Equal(t, associationState.ID, observed.ID)
+	_, err = association.Delete(ctx, infer.DeleteRequest[ProjectTagState]{ID: associationState.ID, State: observed.State})
+	require.NoError(t, err)
+	_, err = tagResource.Delete(ctx, infer.DeleteRequest[TagState]{ID: tag.ID, State: tag.Output})
+	require.NoError(t, err)
+}
+
+func TestLiveApplicationMountLifecycleMatrix(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 10*time.Minute)
+	_, environmentID := liveProject(t, ctx, api)
+	app, err := (Application{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{
+		Name: "mount-target", EnvironmentID: environmentID,
+		Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx:1.27"}},
+	}})
+	if app.ID != "" {
+		id := app.ID
+		t.Cleanup(func() {
+			if _, err := (Application{client: fixedClient(api)}).Delete(context.Background(), infer.DeleteRequest[ApplicationState]{ID: id}); err != nil {
+				t.Errorf("cleanup: application.delete for %s: %v", id, err)
+			}
+		})
+	}
+	requireNoError(t, err)
+	require.NotEmpty(t, app.ID)
+	mounts := []MountArgs{
+		{Type: "bind", MountPath: "/mnt/bind", HostPath: stringPtr("/tmp/live-test"), ApplicationID: &app.ID},
+		{Type: "volume", MountPath: "/mnt/volume", VolumeName: stringPtr("live-test-volume"), ApplicationID: &app.ID},
+		{Type: "file", MountPath: "/mnt/file", FilePath: stringPtr("/etc/live-test.conf"), Content: stringPtr("live-test"), ApplicationID: &app.ID},
+	}
+	r := Mount{client: fixedClient(api)}
+	for _, inputs := range mounts {
+		inputs := inputs
+		t.Run(inputs.Type, func(t *testing.T) {
+			created, err := r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: inputs})
+			if created.ID != "" {
+				id, state := created.ID, created.Output
+				t.Cleanup(func() {
+					if _, err := r.Delete(context.Background(), infer.DeleteRequest[MountState]{ID: id, State: state}); err != nil {
+						t.Errorf("cleanup: mounts.remove for %s: %v", id, err)
+					}
+				})
+			}
+			requireNoError(t, err)
+			require.NotEmpty(t, created.ID)
+			read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
+			require.NoError(t, err)
+			updatedPath := read.Inputs.MountPath + "-updated"
+			updated := read.Inputs
+			updated.MountPath = updatedPath
+			updatedState, err := r.Update(ctx, infer.UpdateRequest[MountArgs, MountState]{ID: created.ID, Inputs: updated, State: read.State})
+			require.NoError(t, err)
+			updatedRead, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: updatedState.Output})
+			require.NoError(t, err)
+			require.Equal(t, updatedPath, updatedRead.Inputs.MountPath)
+			require.Equal(t, inputs.Type, updatedRead.Inputs.Type)
+			switch inputs.Type {
+			case "bind":
+				require.Equal(t, inputs.HostPath, updatedRead.Inputs.HostPath)
+			case "volume":
+				require.Equal(t, inputs.VolumeName, updatedRead.Inputs.VolumeName)
+			case "file":
+				require.Equal(t, inputs.FilePath, updatedRead.Inputs.FilePath)
+				require.Equal(t, inputs.Content, updatedRead.Inputs.Content)
+			}
+			_, err = r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: updatedRead.State})
+			require.NoError(t, err)
+		})
+	}
 }

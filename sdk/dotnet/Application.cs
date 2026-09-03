@@ -34,6 +34,12 @@ namespace Pulumi.Dokploy
         public Output<string?> BuildArgs { get; private set; } = null!;
 
         /// <summary>
+        /// The optional build registry ID.
+        /// </summary>
+        [Output("buildRegistryId")]
+        public Output<string?> BuildRegistryId { get; private set; } = null!;
+
+        /// <summary>
         /// Build secrets for the application.
         /// </summary>
         [Output("buildSecrets")]
@@ -68,6 +74,12 @@ namespace Pulumi.Dokploy
         /// </summary>
         [Output("name")]
         public Output<string> Name { get; private set; } = null!;
+
+        /// <summary>
+        /// The optional deployment registry ID.
+        /// </summary>
+        [Output("registryId")]
+        public Output<string?> RegistryId { get; private set; } = null!;
 
         /// <summary>
         /// The optional server ID.
@@ -165,6 +177,12 @@ namespace Pulumi.Dokploy
             }
         }
 
+        /// <summary>
+        /// The optional build registry ID.
+        /// </summary>
+        [Input("buildRegistryId")]
+        public Input<string>? BuildRegistryId { get; set; }
+
         [Input("buildSecrets")]
         private Input<string>? _buildSecrets;
 
@@ -220,6 +238,12 @@ namespace Pulumi.Dokploy
         /// </summary>
         [Input("name", required: true)]
         public Input<string> Name { get; set; } = null!;
+
+        /// <summary>
+        /// The optional deployment registry ID.
+        /// </summary>
+        [Input("registryId")]
+        public Input<string>? RegistryId { get; set; }
 
         /// <summary>
         /// The optional server ID.

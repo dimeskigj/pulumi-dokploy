@@ -51,3 +51,6 @@ const cache = new dokploy.Redis("app-cache", {
 ```
 
 The `environmentId` and optional `serverId` control placement and are replacement-only; database names, images, ports, and environment values are runtime configuration that updates the service. Passwords (including `databaseRootPassword`) are write-only secret inputs: they are not returned during refresh and may need to be restored after import. Database environment values are secret inputs; do not log them. Review the [Postgres reference](../../reference/postgres/), [MySQL reference](../../reference/mysql/), [MariaDB reference](../../reference/mariadb/), [MongoDB reference](../../reference/mongodb/), [Redis reference](../../reference/redis/), [imports guide](../imports/), and [secrets guidance](../../concepts/secrets/).
+
+MongoDB is supported as a database resource, but MongoDB and LibSQL are not
+supported mount targets.

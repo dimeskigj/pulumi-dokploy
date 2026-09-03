@@ -49,6 +49,10 @@ export class Application extends pulumi.CustomResource {
      */
     declare public readonly buildArgs: pulumi.Output<string | undefined>;
     /**
+     * The optional build registry ID.
+     */
+    declare public readonly buildRegistryId: pulumi.Output<string | undefined>;
+    /**
      * Build secrets for the application.
      */
     declare public readonly buildSecrets: pulumi.Output<string | undefined>;
@@ -72,6 +76,10 @@ export class Application extends pulumi.CustomResource {
      * The application name.
      */
     declare public readonly name: pulumi.Output<string>;
+    /**
+     * The optional deployment registry ID.
+     */
+    declare public readonly registryId: pulumi.Output<string | undefined>;
     /**
      * The optional server ID.
      */
@@ -107,12 +115,14 @@ export class Application extends pulumi.CustomResource {
             }
             resourceInputs["appName"] = args?.appName;
             resourceInputs["buildArgs"] = args?.buildArgs ? pulumi.secret(args.buildArgs) : undefined;
+            resourceInputs["buildRegistryId"] = args?.buildRegistryId;
             resourceInputs["buildSecrets"] = args?.buildSecrets ? pulumi.secret(args.buildSecrets) : undefined;
             resourceInputs["createEnvFile"] = args?.createEnvFile;
             resourceInputs["description"] = args?.description;
             resourceInputs["environment"] = args?.environment ? pulumi.secret(args.environment) : undefined;
             resourceInputs["environmentId"] = args?.environmentId;
             resourceInputs["name"] = args?.name;
+            resourceInputs["registryId"] = args?.registryId;
             resourceInputs["serverId"] = args?.serverId;
             resourceInputs["source"] = args?.source;
             resourceInputs["applicationId"] = undefined /*out*/;
@@ -121,12 +131,14 @@ export class Application extends pulumi.CustomResource {
             resourceInputs["appName"] = undefined /*out*/;
             resourceInputs["applicationId"] = undefined /*out*/;
             resourceInputs["buildArgs"] = undefined /*out*/;
+            resourceInputs["buildRegistryId"] = undefined /*out*/;
             resourceInputs["buildSecrets"] = undefined /*out*/;
             resourceInputs["createEnvFile"] = undefined /*out*/;
             resourceInputs["description"] = undefined /*out*/;
             resourceInputs["environment"] = undefined /*out*/;
             resourceInputs["environmentId"] = undefined /*out*/;
             resourceInputs["name"] = undefined /*out*/;
+            resourceInputs["registryId"] = undefined /*out*/;
             resourceInputs["serverId"] = undefined /*out*/;
             resourceInputs["source"] = undefined /*out*/;
             resourceInputs["status"] = undefined /*out*/;
@@ -153,6 +165,10 @@ export interface ApplicationArgs {
      */
     buildArgs?: pulumi.Input<string | undefined>;
     /**
+     * The optional build registry ID.
+     */
+    buildRegistryId?: pulumi.Input<string | undefined>;
+    /**
      * Build secrets for the application.
      */
     buildSecrets?: pulumi.Input<string | undefined>;
@@ -176,6 +192,10 @@ export interface ApplicationArgs {
      * The application name.
      */
     name: pulumi.Input<string>;
+    /**
+     * The optional deployment registry ID.
+     */
+    registryId?: pulumi.Input<string | undefined>;
     /**
      * The optional server ID.
      */

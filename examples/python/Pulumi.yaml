@@ -24,6 +24,10 @@ config:
     secret: true
   dokploy:endpoint:
     value: https://dokploy.example.invalid
+  fileMountContent:
+    type: string
+    default: ""
+    secret: true
   gitBranch:
     type: string
     default: main
@@ -60,5 +64,9 @@ config:
     secret: true
   registryPassword:
     type: string
-    default: replace-with-a-registry-password
+    default: ""
+    secret: true
+  sshPrivateKey:
+    type: string
+    default: ""
     secret: true

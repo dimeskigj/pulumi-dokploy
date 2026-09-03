@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 const EXPECTED_RESOURCES = new Set([
   "Application", "Compose", "Domain", "Environment", "Postgres", "MySQL", "MariaDB", "MongoDB", "Project", "Redis",
-  "Destination", "Backup", "VolumeBackup",
+  "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount",
 ]);
 const SOURCE_PATH = Symbol("schema source path");
 

@@ -581,6 +581,8 @@ type GitApplicationSource struct {
 	BuildPath *string `pulumi:"buildPath"`
 	// Whether to enable submodules.
 	EnableSubmodules *bool `pulumi:"enableSubmodules"`
+	// The SSH key ID.
+	SshKeyId *string `pulumi:"sshKeyId"`
 	// The Git repository URL.
 	Url string `pulumi:"url"`
 	// Paths to watch.
@@ -608,6 +610,8 @@ type GitApplicationSourceArgs struct {
 	BuildPath pulumi.StringPtrInput `pulumi:"buildPath"`
 	// Whether to enable submodules.
 	EnableSubmodules pulumi.BoolPtrInput `pulumi:"enableSubmodules"`
+	// The SSH key ID.
+	SshKeyId pulumi.StringPtrInput `pulumi:"sshKeyId"`
 	// The Git repository URL.
 	Url pulumi.StringInput `pulumi:"url"`
 	// Paths to watch.
@@ -712,6 +716,11 @@ func (o GitApplicationSourceOutput) EnableSubmodules() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v GitApplicationSource) *bool { return v.EnableSubmodules }).(pulumi.BoolPtrOutput)
 }
 
+// The SSH key ID.
+func (o GitApplicationSourceOutput) SshKeyId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GitApplicationSource) *string { return v.SshKeyId }).(pulumi.StringPtrOutput)
+}
+
 // The Git repository URL.
 func (o GitApplicationSourceOutput) Url() pulumi.StringOutput {
 	return o.ApplyT(func(v GitApplicationSource) string { return v.Url }).(pulumi.StringOutput)
@@ -784,6 +793,16 @@ func (o GitApplicationSourcePtrOutput) EnableSubmodules() pulumi.BoolPtrOutput {
 		}
 		return v.EnableSubmodules
 	}).(pulumi.BoolPtrOutput)
+}
+
+// The SSH key ID.
+func (o GitApplicationSourcePtrOutput) SshKeyId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitApplicationSource) *string {
+		if v == nil {
+			return nil
+		}
+		return v.SshKeyId
+	}).(pulumi.StringPtrOutput)
 }
 
 // The Git repository URL.

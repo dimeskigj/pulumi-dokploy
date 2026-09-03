@@ -43,3 +43,8 @@ const gitlabApp = new dokploy.Application("gitlab-web", {
 ```
 
 Creates and updates fetch the selected source and wait for deployment completion. A source discriminator change replaces the Application; `environmentId` and `serverId` are also replacement-only. Other metadata and source settings update through the normal Pulumi diff. The Project/Environment is a dependency, while GitLab integrations and SSH keys are referenced rather than managed. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).
+
+For a generic Git source, supply an existing `SSHKey` through its `sshKeyId`.
+Applications may reference a managed `Registry` with `registryId` for deployment
+images and `buildRegistryId` for build images. Registry credentials are secret
+inputs and the provider tests the registry before creating or updating it.

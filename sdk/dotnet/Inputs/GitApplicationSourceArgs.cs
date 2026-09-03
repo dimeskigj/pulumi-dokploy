@@ -40,6 +40,12 @@ namespace Pulumi.Dokploy.Inputs
         public Input<bool>? EnableSubmodules { get; set; }
 
         /// <summary>
+        /// The SSH key ID.
+        /// </summary>
+        [Input("sshKeyId")]
+        public Input<string>? SshKeyId { get; set; }
+
+        /// <summary>
         /// The Git repository URL.
         /// </summary>
         [Input("url", required: true)]

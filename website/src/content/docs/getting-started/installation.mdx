@@ -3,7 +3,15 @@ title: Installation
 description: Install the Pulumi Dokploy package for your language.
 ---
 
-Install the SDK package for your Pulumi program. The package supplies language bindings; Pulumi automatically downloads and runs the matching `pulumi-resource-dokploy` provider binary during deployment.
+Install the provider plugin from GitHub Releases before running `pulumi up`:
+
+```bash
+VERSION=0.1.0
+pulumi plugin install resource dokploy "$VERSION" \
+  --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION"
+```
+
+Repeat this installation whenever the provider version changes. Then install the SDK package for your Pulumi program:
 
 ```bash
 npm install @dimeskigj/pulumi-dokploy

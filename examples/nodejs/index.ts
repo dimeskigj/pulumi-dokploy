@@ -12,7 +12,9 @@ const gitlabOwnerConfig = config.get("gitlabOwner") || "example";
 const gitlabNamespaceConfig = config.get("gitlabNamespace") || "platform";
 const gitlabRepositoryConfig = config.get("gitlabRepository") || "application";
 const gitBranchConfig = config.get("gitBranch") || "main";
-const registryPassword = config.getSecret("registryPassword") || pulumi.secret("replace-with-a-registry-password");
+const sshPrivateKey = config.getSecret("sshPrivateKey") || pulumi.secret("");
+const fileMountContent = config.getSecret("fileMountContent") || pulumi.secret("");
+const registryPassword = config.getSecret("registryPassword") || pulumi.secret("");
 const databasePassword = config.getSecret("databasePassword") || pulumi.secret("replace-with-a-database-password");
 const mysqlPassword = config.getSecret("mysqlPassword") || pulumi.secret("replace-with-a-mysql-password");
 const mariadbPassword = config.getSecret("mariadbPassword") || pulumi.secret("replace-with-a-mariadb-password");
@@ -29,6 +31,13 @@ const environment = new dokploy.Environment("environment", {
     name: "staging",
     description: "Additional non-production environment",
 });
+const registry = new dokploy.Registry("registry", {
+    name: "mvp-registry",
+    username: "example",
+    password: pulumi.secret(registryPassword),
+    url: "registry.example.invalid",
+    imagePrefix: "dokploy/",
+});
 const application = new dokploy.Application("application", {
     name: "mvp-application",
     environmentId: projectResource.defaultEnvironmentId,
@@ -42,6 +51,28 @@ const application = new dokploy.Application("application", {
     },
     environment: pulumi.secret(`APP_HOST=${appHost}`),
     createEnvFile: true,
+    registryId: registry.registryId,
+    buildRegistryId: registry.registryId,
+});
+const sshKey = new dokploy.SSHKey("sshKey", {
+    name: "mvp-git-ssh",
+    privateKey: pulumi.secret(sshPrivateKey),
+    publicKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample dokploy-mvp",
+});
+const genericGitApplication = new dokploy.Application("genericGitApplication", {
+    name: "mvp-git-application",
+    environmentId: projectResource.defaultEnvironmentId,
+    source: {
+        type: "git",
+        git: {
+            url: "https://github.com/example/application.git",
+            branch: "main",
+            sshKeyId: sshKey.sshKeyId,
+            build: {
+                type: "nixpacks",
+            },
+        },
+    },
 });
 const compose = new dokploy.Compose("compose", {
     name: "mvp-compose",
@@ -60,6 +91,26 @@ const compose = new dokploy.Compose("compose", {
     environment: pulumi.secret(`COMPOSE_HOST=${composeHost}`),
     createEnvFile: true,
 });
+const tag = new dokploy.Tag("tag", {
+    name: "mvp",
+    color: "#2dd4bf",
+});
+const projectTag = new dokploy.ProjectTag("projectTag", {
+    projectId: projectResource.projectId,
+    tagId: tag.tagId,
+});
+const applicationBindMount = new dokploy.Mount("applicationBindMount", {
+    type: "bind",
+    mountPath: "/var/lib/dokploy",
+    hostPath: "/srv/dokploy",
+    applicationId: application.applicationId,
+});
+const composeVolumeMount = new dokploy.Mount("composeVolumeMount", {
+    type: "volume",
+    mountPath: "/var/lib/postgresql/data",
+    volumeName: "mvp-postgres-data",
+    composeId: compose.composeId,
+});
 const postgres = new dokploy.Postgres("postgres", {
     name: "mvp-postgres",
     environmentId: environment.environmentId,
@@ -67,6 +118,13 @@ const postgres = new dokploy.Postgres("postgres", {
     databaseUser: "app",
     databasePassword: pulumi.secret(databasePassword),
     environment: pulumi.secret("POSTGRES_HOST=postgres"),
+});
+const postgresFileMount = new dokploy.Mount("postgresFileMount", {
+    type: "file",
+    mountPath: "/etc/app/config.toml",
+    filePath: "/tmp/dokploy-config.toml",
+    postgresId: postgres.postgresId,
+    content: pulumi.secret(fileMountContent),
 });
 const mysql = new dokploy.MySQL("mysql", {
     name: "mvp-mysql",

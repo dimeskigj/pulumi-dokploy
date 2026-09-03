@@ -36,6 +36,11 @@ public final class GitApplicationSource {
      */
     private @Nullable Boolean enableSubmodules;
     /**
+     * @return The SSH key ID.
+     * 
+     */
+    private @Nullable String sshKeyId;
+    /**
      * @return The Git repository URL.
      * 
      */
@@ -76,6 +81,13 @@ public final class GitApplicationSource {
         return Optional.ofNullable(this.enableSubmodules);
     }
     /**
+     * @return The SSH key ID.
+     * 
+     */
+    public Optional<String> sshKeyId() {
+        return Optional.ofNullable(this.sshKeyId);
+    }
+    /**
      * @return The Git repository URL.
      * 
      */
@@ -103,6 +115,7 @@ public final class GitApplicationSource {
         private ApplicationBuild build;
         private @Nullable String buildPath;
         private @Nullable Boolean enableSubmodules;
+        private @Nullable String sshKeyId;
         private String url;
         private @Nullable List<String> watchPaths;
         public Builder() {}
@@ -112,6 +125,7 @@ public final class GitApplicationSource {
     	      this.build = defaults.build;
     	      this.buildPath = defaults.buildPath;
     	      this.enableSubmodules = defaults.enableSubmodules;
+    	      this.sshKeyId = defaults.sshKeyId;
     	      this.url = defaults.url;
     	      this.watchPaths = defaults.watchPaths;
         }
@@ -145,6 +159,12 @@ public final class GitApplicationSource {
             return this;
         }
         @CustomType.Setter
+        public Builder sshKeyId(@Nullable String sshKeyId) {
+
+            this.sshKeyId = sshKeyId;
+            return this;
+        }
+        @CustomType.Setter
         public Builder url(String url) {
             if (url == null) {
               throw new MissingRequiredPropertyException("GitApplicationSource", "url");
@@ -167,6 +187,7 @@ public final class GitApplicationSource {
             _resultValue.build = build;
             _resultValue.buildPath = buildPath;
             _resultValue.enableSubmodules = enableSubmodules;
+            _resultValue.sshKeyId = sshKeyId;
             _resultValue.url = url;
             _resultValue.watchPaths = watchPaths;
             return _resultValue;

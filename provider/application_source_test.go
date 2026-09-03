@@ -1,10 +1,36 @@
 package dokploy
 
 import (
+	"context"
 	"testing"
 
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/stretchr/testify/require"
 )
+
+func TestApplicationGitSourceSavesAndClearsSSHKey(t *testing.T) {
+	key := "key-1"
+	for _, tc := range []struct {
+		name   string
+		source GitApplicationSource
+		body   string
+	}{
+		{"set", GitApplicationSource{URL: "https://git.test/repo", Branch: "main", SSHKeyID: &key, Build: ApplicationBuild{Type: BuildNixpacks}}, `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitSSHKeyId":"key-1","customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+		{"cleared", GitApplicationSource{URL: "https://git.test/repo", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}, `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"","customGitSSHKeyId":null,"customGitUrl":"https://git.test/repo","enableSubmodules":false,"watchPaths":null}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectPOST("/api/application.saveGitProvider", tc.body, `true`))
+			err := configureApplicationSource(context.Background(), fixedClient(s.API())(context.Background()), "a1", ApplicationSource{Type: SourceGit, Git: &tc.source})
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestApplicationGitSourceSchemaIncludesSSHKeyID(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	require.Contains(t, schemaProperty(spec, "dokploy:index:Application", "source.git.sshKeyId").Type, "string")
+}
 
 func TestApplicationSourceValidate(t *testing.T) {
 	tests := []struct {

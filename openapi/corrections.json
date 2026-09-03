@@ -78,13 +78,36 @@
     "volumeBackups.create": "VolumeBackup",
     "volumeBackups.delete": "",
     "volumeBackups.one": "VolumeBackup",
-    "volumeBackups.update": "VolumeBackup"
+    "volumeBackups.update": "VolumeBackup",
+    "organization.active": "Organization",
+    "sshKey.create": "SSHKey",
+    "sshKey.one": "SSHKey",
+    "sshKey.update": "SSHKey",
+    "sshKey.remove": "",
+    "registry.create": "Registry",
+    "registry.one": "Registry",
+    "registry.update": "Registry",
+    "registry.remove": "",
+    "registry.testRegistry": "",
+    "tag.create": "Tag",
+    "tag.one": "Tag",
+    "tag.update": "Tag",
+    "tag.remove": "",
+    "tag.assignToProject": "",
+    "tag.removeFromProject": "",
+    "mounts.create": "Mount",
+    "mounts.one": "Mount",
+    "mounts.update": "Mount",
+    "mounts.remove": ""
+  },
+  "requests": {
+    "registry.update": "RegistryUpdateRequest"
   },
   "schemas": {
     "CreateProjectResult": {"type":"object","required":["project","environment"],"properties":{"project":{"$ref":"#/components/schemas/Project"},"environment":{"$ref":"#/components/schemas/Environment"}},"additionalProperties":true},
-    "Project": {"type":"object","properties":{"projectId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"defaultEnvironmentId":{"type":"string"}},"additionalProperties":true},
+    "Project": {"type":"object","properties":{"projectId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"defaultEnvironmentId":{"type":"string"},"tags":{"type":"array","items":{"type":"object","properties":{"tagId":{"type":"string"}},"required":["tagId"],"additionalProperties":true}}},"additionalProperties":true},
     "Environment": {"type":"object","properties":{"environmentId":{"type":"string"},"projectId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"}},"additionalProperties":true},
-    "Application": {"type":"object","properties":{"applicationId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"applicationStatus":{"type":"string"},"env":{"type":"string"},"buildArgs":{"type":"string"},"buildSecrets":{"type":"string"},"createEnvFile":{"type":"boolean"}},"additionalProperties":true},
+    "Application": {"type":"object","properties":{"applicationId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"registryId":{"type":["string","null"]},"buildRegistryId":{"type":["string","null"]},"applicationStatus":{"type":"string"},"env":{"type":"string"},"buildArgs":{"type":"string"},"buildSecrets":{"type":"string"},"createEnvFile":{"type":"boolean"}},"additionalProperties":true},
     "Compose": {"type":"object","properties":{"composeId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"composeType":{"type":"string"},"env":{"type":"string"},"createEnvFile":{"type":"boolean"}},"additionalProperties":true},
     "Postgres": {"type":"object","properties":{"postgresId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseName":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"}},"additionalProperties":true},
     "MySQL": {"type":"object","properties":{"mysqlId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseName":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"}},"additionalProperties":true},
@@ -94,6 +117,12 @@
     "Domain": {"type":"object","properties":{"domainId":{"type":"string"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"serviceName":{"type":"string"},"host":{"type":"string"},"path":{"type":"string"},"internalPath":{"type":"string"},"port":{"type":"integer"},"https":{"type":"boolean"},"certificateType":{"type":"string"},"customCertResolver":{"type":"string"},"stripPath":{"type":"boolean"},"enabled":{"type":"boolean"}},"additionalProperties":true},
     "Destination": {"type":"object","properties":{"destinationId":{"type":"string"},"name":{"type":"string"},"provider":{"type":"string"},"accessKey":{"type":"string"},"secretAccessKey":{"type":"string"},"bucket":{"type":"string"},"region":{"type":"string"},"endpoint":{"type":"string"},"additionalFlags":{"type":"array","items":{"type":"string"}},"serverId":{"type":"string"}},"additionalProperties":true},
     "Backup": {"type":"object","properties":{"backupId":{"type":"string"},"schedule":{"type":"string"},"enabled":{"type":"boolean"},"prefix":{"type":"string"},"destinationId":{"type":"string"},"database":{"type":"string"},"keepLatestCount":{"type":"integer"},"databaseType":{"type":"string"},"postgresId":{"type":"string"},"mariadbId":{"type":"string"},"mysqlId":{"type":"string"},"mongoId":{"type":"string"}},"additionalProperties":true},
-    "VolumeBackup": {"type":"object","properties":{"volumeBackupId":{"type":"string"},"name":{"type":"string"},"volumeName":{"type":"string"},"prefix":{"type":"string"},"serviceType":{"type":"string"},"appName":{"type":"string"},"serviceName":{"type":"string"},"turnOff":{"type":"boolean"},"cronExpression":{"type":"string"},"keepLatestCount":{"type":"integer"},"enabled":{"type":"boolean"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"destinationId":{"type":"string"}},"additionalProperties":true}
+    "VolumeBackup": {"type":"object","properties":{"volumeBackupId":{"type":"string"},"name":{"type":"string"},"volumeName":{"type":"string"},"prefix":{"type":"string"},"serviceType":{"type":"string"},"appName":{"type":"string"},"serviceName":{"type":"string"},"turnOff":{"type":"boolean"},"cronExpression":{"type":"string"},"keepLatestCount":{"type":"integer"},"enabled":{"type":"boolean"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"destinationId":{"type":"string"}},"additionalProperties":true},
+    "Organization": {"type":"object","properties":{"organizationId":{"type":"string"}},"required":["organizationId"],"additionalProperties":true},
+    "SSHKey": {"type":"object","properties":{"sshKeyId":{"type":"string"},"name":{"type":"string"},"description":{"type":["string","null"]},"privateKey":{"type":"string"},"publicKey":{"type":"string"},"organizationId":{"type":"string"}},"required":["sshKeyId"],"additionalProperties":true},
+    "Registry": {"type":"object","properties":{"registryId":{"type":"string"},"registryName":{"type":"string"},"username":{"type":"string"},"password":{"type":"string"},"registryUrl":{"type":"string"},"registryType":{"type":"string"},"imagePrefix":{"type":["string","null"]},"serverId":{"type":["string","null"]}},"required":["registryId"],"additionalProperties":true},
+    "RegistryUpdateRequest": {"type":"object","properties":{"registryId":{"type":"string"},"registryName":{"type":"string"},"imagePrefix":{"type":["string","null"]},"username":{"type":"string"},"password":{"type":"string"},"registryUrl":{"type":"string"},"createdAt":{"type":"string"},"registryType":{"type":"string"},"organizationId":{"type":"string"},"serverId":{"type":["string","null"]}},"required":["registryId"],"additionalProperties":true},
+    "Tag": {"type":"object","properties":{"tagId":{"type":"string"},"name":{"type":"string"},"color":{"type":["string","null"]}},"required":["tagId"],"additionalProperties":true},
+    "Mount": {"type":"object","properties":{"mountId":{"type":"string"},"type":{"type":"string"},"hostPath":{"type":["string","null"]},"volumeName":{"type":["string","null"]},"filePath":{"type":["string","null"]},"content":{"type":["string","null"]},"mountPath":{"type":"string"},"serviceType":{"type":"string"},"applicationId":{"type":["string","null"]},"composeId":{"type":["string","null"]},"postgresId":{"type":["string","null"]},"mysqlId":{"type":["string","null"]},"mariadbId":{"type":["string","null"]},"redisId":{"type":["string","null"]}},"required":["mountId"],"additionalProperties":true}
   }
 }

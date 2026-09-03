@@ -14,11 +14,16 @@ from .domain import *
 from .environment import *
 from .maria_db import *
 from .mongo_db import *
+from .mount import *
 from .my_sql import *
 from .postgres import *
 from .project import *
+from .project_tag import *
 from .provider import *
 from .redis import *
+from .registry import *
+from .ssh_key import *
+from .tag import *
 from .volume_backup import *
 from ._inputs import *
 from . import outputs
@@ -46,10 +51,15 @@ _utilities.register(
    "dokploy:index:Environment": "Environment",
    "dokploy:index:MariaDB": "MariaDB",
    "dokploy:index:MongoDB": "MongoDB",
+   "dokploy:index:Mount": "Mount",
    "dokploy:index:MySQL": "MySQL",
    "dokploy:index:Postgres": "Postgres",
    "dokploy:index:Project": "Project",
+   "dokploy:index:ProjectTag": "ProjectTag",
    "dokploy:index:Redis": "Redis",
+   "dokploy:index:Registry": "Registry",
+   "dokploy:index:SSHKey": "SSHKey",
+   "dokploy:index:Tag": "Tag",
    "dokploy:index:VolumeBackup": "VolumeBackup"
   }
  }
