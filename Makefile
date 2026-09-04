@@ -135,7 +135,8 @@ generate_openapi:
 check_openapi: generate_openapi
 	git diff --exit-code -- openapi/dokploy.json internal/client/generated/generated.gen.go
 
-check_codegen: codegen
+check_codegen:
+	$(MAKE) VERSION_GENERIC=0.0.1-alpha.0+dev codegen
 	git diff --exit-code -- provider/cmd/$(PROVIDER)/schema.json sdk
 
 govulncheck:
