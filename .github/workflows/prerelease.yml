@@ -340,10 +340,15 @@ jobs:
     - name: Publish SDKs
       run: ./ci-scripts/ci/publish-tfgen-package ${{ github.workspace }}
       env:
-        NUGET_PUBLISH_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         PYPI_PUBLISH_ARTIFACTS: all
         PYPI_USERNAME: __token__
         PYPI_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Push NuGet package
+      run: |
+        find "${{ github.workspace }}/sdk/dotnet/bin/Debug/" -name '*.nupkg' \
+          -exec dotnet nuget push -k "${NUGET_PUBLISH_KEY}" -s https://api.nuget.org/v3/index.json --skip-duplicate {} ';'
+      env:
+        NUGET_PUBLISH_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
   publish_java_sdk:
     runs-on: ubuntu-latest
     needs: publish
