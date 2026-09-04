@@ -3,7 +3,7 @@ PACK := dokploy
 PROJECT := github.com/dimeskigj/pulumi-dokploy
 PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
-VERSION_GENERIC ?= 0.0.1-alpha.0+dev
+VERSION_GENERIC ?= $(or $(PROVIDER_VERSION),0.0.1-alpha.0+dev)
 
 .PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_go_sdk install_python_sdk install_nodejs_sdk install_dotnet_sdk install_java_sdk install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi build prepare_local_workspace local_generate sign-goreleaser-exe-% docs_generate docs_check docs_build
 
@@ -54,6 +54,8 @@ build_dotnet:
 	cd sdk/dotnet && dotnet build --nologo -p:Version=$(VERSION_GENERIC)
 
 build_java:
+	sed -i.bak -e 's/^                name = ""/                name = "$(PROJECT_NAME)"/' sdk/java/build.gradle
+	rm sdk/java/build.gradle.bak
 	cd sdk/java && gradle build --no-daemon
 
 install_go_sdk:
