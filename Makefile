@@ -36,13 +36,22 @@ build_go:
 	mise exec -- go test ./sdk/go/...
 
 build_python:
-	python3 -m compileall -q sdk/python
+	rm -rf sdk/python/bin sdk/python-tmp
+	mkdir sdk/python-tmp
+	cp -R sdk/python/. sdk/python-tmp/
+	mv sdk/python-tmp sdk/python/bin
+	sed -i.bak -e 's/^VERSION = ".*"/VERSION = "$(VERSION_GENERIC)"/' sdk/python/bin/setup.py
+	rm sdk/python/bin/setup.py.bak
+	cd sdk/python/bin && python3 -m venv venv && ./venv/bin/python -m pip install --quiet build && ./venv/bin/python -m build .
 
 build_nodejs:
 	cd sdk/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund && npm run build
+	cp sdk/nodejs/README.md LICENSE sdk/nodejs/package.json sdk/nodejs/bin/
+	sed -i.bak -e 's/$${VERSION}/$(VERSION_GENERIC)/g' sdk/nodejs/bin/package.json
+	rm sdk/nodejs/bin/package.json.bak
 
 build_dotnet:
-	cd sdk/dotnet && dotnet build --nologo
+	cd sdk/dotnet && dotnet build --nologo -p:Version=$(VERSION_GENERIC)
 
 build_java:
 	cd sdk/java && gradle build --no-daemon
