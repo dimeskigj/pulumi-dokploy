@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Pulumi;
-using Dokploy = Pulumi.Dokploy;
+using Dokploy = Dimeskigj.Pulumi.Dokploy;
 
 return await Deployment.RunAsync(() =>
 {

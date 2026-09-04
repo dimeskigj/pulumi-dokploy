@@ -29,7 +29,7 @@ func Provider() p.Provider {
 				"go":     map[string]any{"importBasePath": "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"},
 				"nodejs": map[string]any{"packageName": "@dimeskigj/pulumi-dokploy"},
 				"python": map[string]any{"packageName": "pulumi_dokploy", "moduleName": "pulumi_dokploy"},
-				"csharp": map[string]any{"packageName": "Pulumi.Dokploy", "rootNamespace": "Pulumi"},
+				"csharp": map[string]any{"packageName": "Dimeskigj.Pulumi.Dokploy", "rootNamespace": "Dimeskigj.Pulumi"},
 				"java":   map[string]any{"packageName": "net.dimeski.pulumi.dokploy", "basePackage": "net.dimeski.pulumi"},
 			},
 		},

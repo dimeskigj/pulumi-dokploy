@@ -171,7 +171,7 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "moduleName"))
 	require.Equal(t, "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy", languageSetting(spec, "go", "importBasePath"))
-	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
+	require.Equal(t, "Dimeskigj.Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
 	require.Equal(t, "net.dimeski.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)

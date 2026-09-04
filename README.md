@@ -30,7 +30,7 @@ Install the package for your Pulumi language:
 | Node.js | `@dimeskigj/pulumi-dokploy` |
 | Python | `pulumi_dokploy` |
 | Go | `github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy` |
-| .NET | `Pulumi.Dokploy` |
+| .NET | `Dimeskigj.Pulumi.Dokploy` |
 | Java | `net.dimeski.pulumi.dokploy` |
 | YAML | `pulumi package add github.com/dimeskigj/pulumi-dokploy dokploy` |
 

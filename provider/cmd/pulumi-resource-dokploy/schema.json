@@ -10,8 +10,8 @@
   "namespace": "dimeskigj",
   "language": {
     "csharp": {
-      "packageName": "Pulumi.Dokploy",
-      "rootNamespace": "Pulumi"
+      "packageName": "Dimeskigj.Pulumi.Dokploy",
+      "rootNamespace": "Dimeskigj.Pulumi"
     },
     "go": {
       "importBasePath": "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"

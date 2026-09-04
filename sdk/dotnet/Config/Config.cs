@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Immutable;
 
-namespace Pulumi.Dokploy
+namespace Dimeskigj.Pulumi.Dokploy
 {
     public static class Config
     {

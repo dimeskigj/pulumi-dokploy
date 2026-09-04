@@ -25,8 +25,8 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	require.Equal(t, "@dimeskigj/pulumi-dokploy", languageSetting(spec, "nodejs", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "moduleName"))
-	require.Equal(t, "Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
-	require.Equal(t, "Pulumi", languageSetting(spec, "csharp", "rootNamespace"))
+	require.Equal(t, "Dimeskigj.Pulumi.Dokploy", languageSetting(spec, "csharp", "packageName"))
+	require.Equal(t, "Dimeskigj.Pulumi", languageSetting(spec, "csharp", "rootNamespace"))
 	require.Equal(t, "net.dimeski.pulumi", languageSetting(spec, "java", "basePackage"))
 	require.Equal(t, "net.dimeski.pulumi.dokploy", languageSetting(spec, "java", "packageName"))
 	require.NotNil(t, spec.Resources)
@@ -126,11 +126,11 @@ func TestSchemaReplacementFlags(t *testing.T) {
 }
 
 func TestGeneratedDotnetAndJavaPackagesDoNotDuplicateProviderSuffix(t *testing.T) {
-	dotnetProject := readGenerated(t, "sdk", "dotnet", "Pulumi.Dokploy.csproj")
-	require.NotContains(t, dotnetProject, "Pulumi.Dokploy.Dokploy")
-	dotnetProvider := readGenerated(t, "sdk", "dotnet", "Provider.cs")
-	require.Contains(t, dotnetProvider, "namespace Pulumi.Dokploy\n")
-	require.NotContains(t, dotnetProvider, "namespace Pulumi.Dokploy.Dokploy")
+	dotnetProject := readGenerated(t, "sdk", "dotnet", "Dimeskigj.Pulumi.Dokploy.csproj")
+	require.NotContains(t, dotnetProject, "Dimeskigj.Pulumi.Dokploy.Dokploy")
+	dotnetProvider := readGenerated(t, "sdk", "dotnet", "Dokploy", "Provider.cs")
+	require.Contains(t, dotnetProvider, "namespace Dimeskigj.Pulumi.Dokploy\n")
+	require.NotContains(t, dotnetProvider, "namespace Dimeskigj.Pulumi.Dokploy.Dokploy")
 
 	javaProvider := readGenerated(t, "sdk", "java", "src", "main", "java", "net", "dimeski", "pulumi", "dokploy", "Provider.java")
 	require.Contains(t, javaProvider, "package net.dimeski.pulumi.dokploy;")
