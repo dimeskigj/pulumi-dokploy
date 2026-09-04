@@ -72,7 +72,8 @@ install_dotnet_sdk:
 	cd examples/dotnet && dotnet build --nologo
 
 install_java_sdk:
-	cd sdk/java && gradle publishToMavenLocal --no-daemon
+	$(eval JAVA_EXAMPLE_VERSION := $(shell grep -A1 '<artifactId>dokploy</artifactId>' examples/java/pom.xml | grep -oE '<version>[^<]*</version>' | sed -E 's/<\/?version>//g'))
+	cd sdk/java && PACKAGE_VERSION=$(JAVA_EXAMPLE_VERSION) gradle publishToMavenLocal --no-daemon
 	cd examples/java && mvn package -DskipTests
 
 build_sdks: build_go build_python build_nodejs build_dotnet build_java
