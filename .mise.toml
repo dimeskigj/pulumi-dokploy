@@ -1,5 +1,0 @@
-[tools]
-go = "1.26.6"
-golangci-lint = "2.9.0"
-gotestsum = "1.13.0"
-node = "24.18.0"
