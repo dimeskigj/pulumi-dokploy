@@ -455,9 +455,10 @@ func validateReleaseWorkflowContracts(workflow map[string]any, name string) erro
 			return fmt.Errorf("%s job %s must not continue on error", name, jobName)
 		}
 		expected := map[string]any{"contents": "read"}
-		if jobName == "publish" || jobName == "publish_go_sdk" {
+		switch jobName {
+		case "publish", "publish_go_sdk":
 			expected = map[string]any{"contents": "write"}
-		} else if jobName == "publish_sdk" {
+		case "publish_sdk":
 			expected = map[string]any{"contents": "read", "id-token": "write"}
 		}
 		if len(permissions) != len(expected) {
