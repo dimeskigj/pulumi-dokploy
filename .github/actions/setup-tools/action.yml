@@ -29,6 +29,7 @@ runs:
         cache-dependency-path: |
           provider/*.sum
           upstream/*.sum
+          sdk/go/dokploy/*.sum
           sdk/go/*.sum
           sdk/*.sum
           *.sum

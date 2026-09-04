@@ -31,9 +31,12 @@ codegen: provider
 	rm -rf sdk/nodejs sdk/python sdk/go sdk/dotnet sdk/java
 	mise exec pulumi@3.259.0 -- pulumi package gen-sdk provider/cmd/$(PROVIDER)/schema.json --language all -o sdk
 	printf '%s' '$(VERSION_GENERIC)' > sdk/dotnet/version.txt
+	cp go.mod sdk/go/$(PACK)/go.mod
+	cd sdk/go/$(PACK) && mise exec -- go mod edit -module=$(PROJECT)/sdk/go/$(PACK) -dropreplace=$(PROJECT)/sdk/go/$(PACK)
+	cd sdk/go/$(PACK) && mise exec -- go mod tidy
 
 build_go:
-	mise exec -- go test ./sdk/go/...
+	cd sdk/go/$(PACK) && mise exec -- go test ./...
 
 build_python:
 	rm -rf sdk/python/bin sdk/python-tmp
@@ -88,9 +91,9 @@ gen_examples: codegen install_plugin
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language go --cwd examples/yaml --out ../go --generate-only
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language csharp --cwd examples/yaml --out ../dotnet --generate-only
 	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language java --cwd examples/yaml --out ../java --generate-only
-	go mod edit -require=$(PROJECT)@v0.0.0 -replace=$(PROJECT)=../../ examples/go/go.mod
+	go mod edit -require=$(PROJECT)/sdk/go/$(PACK)@v0.0.0 -replace=$(PROJECT)/sdk/go/$(PACK)=../../sdk/go/$(PACK) examples/go/go.mod
 	cd examples/go && go mod tidy
-	python3 -c 'from pathlib import Path; p=Path("examples/go/go.mod"); s=p.read_text(); s=s.replace(" => " + str(Path.cwd()), " => ../../"); p.write_text(s)'
+	python3 -c 'from pathlib import Path; p=Path("examples/go/go.mod"); s=p.read_text(); s=s.replace(" => " + str(Path.cwd() / "sdk/go/$(PACK)"), " => ../../sdk/go/$(PACK)"); p.write_text(s)'
 	cd examples/nodejs && npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs
 	printf '%s\n' '-e ../../sdk/python' > examples/python/requirements.txt
 	python3 -c 'from pathlib import Path; p=Path("examples/dotnet/dokploy-mvp.csproj"); p.write_text(p.read_text().replace('"'"'<PackageReference Include="Pulumi.Dokploy" Version="0.0.1-alpha.0+dev" />'"'"', '"'"'<ProjectReference Include="../../sdk/dotnet/Pulumi.Dokploy.csproj" />'"'"'))'
