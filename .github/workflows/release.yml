@@ -330,6 +330,8 @@ jobs:
         # we don't set node-version because we install with mise.
         # this step is needed to setup npm auth
         registry-url: https://registry.npmjs.org
+    - name: Remove empty npm auth token (breaks OIDC trusted publishing)
+      run: npm config delete //registry.npmjs.org/:_authToken
     - name: NuGet login (OIDC -> temp API key)
       id: nuget-login
       uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
