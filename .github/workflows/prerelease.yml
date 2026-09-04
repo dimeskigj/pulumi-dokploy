@@ -272,6 +272,7 @@ jobs:
     name: publish_sdk
     permissions:
       contents: read
+      id-token: write
     steps:
     - name: Checkout Repo
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -327,11 +328,15 @@ jobs:
         # we don't set node-version because we install with mise.
         # this step is needed to setup npm auth
         registry-url: https://registry.npmjs.org
+    - name: NuGet login (OIDC -> temp API key)
+      id: nuget-login
+      uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+      with:
+        user: ${{ secrets.NUGET_USER }}
     - name: Publish SDKs
       run: ./ci-scripts/ci/publish-tfgen-package ${{ github.workspace }}
       env:
-        NUGET_PUBLISH_KEY: ${{ secrets.NUGET_PUBLISH_KEY }}
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        NUGET_PUBLISH_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         PYPI_PUBLISH_ARTIFACTS: all
         PYPI_USERNAME: __token__
         PYPI_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
