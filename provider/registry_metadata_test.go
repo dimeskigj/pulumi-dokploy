@@ -407,12 +407,14 @@ func TestRegistryMetadata(t *testing.T) {
 	contributingText := string(contributing)
 	require.Contains(t, contributingText, "Settings > Secrets and variables > Actions")
 	for _, secret := range []string{
-		"NUGET_PUBLISH_KEY", "NPM_TOKEN", "PYPI_API_TOKEN",
+		"NUGET_USER", "PYPI_API_TOKEN",
 		"JAVA_SIGNING_KEY", "JAVA_SIGNING_PASSWORD",
 		"OSSRH_USERNAME", "OSSRH_PASSWORD", "CODECOV_TOKEN",
 	} {
 		require.Contains(t, contributingText, "`"+secret+"`")
 	}
+	require.NotContains(t, contributingText, "NUGET_PUBLISH_KEY")
+	require.NotContains(t, contributingText, "NPM_TOKEN")
 	require.Contains(t, contributingText, "`GITHUB_TOKEN` is created automatically")
 	require.Contains(t, contributingText, "`CODECOV_TOKEN` is optional")
 	require.Contains(t, contributingText, "separate protected")
@@ -455,6 +457,8 @@ func validateReleaseWorkflowContracts(workflow map[string]any, name string) erro
 		expected := map[string]any{"contents": "read"}
 		if jobName == "publish" || jobName == "publish_go_sdk" {
 			expected = map[string]any{"contents": "write"}
+		} else if jobName == "publish_sdk" {
+			expected = map[string]any{"contents": "read", "id-token": "write"}
 		}
 		if len(permissions) != len(expected) {
 			return fmt.Errorf("%s job %s has unexpected permissions", name, jobName)

@@ -17,8 +17,7 @@ secrets**:
 
 | Secret | Setup |
 | --- | --- |
-| `NUGET_PUBLISH_KEY` | Create an API key at NuGet.org with push access to the `Pulumi.Dokploy` package. |
-| `NPM_TOKEN` | Create an npm automation or granular access token with publish access to the `@dimeskigj/pulumi-dokploy` package. |
+| `NUGET_USER` | Set to the NuGet.org profile name (not email) that owns the Trusted Publishing policy for this workflow file. |
 | `PYPI_API_TOKEN` | Create a PyPI API token scoped to the `pulumi-dokploy` project; use an account-scoped token for the first publication. |
 | `JAVA_SIGNING_KEY` | Export the ASCII-armored private PGP key used to sign Maven artifacts, including the `BEGIN` and `END` lines. |
 | `JAVA_SIGNING_PASSWORD` | Set the passphrase for `JAVA_SIGNING_KEY`. |
@@ -28,6 +27,11 @@ secrets**:
 `CODECOV_TOKEN` is optional and enables authenticated coverage uploads.
 `GITHUB_TOKEN` is created automatically for each workflow run; do not create a
 repository secret for it.
+
+NuGet and npm publishing use OIDC Trusted Publishing instead of a long-lived
+API key or token: configure a Trusted Publishing policy on nuget.org and a
+Trusted Publisher on npmjs.com for each release workflow file
+(`prerelease.yml` and `release.yml`).
 
 The manually dispatched live acceptance workflow uses separate protected
 Dokploy and registry secrets in the `dokploy-acceptance` environment.
