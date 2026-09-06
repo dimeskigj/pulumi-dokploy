@@ -2,8 +2,9 @@ package tests
 
 import (
 	"context"
-	"encoding/json"
 	"os"
+	"os/exec"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -13,143 +14,210 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func TestAccMVP(t *testing.T) {
-	timeout := 30 * time.Minute
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+func TestAccLifecycleSmoke(t *testing.T) {
+	if os.Getenv("DOKPLOY_ACCEPTANCE") != "1" {
+		t.Skip("set DOKPLOY_ACCEPTANCE=1 to run live acceptance tests")
+	}
 	endpoint := os.Getenv("DOKPLOY_ENDPOINT")
 	apiKey := os.Getenv("DOKPLOY_API_KEY")
 	if endpoint == "" || apiKey == "" {
 		t.Skip("live Dokploy credentials are not configured")
 	}
-	runMVP(t, ctx, liveConfig{Endpoint: endpoint, APIKey: apiKey, NameSuffix: uuid.NewString()})
+	if !pulumiCLIAvailable(exec.LookPath) {
+		t.Skip("Pulumi CLI prerequisite is unavailable; install pulumi before running live acceptance")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	defer cancel()
+	runLifecycleSmoke(t, ctx, liveConfig{Endpoint: endpoint, APIKey: apiKey, NameSuffix: uuid.NewString()})
 }
 
-func TestMVPProgramUsesConfiguredSecrets(t *testing.T) {
-	configValues := map[string]string{
-		"databasePassword":        "mock-database-password",
-		"redisPassword":           "mock-redis-password",
-		"applicationEnvironment":  "mock-application-environment",
-		"applicationBuildArgs":    "mock-application-build-args",
-		"applicationBuildSecrets": "mock-application-build-secrets",
-		"composeEnvironment":      "mock-compose-environment",
-	}
-	namespacedConfig := map[string]string{}
-	for key, value := range configValues {
-		namespacedConfig["mvp:"+key] = value
-	}
-	configJSON, err := json.Marshal(namespacedConfig)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv(pulumi.EnvConfig, string(configJSON))
-	secretKeys, err := json.Marshal([]string{"mvp:databasePassword", "mvp:redisPassword", "mvp:applicationEnvironment", "mvp:applicationBuildArgs", "mvp:applicationBuildSecrets", "mvp:composeEnvironment"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv(pulumi.EnvConfigSecretKeys, string(secretKeys))
+func TestPulumiCLIAvailabilityHelper(t *testing.T) {
+	t.Run("present", func(t *testing.T) {
+		if !pulumiCLIAvailable(func(string) (string, error) { return "/usr/bin/pulumi", nil }) {
+			t.Fatal("present Pulumi CLI was reported unavailable")
+		}
+	})
+	t.Run("missing", func(t *testing.T) {
+		if pulumiCLIAvailable(func(string) (string, error) { return "", exec.ErrNotFound }) {
+			t.Fatal("missing Pulumi CLI was reported available")
+		}
+	})
+}
 
+func TestLifecycleSmokeProgram(t *testing.T) {
 	variants := []struct {
-		name  string
-		image string
+		name    string
+		program func(liveConfig) pulumi.RunFunc
+		values  lifecycleRevisionValues
 	}{
-		{name: "first image", image: "nginx:1.27"},
-		{name: "second image", image: "nginx:1.28"},
+		{name: "revision one", program: lifecycleRevisionOne, values: lifecycleRevisionOneValues()},
+		{name: "revision two", program: lifecycleRevisionTwo, values: lifecycleRevisionTwoValues()},
 	}
-	observed := make([]map[string]string, 0, len(variants))
 	for _, variant := range variants {
 		t.Run(variant.name, func(t *testing.T) {
-			mocks := &captureMVPResources{}
-			err := pulumi.RunErr(mvpProgram(liveConfig{NameSuffix: "mock"}, variant.image), pulumi.WithMocks("mvp", variant.name, mocks))
+			mocks := &captureLifecycleResources{}
+			err := pulumi.RunErr(variant.program(liveConfig{NameSuffix: "mock"}), pulumi.WithMocks("lifecycle", variant.name, mocks))
 			if err != nil {
 				t.Fatal(err)
 			}
-			assertSecretInput(t, mocks, "dokploy:index:Postgres", "databasePassword", configValues["databasePassword"])
-			assertSecretInput(t, mocks, "dokploy:index:Redis", "databasePassword", configValues["redisPassword"])
-			assertSecretInput(t, mocks, "dokploy:index:Application", "environment", configValues["applicationEnvironment"])
-			assertSecretInput(t, mocks, "dokploy:index:Application", "buildArgs", configValues["applicationBuildArgs"])
-			assertSecretInput(t, mocks, "dokploy:index:Application", "buildSecrets", configValues["applicationBuildSecrets"])
-			assertSecretInput(t, mocks, "dokploy:index:Compose", "environment", configValues["composeEnvironment"])
-			inputs := map[string]string{}
-			for _, field := range []struct {
-				token string
-				key   string
-				want  string
-			}{
-				{"dokploy:index:Postgres", "databasePassword", configValues["databasePassword"]},
-				{"dokploy:index:Redis", "databasePassword", configValues["redisPassword"]},
-				{"dokploy:index:Application", "environment", configValues["applicationEnvironment"]},
-				{"dokploy:index:Application", "buildArgs", configValues["applicationBuildArgs"]},
-				{"dokploy:index:Application", "buildSecrets", configValues["applicationBuildSecrets"]},
-				{"dokploy:index:Compose", "environment", configValues["composeEnvironment"]},
-			} {
-				inputs[field.token+"."+field.key] = secretInputValue(t, mocks, field.token, field.key, field.want)
-			}
-			application := mocks.resource("dokploy:index:Application")
-			docker := application[resource.PropertyKey("source")].ObjectValue()[resource.PropertyKey("docker")].ObjectValue()
-			inputs["dokploy:index:Application.source.docker.image"] = docker[resource.PropertyKey("image")].StringValue()
-			if got := inputs["dokploy:index:Application.source.docker.image"]; got != variant.image {
-				t.Errorf("application image = %q, want %q", got, variant.image)
-			}
-			observed = append(observed, inputs)
+			project := mocks.resource("dokploy:index:Project", acceptanceEntityName("project", "mock"))
+			assertString(t, project, "description", variant.values.description)
+			environment := mocks.resource("dokploy:index:Environment", acceptanceEntityName("environment", "mock"))
+			assertString(t, environment, "name", acceptanceEntityName(variant.values.environment, "mock"))
+			assertString(t, environment, "projectId", "project-mock-id")
+			tag := mocks.resource("dokploy:index:Tag", acceptanceEntityName("tag", "mock"))
+			assertString(t, tag, "color", variant.values.color)
+			association := mocks.resource("dokploy:index:ProjectTag", acceptanceEntityName("project-tag", "mock"))
+			assertString(t, association, "projectId", "project-mock-id")
+			assertString(t, association, "tagId", "tag-mock-id")
 		})
 	}
-	for key, first := range observed[0] {
-		if key == "dokploy:index:Application.source.docker.image" {
-			continue
-		}
-		if got := observed[1][key]; got != first {
-			t.Errorf("%s differs between image variants: %q != %q", key, first, got)
+}
+
+func TestLifecycleSmokeProgramKeepsResourceIdentityAcrossRevisions(t *testing.T) {
+	mocks := &captureLifecycleResources{}
+	cfg := liveConfig{NameSuffix: "mock"}
+	for _, program := range []pulumi.RunFunc{lifecycleRevisionOne(cfg), lifecycleRevisionTwo(cfg)} {
+		if err := pulumi.RunErr(program, pulumi.WithMocks("lifecycle", "identity", mocks)); err != nil {
+			t.Fatal(err)
 		}
 	}
-	if observed[0]["dokploy:index:Application.source.docker.image"] == observed[1]["dokploy:index:Application.source.docker.image"] {
-		t.Fatal("image variants did not differ")
+	for _, entity := range []struct{ token, kind string }{
+		{"dokploy:index:Project", "project"},
+		{"dokploy:index:Environment", "environment"},
+		{"dokploy:index:Tag", "tag"},
+		{"dokploy:index:ProjectTag", "project-tag"},
+	} {
+		name := acceptanceEntityName(entity.kind, cfg.NameSuffix)
+		history := mocks.idHistory(entity.token, name)
+		if len(history) != 2 || history[0] != history[1] {
+			t.Errorf("%s identity history = %#v, want two stable values", entity.kind, history)
+		}
+	}
+	ids := map[string]bool{}
+	for _, entity := range []struct{ token, kind string }{
+		{"dokploy:index:Project", "project"},
+		{"dokploy:index:Environment", "environment"},
+		{"dokploy:index:Tag", "tag"},
+		{"dokploy:index:ProjectTag", "project-tag"},
+	} {
+		ids[mocks.idHistory(entity.token, acceptanceEntityName(entity.kind, cfg.NameSuffix))[0]] = true
+	}
+	if len(ids) != 4 {
+		t.Fatalf("distinct logical resources did not receive distinct IDs: %#v", ids)
 	}
 }
 
-type captureMVPResources struct {
+func TestAcceptanceEntityNameIncludesPrefixAndRunSuffix(t *testing.T) {
+	for _, kind := range []string{"project", "environment", "tag", "project-tag"} {
+		got := acceptanceEntityName(kind, "run-123")
+		want := "pulumi-acceptance-" + kind + "-run-123"
+		if got != want {
+			t.Errorf("%s name = %q, want %q", kind, got, want)
+		}
+	}
+}
+
+func TestAcceptanceStackAndProjectNamesIncludePrefixAndRunSuffix(t *testing.T) {
+	if got, want := acceptanceStackName("run-123"), "pulumi-acceptance-stack-run-123"; got != want {
+		t.Errorf("stack name = %q, want %q", got, want)
+	}
+	if got, want := acceptanceProjectName("run-123"), "pulumi-acceptance-project-run-123"; got != want {
+		t.Errorf("project name = %q, want %q", got, want)
+	}
+}
+
+func TestSanitizeAcceptanceDiagnosticRedactsConfiguredValues(t *testing.T) {
+	t.Setenv("DOKPLOY_REGISTRY_USERNAME", "registry-user-sentinel")
+	t.Setenv("DOKPLOY_GITLAB_TOKEN", "gitlab-token-sentinel")
+	cfg := liveConfig{Endpoint: "https://dokploy.example.invalid", APIKey: "api-key-sentinel", SecretSentinels: []string{"password-sentinel"}}
+	diagnostic := sanitizeAcceptanceDiagnostic("up revision two failed at "+cfg.Endpoint+" with "+cfg.APIKey+" and password-sentinel registry-user-sentinel gitlab-token-sentinel", cfg)
+	if diagnostic != "up revision two failed at [REDACTED] with [REDACTED] and [REDACTED] [REDACTED] [REDACTED]" {
+		t.Fatalf("sanitized diagnostic = %q", diagnostic)
+	}
+}
+
+func TestLifecycleSmokeCleanupUsesIndependentContexts(t *testing.T) {
+	var destroyDeadline, removeDeadline time.Time
+	destroyErr, removeErr := cleanupLifecycleStack(5*time.Millisecond,
+		func(ctx context.Context) error {
+			destroyDeadline, _ = ctx.Deadline()
+			<-ctx.Done()
+			return ctx.Err()
+		},
+		func(ctx context.Context) error {
+			removeDeadline, _ = ctx.Deadline()
+			return nil
+		})
+	if destroyErr == nil || removeErr != nil {
+		t.Fatalf("cleanup errors = %v, %v; want destroy timeout and successful removal", destroyErr, removeErr)
+	}
+	if destroyDeadline.IsZero() || removeDeadline.IsZero() || !removeDeadline.After(destroyDeadline) {
+		t.Fatalf("cleanup deadlines were not independent: destroy=%v remove=%v", destroyDeadline, removeDeadline)
+	}
+}
+
+type captureLifecycleResources struct {
 	mu        sync.Mutex
 	resources map[string]resource.PropertyMap
+	ids       map[string]string
+	histories map[string][]string
 }
 
-func (m *captureMVPResources) Call(pulumi.MockCallArgs) (resource.PropertyMap, error) {
+func (m *captureLifecycleResources) Call(pulumi.MockCallArgs) (resource.PropertyMap, error) {
 	return resource.PropertyMap{}, nil
 }
 
-func (m *captureMVPResources) NewResource(args pulumi.MockResourceArgs) (string, resource.PropertyMap, error) {
+func (m *captureLifecycleResources) NewResource(args pulumi.MockResourceArgs) (string, resource.PropertyMap, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.resources == nil {
 		m.resources = map[string]resource.PropertyMap{}
 	}
-	m.resources[args.TypeToken] = args.Inputs
-	return args.Name + "-id", args.Inputs, nil
+	if m.ids == nil {
+		m.ids = map[string]string{}
+	}
+	if m.histories == nil {
+		m.histories = map[string][]string{}
+	}
+	inputs := args.Inputs.Copy()
+	switch args.TypeToken {
+	case "dokploy:index:Project":
+		inputs["projectId"] = resource.NewStringProperty("project-mock-id")
+	case "dokploy:index:Environment":
+		inputs["environmentId"] = resource.NewStringProperty("environment-mock-id")
+		inputs["projectId"] = resource.NewStringProperty("project-mock-id")
+	case "dokploy:index:Tag":
+		inputs["tagId"] = resource.NewStringProperty("tag-mock-id")
+	}
+	m.resources[args.TypeToken+"/"+args.Name] = inputs
+	key := args.TypeToken + "/" + args.Name
+	if _, ok := m.ids[key]; !ok {
+		m.ids[key] = "mock-resource-id-" + strconv.Itoa(len(m.ids)+1)
+	}
+	m.histories[key] = append(m.histories[key], m.ids[key])
+	return m.ids[key], inputs, nil
 }
 
-func (m *captureMVPResources) resource(token string) resource.PropertyMap {
+func (m *captureLifecycleResources) resource(token, name string) resource.PropertyMap {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	return m.resources[token]
+	return m.resources[token+"/"+name]
 }
 
-func assertSecretInput(t *testing.T, mocks *captureMVPResources, token, key, want string) {
-	t.Helper()
-	secretInputValue(t, mocks, token, key, want)
+func (m *captureLifecycleResources) idHistory(token, name string) []string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return append([]string(nil), m.histories[token+"/"+name]...)
 }
 
-func secretInputValue(t *testing.T, mocks *captureMVPResources, token, key, want string) string {
+func assertString(t *testing.T, values resource.PropertyMap, key, want string) {
 	t.Helper()
-	value := mocks.resource(token)[resource.PropertyKey(key)]
-	if !value.IsSecret() && (!value.IsOutput() || !value.OutputValue().Secret) {
-		t.Fatalf("%s.%s did not retain secret propagation: %#v", token, key, value)
-	}
-	if value.IsSecret() {
-		value = value.SecretValue().Element
-	} else {
-		value = value.OutputValue().Element
+	value, ok := values[resource.PropertyKey(key)]
+	if !ok {
+		t.Fatalf("missing %s", key)
 	}
 	if got := value.StringValue(); got != want {
-		t.Errorf("%s.%s = %q, want %q", token, key, got, want)
+		t.Errorf("%s = %q, want %q", key, got, want)
 	}
-	return value.StringValue()
 }
