@@ -88,7 +88,7 @@ func TestBackupObservationMatchesCreate(t *testing.T) {
 		PostgresID: stringPtr("pg1"),
 	}
 	base := backupObservation{
-		ID: "b1", Schedule: "0 0 * * *", Enabled: &trueValue,
+		ID: "b1", Valid: true, Schedule: "0 0 * * *", Enabled: &trueValue,
 		Prefix: "p-", DestinationID: "d1", Database: "app",
 		DatabaseType: backupDatabaseTypePostgres, TargetID: "pg1",
 		KeepLatestCount: &three,
@@ -402,6 +402,60 @@ func TestBackupCreateCancellationErrorOmitsTargetID(t *testing.T) {
 	}})
 	require.ErrorIs(t, err, context.Canceled)
 	require.NotContains(t, err.Error(), sentinel)
+}
+
+func TestBackupCreateDoesNotAdoptMalformedPreExistingBackup(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = 10 * time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	malformed := backupCreateTarget + `[{"backupId":"existing"}]}`
+	completed := backupCreateTarget + `[{"backupId":"existing","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}]}`
+	s := newScriptedServer(t,
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, malformed),
+		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, completed),
+	)
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Millisecond)
+	defer cancel()
+	_, err := backupCreateRequest(t, ctx, s)
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+}
+
+func TestBackupCreateDiscoveryErrorOmitsTargetAndAPIMessage(t *testing.T) {
+	sentinelTarget := "sentinel-target-id"
+	sentinelMessage := "secret server payload"
+	s := newScriptedServer(t, scriptedRequest{
+		Method:   http.MethodGet,
+		Path:     "/api/postgres.one",
+		Query:    map[string][]string{"postgresId": {sentinelTarget}},
+		Status:   http.StatusBadRequest,
+		Response: []byte(`{"code":"UPSTREAM-` + sentinelTarget + `","message":"` + sentinelMessage + `"}`),
+	})
+	_, err := (Backup{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr(sentinelTarget),
+	}})
+	require.EqualError(t, err, "backup.create could not read target backups")
+	require.NotContains(t, err.Error(), sentinelTarget)
+	require.NotContains(t, err.Error(), sentinelMessage)
+}
+
+func TestBackupCreatePostCreateDiscoveryErrorIsSafe(t *testing.T) {
+	sentinelTarget := "sentinel-target-id"
+	sentinelMessage := "secret server payload"
+	s := newScriptedServer(t,
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinelTarget}}, http.StatusOK, backupCreateTargetFor(sentinelTarget)+`[]}`),
+		expectPOST("/api/backup.create", strings.ReplaceAll(backupCreateArgsJSON, "pg1", sentinelTarget), ""),
+		scriptedRequest{
+			Method: http.MethodGet, Path: "/api/postgres.one", Query: map[string][]string{"postgresId": {sentinelTarget}},
+			Status: http.StatusBadRequest, Response: []byte(`{"message":"` + sentinelMessage + `"}`),
+		},
+	)
+	_, err := (Backup{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr(sentinelTarget),
+	}})
+	require.EqualError(t, err, "backup.create could not read target backups")
+	require.NotContains(t, err.Error(), sentinelTarget)
+	require.NotContains(t, err.Error(), sentinelMessage)
 }
 
 func TestBackupReadReconstructsEachDatabaseType(t *testing.T) {

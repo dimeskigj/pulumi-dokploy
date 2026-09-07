@@ -2,6 +2,7 @@ package dokploy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -157,6 +158,7 @@ func (r Backup) Diff(_ context.Context, req infer.DiffRequest[BackupArgs, Backup
 
 type backupObservation struct {
 	ID              string
+	Valid           bool
 	Schedule        string
 	Enabled         *bool
 	Prefix          string
@@ -168,6 +170,9 @@ type backupObservation struct {
 }
 
 func (v backupObservation) matchesCreate(databaseType, targetID string, a BackupArgs) bool {
+	if !v.Valid {
+		return false
+	}
 	if v.Schedule != a.Schedule || v.Prefix != a.Prefix || v.DestinationID != a.DestinationID ||
 		v.Database != a.Database || v.DatabaseType != databaseType || v.TargetID != targetID {
 		return false
@@ -223,6 +228,15 @@ func backupIntField(value interface{}) (*int, bool) {
 	return &converted, true
 }
 
+var errBackupDiscovery = errors.New("backup.create could not read target backups")
+
+func backupDiscoveryError(err error) error {
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return fmt.Errorf("%w: %w", errBackupDiscovery, err)
+	}
+	return errBackupDiscovery
+}
+
 // backupObservationsForTarget lists backups currently attached to a database
 // instance by reading them off its nested "backups" property, since Dokploy
 // exposes no backup.all listing endpoint.
@@ -232,41 +246,41 @@ func backupObservationsForTarget(ctx context.Context, api *client.Client, databa
 	case backupDatabaseTypePostgres:
 		resp, err := api.PostgresOneWithResponse(ctx, &generated.PostgresOneParams{PostgresId: targetID})
 		if err != nil {
-			return nil, err
+			return nil, backupDiscoveryError(err)
 		}
 		if resp.JSON200 == nil {
-			return nil, fmt.Errorf("postgres.one returned incomplete postgres")
+			return nil, errBackupDiscovery
 		}
 		additional = resp.JSON200.AdditionalProperties
 	case backupDatabaseTypeMySQL:
 		resp, err := api.MysqlOneWithResponse(ctx, &generated.MysqlOneParams{MysqlId: targetID})
 		if err != nil {
-			return nil, err
+			return nil, backupDiscoveryError(err)
 		}
 		if resp.JSON200 == nil {
-			return nil, fmt.Errorf("mysql.one returned incomplete mysql")
+			return nil, errBackupDiscovery
 		}
 		additional = resp.JSON200.AdditionalProperties
 	case backupDatabaseTypeMariaDB:
 		resp, err := api.MariadbOneWithResponse(ctx, &generated.MariadbOneParams{MariadbId: targetID})
 		if err != nil {
-			return nil, err
+			return nil, backupDiscoveryError(err)
 		}
 		if resp.JSON200 == nil {
-			return nil, fmt.Errorf("mariadb.one returned incomplete mariadb")
+			return nil, errBackupDiscovery
 		}
 		additional = resp.JSON200.AdditionalProperties
 	case backupDatabaseTypeMongo:
 		resp, err := api.MongoOneWithResponse(ctx, &generated.MongoOneParams{MongoId: targetID})
 		if err != nil {
-			return nil, err
+			return nil, backupDiscoveryError(err)
 		}
 		if resp.JSON200 == nil {
-			return nil, fmt.Errorf("mongo.one returned incomplete mongo")
+			return nil, errBackupDiscovery
 		}
 		additional = resp.JSON200.AdditionalProperties
 	default:
-		return nil, fmt.Errorf("unsupported database type %q", databaseType)
+		return nil, errBackupDiscovery
 	}
 	observations := map[string]backupObservation{}
 	list, ok := additional["backups"].([]interface{})
@@ -282,25 +296,26 @@ func backupObservationsForTarget(ctx context.Context, api *client.Client, databa
 		if !present || !valid {
 			continue
 		}
+		observation := backupObservation{ID: id, Valid: true}
 		schedule, present, valid := backupStringField(obj, "schedule")
 		if !present || !valid {
-			continue
+			observation.Valid = false
 		}
 		prefix, present, valid := backupStringField(obj, "prefix")
 		if !present || !valid {
-			continue
+			observation.Valid = false
 		}
 		destinationID, present, valid := backupStringField(obj, "destinationId")
 		if !present || !valid {
-			continue
+			observation.Valid = false
 		}
 		database, present, valid := backupStringField(obj, "database")
 		if !present || !valid {
-			continue
+			observation.Valid = false
 		}
 		databaseTypeValue, present, valid := backupStringField(obj, "databaseType")
 		if !present || !valid {
-			continue
+			observation.Valid = false
 		}
 		observedTargetID, present, valid := backupStringField(obj, map[string]string{
 			backupDatabaseTypePostgres: backupDatabaseTypePostgres + "Id",
@@ -311,27 +326,29 @@ func backupObservationsForTarget(ctx context.Context, api *client.Client, databa
 		if !present {
 			observedTargetID = targetID
 		} else if !valid {
-			continue
+			observation.Valid = false
 		}
 		var enabled *bool
 		if value, present := obj["enabled"]; present {
 			value, ok := value.(bool)
 			if !ok {
-				continue
+				observation.Valid = false
+			} else {
+				enabled = &value
 			}
-			enabled = &value
 		}
 		var keepLatestCount *int
 		if value, present := obj["keepLatestCount"]; present {
 			var ok bool
 			keepLatestCount, ok = backupIntField(value)
 			if !ok {
-				continue
+				observation.Valid = false
 			}
 		}
-		observations[id] = backupObservation{ID: id, Schedule: schedule, Enabled: enabled, Prefix: prefix,
-			DestinationID: destinationID, Database: database, DatabaseType: databaseTypeValue,
-			TargetID: observedTargetID, KeepLatestCount: keepLatestCount}
+		observation.Schedule, observation.Enabled, observation.Prefix = schedule, enabled, prefix
+		observation.DestinationID, observation.Database, observation.DatabaseType = destinationID, database, databaseTypeValue
+		observation.TargetID, observation.KeepLatestCount = observedTargetID, keepLatestCount
+		observations[id] = observation
 	}
 	return observations, nil
 }
