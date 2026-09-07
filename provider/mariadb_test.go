@@ -100,7 +100,7 @@ func TestMariaDBReadReconstructsObservedRootPassword(t *testing.T) {
 
 func TestMariaDBMetadataUpdateDoesNotDeploy(t *testing.T) {
 	newName, oldName := "new", "old"
-	s := newScriptedServer(t, expectPOST("/api/mariadb.update", `{"description":null,"name":"new","mariadbId":"p1"}`, `{}`))
+	s := newScriptedServer(t, expectPOST("/api/mariadb.update", `{"description":null,"name":"new","mariadbId":"p1"}`, `true`))
 	_, err := (MariaDB{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[MariaDBArgs, MariaDBState]{ID: "p1", Inputs: MariaDBArgs{Name: newName, EnvironmentID: "env", DatabaseName: "db", DatabaseUser: "user", DatabasePassword: "pw"}, State: MariaDBState{MariaDBArgs: MariaDBArgs{Name: oldName, EnvironmentID: "env", DatabaseName: "db", DatabaseUser: "user", DatabasePassword: "pw"}}})
 	require.NoError(t, err)
 }
@@ -108,7 +108,7 @@ func TestMariaDBMetadataUpdateDoesNotDeploy(t *testing.T) {
 func TestMariaDBRuntimeUpdateClearsOptionalValuesAndDeploys(t *testing.T) {
 	oldEnv, oldPort, pw := "SECRET", 5432, "pw"
 	s := newScriptedServer(t,
-		expectPOST("/api/mariadb.update", `{"databaseName":"newdb","databasePassword":"pw","databaseUser":"user","description":null,"dockerImage":"mariadb:11","name":"db","mariadbId":"p1"}`, `{}`),
+		expectPOST("/api/mariadb.update", `{"databaseName":"newdb","databasePassword":"pw","databaseUser":"user","description":null,"dockerImage":"mariadb:11","name":"db","mariadbId":"p1"}`, `true`),
 		expectPOST("/api/mariadb.saveEnvironment", `{"env":null,"mariadbId":"p1"}`, `true`),
 		expectPOST("/api/mariadb.saveExternalPort", `{"externalPort":null,"mariadbId":"p1"}`, `true`),
 		expectPOST("/api/mariadb.deploy", `{"mariadbId":"p1"}`, `"running"`),

@@ -2602,7 +2602,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Application"
+                  "type": "boolean"
                 }
               }
             },
@@ -6877,7 +6877,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MariaDB"
+                  "type": "boolean"
                 }
               }
             },
@@ -8133,7 +8133,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MongoDB"
+                  "type": "boolean"
                 }
               }
             },
@@ -9929,7 +9929,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MySQL"
+                  "type": "boolean"
                 }
               }
             },
@@ -11247,7 +11247,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Postgres"
+                  "type": "boolean"
                 }
               }
             },
@@ -12840,7 +12840,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Redis"
+                  "type": "boolean"
                 }
               }
             },

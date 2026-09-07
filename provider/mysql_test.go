@@ -100,7 +100,7 @@ func TestMySQLReadReconstructsObservedRootPassword(t *testing.T) {
 
 func TestMySQLMetadataUpdateDoesNotDeploy(t *testing.T) {
 	newName, oldName := "new", "old"
-	s := newScriptedServer(t, expectPOST("/api/mysql.update", `{"description":null,"name":"new","mysqlId":"p1"}`, `{}`))
+	s := newScriptedServer(t, expectPOST("/api/mysql.update", `{"description":null,"name":"new","mysqlId":"p1"}`, `true`))
 	_, err := (MySQL{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[MySQLArgs, MySQLState]{ID: "p1", Inputs: MySQLArgs{Name: newName, EnvironmentID: "env", DatabaseName: "db", DatabaseUser: "user", DatabasePassword: "pw"}, State: MySQLState{MySQLArgs: MySQLArgs{Name: oldName, EnvironmentID: "env", DatabaseName: "db", DatabaseUser: "user", DatabasePassword: "pw"}}})
 	require.NoError(t, err)
 }
@@ -108,7 +108,7 @@ func TestMySQLMetadataUpdateDoesNotDeploy(t *testing.T) {
 func TestMySQLRuntimeUpdateClearsOptionalValuesAndDeploys(t *testing.T) {
 	oldEnv, oldPort, pw := "SECRET", 5432, "pw"
 	s := newScriptedServer(t,
-		expectPOST("/api/mysql.update", `{"databaseName":"newdb","databasePassword":"pw","databaseUser":"user","description":null,"dockerImage":"mysql:8","name":"db","mysqlId":"p1"}`, `{}`),
+		expectPOST("/api/mysql.update", `{"databaseName":"newdb","databasePassword":"pw","databaseUser":"user","description":null,"dockerImage":"mysql:8","name":"db","mysqlId":"p1"}`, `true`),
 		expectPOST("/api/mysql.saveEnvironment", `{"env":null,"mysqlId":"p1"}`, `true`),
 		expectPOST("/api/mysql.saveExternalPort", `{"externalPort":null,"mysqlId":"p1"}`, `true`),
 		expectPOST("/api/mysql.deploy", `{"mysqlId":"p1"}`, `"running"`),

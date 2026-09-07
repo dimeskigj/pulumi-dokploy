@@ -183,6 +183,70 @@ func TestGeneratedOperationReturnsTypedAPIErrorForNonSuccess(t *testing.T) {
 	}
 }
 
+func TestUpdateResponsesDecodeBooleanBodies(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		call func(*Client) (*bool, error)
+	}{
+		{"application", func(c *Client) (*bool, error) {
+			r, err := c.ApplicationUpdateWithResponse(t.Context(), generated.ApplicationUpdateJSONRequestBody{ApplicationId: "a1"})
+			if r == nil {
+				return nil, err
+			}
+			return r.JSON200, err
+		}},
+		{"mariadb", func(c *Client) (*bool, error) {
+			r, err := c.MariadbUpdateWithResponse(t.Context(), generated.MariadbUpdateJSONRequestBody{MariadbId: "m1"})
+			if r == nil {
+				return nil, err
+			}
+			return r.JSON200, err
+		}},
+		{"mongo", func(c *Client) (*bool, error) {
+			r, err := c.MongoUpdateWithResponse(t.Context(), generated.MongoUpdateJSONRequestBody{MongoId: "m1"})
+			if r == nil {
+				return nil, err
+			}
+			return r.JSON200, err
+		}},
+		{"mysql", func(c *Client) (*bool, error) {
+			r, err := c.MysqlUpdateWithResponse(t.Context(), generated.MysqlUpdateJSONRequestBody{MysqlId: "m1"})
+			if r == nil {
+				return nil, err
+			}
+			return r.JSON200, err
+		}},
+		{"postgres", func(c *Client) (*bool, error) {
+			r, err := c.PostgresUpdateWithResponse(t.Context(), generated.PostgresUpdateJSONRequestBody{PostgresId: "p1"})
+			if r == nil {
+				return nil, err
+			}
+			return r.JSON200, err
+		}},
+		{"redis", func(c *Client) (*bool, error) {
+			r, err := c.RedisUpdateWithResponse(t.Context(), generated.RedisUpdateJSONRequestBody{RedisId: "r1"})
+			if r == nil {
+				return nil, err
+			}
+			return r.JSON200, err
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte("true"))
+			}))
+			defer server.Close()
+			c, err := New(server.URL, "test-key")
+			require.NoError(t, err)
+			value, err := tc.call(c)
+			require.NoError(t, err)
+			require.NotNil(t, value)
+			require.True(t, *value)
+		})
+	}
+}
+
 func TestDecodeErrorHandlesMalformedBodies(t *testing.T) {
 	err := decodeError("project.one", 500, []byte("not json"))
 	require.Equal(t, "project.one: HTTP 500", err.Error())

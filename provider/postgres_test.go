@@ -82,7 +82,7 @@ func TestPostgresCreateOrdersOptionalConfigurationBeforeDeploy(t *testing.T) {
 
 func TestPostgresMetadataUpdateDoesNotDeploy(t *testing.T) {
 	newName, oldName := "new", "old"
-	s := newScriptedServer(t, expectPOST("/api/postgres.update", `{"description":null,"name":"new","postgresId":"p1"}`, `{}`))
+	s := newScriptedServer(t, expectPOST("/api/postgres.update", `{"description":null,"name":"new","postgresId":"p1"}`, `true`))
 	_, err := (Postgres{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[PostgresArgs, PostgresState]{ID: "p1", Inputs: PostgresArgs{Name: newName, EnvironmentID: "env", DatabaseName: "db", DatabaseUser: "user", DatabasePassword: "pw"}, State: PostgresState{PostgresArgs: PostgresArgs{Name: oldName, EnvironmentID: "env", DatabaseName: "db", DatabaseUser: "user", DatabasePassword: "pw"}}})
 	require.NoError(t, err)
 }
@@ -90,7 +90,7 @@ func TestPostgresMetadataUpdateDoesNotDeploy(t *testing.T) {
 func TestPostgresRuntimeUpdateClearsOptionalValuesAndDeploys(t *testing.T) {
 	oldEnv, oldPort, pw := "SECRET", 5432, "pw"
 	s := newScriptedServer(t,
-		expectPOST("/api/postgres.update", `{"databaseName":"newdb","databasePassword":"pw","databaseUser":"user","description":null,"dockerImage":"postgres:18","name":"db","postgresId":"p1"}`, `{}`),
+		expectPOST("/api/postgres.update", `{"databaseName":"newdb","databasePassword":"pw","databaseUser":"user","description":null,"dockerImage":"postgres:18","name":"db","postgresId":"p1"}`, `true`),
 		expectPOST("/api/postgres.saveEnvironment", `{"env":null,"postgresId":"p1"}`, `true`),
 		expectPOST("/api/postgres.saveExternalPort", `{"externalPort":null,"postgresId":"p1"}`, `true`),
 		expectPOST("/api/postgres.deploy", `{"postgresId":"p1"}`, `"running"`),

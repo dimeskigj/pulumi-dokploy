@@ -318,6 +318,13 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	for operation, assertion := range responses {
 		require.Equal(t, "#/components/schemas/"+assertion.schema, responseSchema(t, output, "/"+operation, assertion.method, "200").Ref, "response correction for %s", operation)
 	}
+	for _, operation := range []string{
+		"application.update", "postgres.update", "mysql.update",
+		"mariadb.update", "mongo.update", "redis.update",
+	} {
+		require.Equal(t, "boolean", responseSchemaType(t, output, "/"+operation, httpMethodPost, "200"), "response correction for %s", operation)
+		require.Empty(t, responseSchema(t, output, "/"+operation, httpMethodPost, "200").Ref, "response correction for %s", operation)
+	}
 	for _, operation := range []string{"sshKey.remove", "registry.remove", "registry.testRegistry", "tag.remove", "tag.assignToProject", "tag.removeFromProject", "mounts.remove"} {
 		require.Empty(t, responseSchema(t, output, "/"+operation, httpMethodPost, "200").Ref, "response correction for %s should be empty", operation)
 	}
@@ -337,4 +344,30 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	application := componentSchema(t, output, "Application")
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, application, "registryId"))
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, application, "buildRegistryId"))
+}
+
+func responseSchemaType(t *testing.T, d *Document, path, method, status string) string {
+	t.Helper()
+	pathItem, ok := d.Paths[path]
+	require.True(t, ok, "missing path %s", path)
+	op := pathItem.Post
+	if method == httpMethodGet {
+		op = pathItem.Get
+	}
+	require.NotNil(t, op, "missing %s operation for path %s", method, path)
+	responses, ok := op.Raw["responses"].(map[string]any)
+	require.True(t, ok, "responses for %s are not an object", path)
+	response, ok := responses[status]
+	require.True(t, ok, "missing %s response for %s", status, path)
+	b, err := json.Marshal(response)
+	require.NoError(t, err)
+	var decoded struct {
+		Content map[string]struct {
+			Schema struct {
+				Type string `json:"type"`
+			} `json:"schema"`
+		} `json:"content"`
+	}
+	require.NoError(t, json.Unmarshal(b, &decoded))
+	return decoded.Content["application/json"].Schema.Type
 }

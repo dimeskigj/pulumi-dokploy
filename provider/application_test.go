@@ -96,7 +96,7 @@ func TestApplicationRegistryUpdateRedeploysAndPolls(t *testing.T) {
 	waitPollInterval = 0
 	t.Cleanup(func() { waitPollInterval = oldPoll })
 	s := newScriptedServer(t,
-		expectPOST("/api/application.update", `{"applicationId":"a1","buildRegistryId":"build-registry-1","description":null,"name":"demo","registryId":"registry-1"}`, `{}`),
+		expectPOST("/api/application.update", `{"applicationId":"a1","buildRegistryId":"build-registry-1","description":null,"name":"demo","registryId":"registry-1"}`, `true`),
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"","registryUrl":"","username":""}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
@@ -110,7 +110,7 @@ func TestApplicationRegistryUpdateRedeploysAndPolls(t *testing.T) {
 
 func TestApplicationRegistryClearingSendsExplicitNulls(t *testing.T) {
 	s := newScriptedServer(t,
-		expectPOST("/api/application.update", `{"applicationId":"a1","buildRegistryId":null,"description":null,"name":"demo","registryId":null}`, `{}`),
+		expectPOST("/api/application.update", `{"applicationId":"a1","buildRegistryId":null,"description":null,"name":"demo","registryId":null}`, `true`),
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"nginx","password":"","registryUrl":"","username":""}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
@@ -187,7 +187,7 @@ func TestApplicationReadReconstructsObservableFieldsAndPreservesSecrets(t *testi
 }
 
 func TestApplicationMetadataUpdateDoesNotRedeploy(t *testing.T) {
-	s := newScriptedServer(t, expectPOST("/api/application.update", `{"applicationId":"a1","description":null,"name":"renamed"}`, `{}`))
+	s := newScriptedServer(t, expectPOST("/api/application.update", `{"applicationId":"a1","description":null,"name":"renamed"}`, `true`))
 	r := Application{client: fixedClient(s.API())}
 	_, err := r.Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: ApplicationArgs{Name: "renamed", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}, State: ApplicationState{ApplicationArgs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}}})
 	require.NoError(t, err)
