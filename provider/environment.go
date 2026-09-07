@@ -1,7 +1,6 @@
 package dokploy
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
-	"github.com/oapi-codegen/nullable"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
@@ -126,21 +124,15 @@ func (r Environment) Update(ctx context.Context, req infer.UpdateRequest[Environ
 	if req.DryRun {
 		return infer.UpdateResponse[EnvironmentState]{Output: EnvironmentState{EnvironmentArgs: req.Inputs, EnvironmentID: req.State.EnvironmentID, IsDefault: req.State.IsDefault}}, nil
 	}
-	body := struct {
-		EnvironmentID string                    `json:"environmentId"`
-		Name          string                    `json:"name"`
-		Description   nullable.Nullable[string] `json:"description,omitempty"`
-	}{EnvironmentID: req.ID, Name: req.Inputs.Name}
-	if req.Inputs.Description != nil {
-		body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
-	} else {
-		body.Description = nullable.NewNullNullable[string]()
+	if req.State.Description != nil && req.Inputs.Description == nil {
+		return infer.UpdateResponse[EnvironmentState]{}, errors.New("Dokploy does not support clearing an environment description")
 	}
-	encoded, err := json.Marshal(body)
-	if err != nil {
-		return infer.UpdateResponse[EnvironmentState]{}, err
+	body := generated.EnvironmentUpdateJSONRequestBody{
+		EnvironmentId: req.ID,
+		Name:          &req.Inputs.Name,
+		Description:   req.Inputs.Description,
 	}
-	if _, err := r.client(ctx).EnvironmentUpdateWithBodyWithResponse(ctx, "application/json", bytes.NewReader(encoded)); err != nil {
+	if _, err := r.client(ctx).EnvironmentUpdateWithResponse(ctx, body); err != nil {
 		return infer.UpdateResponse[EnvironmentState]{}, err
 	}
 	return infer.UpdateResponse[EnvironmentState]{Output: EnvironmentState{EnvironmentArgs: req.Inputs, EnvironmentID: req.ID, IsDefault: req.State.IsDefault}}, nil

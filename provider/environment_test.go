@@ -87,11 +87,24 @@ func TestEnvironmentDiffReportsOnlyChangedFields(t *testing.T) {
 	}
 }
 
-func TestEnvironmentUpdateClearsDescription(t *testing.T) {
-	s := newScriptedServer(t, expectPOST("/api/environment.update", `{"environmentId":"e1","name":"staging","description":null}`, `{}`))
+func TestEnvironmentUpdateOmitsAbsentDescription(t *testing.T) {
+	s := newScriptedServer(t, expectPOST("/api/environment.update", `{"environmentId":"e1","name":"renamed"}`, `{}`))
 	r := Environment{client: fixedClient(s.API())}
-	_, err := r.Update(t.Context(), infer.UpdateRequest[EnvironmentArgs, EnvironmentState]{ID: "e1", Inputs: EnvironmentArgs{ProjectID: "p1", Name: "staging"}, State: EnvironmentState{EnvironmentID: "e1"}})
+	_, err := r.Update(t.Context(), infer.UpdateRequest[EnvironmentArgs, EnvironmentState]{ID: "e1", Inputs: EnvironmentArgs{Name: "renamed"}, State: EnvironmentState{EnvironmentID: "e1"}})
 	require.NoError(t, err)
+}
+
+func TestEnvironmentUpdateSendsDescriptionValue(t *testing.T) {
+	s := newScriptedServer(t, expectPOST("/api/environment.update", `{"environmentId":"e1","name":"renamed","description":"changed"}`, `{}`))
+	r := Environment{client: fixedClient(s.API())}
+	_, err := r.Update(t.Context(), infer.UpdateRequest[EnvironmentArgs, EnvironmentState]{ID: "e1", Inputs: EnvironmentArgs{Name: "renamed", Description: stringPtr("changed")}, State: EnvironmentState{EnvironmentID: "e1"}})
+	require.NoError(t, err)
+}
+
+func TestEnvironmentUpdateRejectsDescriptionRemoval(t *testing.T) {
+	r := Environment{}
+	_, err := r.Update(t.Context(), infer.UpdateRequest[EnvironmentArgs, EnvironmentState]{ID: "e1", Inputs: EnvironmentArgs{Name: "renamed"}, State: EnvironmentState{EnvironmentID: "e1", EnvironmentArgs: EnvironmentArgs{Description: stringPtr("existing")}}})
+	require.ErrorContains(t, err, "Dokploy does not support clearing an environment description")
 }
 
 func TestEnvironmentLifecycleReadUpdateDeleteAndImport(t *testing.T) {

@@ -281,6 +281,19 @@ func TestNormalizeCorrectsRegistryUpdateServerIDToNullable(t *testing.T) {
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, schema, "serverId"))
 }
 
+func TestNormalizeEnvironmentUpdateDescriptionIsOptionalString(t *testing.T) {
+	output := normalizeRealContract(t)
+	schema := operationRequestSchema(t, output, "environment.update")
+	properties, ok := schema["properties"].(map[string]any)
+	require.True(t, ok, "environment.update request properties are not an object")
+	description, ok := properties["description"].(map[string]any)
+	require.True(t, ok, "environment.update request has no description property")
+	require.Equal(t, "string", description["type"])
+	required, ok := schema["required"].([]any)
+	require.True(t, ok, "environment.update request required is not an array")
+	require.NotContains(t, required, "description")
+}
+
 func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	output := normalizeRealContract(t)
 	ids := normalizedOperationIDs(t, output)
