@@ -186,44 +186,45 @@ func TestGeneratedOperationReturnsTypedAPIErrorForNonSuccess(t *testing.T) {
 func TestUpdateResponsesDecodeBooleanBodies(t *testing.T) {
 	for _, tc := range []struct {
 		name string
+		path string
 		call func(*Client) (*bool, error)
 	}{
-		{"application", func(c *Client) (*bool, error) {
+		{"application", "/api/application.update", func(c *Client) (*bool, error) {
 			r, err := c.ApplicationUpdateWithResponse(t.Context(), generated.ApplicationUpdateJSONRequestBody{ApplicationId: "a1"})
 			if r == nil {
 				return nil, err
 			}
 			return r.JSON200, err
 		}},
-		{"mariadb", func(c *Client) (*bool, error) {
+		{"mariadb", "/api/mariadb.update", func(c *Client) (*bool, error) {
 			r, err := c.MariadbUpdateWithResponse(t.Context(), generated.MariadbUpdateJSONRequestBody{MariadbId: "m1"})
 			if r == nil {
 				return nil, err
 			}
 			return r.JSON200, err
 		}},
-		{"mongo", func(c *Client) (*bool, error) {
+		{"mongo", "/api/mongo.update", func(c *Client) (*bool, error) {
 			r, err := c.MongoUpdateWithResponse(t.Context(), generated.MongoUpdateJSONRequestBody{MongoId: "m1"})
 			if r == nil {
 				return nil, err
 			}
 			return r.JSON200, err
 		}},
-		{"mysql", func(c *Client) (*bool, error) {
+		{"mysql", "/api/mysql.update", func(c *Client) (*bool, error) {
 			r, err := c.MysqlUpdateWithResponse(t.Context(), generated.MysqlUpdateJSONRequestBody{MysqlId: "m1"})
 			if r == nil {
 				return nil, err
 			}
 			return r.JSON200, err
 		}},
-		{"postgres", func(c *Client) (*bool, error) {
+		{"postgres", "/api/postgres.update", func(c *Client) (*bool, error) {
 			r, err := c.PostgresUpdateWithResponse(t.Context(), generated.PostgresUpdateJSONRequestBody{PostgresId: "p1"})
 			if r == nil {
 				return nil, err
 			}
 			return r.JSON200, err
 		}},
-		{"redis", func(c *Client) (*bool, error) {
+		{"redis", "/api/redis.update", func(c *Client) (*bool, error) {
 			r, err := c.RedisUpdateWithResponse(t.Context(), generated.RedisUpdateJSONRequestBody{RedisId: "r1"})
 			if r == nil {
 				return nil, err
@@ -233,6 +234,8 @@ func TestUpdateResponsesDecodeBooleanBodies(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				require.Equal(t, http.MethodPost, r.Method)
+				require.Equal(t, tc.path, r.URL.Path)
 				w.Header().Set("Content-Type", "application/json")
 				_, _ = w.Write([]byte("true"))
 			}))
