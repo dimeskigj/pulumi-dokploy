@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -456,6 +457,33 @@ func TestBackupCreatePostCreateDiscoveryErrorIsSafe(t *testing.T) {
 	require.EqualError(t, err, "backup.create could not read target backups")
 	require.NotContains(t, err.Error(), sentinelTarget)
 	require.NotContains(t, err.Error(), sentinelMessage)
+}
+
+func TestBackupDiscoveryErrorPreservesOnlyCanonicalContext(t *testing.T) {
+	for _, contextErr := range []error{context.Canceled, context.DeadlineExceeded} {
+		t.Run(contextErr.Error(), func(t *testing.T) {
+			sentinelTarget := "sentinel-target-id"
+			wrapped := fmt.Errorf("transport failed for target %s: %w", sentinelTarget, contextErr)
+			got := backupDiscoveryError(wrapped)
+			require.ErrorIs(t, got, contextErr)
+			require.NotContains(t, got.Error(), sentinelTarget)
+			require.NotContains(t, got.Error(), "transport failed")
+		})
+	}
+}
+
+func TestBackupCreateRejectsInvalidPreCreateBackupsCollection(t *testing.T) {
+	for name, collection := range map[string]string{
+		"absent": `{` + `"postgresId":"pg1"` + `}`,
+		"null":   `{"postgresId":"pg1","backups":null}`,
+		"object": `{"postgresId":"pg1","backups":{}}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, collection))
+			_, err := backupCreateRequest(t, t.Context(), s)
+			require.EqualError(t, err, "backup.create could not read target backups")
+		})
+	}
 }
 
 func TestBackupReadReconstructsEachDatabaseType(t *testing.T) {

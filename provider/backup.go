@@ -231,8 +231,11 @@ func backupIntField(value interface{}) (*int, bool) {
 var errBackupDiscovery = errors.New("backup.create could not read target backups")
 
 func backupDiscoveryError(err error) error {
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return fmt.Errorf("%w: %w", errBackupDiscovery, err)
+	if errors.Is(err, context.Canceled) {
+		return fmt.Errorf("%w: %w", errBackupDiscovery, context.Canceled)
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return fmt.Errorf("%w: %w", errBackupDiscovery, context.DeadlineExceeded)
 	}
 	return errBackupDiscovery
 }
@@ -283,9 +286,13 @@ func backupObservationsForTarget(ctx context.Context, api *client.Client, databa
 		return nil, errBackupDiscovery
 	}
 	observations := map[string]backupObservation{}
-	list, ok := additional["backups"].([]interface{})
+	backups, present := additional["backups"]
+	if !present || backups == nil {
+		return nil, errBackupDiscovery
+	}
+	list, ok := backups.([]interface{})
 	if !ok {
-		return observations, nil
+		return nil, errBackupDiscovery
 	}
 	for _, item := range list {
 		obj, ok := item.(map[string]interface{})
