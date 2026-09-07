@@ -34,6 +34,8 @@ const dbBackup = new dokploy.Backup("app-db-backup", {
 
 `database` is the database name inside the target instance to dump, not the Pulumi resource name. Changing the target (`postgresId`/`mysqlId`/`mariadbId`/`mongoId`) replaces the Backup; `schedule`, `prefix`, `destinationId`, `database`, `keepLatestCount`, and `enabled` update in place.
 
+Dokploy may successfully create the schedule before identity discovery times out. If creation reports an ambiguity or visibility timeout, inspect Dokploy before retrying because the schedule may already exist, to avoid creating a duplicate.
+
 ## Volume backups
 
 A `VolumeBackup` schedules backups of a named Docker volume for an Application or Compose service. Set exactly one of `applicationId` or `composeId`; for Compose, also provide `serviceName`.

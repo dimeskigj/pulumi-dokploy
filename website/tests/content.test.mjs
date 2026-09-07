@@ -143,6 +143,8 @@ test("Backups guide describes destinations, database backups, and volume backups
   assert.match(backups, /reference\/destination/);
   assert.match(backups, /reference\/backup/);
   assert.match(backups, /reference\/volume-backup/);
+  assert.match(backups, /may successfully create the schedule before identity discovery times out/i);
+  assert.match(backups, /inspect Dokploy before retrying because the schedule may already exist/i);
 });
 
 test("curated internal links stay relative and sidebar routes are canonical", async () => {
