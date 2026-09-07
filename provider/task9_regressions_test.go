@@ -204,9 +204,14 @@ func TestTask9OrganizationActiveShapeClassification(t *testing.T) {
 		body string
 		want string
 	}{
-		{name: "flat", body: `{"organizationId":"org"}`, want: "flat-non-empty-id"},
-		{name: "nested", body: `{"organization":{"organizationId":"org"}}`, want: "nested-organization-object"},
+		{name: "flat id", body: `{"id":"org"}`, want: "flat-id"},
+		{name: "flat organization id", body: `{"organizationId":"org"}`, want: "flat-organization-id"},
+		{name: "nested ids", body: `{"organization":{"id":"org","organizationId":"legacy"}}`, want: "nested-organization-object"},
+		{name: "null", body: `{"id":null}`, want: "null-id"},
 		{name: "missing", body: `{}`, want: "missing-id"},
+		{name: "invalid json", body: `{`, want: "invalid-json"},
+		{name: "empty string", body: `{"id":""}`, want: "empty-id"},
+		{name: "wrong type", body: `{"id":42}`, want: "wrong-type-id"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			require.Equal(t, test.want, classifyOrganizationActiveShape([]byte(test.body)))

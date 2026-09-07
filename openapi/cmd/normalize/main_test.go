@@ -358,6 +358,12 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	application := componentSchema(t, output, "Application")
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, application, "registryId"))
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, application, "buildRegistryId"))
+	organization := componentSchema(t, output, "Organization")
+	organizationProperties, ok := organization["properties"].(map[string]any)
+	require.True(t, ok)
+	require.Equal(t, map[string]any{"type": "string"}, organizationProperties["id"])
+	require.Equal(t, map[string]any{"type": "string"}, organizationProperties["organizationId"])
+	require.NotContains(t, organization, "required")
 }
 
 func responseSchemaType(t *testing.T, d *Document, path, method, status string) string {

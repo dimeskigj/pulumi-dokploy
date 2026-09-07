@@ -146,13 +146,27 @@ func classifyEnvironmentUpdateComparison(providerErr, directErr error) string {
 func classifyOrganizationActiveShape(body []byte) string {
 	var payload map[string]json.RawMessage
 	if json.Unmarshal(body, &payload) != nil {
-		return "missing-id"
+		return "invalid-json"
 	}
-	if raw, ok := payload["organizationId"]; ok {
-		var id string
-		if json.Unmarshal(raw, &id) == nil && id != "" {
-			return "flat-non-empty-id"
+	for _, field := range []struct {
+		name  string
+		label string
+	}{{"id", "flat-id"}, {"organizationId", "flat-organization-id"}} {
+		raw, ok := payload[field.name]
+		if !ok {
+			continue
 		}
+		var id string
+		if string(raw) == "null" {
+			return "null-id"
+		}
+		if json.Unmarshal(raw, &id) != nil {
+			return "wrong-type-id"
+		}
+		if id == "" {
+			return "empty-id"
+		}
+		return field.label
 	}
 	if raw, ok := payload["organization"]; ok {
 		var nested map[string]json.RawMessage

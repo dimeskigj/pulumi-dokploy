@@ -15358,13 +15358,13 @@
       "Organization": {
         "additionalProperties": true,
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "organizationId": {
             "type": "string"
           }
         },
-        "required": [
-          "organizationId"
-        ],
         "type": "object"
       },
       "Postgres": {

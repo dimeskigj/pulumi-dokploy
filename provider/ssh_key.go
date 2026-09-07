@@ -31,6 +31,16 @@ func (s *SSHKeyState) Annotate(a infer.Annotator) {
 
 type SSHKey struct{ client clientFactory }
 
+func activeOrganizationID(org generated.Organization) string {
+	if org.Id != nil && *org.Id != "" {
+		return *org.Id
+	}
+	if org.OrganizationId != nil && *org.OrganizationId != "" {
+		return *org.OrganizationId
+	}
+	return ""
+}
+
 func (r *SSHKey) Annotate(a infer.Annotator) {
 	a.SetToken("index", "SSHKey")
 	a.Describe(&r, "A Dokploy SSH key for Git and registry access.")
@@ -86,10 +96,13 @@ func (r SSHKey) Create(ctx context.Context, req infer.CreateRequest[SSHKeyArgs])
 	if err != nil {
 		return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(err, req.Inputs)
 	}
-	if org.JSON200 == nil || org.JSON200.OrganizationId == "" {
+	if org.JSON200 == nil {
 		return infer.CreateResponse[SSHKeyState]{}, fmt.Errorf("organization.active returned incomplete organization")
 	}
-	state.OrganizationID = org.JSON200.OrganizationId
+	state.OrganizationID = activeOrganizationID(*org.JSON200)
+	if state.OrganizationID == "" {
+		return infer.CreateResponse[SSHKeyState]{}, fmt.Errorf("organization.active returned incomplete organization")
+	}
 	description := nullable.NewNullNullable[string]()
 	if req.Inputs.Description != nil {
 		description = nullable.NewNullableWithValue(*req.Inputs.Description)

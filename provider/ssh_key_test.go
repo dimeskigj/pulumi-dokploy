@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
@@ -40,7 +41,7 @@ func TestSSHKeyDiffReplacesKeysAndUpdatesMetadata(t *testing.T) {
 
 func TestSSHKeyCreateReadsAndUpdatesInOrder(t *testing.T) {
 	s := newScriptedServer(t,
-		expectGET("/api/organization.active", nil, http.StatusOK, `{"organizationId":"org1"}`),
+		expectGET("/api/organization.active", nil, http.StatusOK, `{"id":"org1"}`),
 		expectPOST("/api/sshKey.create", `{"name":"key","description":"desc","organizationId":"org1","privateKey":"private","publicKey":"public"}`, `{"sshKeyId":"k1"}`),
 		expectGET("/api/sshKey.one", map[string][]string{"sshKeyId": {"k1"}}, http.StatusOK, `{"sshKeyId":"k1","name":"key","description":"desc","organizationId":"org1","privateKey":"private","publicKey":"public"}`),
 		expectPOST("/api/sshKey.update", `{"sshKeyId":"k1","name":"key2","description":"updated"}`, `{}`),
@@ -77,6 +78,22 @@ func TestSSHKeyCreateRejectsIncompleteOrganization(t *testing.T) {
 	s := newScriptedServer(t, expectGET("/api/organization.active", nil, http.StatusOK, `{}`))
 	_, err := (SSHKey{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[SSHKeyArgs]{Inputs: SSHKeyArgs{Name: "key", PrivateKey: "private", PublicKey: "public"}})
 	require.EqualError(t, err, "organization.active returned incomplete organization")
+}
+
+func TestActiveOrganizationIDPrefersIDAndSupportsLegacyOrganizationID(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		org  generated.Organization
+		want string
+	}{
+		{name: "primary", org: generated.Organization{Id: stringPtr("primary"), OrganizationId: stringPtr("legacy")}, want: "primary"},
+		{name: "legacy", org: generated.Organization{OrganizationId: stringPtr("legacy")}, want: "legacy"},
+		{name: "incomplete", org: generated.Organization{}, want: ""},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, activeOrganizationID(test.org))
+		})
+	}
 }
 
 func TestSSHKeyReadPreservesPrivateKeyWhenOmitted(t *testing.T) {
