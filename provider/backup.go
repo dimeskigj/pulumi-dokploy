@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
@@ -357,6 +358,51 @@ func backupCreateBody(databaseType, targetID string, a BackupArgs) generated.Bac
 	return b
 }
 
+var backupCreatePollInterval = 2 * time.Second
+
+func waitForCreatedBackup(ctx context.Context, api *client.Client, databaseType, targetID string, before map[string]backupObservation, args BackupArgs) (string, error) {
+	wrapContextError := func(err error) (string, error) {
+		return "", fmt.Errorf(
+			"backup.create succeeded but no unique matching backup became visible on %s %s: %w",
+			databaseType, targetID, err,
+		)
+	}
+	for {
+		if err := ctx.Err(); err != nil {
+			return wrapContextError(err)
+		}
+		after, err := backupObservationsForTarget(ctx, api, databaseType, targetID)
+		if err != nil {
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				return wrapContextError(ctxErr)
+			}
+			return "", err
+		}
+		matches := make([]string, 0, len(after))
+		for id, observation := range after {
+			if _, existed := before[id]; !existed && observation.matchesCreate(databaseType, targetID, args) {
+				matches = append(matches, id)
+			}
+		}
+		if len(matches) == 1 {
+			return matches[0], nil
+		}
+		if len(matches) > 1 {
+			return "", fmt.Errorf("backup.create found %d matching backups on %s %s", len(matches), databaseType, targetID)
+		}
+
+		timer := time.NewTimer(backupCreatePollInterval)
+		select {
+		case <-ctx.Done():
+			if !timer.Stop() {
+				<-timer.C
+			}
+			return wrapContextError(ctx.Err())
+		case <-timer.C:
+		}
+	}
+}
+
 // Create works around backup.create returning HTTP 200 with an empty body
 // (confirmed against a live Dokploy instance: unlike every other create
 // endpoint in this provider, it echoes back nothing, not even the new
@@ -380,21 +426,9 @@ func (r Backup) Create(ctx context.Context, req infer.CreateRequest[BackupArgs])
 	if _, err := api.BackupCreateWithResponse(ctx, backupCreateBody(databaseType, targetID, req.Inputs)); err != nil {
 		return infer.CreateResponse[BackupState]{}, err
 	}
-	after, err := backupObservationsForTarget(ctx, api, databaseType, targetID)
+	newID, err := waitForCreatedBackup(ctx, api, databaseType, targetID, before, req.Inputs)
 	if err != nil {
 		return infer.CreateResponse[BackupState]{}, err
-	}
-	var newID string
-	for id := range after {
-		if _, existed := before[id]; !existed {
-			if newID != "" {
-				return infer.CreateResponse[BackupState]{}, fmt.Errorf("backup.create produced more than one new backup on %s %s; cannot determine which one was created", databaseType, targetID)
-			}
-			newID = id
-		}
-	}
-	if newID == "" {
-		return infer.CreateResponse[BackupState]{}, fmt.Errorf("backup.create did not produce a new backup on %s %s", databaseType, targetID)
 	}
 	state.BackupID = newID
 	return infer.CreateResponse[BackupState]{ID: state.BackupID, Output: state}, nil

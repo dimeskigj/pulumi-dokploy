@@ -1,9 +1,12 @@
 package dokploy
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
+	"time"
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -132,10 +135,13 @@ func TestBackupObservationMatchesCreate(t *testing.T) {
 }
 
 func TestBackupCreateResolvesIDFromTargetDiffAfterEmptyCreateResponse(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
 	s := newScriptedServer(t,
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"postgresId":"pg1","backups":[{"backupId":"existing"}]}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"postgresId":"pg1","backups":[{"backupId":"existing","schedule":"0 0 1 * *","enabled":true,"prefix":"old-","destinationId":"d1","database":"old","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}]}`),
 		expectPOST("/api/backup.create", `{"schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`, ``),
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"postgresId":"pg1","backups":[{"backupId":"existing"},{"backupId":"new1"}]}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"postgresId":"pg1","backups":[{"backupId":"existing","schedule":"0 0 1 * *","enabled":true,"prefix":"old-","destinationId":"d1","database":"old","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null},{"backupId":"new1","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}]}`),
 	)
 	got, err := (Backup{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
 		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr("pg1"),
@@ -145,6 +151,9 @@ func TestBackupCreateResolvesIDFromTargetDiffAfterEmptyCreateResponse(t *testing
 }
 
 func TestBackupCreateForEachDatabaseType(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
 	for _, tc := range []struct {
 		databaseType, endpoint, idQuery, targetID string
 		args                                      BackupArgs
@@ -157,7 +166,7 @@ func TestBackupCreateForEachDatabaseType(t *testing.T) {
 			s := newScriptedServer(t,
 				expectGET(tc.endpoint, map[string][]string{tc.idQuery: {tc.targetID}}, http.StatusOK, `{"backups":[]}`),
 				expectPOST("/api/backup.create", `{"schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"`+tc.databaseType+`","`+tc.idQuery+`":"`+tc.targetID+`","keepLatestCount":null}`, ``),
-				expectGET(tc.endpoint, map[string][]string{tc.idQuery: {tc.targetID}}, http.StatusOK, `{"backups":[{"backupId":"new1"}]}`),
+				expectGET(tc.endpoint, map[string][]string{tc.idQuery: {tc.targetID}}, http.StatusOK, `{"backups":[{"backupId":"new1","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"`+tc.databaseType+`","`+tc.idQuery+`":"`+tc.targetID+`","keepLatestCount":null}]}`),
 			)
 			args := tc.args
 			args.Schedule, args.Enabled, args.Prefix, args.DestinationID, args.Database = "0 0 * * *", true, "p-", "d1", "app"
@@ -169,27 +178,155 @@ func TestBackupCreateForEachDatabaseType(t *testing.T) {
 }
 
 func TestBackupCreateErrorsWhenNoNewBackupFound(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = 10 * time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	unchanged := `{"backups":[{"backupId":"existing","schedule":"0 0 1 * *","enabled":true,"prefix":"old-","destinationId":"d1","database":"old","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}]}`
 	s := newScriptedServer(t,
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"backups":[{"backupId":"existing"}]}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
 		expectPOST("/api/backup.create", `{"schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`, ``),
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"backups":[{"backupId":"existing"}]}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
 	)
-	_, err := (Backup{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
+	defer cancel()
+	_, err := (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
 		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr("pg1"),
 	}})
-	require.ErrorContains(t, err, "did not produce a new backup")
+	require.ErrorContains(t, err, "backup.create succeeded but no unique matching backup became visible")
 }
 
 func TestBackupCreateErrorsWhenMultipleNewBackupsFound(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
 	s := newScriptedServer(t,
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"backups":[]}`),
 		expectPOST("/api/backup.create", `{"schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`, ``),
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"backups":[{"backupId":"new1"},{"backupId":"new2"}]}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"backups":[{"backupId":"new1","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null},{"backupId":"new2","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}]}`),
 	)
 	_, err := (Backup{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
 		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr("pg1"),
 	}})
-	require.ErrorContains(t, err, "cannot determine which one was created")
+	require.ErrorContains(t, err, "2 matching backups")
+}
+
+const backupCreateTarget = `{"postgresId":"pg1","backups":`
+const backupCreateArgsJSON = `{"schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`
+const backupCreateExact = `{"backupId":"new1","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`
+const backupCreateUnrelated = `{"backupId":"other","schedule":"0 1 * * *","enabled":true,"prefix":"other-","destinationId":"d2","database":"other","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`
+
+func backupCreateRequest(t *testing.T, ctx context.Context, s *scriptedServer) (infer.CreateResponse[BackupState], error) {
+	t.Helper()
+	return (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr("pg1"),
+	}})
+}
+
+func TestBackupCreateWaitsForDelayedVisibility(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	unchanged := backupCreateTarget + `[]}`
+	s := newScriptedServer(t,
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[`+backupCreateExact+`]}`),
+	)
+	got, err := backupCreateRequest(t, t.Context(), s)
+	require.NoError(t, err)
+	require.Equal(t, "new1", got.ID)
+}
+
+func TestBackupCreate_IgnoresUnrelatedCandidate(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	s := newScriptedServer(t,
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[]}`),
+		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[`+backupCreateUnrelated+`]}`),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[`+backupCreateUnrelated+`,`+backupCreateExact+`]}`),
+	)
+	got, err := backupCreateRequest(t, t.Context(), s)
+	require.NoError(t, err)
+	require.Equal(t, "new1", got.ID)
+}
+
+func TestBackupCreate_SelectsUniqueMatchAmongNewBackups(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	s := newScriptedServer(t,
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[]}`),
+		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[`+backupCreateExact+`,`+backupCreateUnrelated+`]}`),
+	)
+	got, err := backupCreateRequest(t, t.Context(), s)
+	require.NoError(t, err)
+	require.Equal(t, "new1", got.ID)
+}
+
+func TestBackupCreate_RejectsMultipleExactMatches(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	second := `{"backupId":"new2","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`
+	s := newScriptedServer(t,
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[]}`),
+		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, backupCreateTarget+`[`+backupCreateExact+`,`+second+`]}`),
+	)
+	got, err := backupCreateRequest(t, t.Context(), s)
+	require.ErrorContains(t, err, "2 matching backups")
+	require.Empty(t, got.ID)
+}
+
+func TestBackupCreate_Deadline(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = 10 * time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	unchanged := backupCreateTarget + `[]}`
+	expectations := []scriptedRequest{
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
+	}
+	for i := 0; i < 3; i++ {
+		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged))
+	}
+	s := newScriptedServer(t, expectations...)
+	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
+	defer cancel()
+	_, err := backupCreateRequest(t, ctx, s)
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+	require.ErrorContains(t, err, "backup.create succeeded but no unique matching backup became visible")
+}
+
+func TestBackupCreate_Cancellation(t *testing.T) {
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = 10 * time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	unchanged := backupCreateTarget + `[]}`
+	expectations := []scriptedRequest{
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
+	}
+	for i := 0; i < 3; i++ {
+		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged))
+	}
+	s := newScriptedServer(t, expectations...)
+	ctx, cancel := context.WithCancel(t.Context())
+	go func() {
+		time.Sleep(25 * time.Millisecond)
+		cancel()
+	}()
+	_, err := backupCreateRequest(t, ctx, s)
+	require.ErrorIs(t, err, context.Canceled)
+	require.True(t, errors.Is(err, context.Canceled))
+	require.ErrorContains(t, err, "backup.create succeeded but no unique matching backup became visible")
 }
 
 func TestBackupReadReconstructsEachDatabaseType(t *testing.T) {
