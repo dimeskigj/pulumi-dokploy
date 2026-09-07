@@ -41,8 +41,8 @@ func TestProjectTagDiffReplacesBothFields(t *testing.T) {
 func TestProjectTagCreateReadDeleteIsolatesAssociation(t *testing.T) {
 	s := newScriptedServer(t,
 		scriptedRequest{Method: http.MethodPost, Path: "/api/tag.assignToProject", Body: json.RawMessage(`{"projectId":"p1","tagId":"t1"}`), Status: http.StatusOK, Response: []byte(`{}`)},
-		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","tags":[{"tagId":"other"},{"tagId":"t1"}]}`),
-		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","tags":[{"tagId":"other"},{"tagId":"t1"}]}`),
+		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","projectTags":[{"tagId":"other","tag":{"tagId":"other"}},{"tagId":"t1","tag":{"tagId":"t1"}}]}`),
+		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","projectTags":[{"tagId":"other","tag":{"tagId":"other"}},{"tagId":"t1","tag":{"tagId":"t1"}}]}`),
 		scriptedRequest{Method: http.MethodPost, Path: "/api/tag.removeFromProject", Body: json.RawMessage(`{"projectId":"p1","tagId":"t1"}`), Status: http.StatusOK, Response: []byte(`{}`)},
 	)
 	r := ProjectTag{client: fixedClient(s.API())}
@@ -58,7 +58,7 @@ func TestProjectTagCreateReadDeleteIsolatesAssociation(t *testing.T) {
 
 func TestProjectTagReadMissingAssociationAndProject(t *testing.T) {
 	s := newScriptedServer(t,
-		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","tags":[{"tagId":"other"}]}`),
+		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","projectTags":[{"tagId":"other"}]}`),
 		expectGET("/api/project.one", map[string][]string{"projectId": {"missing"}}, http.StatusNotFound, `{"code":"NOT_FOUND"}`),
 	)
 	r := ProjectTag{client: fixedClient(s.API())}

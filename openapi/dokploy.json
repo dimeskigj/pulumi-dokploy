@@ -15424,7 +15424,7 @@
           "projectId": {
             "type": "string"
           },
-          "tags": {
+          "projectTags": {
             "items": {
               "additionalProperties": true,
               "properties": {
