@@ -143,6 +143,9 @@ test("Backups guide describes destinations, database backups, and volume backups
   assert.match(backups, /reference\/destination/);
   assert.match(backups, /reference\/backup/);
   assert.match(backups, /reference\/volume-backup/);
+  assert.match(backups, /`backup\.create` returns no new backup ID/i);
+  assert.match(backups, /provider waits for one uniquely matching schedule to appear on the target/i);
+  assert.match(backups, /ambiguity or visibility timeout can occur after remote success/i);
   assert.match(backups, /may successfully create the schedule before identity discovery times out/i);
   assert.match(backups, /inspect Dokploy before retrying because the schedule may already exist/i);
 });

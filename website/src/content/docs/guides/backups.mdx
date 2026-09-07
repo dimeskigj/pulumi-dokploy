@@ -34,7 +34,7 @@ const dbBackup = new dokploy.Backup("app-db-backup", {
 
 `database` is the database name inside the target instance to dump, not the Pulumi resource name. Changing the target (`postgresId`/`mysqlId`/`mariadbId`/`mongoId`) replaces the Backup; `schedule`, `prefix`, `destinationId`, `database`, `keepLatestCount`, and `enabled` update in place.
 
-Dokploy may successfully create the schedule before identity discovery times out. If creation reports an ambiguity or visibility timeout, inspect Dokploy before retrying because the schedule may already exist, to avoid creating a duplicate.
+`backup.create` returns no new backup ID. The provider waits for one uniquely matching schedule to appear on the target database. An ambiguity or visibility timeout can occur after remote success: Dokploy may successfully create the schedule before identity discovery times out. Inspect Dokploy before retrying because the schedule may already exist, to avoid duplicates.
 
 ## Volume backups
 
