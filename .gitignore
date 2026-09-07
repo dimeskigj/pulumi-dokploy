@@ -21,3 +21,4 @@ sdk/python/venv
 website/dist/
 website/.astro/
 /.superpowers/sdd/
+/.worktrees/
