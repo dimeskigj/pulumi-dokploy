@@ -353,6 +353,7 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	tagItemProperties, ok := tagItems["properties"].(map[string]any)
 	require.True(t, ok, "Project.projectTags item properties are not an object")
 	require.Contains(t, tagItemProperties, "tagId")
+	require.Equal(t, []any{"tagId"}, tagItems["required"])
 
 	application := componentSchema(t, output, "Application")
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, application, "registryId"))
