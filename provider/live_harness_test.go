@@ -1,6 +1,7 @@
 package dokploy
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -148,25 +149,36 @@ func classifyOrganizationActiveShape(body []byte) string {
 	if json.Unmarshal(body, &payload) != nil {
 		return "invalid-json"
 	}
-	for _, field := range []struct {
-		name  string
-		label string
-	}{{"id", "flat-id"}, {"organizationId", "flat-organization-id"}} {
-		raw, ok := payload[field.name]
-		if !ok {
-			continue
-		}
+	classify := func(raw json.RawMessage) (valid bool, label string) {
 		var id string
-		if string(raw) == "null" {
-			return "null-id"
+		if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+			return false, "null-id"
 		}
 		if json.Unmarshal(raw, &id) != nil {
-			return "wrong-type-id"
+			return false, "wrong-type-id"
 		}
 		if id == "" {
-			return "empty-id"
+			return false, "empty-id"
 		}
-		return field.label
+		return true, ""
+	}
+	if raw, ok := payload["id"]; ok {
+		if valid, _ := classify(raw); valid {
+			return "flat-id"
+		}
+	}
+	if raw, ok := payload["organizationId"]; ok {
+		if valid, _ := classify(raw); valid {
+			return "flat-organization-id"
+		}
+	}
+	if raw, ok := payload["id"]; ok {
+		_, label := classify(raw)
+		return label
+	}
+	if raw, ok := payload["organizationId"]; ok {
+		_, label := classify(raw)
+		return label
 	}
 	if raw, ok := payload["organization"]; ok {
 		var nested map[string]json.RawMessage

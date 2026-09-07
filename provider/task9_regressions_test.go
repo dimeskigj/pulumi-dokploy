@@ -206,6 +206,10 @@ func TestTask9OrganizationActiveShapeClassification(t *testing.T) {
 	}{
 		{name: "flat id", body: `{"id":"org"}`, want: "flat-id"},
 		{name: "flat organization id", body: `{"organizationId":"org"}`, want: "flat-organization-id"},
+		{name: "empty id with valid legacy", body: `{"id":"","organizationId":"legacy"}`, want: "flat-organization-id"},
+		{name: "valid id with valid legacy", body: `{"id":"org","organizationId":"legacy"}`, want: "flat-id"},
+		{name: "wrong type id with valid legacy", body: `{"id":42,"organizationId":"legacy"}`, want: "flat-organization-id"},
+		{name: "null id with valid legacy", body: `{"id":null,"organizationId":"legacy"}`, want: "flat-organization-id"},
 		{name: "nested ids", body: `{"organization":{"id":"org","organizationId":"legacy"}}`, want: "nested-organization-object"},
 		{name: "null", body: `{"id":null}`, want: "null-id"},
 		{name: "missing", body: `{}`, want: "missing-id"},
