@@ -75,6 +75,62 @@ func TestBackupDiff(t *testing.T) {
 	require.Equal(t, p.UpdateReplace, replace.DetailedDiff["mysqlId"].Kind)
 }
 
+func TestBackupObservationMatchesCreate(t *testing.T) {
+	trueValue := true
+	three := 3
+	args := BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-",
+		DestinationID: "d1", Database: "app", KeepLatestCount: &three,
+		PostgresID: stringPtr("pg1"),
+	}
+	base := backupObservation{
+		ID: "b1", Schedule: "0 0 * * *", Enabled: &trueValue,
+		Prefix: "p-", DestinationID: "d1", Database: "app",
+		DatabaseType: backupDatabaseTypePostgres, TargetID: "pg1",
+		KeepLatestCount: &three,
+	}
+
+	tests := []struct {
+		name   string
+		mutate func(*backupObservation)
+		want   bool
+	}{
+		{name: "exact", want: true},
+		{name: "other schedule", mutate: func(v *backupObservation) { v.Schedule = "0 1 * * *" }},
+		{name: "other destination", mutate: func(v *backupObservation) { v.DestinationID = "d2" }},
+		{name: "other database", mutate: func(v *backupObservation) { v.Database = "other" }},
+		{name: "other prefix", mutate: func(v *backupObservation) { v.Prefix = "other-" }},
+		{name: "other type", mutate: func(v *backupObservation) { v.DatabaseType = backupDatabaseTypeMySQL }},
+		{name: "other target", mutate: func(v *backupObservation) { v.TargetID = "pg2" }},
+		{name: "other enabled", mutate: func(v *backupObservation) { disabled := false; v.Enabled = &disabled }},
+		{name: "other retention", mutate: func(v *backupObservation) { four := 4; v.KeepLatestCount = &four }},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := base
+			if test.mutate != nil {
+				test.mutate(&got)
+			}
+			require.Equal(t, test.want, got.matchesCreate(backupDatabaseTypePostgres, "pg1", args))
+		})
+	}
+
+	t.Run("omitted enabled is unknown and accepted", func(t *testing.T) {
+		withoutEnabled := base
+		withoutEnabled.Enabled = nil
+		require.True(t, withoutEnabled.matchesCreate(backupDatabaseTypePostgres, "pg1", args))
+	})
+	t.Run("omitted retention only matches omitted request", func(t *testing.T) {
+		withoutRetention := base
+		withoutRetention.KeepLatestCount = nil
+		withoutRetentionArgs := args
+		withoutRetentionArgs.KeepLatestCount = nil
+		require.True(t, withoutRetention.matchesCreate(backupDatabaseTypePostgres, "pg1", withoutRetentionArgs))
+		require.False(t, withoutRetention.matchesCreate(backupDatabaseTypePostgres, "pg1", args))
+	})
+}
+
 func TestBackupCreateResolvesIDFromTargetDiffAfterEmptyCreateResponse(t *testing.T) {
 	s := newScriptedServer(t,
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, `{"postgresId":"pg1","backups":[{"backupId":"existing"}]}`),

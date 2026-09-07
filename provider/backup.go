@@ -3,6 +3,7 @@ package dokploy
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
@@ -153,12 +154,78 @@ func (r Backup) Diff(_ context.Context, req infer.DiffRequest[BackupArgs, Backup
 	return infer.DiffResponse{HasChanges: len(d) > 0, DetailedDiff: d}, nil
 }
 
-// backupIDsForTarget lists the backupIds currently attached to a database
+type backupObservation struct {
+	ID              string
+	Schedule        string
+	Enabled         *bool
+	Prefix          string
+	DestinationID   string
+	Database        string
+	DatabaseType    string
+	TargetID        string
+	KeepLatestCount *int
+}
+
+func (v backupObservation) matchesCreate(databaseType, targetID string, a BackupArgs) bool {
+	if v.Schedule != a.Schedule || v.Prefix != a.Prefix || v.DestinationID != a.DestinationID ||
+		v.Database != a.Database || v.DatabaseType != databaseType || v.TargetID != targetID {
+		return false
+	}
+	if v.Enabled != nil && *v.Enabled != a.Enabled {
+		return false
+	}
+	if (v.KeepLatestCount == nil) != (a.KeepLatestCount == nil) {
+		return false
+	}
+	return v.KeepLatestCount == nil || *v.KeepLatestCount == *a.KeepLatestCount
+}
+
+func backupStringField(obj map[string]interface{}, name string) (string, bool, bool) {
+	value, present := obj[name]
+	if !present {
+		return "", false, true
+	}
+	stringValue, ok := value.(string)
+	return stringValue, true, ok && stringValue != ""
+}
+
+func backupIntField(value interface{}) (*int, bool) {
+	if value == nil {
+		return nil, true
+	}
+	var number float64
+	switch value := value.(type) {
+	case float64:
+		number = value
+	case float32:
+		number = float64(value)
+	case int:
+		return &value, true
+	case int64:
+		converted := int(value)
+		return &converted, int64(converted) == value
+	default:
+		return nil, false
+	}
+	if math.IsNaN(number) || math.IsInf(number, 0) || math.Trunc(number) != number {
+		return nil, false
+	}
+	maxInt := float64(int(^uint(0) >> 1))
+	minInt := -maxInt - 1
+	if number < minInt || number > maxInt {
+		return nil, false
+	}
+	converted := int(number)
+	if float64(converted) != number {
+		return nil, false
+	}
+	return &converted, true
+}
+
+// backupObservationsForTarget lists backups currently attached to a database
 // instance by reading them off its nested "backups" property, since Dokploy
-// exposes no backup.all listing endpoint. Create relies on this to recover
-// the ID that backup.create's response never includes (see the comment on
-// Backup.Create for why).
-func backupIDsForTarget(ctx context.Context, api *client.Client, databaseType, targetID string) (map[string]bool, error) {
+// exposes no backup.all listing endpoint.
+func backupObservationsForTarget(ctx context.Context, api *client.Client, databaseType, targetID string) (map[string]backupObservation, error) {
 	var additional map[string]interface{}
 	switch databaseType {
 	case backupDatabaseTypePostgres:
@@ -200,21 +267,72 @@ func backupIDsForTarget(ctx context.Context, api *client.Client, databaseType, t
 	default:
 		return nil, fmt.Errorf("unsupported database type %q", databaseType)
 	}
-	ids := map[string]bool{}
+	observations := map[string]backupObservation{}
 	list, ok := additional["backups"].([]interface{})
 	if !ok {
-		return ids, nil
+		return observations, nil
 	}
 	for _, item := range list {
 		obj, ok := item.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		if id, ok := obj["backupId"].(string); ok && id != "" {
-			ids[id] = true
+		id, present, valid := backupStringField(obj, "backupId")
+		if !present || !valid {
+			continue
 		}
+		schedule, present, valid := backupStringField(obj, "schedule")
+		if !present || !valid {
+			continue
+		}
+		prefix, present, valid := backupStringField(obj, "prefix")
+		if !present || !valid {
+			continue
+		}
+		destinationID, present, valid := backupStringField(obj, "destinationId")
+		if !present || !valid {
+			continue
+		}
+		database, present, valid := backupStringField(obj, "database")
+		if !present || !valid {
+			continue
+		}
+		databaseTypeValue, present, valid := backupStringField(obj, "databaseType")
+		if !present || !valid {
+			continue
+		}
+		observedTargetID, present, valid := backupStringField(obj, map[string]string{
+			backupDatabaseTypePostgres: backupDatabaseTypePostgres + "Id",
+			backupDatabaseTypeMySQL:    "mysqlId",
+			backupDatabaseTypeMariaDB:  "mariadbId",
+			backupDatabaseTypeMongo:    "mongoId",
+		}[databaseType])
+		if !present {
+			observedTargetID = targetID
+		} else if !valid {
+			continue
+		}
+		var enabled *bool
+		if value, present := obj["enabled"]; present {
+			value, ok := value.(bool)
+			if !ok {
+				continue
+			}
+			enabled = &value
+		}
+		var keepLatestCount *int
+		if value, present := obj["keepLatestCount"]; present {
+			var ok bool
+			keepLatestCount, ok = backupIntField(value)
+			if !ok {
+				continue
+			}
+		}
+		observations[id] = backupObservation{ID: id, Schedule: schedule, Enabled: enabled, Prefix: prefix,
+			DestinationID: destinationID, Database: database, DatabaseType: databaseTypeValue,
+			TargetID: observedTargetID, KeepLatestCount: keepLatestCount}
 	}
-	return ids, nil
+	return observations, nil
 }
 
 func backupCreateBody(databaseType, targetID string, a BackupArgs) generated.BackupCreateJSONRequestBody {
@@ -255,20 +373,20 @@ func (r Backup) Create(ctx context.Context, req infer.CreateRequest[BackupArgs])
 	if err != nil {
 		return infer.CreateResponse[BackupState]{}, err
 	}
-	before, err := backupIDsForTarget(ctx, api, databaseType, targetID)
+	before, err := backupObservationsForTarget(ctx, api, databaseType, targetID)
 	if err != nil {
 		return infer.CreateResponse[BackupState]{}, err
 	}
 	if _, err := api.BackupCreateWithResponse(ctx, backupCreateBody(databaseType, targetID, req.Inputs)); err != nil {
 		return infer.CreateResponse[BackupState]{}, err
 	}
-	after, err := backupIDsForTarget(ctx, api, databaseType, targetID)
+	after, err := backupObservationsForTarget(ctx, api, databaseType, targetID)
 	if err != nil {
 		return infer.CreateResponse[BackupState]{}, err
 	}
 	var newID string
 	for id := range after {
-		if !before[id] {
+		if _, existed := before[id]; !existed {
 			if newID != "" {
 				return infer.CreateResponse[BackupState]{}, fmt.Errorf("backup.create produced more than one new backup on %s %s; cannot determine which one was created", databaseType, targetID)
 			}
