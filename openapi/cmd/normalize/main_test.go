@@ -47,7 +47,7 @@ func corrections() Corrections {
 }
 
 var newResourceOperations = []string{
-	"organization.active", "sshKey.create", "sshKey.one", "sshKey.update", "sshKey.remove",
+	"organization.active", "sshKey.create", "sshKey.all", "sshKey.one", "sshKey.update", "sshKey.remove",
 	"registry.create", "registry.one", "registry.update", "registry.remove", "registry.testRegistry",
 	"tag.create", "tag.one", "tag.update", "tag.remove", "tag.assignToProject", "tag.removeFromProject",
 	"mounts.create", "mounts.one", "mounts.update", "mounts.remove",
@@ -315,7 +315,7 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 		method string
 	}{
 		"organization.active": {schema: "Organization", method: httpMethodGet},
-		"sshKey.create":       {schema: "SSHKey", method: httpMethodPost},
+		"sshKey.all":          {schema: "SSHKeyList", method: httpMethodGet},
 		"sshKey.one":          {schema: "SSHKey", method: httpMethodGet},
 		"sshKey.update":       {schema: "SSHKey", method: httpMethodPost},
 		"registry.create":     {schema: "Registry", method: httpMethodPost},
@@ -338,7 +338,7 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 		require.Equal(t, "boolean", responseSchemaType(t, output, "/"+operation, httpMethodPost, "200"), "response correction for %s", operation)
 		require.Empty(t, responseSchema(t, output, "/"+operation, httpMethodPost, "200").Ref, "response correction for %s", operation)
 	}
-	for _, operation := range []string{"sshKey.remove", "registry.remove", "registry.testRegistry", "tag.remove", "tag.assignToProject", "tag.removeFromProject", "mounts.remove"} {
+	for _, operation := range []string{"sshKey.create", "sshKey.remove", "registry.remove", "registry.testRegistry", "tag.remove", "tag.assignToProject", "tag.removeFromProject", "mounts.remove"} {
 		require.Empty(t, responseSchema(t, output, "/"+operation, httpMethodPost, "200").Ref, "response correction for %s should be empty", operation)
 	}
 

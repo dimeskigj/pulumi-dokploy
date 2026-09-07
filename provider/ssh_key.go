@@ -92,6 +92,19 @@ func (r SSHKey) Create(ctx context.Context, req infer.CreateRequest[SSHKeyArgs])
 		return infer.CreateResponse[SSHKeyState]{Output: state}, nil
 	}
 	api := r.client(ctx)
+	before, err := api.SshKeyAllWithResponse(ctx)
+	if err != nil {
+		return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(err, req.Inputs)
+	}
+	if before.JSON200 == nil {
+		return infer.CreateResponse[SSHKeyState]{}, fmt.Errorf("sshKey.all returned incomplete SSH key list")
+	}
+	existingIDs := make(map[string]struct{}, len(*before.JSON200))
+	for _, key := range *before.JSON200 {
+		if key.SshKeyId != "" {
+			existingIDs[key.SshKeyId] = struct{}{}
+		}
+	}
 	org, err := api.OrganizationActiveWithResponse(ctx)
 	if err != nil {
 		return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(err, req.Inputs)
@@ -107,17 +120,35 @@ func (r SSHKey) Create(ctx context.Context, req infer.CreateRequest[SSHKeyArgs])
 	if req.Inputs.Description != nil {
 		description = nullable.NewNullableWithValue(*req.Inputs.Description)
 	}
-	created, err := api.SshKeyCreateWithResponse(ctx, generated.SshKeyCreateJSONRequestBody{
+	_, err = api.SshKeyCreateWithResponse(ctx, generated.SshKeyCreateJSONRequestBody{
 		Name: req.Inputs.Name, Description: description, OrganizationId: state.OrganizationID,
 		PrivateKey: req.Inputs.PrivateKey, PublicKey: req.Inputs.PublicKey,
 	})
 	if err != nil {
 		return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(err, req.Inputs)
 	}
-	if created.JSON200 == nil || created.JSON200.SshKeyId == "" {
-		return infer.CreateResponse[SSHKeyState]{}, fmt.Errorf("sshKey.create returned incomplete SSH key")
+	after, err := api.SshKeyAllWithResponse(ctx)
+	if err != nil {
+		return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(err, req.Inputs)
 	}
-	state.SSHKeyID = created.JSON200.SshKeyId
+	if after.JSON200 == nil {
+		return infer.CreateResponse[SSHKeyState]{}, fmt.Errorf("sshKey.all returned incomplete SSH key list")
+	}
+	var candidates []string
+	for _, key := range *after.JSON200 {
+		if key.Name != nil && *key.Name == req.Inputs.Name && key.SshKeyId != "" {
+			if _, exists := existingIDs[key.SshKeyId]; !exists {
+				candidates = append(candidates, key.SshKeyId)
+			}
+		}
+	}
+	if len(candidates) == 0 {
+		return infer.CreateResponse[SSHKeyState]{}, initFailed(fmt.Errorf("sshKey.create returned no discoverable SSH key"))
+	}
+	if len(candidates) != 1 {
+		return infer.CreateResponse[SSHKeyState]{}, initFailed(fmt.Errorf("sshKey.create returned ambiguous SSH key discovery"))
+	}
+	state.SSHKeyID = candidates[0]
 	read, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: state.SSHKeyID, State: state})
 	if err != nil {
 		return infer.CreateResponse[SSHKeyState]{ID: state.SSHKeyID, Output: state}, initFailed(sanitizeSSHKeyError(err, req.Inputs))
