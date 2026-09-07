@@ -3,8 +3,11 @@ package dokploy
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
@@ -102,9 +105,20 @@ func TestEnvironmentUpdateSendsDescriptionValue(t *testing.T) {
 }
 
 func TestEnvironmentUpdateRejectsDescriptionRemoval(t *testing.T) {
-	r := Environment{}
-	_, err := r.Update(t.Context(), infer.UpdateRequest[EnvironmentArgs, EnvironmentState]{ID: "e1", Inputs: EnvironmentArgs{Name: "renamed"}, State: EnvironmentState{EnvironmentID: "e1", EnvironmentArgs: EnvironmentArgs{Description: stringPtr("existing")}}})
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	t.Cleanup(server.Close)
+	api, err := client.New(server.URL, "test-api-key")
+	require.NoError(t, err)
+	r := Environment{client: fixedClient(api)}
+	_, err = r.Update(t.Context(), infer.UpdateRequest[EnvironmentArgs, EnvironmentState]{ID: "e1", Inputs: EnvironmentArgs{Name: "renamed"}, State: EnvironmentState{EnvironmentID: "e1", EnvironmentArgs: EnvironmentArgs{Description: stringPtr("existing")}}})
 	require.ErrorContains(t, err, "Dokploy does not support clearing an environment description")
+	require.Zero(t, requests.Load())
 }
 
 func TestEnvironmentLifecycleReadUpdateDeleteAndImport(t *testing.T) {
