@@ -194,3 +194,26 @@ live tiers skipped closed by missing opt-in/credentials. `golangci-lint` and
   Source prerequisites were skipped. No Tier 3 or Tier 4 rerun was performed.
 - The boolean update-response mismatch remains the only confirmed provider/API
   defect; no standalone bug report is committed.
+
+## Task 5 fix verification
+
+This section adds verification evidence for the contract fixes; the historical
+rows and evidence above are unchanged. No endpoint, resource ID, request or
+response payload, credential, SSH material, database value, or stop-file path
+is recorded here.
+
+- **Provider revision:** `64fc03f`
+- **Static verification:** the short test suite and race suite passed. The
+  repository OpenAPI normalization diff passed, and code generation followed
+  by the tracked generated-file diff passed. `make check_openapi` itself was
+  unavailable because `mise` is not installed in this environment.
+
+| Focused resource | Result | Duration | Cleanup / stop marker |
+| --- | --- | ---: | --- |
+| Application | **PASS** | 3.64s | clean; no cleanup or stop-marker failure |
+| Environment | **PASS** | 1.19s | clean; no cleanup or stop-marker failure |
+| ProjectTag | **PASS** | 1.58s | clean; no cleanup or stop-marker failure |
+| SSHKey | **PASS** | 1.98s | clean; no cleanup or stop-marker failure |
+
+The PostgreSQL focused verification was not performed or classified in this
+section; it remains for controller execution.
