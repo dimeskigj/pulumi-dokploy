@@ -2,7 +2,8 @@ package dokploy
 
 import (
 	"context"
-	"crypto/ed25519"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -65,13 +66,12 @@ func liveRegistryArgs(t *testing.T) (RegistryArgs, bool) {
 
 func liveSSHKeyPair(t *testing.T) (privateKey, publicKey string) {
 	t.Helper()
-	public, private, err := ed25519.GenerateKey(nil)
+	private, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
-	privateBytes, err := x509.MarshalPKCS8PrivateKey(private)
+	privateBytes := x509.MarshalPKCS1PrivateKey(private)
+	publicKeyData, err := ssh.NewPublicKey(&private.PublicKey)
 	require.NoError(t, err)
-	publicKeyData, err := ssh.NewPublicKey(public)
-	require.NoError(t, err)
-	privateKey = string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateBytes}))
+	privateKey = string(pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateBytes}))
 	publicKey = string(ssh.MarshalAuthorizedKey(publicKeyData))
 	t.Cleanup(registerLiveSecrets(privateKey, publicKey))
 	return privateKey, publicKey
@@ -81,12 +81,15 @@ func TestLiveSSHKeyPairUsesDokployKeyFormats(t *testing.T) {
 	privateKey, publicKey := liveSSHKeyPair(t)
 	parsedPublic, _, _, _, err := ssh.ParseAuthorizedKey([]byte(publicKey))
 	require.NoError(t, err)
-	require.Equal(t, ssh.KeyAlgoED25519, parsedPublic.Type())
+	require.Equal(t, ssh.KeyAlgoRSA, parsedPublic.Type())
 	block, _ := pem.Decode([]byte(privateKey))
 	require.NotNil(t, block)
-	parsedPrivate, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	require.Equal(t, "RSA PRIVATE KEY", block.Type)
+	parsedPrivate, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	require.NoError(t, err)
-	require.IsType(t, ed25519.PrivateKey{}, parsedPrivate)
+	parsedPrivatePublic, err := ssh.NewPublicKey(&parsedPrivate.PublicKey)
+	require.NoError(t, err)
+	require.Equal(t, ssh.MarshalAuthorizedKey(parsedPrivatePublic), []byte(publicKey))
 }
 
 // liveProject creates a scratch project and verifies its eventual absence.
