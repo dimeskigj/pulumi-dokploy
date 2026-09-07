@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -217,6 +218,10 @@ const backupCreateArgsJSON = `{"schedule":"0 0 * * *","enabled":true,"prefix":"p
 const backupCreateExact = `{"backupId":"new1","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`
 const backupCreateUnrelated = `{"backupId":"other","schedule":"0 1 * * *","enabled":true,"prefix":"other-","destinationId":"d2","database":"other","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`
 
+func backupCreateTargetFor(targetID string) string {
+	return `{"postgresId":"` + targetID + `","backups":`
+}
+
 func backupCreateRequest(t *testing.T, ctx context.Context, s *scriptedServer) (infer.CreateResponse[BackupState], error) {
 	t.Helper()
 	return (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
@@ -285,6 +290,27 @@ func TestBackupCreate_RejectsMultipleExactMatches(t *testing.T) {
 	require.Empty(t, got.ID)
 }
 
+func TestBackupCreateAmbiguityErrorOmitsTargetID(t *testing.T) {
+	sentinel := "sentinel-target-id"
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	second := strings.ReplaceAll(`{"backupId":"new2","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`, "pg1", sentinel)
+	exact := strings.ReplaceAll(backupCreateExact, "pg1", sentinel)
+	target := backupCreateTargetFor(sentinel)
+	s := newScriptedServer(t,
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, target+`[]}`),
+		expectPOST("/api/backup.create", strings.ReplaceAll(backupCreateArgsJSON, "pg1", sentinel), ``),
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, target+`[`+exact+`,`+second+`]}`),
+	)
+	got, err := (Backup{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr(sentinel),
+	}})
+	require.ErrorContains(t, err, "2 matching backups")
+	require.NotContains(t, err.Error(), sentinel)
+	require.Empty(t, got.ID)
+}
+
 func TestBackupCreate_Deadline(t *testing.T) {
 	oldPoll := backupCreatePollInterval
 	backupCreatePollInterval = 10 * time.Millisecond
@@ -303,6 +329,29 @@ func TestBackupCreate_Deadline(t *testing.T) {
 	_, err := backupCreateRequest(t, ctx, s)
 	require.ErrorIs(t, err, context.DeadlineExceeded)
 	require.ErrorContains(t, err, "backup.create succeeded but no unique matching backup became visible")
+}
+
+func TestBackupCreateDeadlineErrorOmitsTargetID(t *testing.T) {
+	sentinel := "sentinel-target-id"
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = 10 * time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	unchanged := backupCreateTargetFor(sentinel) + `[]}`
+	expectations := []scriptedRequest{
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged),
+		expectPOST("/api/backup.create", strings.ReplaceAll(backupCreateArgsJSON, "pg1", sentinel), ``),
+	}
+	for i := 0; i < 3; i++ {
+		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged))
+	}
+	s := newScriptedServer(t, expectations...)
+	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
+	defer cancel()
+	_, err := (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr(sentinel),
+	}})
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+	require.NotContains(t, err.Error(), sentinel)
 }
 
 func TestBackupCreate_Cancellation(t *testing.T) {
@@ -327,6 +376,32 @@ func TestBackupCreate_Cancellation(t *testing.T) {
 	require.ErrorIs(t, err, context.Canceled)
 	require.True(t, errors.Is(err, context.Canceled))
 	require.ErrorContains(t, err, "backup.create succeeded but no unique matching backup became visible")
+}
+
+func TestBackupCreateCancellationErrorOmitsTargetID(t *testing.T) {
+	sentinel := "sentinel-target-id"
+	oldPoll := backupCreatePollInterval
+	backupCreatePollInterval = 10 * time.Millisecond
+	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
+	unchanged := backupCreateTargetFor(sentinel) + `[]}`
+	expectations := []scriptedRequest{
+		expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged),
+		expectPOST("/api/backup.create", strings.ReplaceAll(backupCreateArgsJSON, "pg1", sentinel), ``),
+	}
+	for i := 0; i < 3; i++ {
+		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged))
+	}
+	s := newScriptedServer(t, expectations...)
+	ctx, cancel := context.WithCancel(t.Context())
+	go func() {
+		time.Sleep(25 * time.Millisecond)
+		cancel()
+	}()
+	_, err := (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
+		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr(sentinel),
+	}})
+	require.ErrorIs(t, err, context.Canceled)
+	require.NotContains(t, err.Error(), sentinel)
 }
 
 func TestBackupReadReconstructsEachDatabaseType(t *testing.T) {

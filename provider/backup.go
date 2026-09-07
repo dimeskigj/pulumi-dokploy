@@ -363,8 +363,8 @@ var backupCreatePollInterval = 2 * time.Second
 func waitForCreatedBackup(ctx context.Context, api *client.Client, databaseType, targetID string, before map[string]backupObservation, args BackupArgs) (string, error) {
 	wrapContextError := func(err error) (string, error) {
 		return "", fmt.Errorf(
-			"backup.create succeeded but no unique matching backup became visible on %s %s: %w",
-			databaseType, targetID, err,
+			"backup.create succeeded but no unique matching backup became visible for database type %s: %w",
+			databaseType, err,
 		)
 	}
 	for {
@@ -388,7 +388,7 @@ func waitForCreatedBackup(ctx context.Context, api *client.Client, databaseType,
 			return matches[0], nil
 		}
 		if len(matches) > 1 {
-			return "", fmt.Errorf("backup.create found %d matching backups on %s %s", len(matches), databaseType, targetID)
+			return "", fmt.Errorf("backup.create found %d matching backups for database type %s", len(matches), databaseType)
 		}
 
 		timer := time.NewTimer(backupCreatePollInterval)
