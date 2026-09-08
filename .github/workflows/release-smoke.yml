@@ -40,7 +40,7 @@ jobs:
       - name: Install pinned Pulumi CLI
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.159.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
+          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.259.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Download and verify provider archive
@@ -92,7 +92,7 @@ jobs:
       - name: Install pinned Pulumi CLI
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.159.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
+          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.259.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Node package and compile
@@ -139,7 +139,7 @@ jobs:
       - name: Install pinned Pulumi CLI
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.159.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
+          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.259.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Python package and compile
@@ -187,7 +187,7 @@ jobs:
       - name: Install pinned Pulumi CLI
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.159.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
+          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.259.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact .NET package and compile
@@ -199,7 +199,7 @@ jobs:
           cd "$RUNNER_TEMP/dotnet-consumer"
           dotnet new console --framework net8.0 --no-restore
           dotnet add package Dimeskigj.Pulumi.Dokploy --version "$VERSION"
-          dotnet add package Pulumi --version 3.159.0
+          dotnet add package Pulumi --version 3.259.0
           printf 'using Pulumi;\nusing Dimeskigj.Pulumi.Dokploy;\nreturn await Deployment.RunAsync(() => { var provider = new Provider("smoke", new ProviderArgs { Endpoint = "https://example.invalid", ApiKey = "smoke" }); return new Dictionary<string, object?> { ["providerUrn"] = provider.Urn }; });\n' > Program.cs
           dotnet build
       - name: Preview with fresh provider cache
@@ -235,7 +235,7 @@ jobs:
       - name: Install pinned Pulumi CLI
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.159.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
+          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.259.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Java package and compile
@@ -271,7 +271,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/java-program"
-          printf 'name: release-smoke\nruntime:\n  name: java\n  options:\n    main: smoke.Main\n    build: mvn -B -ntp package\n' > "$RUNNER_TEMP/java-program/Pulumi.yaml"
+          printf 'name: release-smoke\nruntime: java\n' > "$RUNNER_TEMP/java-program/Pulumi.yaml"
           cp -R "$RUNNER_TEMP/java-consumer"/. "$RUNNER_TEMP/java-program/"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/java-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/java-program"
@@ -295,7 +295,7 @@ jobs:
       - name: Install pinned Pulumi CLI
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.159.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
+          curl --fail --location --silent --show-error https://get.pulumi.com/releases/sdk/pulumi-v3.259.0-linux-x64.tar.gz -o "$RUNNER_TEMP/pulumi.tgz"
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Go module and compile

@@ -285,13 +285,17 @@ func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
 		}
 	}
 	javaText := workflowValueText(jobs["java"])
-	for _, required := range []string{"<artifactId>dokploy</artifactId>", "<version>$VERSION</version>", "exec-maven-plugin", "<mainClass>smoke.Main</mainClass>", "runtime:\\n  name: java", "mvn -B -ntp package"} {
+	for _, required := range []string{"<artifactId>dokploy</artifactId>", "<version>$VERSION</version>", "exec-maven-plugin", "<mainClass>smoke.Main</mainClass>", "runtime: java", "mvn -B -ntp package"} {
 		if !strings.Contains(javaText, required) {
 			return fmt.Errorf("release smoke Java consumer is missing runnable Maven metadata %q", required)
 		}
 	}
+	if strings.Contains(text, "pulumi-v3.159.0-linux-x64.tar.gz") {
+		return fmt.Errorf("release smoke workflow contains stale Pulumi CLI pin 3.159.0")
+	}
 	for _, required := range []string{
 		"=~ ^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)",
+		"pulumi-v3.259.0-linux-x64.tar.gz",
 		"checksums.txt",
 		"sha256sum",
 		"pulumi package get-schema",
@@ -305,6 +309,12 @@ func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
 		if !strings.Contains(text, required) {
 			return fmt.Errorf("release smoke workflow is missing %q", required)
 		}
+	}
+	if strings.Count(text, "pulumi-v3.259.0-linux-x64.tar.gz") != 6 {
+		return fmt.Errorf("release smoke workflow must pin Pulumi CLI 3.259.0 in every job")
+	}
+	if strings.Contains(text, "options:\n    main:") || strings.Contains(text, "options:\n    build:") {
+		return fmt.Errorf("release smoke Java runtime must rely on Maven runtime detection")
 	}
 	for _, forbidden := range []string{"secrets.", "publish", "npm publish", "twine upload", "dotnet nuget push", "maven-publish"} {
 		if strings.Contains(strings.ToLower(text), strings.ToLower(forbidden)) {
@@ -324,6 +334,12 @@ func TestReleaseSmokeWorkflowRejectsPolicyDrift(t *testing.T) {
 	jobs := workflow["jobs"].(map[string]any)
 	delete(jobs, "go")
 	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, text), "one validator and six consumer jobs")
+}
+
+func TestReleaseSmokeWorkflowRejectsStalePulumiPin(t *testing.T) {
+	workflow, text := readWorkflow(t, "release-smoke.yml")
+	stale := strings.ReplaceAll(text, "pulumi-v3.259.0-linux-x64.tar.gz", "pulumi-v3.159.0-linux-x64.tar.gz")
+	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, stale), "stale Pulumi CLI pin 3.159.0")
 }
 
 func TestJavaExampleFixtureHasRunnableMavenMetadata(t *testing.T) {

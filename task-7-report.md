@@ -42,3 +42,22 @@ Registry PR/release publication, lookup functions, and broad engine acceptance.
   credentials and release opt-in were unavailable.
 - Website advisories, logo/contacts/governance, and other deferred items were
   intentionally not changed.
+
+## Follow-up correction
+
+- Updated all six release-smoke jobs to download Pulumi CLI 3.259.0 and aligned
+  the .NET Pulumi package to 3.259.0; no stale 3.159.0 pin remains.
+- Removed Java `runtime.options.main` and `runtime.options.build`, leaving
+  Maven metadata and the Java runtime to detect the entry point and build.
+- Strengthened the workflow contract to require exactly six 3.259.0 CLI pins,
+  reject stale 3.159.0 pins, and reject unsupported Java runtime options.
+
+Follow-up verification:
+
+- `go test ./provider -run '^TestReleaseSmokeWorkflow(Contracts|RejectsPolicyDrift)$' -count=1` — PASS.
+- `go test ./provider -run 'Workflow|Smoke' -count=1` — PASS.
+- `go test -short ./provider/... ./internal/... -count=1` — PASS.
+- `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 .github/workflows/release-smoke.yml` — PASS.
+- `git diff --check` — PASS.
+
+The pre-existing race flake was not addressed.
