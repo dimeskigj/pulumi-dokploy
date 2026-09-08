@@ -194,3 +194,52 @@ live tiers skipped closed by missing opt-in/credentials. `golangci-lint` and
   Source prerequisites were skipped. No Tier 3 or Tier 4 rerun was performed.
 - The boolean update-response mismatch remains the only confirmed provider/API
   defect; no standalone bug report is committed.
+
+## Task 3 — final Tier 2 compatibility evidence
+
+The final serial Tier 2 execution took **110.07s**. The acceptance stop marker
+was absent. Application and Compose passed. All six Application/Compose Mount
+lifecycle cases passed, as did the Compose, PostgreSQL, MySQL, MariaDB, and
+Redis MountDispatch cases. Registry and GitLab source variants were skipped
+because their dedicated credentials were not configured, as designed.
+
+The two Domain cases (Application and Compose) each returned only the
+sanitized classification `operation=domain;status=4xx;code=BAD_REQUEST`.
+No request-shape mismatch was established. The deterministic provider and
+generated-request matrices match the pinned OpenAPI contract.
+
+### Revision and source comparison
+
+The deployed Dokploy revision is **unavailable** from the already-safe local
+metadata and no server administration metadata was queried. It must not be
+invented or inferred from the live result. The pinned OpenAPI source revision
+remains the repository-recorded source of contract comparison.
+
+Inspection of the pinned Dokploy source shows that Domain create selects the
+Application or Compose authorization target from `domainType`, accepts the
+corresponding foreign-key field, and retains `serviceName` for Compose. Mount
+create dispatches `serviceId` to the Application or Compose foreign-key field;
+the same dispatch pattern is used by the working database branches. The pinned
+schema declares the corresponding nullable foreign keys, and the pinned source
+includes the migrations that establish them. Applied migration state on the
+deployed instance is **unavailable** without an approved server-side metadata
+source.
+
+### Decision and ownership
+
+Because no provider request mismatch was reproduced, no OpenAPI correction,
+provider mapping change, or create-time null-omission change is justified.
+The Domain failures are classified as Dokploy server/deployed-version
+compatibility evidence, owned by the Dokploy deployment and migration path.
+The exact follow-up boundary is to compare the deployed revision and applied
+migrations with the pinned source, then patch Dokploy if the Application or
+Compose foreign-key handling is absent or inconsistent. A targeted provider
+compatibility diagnostic can be added only after a minimum compatible Dokploy
+version is established.
+
+### Cleanup evidence limitation
+
+The supplied sanitized final log records the lifecycle outcomes and no stop
+condition, but does not independently enumerate cleanup confirmations for each
+case. No cleanup failure is present in that log; cleanup verification remains
+limited to the harness evidence retained outside this tracked summary.
