@@ -32,7 +32,7 @@ func (c *Config) Configure(ctx context.Context) error {
 	if strings.TrimSpace(c.APIKey) == "" {
 		return errors.New("apiKey is required")
 	}
-	configured, err := client.New(c.Endpoint, c.APIKey)
+	configured, err := client.New(c.Endpoint, c.APIKey, client.WithUserAgentVersion(Version))
 	if err != nil {
 		return fmt.Errorf("configure Dokploy client: %w", err)
 	}

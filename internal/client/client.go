@@ -15,8 +15,9 @@ import (
 type Option func(*clientOptions)
 
 type clientOptions struct {
-	httpClient  *http.Client
-	retryPolicy RetryPolicy
+	httpClient       *http.Client
+	retryPolicy      RetryPolicy
+	userAgentVersion string
 }
 
 // WithHTTPClient supplies the underlying HTTP client (principally for tests).
@@ -27,6 +28,11 @@ func WithHTTPClient(httpClient *http.Client) Option {
 // WithRetryPolicy supplies the bounded GET retry policy.
 func WithRetryPolicy(policy RetryPolicy) Option {
 	return func(options *clientOptions) { options.retryPolicy = policy }
+}
+
+// WithUserAgentVersion identifies requests made by this provider version.
+func WithUserAgentVersion(version string) Option {
+	return func(options *clientOptions) { options.userAgentVersion = version }
 }
 
 // Client is the authenticated Dokploy API client.
@@ -68,7 +74,7 @@ func New(endpoint, apiKey string, options ...Option) (*Client, error) {
 	}
 	httpClient.Transport = newRetryTransport(httpClient.Transport, opts.retryPolicy, apiKey)
 	generatedClient, err := generated.NewClientWithResponses(normalized,
-		generated.WithHTTPClient(httpClient), generated.WithRequestEditorFn(apiKeyEditor(apiKey)))
+		generated.WithHTTPClient(httpClient), generated.WithRequestEditorFn(apiKeyEditor(apiKey, providerUserAgent(opts.userAgentVersion))))
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +93,20 @@ func normalizeEndpoint(endpoint string) (string, error) {
 	return strings.TrimRight(parsed.String(), "/"), nil
 }
 
-func apiKeyEditor(apiKey string) generated.RequestEditorFn {
+func providerUserAgent(version string) string {
+	version = strings.TrimSpace(version)
+	version = strings.TrimPrefix(version, "v")
+	if version == "" {
+		version = "dev"
+	}
+	return "pulumi-dokploy/" + version
+}
+
+func apiKeyEditor(apiKey, userAgent string) generated.RequestEditorFn {
 	return func(_ context.Context, req *http.Request) error {
 		req.Header.Set("x-api-key", apiKey)
 		req.Header.Set("Accept", "application/json")
+		req.Header.Set("User-Agent", userAgent)
 		return nil
 	}
 }
