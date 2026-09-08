@@ -20,6 +20,8 @@ func Provider() p.Provider {
 		Metadata: schema.Metadata{
 			DisplayName: "Dokploy",
 			Description: "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, backup destinations, database backups, and volume backups.",
+			PluginDownloadURL: "github://api.github.com/dimeskigj/pulumi-dokploy",
+			Keywords:          []string{"category/infrastructure", "kind/native", "dokploy", "deployment", "self-hosted", "paas"},
 			Namespace:   "dimeskigj",
 			Homepage:    "https://github.com/dimeskigj/pulumi-dokploy",
 			Repository:  "https://github.com/dimeskigj/pulumi-dokploy",

@@ -90,6 +90,54 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 	require.True(t, spec.Resources["dokploy:index:Mount"].InputProperties["content"].Secret)
 }
 
+func TestSchemaPublishingMetadata(t *testing.T) {
+	spec := providerSchema(t)
+	require.Equal(t, "github://api.github.com/dimeskigj/pulumi-dokploy", spec.PluginDownloadURL)
+	require.ElementsMatch(t, []string{
+		"category/infrastructure", "kind/native", "dokploy",
+		"deployment", "self-hosted", "paas",
+	}, spec.Keywords)
+	require.Empty(t, spec.LogoURL)
+}
+
+func TestGeneratedPublishingMetadata(t *testing.T) {
+	generatedSchema := readGenerated(t, "provider", "cmd", "pulumi-resource-dokploy", "schema.json")
+	var schemaMetadata struct {
+		PluginDownloadURL string   `json:"pluginDownloadURL"`
+		Keywords          []string `json:"keywords"`
+		LogoURL           string   `json:"logoUrl"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(generatedSchema), &schemaMetadata))
+	require.Equal(t, "github://api.github.com/dimeskigj/pulumi-dokploy", schemaMetadata.PluginDownloadURL)
+	require.ElementsMatch(t, []string{
+		"category/infrastructure", "kind/native", "dokploy",
+		"deployment", "self-hosted", "paas",
+	}, schemaMetadata.Keywords)
+	require.Empty(t, schemaMetadata.LogoURL)
+
+	for _, parts := range [][]string{
+		{"sdk", "go", "dokploy", "pulumi-plugin.json"},
+		{"sdk", "python", "pulumi_dokploy", "pulumi-plugin.json"},
+		{"sdk", "dotnet", "pulumi-plugin.json"},
+	} {
+		var pluginMetadata map[string]any
+		require.NoError(t, json.Unmarshal([]byte(readGenerated(t, parts...)), &pluginMetadata))
+		require.Equal(t, true, pluginMetadata["resource"])
+		require.Equal(t, "dokploy", pluginMetadata["name"])
+	}
+
+	pythonUtilities := readGenerated(t, "sdk", "python", "pulumi_dokploy", "_utilities.py")
+	require.Contains(t, pythonUtilities, "return \"github://api.github.com/dimeskigj/pulumi-dokploy\"")
+	nodeUtilities := readGenerated(t, "sdk", "nodejs", "utilities.ts")
+	require.Contains(t, nodeUtilities, "pluginDownloadURL: \"github://api.github.com/dimeskigj/pulumi-dokploy\"")
+	goUtilities := readGenerated(t, "sdk", "go", "dokploy", "internal", "pulumiUtilities.go")
+	require.Contains(t, goUtilities, "pulumi.PluginDownloadURL(\"github://api.github.com/dimeskigj/pulumi-dokploy\")")
+	dotnetUtilities := readGenerated(t, "sdk", "dotnet", "Utilities.cs")
+	require.Contains(t, dotnetUtilities, "PluginDownloadURL ?? \"github://api.github.com/dimeskigj/pulumi-dokploy\"")
+	javaProvider := readGenerated(t, "sdk", "java", "src", "main", "java", "net", "dimeski", "pulumi", "dokploy", "Provider.java")
+	require.Contains(t, javaProvider, ".pluginDownloadURL(\"github://api.github.com/dimeskigj/pulumi-dokploy\")")
+}
+
 func TestSchemaReplacementFlags(t *testing.T) {
 	spec := providerSchema(t)
 	for _, property := range []string{"projectId", "tagId"} {
