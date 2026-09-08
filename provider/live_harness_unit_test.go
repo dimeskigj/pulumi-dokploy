@@ -39,6 +39,51 @@ func TestLiveGateRequiresBothCredentials(t *testing.T) {
 	}
 }
 
+func TestClassifyWorkloadCreateAttempt(t *testing.T) {
+	tests := []struct {
+		name          string
+		operation     string
+		status        int
+		code          string
+		keys          []string
+		targetPresent bool
+		targetReady   bool
+		want          string
+	}{
+		{
+			name:      "ready domain with sorted keys",
+			operation: "domain", status: 201, code: "VALIDATION", keys: []string{"environmentId", "applicationId"},
+			targetPresent: true, targetReady: true,
+			want: "operation=domain;status=2xx;code=VALIDATION;keys=applicationId,environmentId;target=ready",
+		},
+		{
+			name:      "missing target is safe",
+			operation: "mount", status: 404, code: "NOT_FOUND", keys: []string{"applicationId"},
+			want: "operation=mount;status=4xx;code=unknown;keys=applicationId;target=missing",
+		},
+		{
+			name:      "unsafe metadata is omitted",
+			operation: "unknown-operation", status: 503, code: "bad code; DROP TABLE secrets", keys: []string{"host.example/id", "apiKey", "composeId"},
+			targetPresent: true,
+			want:          "operation=unknown;status=5xx;code=unknown;keys=apiKey,composeId;target=present-not-ready",
+		},
+		{
+			name:      "transport has no server metadata",
+			operation: "domain", status: 0, code: "SAFECODE", keys: []string{"api-key-secret"},
+			want: "operation=domain;status=transport;code=SAFECODE;keys=none;target=missing",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := classifyWorkloadCreateAttempt(tt.operation, tt.status, tt.code, tt.keys, tt.targetPresent, tt.targetReady)
+			require.Equal(t, tt.want, got)
+			for _, sentinel := range []string{"application-id-sentinel", "host.example", "/id", "DROP TABLE", "SECRET"} {
+				require.NotContains(t, got, sentinel)
+			}
+		})
+	}
+}
+
 func TestLiveRunNameUsesKindAndUUID(t *testing.T) {
 	name := liveRunName("application")
 	parts := strings.Split(name, "-")

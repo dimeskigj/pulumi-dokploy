@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -129,6 +131,69 @@ func liveResultKinds(results []liveResult) []string {
 
 func recordLiveOutcome(kind, classification string) {
 	recordLiveResult(kind, classification)
+}
+
+func classifyWorkloadCreateAttempt(operation string, status int, apiCode string, keys []string, targetPresent bool, targetReady bool) string {
+	if operation != "domain" && operation != "mount" {
+		operation = "unknown"
+	}
+	statusClass := "transport"
+	switch {
+	case status >= 200 && status < 300:
+		statusClass = "2xx"
+	case status >= 400 && status < 500:
+		statusClass = "4xx"
+	case status >= 500 && status < 600:
+		statusClass = "5xx"
+	}
+	if !isSafeWorkloadMetadata(apiCode) {
+		apiCode = "unknown"
+	}
+	safeKeys := make([]string, 0, len(keys))
+	seen := make(map[string]struct{}, len(keys))
+	for _, key := range keys {
+		if !isSafeWorkloadMetadata(key) {
+			continue
+		}
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		safeKeys = append(safeKeys, key)
+	}
+	sort.Strings(safeKeys)
+	keysLabel := "none"
+	if len(safeKeys) > 0 {
+		keysLabel = strings.Join(safeKeys, ",")
+	}
+	target := "missing"
+	if targetPresent {
+		target = "present-not-ready"
+		if targetReady {
+			target = "ready"
+		}
+	}
+	return fmt.Sprintf("operation=%s;status=%s;code=%s;keys=%s;target=%s", operation, statusClass, apiCode, keysLabel, target)
+}
+
+func classifyWorkloadCreateError(operation string, err error, keys []string, targetPresent bool, targetReady bool) string {
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) {
+		return classifyWorkloadCreateAttempt(operation, apiErr.StatusCode, apiErr.Code, keys, targetPresent, targetReady)
+	}
+	return classifyWorkloadCreateAttempt(operation, 0, "", keys, targetPresent, targetReady)
+}
+
+func isSafeWorkloadMetadata(value string) bool {
+	if value == "" {
+		return false
+	}
+	for _, char := range value {
+		if (char < 'a' || char > 'z') && (char < 'A' || char > 'Z') && (char < '0' || char > '9') {
+			return false
+		}
+	}
+	return true
 }
 
 func classifyEnvironmentUpdateComparison(providerErr, directErr error) string {

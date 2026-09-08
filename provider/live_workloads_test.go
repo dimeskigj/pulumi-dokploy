@@ -196,8 +196,10 @@ func TestLiveTier2Workloads(t *testing.T) {
 	for _, target := range workloadTargets {
 		target := target
 		t.Run("Domain/"+target.name, func(t *testing.T) {
-			if !workloadDependencyReady(target.id, target.status) {
-				t.Skip("dependent workload target was not created successfully")
+			targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
+			requireNoError(t, readErr)
+			if !targetPresent || !targetReady {
+				t.Fatalf("workload target unavailable: %s", classifyWorkloadCreateAttempt("domain", 0, "", domainCreateRequestKeys(target.compose), targetPresent, targetReady))
 			}
 			r := Domain{client: fixedClient(api)}
 			args := DomainArgs{Host: liveRunName("domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
@@ -214,6 +216,9 @@ func TestLiveTier2Workloads(t *testing.T) {
 				v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
 				return v.ID, e
 			})
+			if err != nil {
+				recordLiveOutcome("Domain/"+target.name, classifyWorkloadCreateError("domain", err, domainCreateRequestKeys(target.compose), targetPresent, targetReady))
+			}
 			requireNoError(t, err)
 			read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: created.Output})
 			requireNoError(t, err)
@@ -256,9 +261,6 @@ func TestLiveTier2Workloads(t *testing.T) {
 	for _, target := range workloadTargets {
 		target := target
 		t.Run("Mounts/"+target.name, func(t *testing.T) {
-			if !workloadDependencyReady(target.id, target.status) {
-				t.Skip("dependent workload target was not created successfully")
-			}
 			r := Mount{client: fixedClient(api)}
 			mounts := []MountArgs{
 				{Type: mountTypeBind, MountPath: "/mnt/bind", HostPath: stringPtr(filepath.Join("/tmp", liveRunName("mount")))},
@@ -281,6 +283,11 @@ func TestLiveTier2Workloads(t *testing.T) {
 						inputs.ApplicationID = &target.id
 					}
 					t.Cleanup(registerLiveSecrets(value(inputs.Content), value(inputs.HostPath), value(inputs.VolumeName)))
+					targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
+					requireNoError(t, readErr)
+					if !targetPresent || !targetReady {
+						t.Fatalf("workload target unavailable: %s", classifyWorkloadCreateAttempt("mount", 0, "", mountCreateRequestKeys(inputs), targetPresent, targetReady))
+					}
 					created, err := r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: inputs})
 					cleanupAfterCreateError(t, "mount", created.ID, err, func(c context.Context) error {
 						_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
@@ -289,6 +296,9 @@ func TestLiveTier2Workloads(t *testing.T) {
 						v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 						return v.ID, e
 					})
+					if err != nil {
+						recordLiveOutcome("Mount/"+target.name+"/"+inputs.Type, classifyWorkloadCreateError("mount", err, mountCreateRequestKeys(inputs), targetPresent, targetReady))
+					}
 					requireNoError(t, err)
 					read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
 					requireNoError(t, err)
@@ -481,6 +491,54 @@ func TestLiveTier2Workloads(t *testing.T) {
 
 func workloadDependencyReady(id, status string) bool {
 	return id != "" && status == statusDone
+}
+
+func readLiveWorkloadTarget(ctx context.Context, api *client.Client, id string, compose bool) (bool, bool, error) {
+	if id == "" {
+		return false, false, nil
+	}
+	if compose {
+		read, err := (Compose{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: id})
+		return read.ID != "", read.State.Status == statusDone, err
+	}
+	read, err := (Application{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
+	return read.ID != "", read.State.Status == statusDone, err
+}
+
+func domainCreateRequestKeys(compose bool) []string {
+	keys := []string{"certificateType", "enabled", "host", "port"}
+	if compose {
+		return append(keys, "composeId", "serviceName")
+	}
+	return append(keys, "applicationId")
+}
+
+func mountCreateRequestKeys(inputs MountArgs) []string {
+	keys := []string{"mountPath", "type"}
+	switch inputs.Type {
+	case mountTypeBind:
+		keys = append(keys, "hostPath")
+	case mountTypeVolume:
+		keys = append(keys, "volumeName")
+	case mountTypeFile:
+		keys = append(keys, "content", "filePath")
+	}
+	for _, target := range []struct {
+		name string
+		set  bool
+	}{
+		{name: "applicationId", set: inputs.ApplicationID != nil},
+		{name: "composeId", set: inputs.ComposeID != nil},
+		{name: "postgresId", set: inputs.PostgresID != nil},
+		{name: "mysqlId", set: inputs.MySQLID != nil},
+		{name: "mariadbId", set: inputs.MariaDBID != nil},
+		{name: "redisId", set: inputs.RedisID != nil},
+	} {
+		if target.set {
+			keys = append(keys, target.name)
+		}
+	}
+	return keys
 }
 
 func composeDiffInputs(base ComposeArgs) (ComposeArgs, ComposeArgs) {
