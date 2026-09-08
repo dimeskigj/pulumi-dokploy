@@ -236,7 +236,7 @@ are a separate lifecycle contract, not additional artifact evidence. No
 endpoint, resource ID, request or response payload, credential, SSH material,
 or database value is recorded here.
 
-## Task 4 non-live runner verification
+## Task 4 non-live runner verification (2026-09-08 local preflight)
 
 Provider revision: `b127bbc`. No live smoke was run by this task, and no
 credentials or `.env` files were read.
@@ -252,5 +252,23 @@ credentials or `.env` files were read.
 | focused live smoke | **NOT RUN** | controller-only; protected credentials were not sourced |
 
 The direct `pulumi plugin ls` fallback was also unavailable because the Pulumi
-CLI is not installed outside `mise`. The provider build completed, but plugin
-discovery and the pinned CLI version remain unverified in this environment.
+CLI was not installed outside `mise`. The provider build completed, but plugin
+discovery and the pinned CLI version were not verified in this local preflight.
+
+## Task 4 controller verification (2026-09-08)
+
+The controller bootstrapped the exact pinned Pulumi CLI version `v3.259.0` in a
+temporary repository-safe location, without changing user configuration. With
+that CLI and the locally built provider available on `PATH`, the lifecycle
+smoke executed successfully. Credentials, endpoint details, stack state,
+resource IDs, and configuration values are intentionally omitted.
+
+| Check | Result | Duration / cleanup |
+| --- | --- | --- |
+| `make provider` | **PASS** | provider built before smoke |
+| `TestAccLifecycleSmoke` | **PASS** | test 12.83 s; package 12.848 s; stop marker absent |
+
+This supersedes the Task 4 local placeholder's **NOT RUN** smoke result for
+the 2026-09-08 controller verification. The historical 2026-09-05 live
+non-run evidence above remains unchanged. The sanitized controller artifact
+reported no cleanup failure; no live state details are recorded here.
