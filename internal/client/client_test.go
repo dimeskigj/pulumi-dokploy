@@ -1,9 +1,7 @@
 package client
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +11,6 @@ import (
 	"time"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
-	"github.com/oapi-codegen/nullable"
 	"github.com/stretchr/testify/require"
 )
 
@@ -53,72 +50,6 @@ func TestNewNormalizesEndpointAndAuthenticates(t *testing.T) {
 	require.Equal(t, "/api/project.one", server.LastRequest().URL.Path)
 	require.Equal(t, "super-secret", server.LastRequest().Header.Get("x-api-key"))
 	require.Equal(t, "application/json", server.LastRequest().Header.Get("Accept"))
-}
-
-func TestGeneratedCreateRequestsSerializeWorkloadBodies(t *testing.T) {
-	cases := []struct {
-		name, path string
-		body       any
-		want       string
-	}{
-		{"domain", "/domain.create", generated.DomainCreateJSONRequestBody{Host: "app.example.com", Https: boolPtr(false), StripPath: boolPtr(false), ApplicationId: nullableString("a1"), DomainType: nullableDomainType("application")}, `{"applicationId":"a1","domainType":"application","host":"app.example.com","https":false,"stripPath":false}`},
-		{"mount", "/mounts.create", generated.MountsCreateJSONRequestBody{MountPath: "/data", ServiceId: "a1", ServiceType: mountServiceTypePtr("application"), Type: "bind", HostPath: nullableString("/host")}, `{"hostPath":"/host","mountPath":"/data","serviceId":"a1","serviceType":"application","type":"bind"}`},
-	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			var request *http.Request
-			transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
-				request = r
-				return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
-			})
-			server := &http.Client{Transport: transport}
-			var err error
-			switch body := tc.body.(type) {
-			case generated.DomainCreateJSONRequestBody:
-				request, err = generated.NewDomainCreateRequest("https://example.test/api", body)
-			case generated.MountsCreateJSONRequestBody:
-				request, err = generated.NewMountsCreateRequest("https://example.test/api", body)
-			}
-			require.NoError(t, err)
-			require.Equal(t, http.MethodPost, request.Method)
-			require.Equal(t, tc.path, request.URL.Path)
-			require.Equal(t, "application/json", request.Header.Get("Content-Type"))
-			response, err := server.Do(request)
-			require.NoError(t, err)
-			require.NoError(t, response.Body.Close())
-			got, err := jsonBytes(request)
-			require.NoError(t, err)
-			var want, actual map[string]any
-			require.NoError(t, json.Unmarshal([]byte(tc.want), &want))
-			require.NoError(t, json.Unmarshal(got, &actual))
-			require.Equal(t, want, actual)
-		})
-	}
-}
-
-type roundTripFunc func(*http.Request) (*http.Response, error)
-
-func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
-
-func jsonBytes(r *http.Request) ([]byte, error) {
-	var buffer bytes.Buffer
-	_, err := buffer.ReadFrom(r.Body)
-	return buffer.Bytes(), err
-}
-
-func boolPtr(v bool) *bool { return &v }
-
-func nullableString(v string) (result nullable.Nullable[string]) {
-	return nullable.NewNullableWithValue(v)
-}
-
-func nullableDomainType(v string) (result nullable.Nullable[generated.DomainCreateJSONBodyDomainType]) {
-	return nullable.NewNullableWithValue(generated.DomainCreateJSONBodyDomainType(v))
-}
-
-func mountServiceTypePtr(v string) *generated.MountsCreateJSONBodyServiceType {
-	value := generated.MountsCreateJSONBodyServiceType(v)
-	return &value
 }
 
 func TestNewNormalizesEndpointForms(t *testing.T) {

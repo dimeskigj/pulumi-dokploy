@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
 )
@@ -101,6 +102,7 @@ func TestMountCreateBodyCartesianMatrix(t *testing.T) {
 				require.Equal(t, target.id, body["serviceId"])
 				require.Equal(t, target.serviceType, body["serviceType"])
 				require.Equal(t, mount.typ, body["type"])
+				assertGeneratedMountCreateRequest(t, mountCreateBody(args, targetBody), body)
 				for _, field := range []string{"hostPath", "volumeName", "filePath", "content"} {
 					if field == mount.selectedField || (mount.typ == "file" && field == "content") {
 						require.Equal(t, argsField(args, field), body[field])
@@ -129,6 +131,22 @@ func argsField(args MountArgs, field string) string {
 		return ""
 	}
 	return *value
+}
+
+func assertGeneratedMountCreateRequest(t *testing.T, requestBody generated.MountsCreateJSONRequestBody, providerBody map[string]any) {
+	t.Helper()
+	transport := &recordingTransport{}
+	request, err := generated.NewMountsCreateRequest("https://example.test/api", requestBody)
+	require.NoError(t, err)
+	require.Equal(t, http.MethodPost, request.Method)
+	require.Equal(t, "/mounts.create", request.URL.Path)
+	require.Equal(t, "application/json", request.Header.Get("Content-Type"))
+	response, err := (&http.Client{Transport: transport}).Do(request)
+	require.NoError(t, err)
+	require.NoError(t, response.Body.Close())
+	expected, err := json.Marshal(providerBody)
+	require.NoError(t, err)
+	require.JSONEq(t, string(expected), string(transport.body))
 }
 
 func TestMountUpdateBodyClearsOptionalValuesWithExplicitNulls(t *testing.T) {
