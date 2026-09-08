@@ -215,5 +215,13 @@ is recorded here.
 | ProjectTag | **PASS** | 1.58s | clean; no cleanup or stop-marker failure |
 | SSHKey | **PASS** | 1.98s | clean; no cleanup or stop-marker failure |
 
-The PostgreSQL focused verification was not performed or classified in this
-section; it remains for controller execution.
+### Controller PostgreSQL correction
+
+The earlier selector using `PostgreSQL` matched no subtest and is not evidence.
+The corrected controller command was:
+
+`go test ./provider -run '^TestLiveTier3Databases/Postgres$' -parallel=1 -count=1 -v`
+
+It passed: the `Postgres` subtest completed in **11.28s**, the package passed,
+and the stop marker was absent. No endpoint, resource ID, request or response
+payload, credential, SSH material, or database value is recorded here.
