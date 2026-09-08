@@ -235,3 +235,22 @@ the preserved artifact. The test implementation's cleanup-and-absence checks
 are a separate lifecycle contract, not additional artifact evidence. No
 endpoint, resource ID, request or response payload, credential, SSH material,
 or database value is recorded here.
+
+## Task 4 non-live runner verification
+
+Provider revision: `b127bbc`. No live smoke was run by this task, and no
+credentials or `.env` files were read.
+
+| Check | Result | Duration / limitation |
+| --- | --- | --- |
+| `mise install` | **NOT RUN** | `mise` is unavailable (`command not found`) |
+| `mise exec -- pulumi version` | **NOT RUN** | `mise` is unavailable; pinned version `3.259.0` could not be checked |
+| `make provider` | **PASS** | 217 ms; `bin/pulumi-resource-dokploy` built |
+| `PATH="$PWD/bin:$PATH" mise exec -- pulumi plugin ls` | **NOT RUN** | `mise` is unavailable |
+| `go test -short -count=1 ./provider/... ./internal/... ./tests/...` | **PASS** | 2.601 s |
+| `git diff --check` | **PASS** | no whitespace errors |
+| focused live smoke | **NOT RUN** | controller-only; protected credentials were not sourced |
+
+The direct `pulumi plugin ls` fallback was also unavailable because the Pulumi
+CLI is not installed outside `mise`. The provider build completed, but plugin
+discovery and the pinned CLI version remain unverified in this environment.
