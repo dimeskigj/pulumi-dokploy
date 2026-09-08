@@ -214,6 +214,11 @@ func TestLiveTier2Workloads(t *testing.T) {
 				v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
 				return v.ID, e
 			})
+			if err != nil {
+				classification, classificationErr := classifyWorkloadCreateError("domain", err, domainCreateRequestKeys(target.compose), true, true)
+				require.NoError(t, classificationErr)
+				recordLiveOutcome("Domain/"+target.name, classification)
+			}
 			requireNoError(t, err)
 			read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: created.Output})
 			requireNoError(t, err)
@@ -289,6 +294,11 @@ func TestLiveTier2Workloads(t *testing.T) {
 						v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 						return v.ID, e
 					})
+					if err != nil {
+						classification, classificationErr := classifyWorkloadCreateError("mount", err, mountCreateRequestKeys(inputs), true, true)
+						require.NoError(t, classificationErr)
+						recordLiveOutcome("Mount/"+target.name+"/"+inputs.Type, classification)
+					}
 					requireNoError(t, err)
 					read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
 					requireNoError(t, err)
@@ -477,6 +487,27 @@ func TestLiveTier2Workloads(t *testing.T) {
 		deleteAndReadCompose(t, ctx, Compose{client: fixedClient(api)}, composeID)
 		composeID = ""
 	}
+}
+
+func domainCreateRequestKeys(compose bool) []string {
+	keys := []string{"certificateType", "customCertResolver", "host", "https", "internalPath", "path", "port", "serviceName", "stripPath"}
+	if compose {
+		return append(keys, "composeId", "domainType")
+	}
+	return append(keys, "applicationId", "domainType")
+}
+
+func mountCreateRequestKeys(inputs MountArgs) []string {
+	keys := []string{"mountPath", "serviceId", "serviceType", "type"}
+	switch inputs.Type {
+	case mountTypeBind:
+		keys = append(keys, "hostPath")
+	case mountTypeVolume:
+		keys = append(keys, "volumeName")
+	case mountTypeFile:
+		keys = append(keys, "filePath", "content")
+	}
+	return keys
 }
 
 func workloadDependencyReady(id, status string) bool {

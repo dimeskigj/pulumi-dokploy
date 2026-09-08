@@ -3,9 +3,11 @@ package dokploy
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -128,6 +130,76 @@ func liveResultKinds(results []liveResult) []string {
 
 func recordLiveOutcome(kind, classification string) {
 	recordLiveResult(kind, classification)
+}
+
+func classifyWorkloadCreateAttempt(operation string, status int, apiCode string, keys []string, targetPresent bool, targetReady bool) (string, error) {
+	if operation != "domain" && operation != "mount" {
+		return "", fmt.Errorf("unsupported workload operation")
+	}
+	statusClass := "transport"
+	switch {
+	case status >= 200 && status < 300:
+		statusClass = "2xx"
+	case status >= 400 && status < 500:
+		statusClass = "4xx"
+	case status >= 500 && status < 600:
+		statusClass = "5xx"
+	}
+	if !isSafeWorkloadAPICode(apiCode) {
+		apiCode = "unknown"
+	}
+	safeKeys := make([]string, 0, len(keys))
+	seen := make(map[string]struct{}, len(keys))
+	for _, key := range keys {
+		if !isSafeWorkloadRequestKey(key) {
+			continue
+		}
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		safeKeys = append(safeKeys, key)
+	}
+	sort.Strings(safeKeys)
+	keysLabel := "none"
+	if len(safeKeys) > 0 {
+		keysLabel = strings.Join(safeKeys, ",")
+	}
+	target := "missing"
+	if targetPresent {
+		target = "present-not-ready"
+		if targetReady {
+			target = "ready"
+		}
+	}
+	return fmt.Sprintf("operation=%s;status=%s;code=%s;keys=%s;target=%s", operation, statusClass, apiCode, keysLabel, target), nil
+}
+
+func classifyWorkloadCreateError(operation string, err error, keys []string, targetPresent bool, targetReady bool) (string, error) {
+	status, code := 0, ""
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) {
+		status, code = apiErr.StatusCode, apiErr.Code
+	}
+	return classifyWorkloadCreateAttempt(operation, status, code, keys, targetPresent, targetReady)
+}
+
+func isSafeWorkloadAPICode(code string) bool {
+	switch code {
+	case "BAD_REQUEST", "NOT_FOUND", "VALIDATION_ERROR":
+		return true
+	default:
+		return false
+	}
+}
+
+func isSafeWorkloadRequestKey(key string) bool {
+	switch key {
+	case "host", "https", "stripPath", "certificateType", "path", "internalPath", "port", "serviceName", "customCertResolver", "applicationId", "domainType", "composeId", "mountPath", "serviceId", "serviceType", "type", "hostPath", "volumeName", "filePath", "content":
+		return true
+	default:
+		return false
+	}
 }
 
 func classifyEnvironmentUpdateComparison(providerErr, directErr error) string {
