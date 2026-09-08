@@ -723,7 +723,9 @@ func validateReleaseWorkflowContracts(workflow map[string]any, name string) erro
 		}
 		expected := map[string]any{"contents": "read"}
 		switch jobName {
-		case "publish", "publish_go_sdk":
+		case "publish":
+			expected = map[string]any{"contents": "write", "id-token": "write", "attestations": "write"}
+		case "publish_go_sdk":
 			expected = map[string]any{"contents": "write"}
 		case "publish_sdk":
 			expected = map[string]any{"contents": "read", "id-token": "write"}
@@ -1099,6 +1101,78 @@ jobs:
 			default:
 				require.False(t, hasExactRunCommand(workflowRunSteps(workflow), "make lint"))
 			}
+		})
+	}
+}
+
+func TestGoReleaserConfigsPublishChecksumsSbomsAndNeutralWindowsBuild(t *testing.T) {
+	for _, name := range []string{".goreleaser.yml", ".goreleaser.prerelease.yml"} {
+		t.Run(name, func(t *testing.T) {
+			content, err := os.ReadFile("../" + name)
+			require.NoError(t, err)
+			text := string(content)
+			require.NotContains(t, text, "sign-windows")
+			require.NotContains(t, text, "sign-goreleaser")
+
+			config := map[string]any{}
+			require.NoError(t, yaml.Unmarshal(content, &config))
+			checksum := config["checksum"].(map[string]any)
+			require.Equal(t, "checksums.txt", checksum["name_template"])
+			require.Equal(t, "sha256", checksum["algorithm"])
+			sboms := config["sboms"].([]any)
+			require.Len(t, sboms, 1)
+			require.Equal(t, "archive", sboms[0].(map[string]any)["artifacts"])
+
+			builds := config["builds"].([]any)
+			var windowsBuild map[string]any
+			for _, rawBuild := range builds {
+				build := rawBuild.(map[string]any)
+				goos := build["goos"].([]any)
+				if len(goos) == 1 && goos[0] == "windows" {
+					windowsBuild = build
+				}
+			}
+			require.NotNil(t, windowsBuild)
+			require.Equal(t, "build-provider-windows", windowsBuild["id"])
+			require.NotContains(t, windowsBuild, "hooks")
+		})
+	}
+}
+
+func TestReleasePublishJobsAttestAllProviderArtifacts(t *testing.T) {
+	shaPattern := regexp.MustCompile(`^actions/attest-build-provenance@[0-9a-f]{40}$`)
+	for _, name := range []string{"release.yml", "prerelease.yml"} {
+		t.Run(name, func(t *testing.T) {
+			workflow, _ := readWorkflow(t, name)
+			publish := workflow["jobs"].(map[string]any)["publish"].(map[string]any)
+			require.Equal(t, map[string]any{
+				"contents":     "write",
+				"id-token":     "write",
+				"attestations": "write",
+			}, publish["permissions"])
+
+			steps := publish["steps"].([]any)
+			goreleaserIndex := -1
+			attestationIndex := -1
+			for i, rawStep := range steps {
+				step := rawStep.(map[string]any)
+				uses, _ := step["uses"].(string)
+				if strings.Contains(uses, "goreleaser/goreleaser-action@") {
+					goreleaserIndex = i
+				}
+				if strings.HasPrefix(uses, "actions/attest-build-provenance@") {
+					attestationIndex = i
+					require.Regexp(t, shaPattern, uses)
+					require.NotContains(t, workflowValueText(step), "secrets.")
+					with := step["with"].(map[string]any)
+					subjectPath := with["subject-path"].(string)
+					for _, requiredPath := range []string{"dist/*.tar.gz", "dist/*.zip", "dist/checksums.txt", "dist/*.sbom.json"} {
+						require.Contains(t, subjectPath, requiredPath)
+					}
+				}
+			}
+			require.GreaterOrEqual(t, goreleaserIndex, 0)
+			require.Greater(t, attestationIndex, goreleaserIndex)
 		})
 	}
 }

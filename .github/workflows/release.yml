@@ -199,6 +199,8 @@ jobs:
     name: publish
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
     - name: Checkout Repo
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -223,6 +225,14 @@ jobs:
       with:
         args: -p 3 -f .goreleaser.yml release --clean --timeout 60m0s
         version: latest
+    - name: Attest provider release artifacts
+      uses: actions/attest-build-provenance@62fc1d596301d0ab9914e1fec14dc5c8d93f65cd # v3.2.0
+      with:
+        subject-path: |
+          dist/*.tar.gz
+          dist/*.zip
+          dist/checksums.txt
+          dist/*.sbom.json
   publish_sdk:
     runs-on: ubuntu-latest
     needs: publish
