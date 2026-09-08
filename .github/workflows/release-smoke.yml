@@ -9,23 +9,34 @@ on:
         type: string
 
 jobs:
-  provider:
-    name: provider artifact
+  validate-version:
+    name: validate version
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
-      VERSION: ${{ inputs.version }}
-      GOVERSION: "1.26.6"
-      PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
-      PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
-      PROVIDER_CACHE: ${{ runner.temp }}/provider-cache-${{ github.job }}
+      VERSION_INPUT: ${{ inputs.version }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Validate exact SemVer
+      - name: Validate and export exact SemVer
+        id: version
         run: |
           set -euo pipefail
-          [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]
-          [[ "$VERSION" != v* ]]
+          [[ "$VERSION_INPUT" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]
+          [[ "$VERSION_INPUT" != v* ]]
+          printf 'version=%s\n' "$VERSION_INPUT" >> "$GITHUB_OUTPUT"
+
+  provider:
+    name: provider artifact
+    needs: validate-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.validate-version.outputs.version }}
+      GOVERSION: "1.26.6"
+    steps:
       - name: Install pinned Pulumi CLI
         run: |
           set -euo pipefail
@@ -33,6 +44,10 @@ jobs:
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Download and verify provider archive
+        env:
+          PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
+          PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
+          PROVIDER_CACHE: ${{ runner.temp }}/provider-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$PROVIDER_CACHE" "$PULUMI_HOME"
@@ -40,15 +55,22 @@ jobs:
           arch=amd64
           archive="pulumi-resource-dokploy-v${VERSION}-${os}-${arch}.tar.gz"
           base="https://github.com/dimeskigj/pulumi-dokploy/releases/download/v${VERSION}"
-          curl --fail --location --silent --show-error "$base/$archive" -o "$RUNNER_TEMP/$archive"
-          curl --fail --location --silent --show-error "$base/checksums.txt" -o "$RUNNER_TEMP/checksums.txt"
-          grep -F "  $archive" "$RUNNER_TEMP/checksums.txt" | sha256sum --check --status
-          tar -xzf "$RUNNER_TEMP/$archive" -C "$PROVIDER_CACHE"
+          mkdir -p "$RUNNER_TEMP/provider-download"
+          curl --fail --location --silent --show-error "$base/$archive" -o "$RUNNER_TEMP/provider-download/$archive"
+          curl --fail --location --silent --show-error "$base/checksums.txt" -o "$RUNNER_TEMP/provider-download/checksums.txt"
+          (
+            cd "$RUNNER_TEMP/provider-download"
+            grep -F "  $archive" checksums.txt | sha256sum --check --status
+          )
+          tar -xzf "$RUNNER_TEMP/provider-download/$archive" -C "$PROVIDER_CACHE"
           provider="$PROVIDER_CACHE/pulumi-resource-dokploy"
           test -x "$provider"
           "$provider" --version
           pulumi plugin install resource dokploy "$VERSION" --file "$provider" --reinstall
       - name: Load released provider schema
+        env:
+          PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
+          PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
         run: |
           set -euo pipefail
           pulumi package get-schema dokploy > "$RUNNER_TEMP/dokploy-schema.json"
@@ -57,14 +79,12 @@ jobs:
 
   node:
     name: Node.js consumer
+    needs: validate-version
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
-      VERSION: ${{ inputs.version }}
-      PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
-      PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
-      npm_config_cache: ${{ runner.temp }}/npm-cache-${{ github.job }}
+      VERSION: ${{ needs.validate-version.outputs.version }}
     steps:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -81,15 +101,21 @@ jobs:
           mkdir -p "$RUNNER_TEMP/node-consumer"
           cd "$RUNNER_TEMP/node-consumer"
           npm init --yes
-          npm install --save "@dimeskigj/pulumi-dokploy@${{ inputs.version }}" --save-dev typescript@5.9.2
-          printf 'import * as dokploy from "@dimeskigj/pulumi-dokploy";\nvoid dokploy;\n' > index.ts
-          npx tsc --noEmit --target es2020 --module commonjs index.ts
+          npm install --save "@pulumi/pulumi" "@dimeskigj/pulumi-dokploy@$VERSION"
+          printf 'const pulumi = require("@pulumi/pulumi");\nconst dokploy = require("@dimeskigj/pulumi-dokploy");\nconst provider = new dokploy.Provider("smoke", { endpoint: "https://example.invalid", apiKey: "smoke" });\nexports.providerUrn = provider.urn;\n' > index.js
       - name: Preview with fresh provider cache
+        env:
+          PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
+          PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
+          PULUMI_CONFIG_PASSPHRASE: smoke
+          npm_config_cache: ${{ runner.temp }}/npm-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/node-program"
-          printf 'name: release-smoke\nruntime: yaml\nresources:\n  provider:\n    type: pulumi:providers:dokploy\n    properties:\n      endpoint: https://example.invalid\n      apiKey: smoke\n' > "$RUNNER_TEMP/node-program/Pulumi.yaml"
-          pulumi plugin install resource dokploy "$VERSION" --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v${VERSION}"
+          printf 'name: release-smoke\nruntime: nodejs\nmain: .\n' > "$RUNNER_TEMP/node-program/Pulumi.yaml"
+          cp "$RUNNER_TEMP/node-consumer/index.js" "$RUNNER_TEMP/node-program/index.js"
+          cp "$RUNNER_TEMP/node-consumer/package.json" "$RUNNER_TEMP/node-program/package.json"
+          cp -R "$RUNNER_TEMP/node-consumer/node_modules" "$RUNNER_TEMP/node-program/node_modules"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/node-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/node-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/node-schema.json"
@@ -98,14 +124,12 @@ jobs:
 
   python:
     name: Python consumer
+    needs: validate-version
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
-      VERSION: ${{ inputs.version }}
-      PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
-      PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
-      PIP_CACHE_DIR: ${{ runner.temp }}/pip-cache-${{ github.job }}
+      VERSION: ${{ needs.validate-version.outputs.version }}
     steps:
       - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6
         with:
@@ -122,16 +146,22 @@ jobs:
           mkdir -p "$RUNNER_TEMP/python-consumer"
           python -m venv "$RUNNER_TEMP/python-consumer/venv"
           source "$RUNNER_TEMP/python-consumer/venv/bin/activate"
-          # Public distribution name is pulumi-dokploy; import coordinate is pulumi_dokploy==${{ inputs.version }}.
-          python -m pip install "pulumi-dokploy==${{ inputs.version }}"
-          printf 'import pulumi_dokploy\n' > "$RUNNER_TEMP/python-consumer/main.py"
+          # Public distribution name is pulumi-dokploy; import coordinate is pulumi_dokploy==$VERSION.
+          python -m pip install pulumi "pulumi-dokploy==$VERSION"
+          printf 'import pulumi\nimport pulumi_dokploy\nprovider = pulumi_dokploy.Provider("smoke", endpoint="https://example.invalid", api_key="smoke")\npulumi.export("provider_urn", provider.urn)\n' > "$RUNNER_TEMP/python-consumer/main.py"
           python -m py_compile "$RUNNER_TEMP/python-consumer/main.py"
       - name: Preview with fresh provider cache
+        env:
+          PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
+          PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
+          PULUMI_CONFIG_PASSPHRASE: smoke
+          PIP_CACHE_DIR: ${{ runner.temp }}/pip-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/python-program"
-          printf 'name: release-smoke\nruntime: yaml\nresources:\n  provider:\n    type: pulumi:providers:dokploy\n    properties:\n      endpoint: https://example.invalid\n      apiKey: smoke\n' > "$RUNNER_TEMP/python-program/Pulumi.yaml"
-          pulumi plugin install resource dokploy "$VERSION" --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v${VERSION}"
+          printf 'name: release-smoke\nruntime: python\nmain: .\n' > "$RUNNER_TEMP/python-program/Pulumi.yaml"
+          cp "$RUNNER_TEMP/python-consumer/main.py" "$RUNNER_TEMP/python-program/main.py"
+          source "$RUNNER_TEMP/python-consumer/venv/bin/activate"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/python-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/python-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/python-schema.json"
@@ -140,14 +170,12 @@ jobs:
 
   dotnet:
     name: .NET consumer
+    needs: validate-version
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
-      VERSION: ${{ inputs.version }}
-      PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
-      PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
-      NUGET_PACKAGES: ${{ runner.temp }}/nuget-cache-${{ github.job }}
+      VERSION: ${{ needs.validate-version.outputs.version }}
     steps:
       - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v4
         with:
@@ -164,14 +192,21 @@ jobs:
           mkdir -p "$RUNNER_TEMP/dotnet-consumer"
           cd "$RUNNER_TEMP/dotnet-consumer"
           dotnet new console --framework net8.0 --no-restore
-          dotnet add package Dimeskigj.Pulumi.Dokploy --version "${{ inputs.version }}"
-          dotnet build --no-restore
+          dotnet add package Dimeskigj.Pulumi.Dokploy --version "$VERSION"
+          dotnet add package Pulumi --version 3.159.0
+          printf 'using Pulumi;\nusing Dimeskigj.Pulumi.Dokploy;\nreturn await Deployment.RunAsync(() => { var provider = new Provider("smoke", new ProviderArgs { Endpoint = "https://example.invalid", ApiKey = "smoke" }); return new Dictionary<string, object?> { ["providerUrn"] = provider.Urn }; });\n' > Program.cs
+          dotnet build
       - name: Preview with fresh provider cache
+        env:
+          PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
+          PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
+          PULUMI_CONFIG_PASSPHRASE: smoke
+          NUGET_PACKAGES: ${{ runner.temp }}/nuget-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/dotnet-program"
-          printf 'name: release-smoke\nruntime: yaml\nresources:\n  provider:\n    type: pulumi:providers:dokploy\n    properties:\n      endpoint: https://example.invalid\n      apiKey: smoke\n' > "$RUNNER_TEMP/dotnet-program/Pulumi.yaml"
-          pulumi plugin install resource dokploy "$VERSION" --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v${VERSION}"
+          printf 'name: release-smoke\nruntime: dotnet\n' > "$RUNNER_TEMP/dotnet-program/Pulumi.yaml"
+          cp "$RUNNER_TEMP/dotnet-consumer"/*.{csproj,cs} "$RUNNER_TEMP/dotnet-program/"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/dotnet-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/dotnet-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/dotnet-schema.json"
@@ -180,14 +215,12 @@ jobs:
 
   java:
     name: Java consumer
+    needs: validate-version
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
-      VERSION: ${{ inputs.version }}
-      PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
-      PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
-      GRADLE_USER_HOME: ${{ runner.temp }}/gradle-cache-${{ github.job }}
+      VERSION: ${{ needs.validate-version.outputs.version }}
     steps:
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5
         with:
@@ -205,15 +238,20 @@ jobs:
           mkdir -p "$RUNNER_TEMP/java-consumer/src/main/java/smoke"
           cd "$RUNNER_TEMP/java-consumer"
           printf 'rootProject.name = "release-smoke"\n' > settings.gradle
-          printf 'plugins { id "java" }\nrepositories { mavenCentral() }\ndependencies { implementation "net.dimeski.pulumi:dokploy:${{ inputs.version }}" }\n' > build.gradle
-          printf 'package smoke;\nimport net.dimeski.pulumi.dokploy.*;\npublic class Main { public static void main(String[] args) {} }\n' > src/main/java/smoke/Main.java
+          printf 'plugins { id "java" }\nrepositories { mavenCentral() }\ndependencies { implementation "net.dimeski.pulumi:dokploy:$VERSION"; implementation "com.pulumi:pulumi:1.0.0" }\n' > build.gradle
+          printf 'package smoke;\nimport com.pulumi.Pulumi;\nimport net.dimeski.pulumi.dokploy.Provider;\npublic class Main { public static void main(String[] args) { Pulumi.run(ctx -> { var provider = new Provider("smoke", new net.dimeski.pulumi.dokploy.ProviderArgs.Builder().endpoint("https://example.invalid").apiKey("smoke").build()); ctx.export("providerUrn", provider.urn()); }); } }\n' > src/main/java/smoke/Main.java
           gradle compileJava --no-daemon
       - name: Preview with fresh provider cache
+        env:
+          PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
+          PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
+          PULUMI_CONFIG_PASSPHRASE: smoke
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/java-program"
-          printf 'name: release-smoke\nruntime: yaml\nresources:\n  provider:\n    type: pulumi:providers:dokploy\n    properties:\n      endpoint: https://example.invalid\n      apiKey: smoke\n' > "$RUNNER_TEMP/java-program/Pulumi.yaml"
-          pulumi plugin install resource dokploy "$VERSION" --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v${VERSION}"
+          printf 'name: release-smoke\nruntime: java\nmain: .\n' > "$RUNNER_TEMP/java-program/Pulumi.yaml"
+          cp -R "$RUNNER_TEMP/java-consumer"/. "$RUNNER_TEMP/java-program/"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/java-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/java-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/java-schema.json"
@@ -222,16 +260,13 @@ jobs:
 
   go:
     name: Go consumer
+    needs: validate-version
     runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
-      VERSION: ${{ inputs.version }}
+      VERSION: ${{ needs.validate-version.outputs.version }}
       GOVERSION: "1.26.6"
-      PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
-      PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
-      GOPATH: ${{ runner.temp }}/go-cache-${{ github.job }}
-      GOMODCACHE: ${{ runner.temp }}/gomod-cache-${{ github.job }}
     steps:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
@@ -248,15 +283,23 @@ jobs:
           mkdir -p "$RUNNER_TEMP/go-consumer"
           cd "$RUNNER_TEMP/go-consumer"
           go mod init smoke.example/release
-          go get "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v${{ inputs.version }}"
-          printf 'package main\nimport _ "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"\nfunc main() {}\n' > main.go
+          go get "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v$VERSION"
+          printf 'package main\nimport ("github.com/pulumi/pulumi/sdk/v3/go/pulumi"; "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy")\nfunc main() { pulumi.Run(func(ctx *pulumi.Context) error { provider, err := dokploy.NewProvider(ctx, "smoke", &dokploy.ProviderArgs{Endpoint: pulumi.String("https://example.invalid"), ApiKey: pulumi.String("smoke")}); if err != nil { return err }; ctx.Export("providerUrn", provider.URN); return nil }) }\n' > main.go
           go build ./...
       - name: Preview with fresh provider cache
+        env:
+          PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
+          PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
+          PULUMI_CONFIG_PASSPHRASE: smoke
+          GOPATH: ${{ runner.temp }}/go-cache-${{ github.job }}
+          GOMODCACHE: ${{ runner.temp }}/gomod-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/go-program"
-          printf 'name: release-smoke\nruntime: yaml\nresources:\n  provider:\n    type: pulumi:providers:dokploy\n    properties:\n      endpoint: https://example.invalid\n      apiKey: smoke\n' > "$RUNNER_TEMP/go-program/Pulumi.yaml"
-          pulumi plugin install resource dokploy "$VERSION" --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v${VERSION}"
+          printf 'name: release-smoke\nruntime: go\nmain: .\n' > "$RUNNER_TEMP/go-program/Pulumi.yaml"
+          cp "$RUNNER_TEMP/go-consumer/main.go" "$RUNNER_TEMP/go-program/main.go"
+          cp "$RUNNER_TEMP/go-consumer/go.mod" "$RUNNER_TEMP/go-program/go.mod"
+          cp "$RUNNER_TEMP/go-consumer/go.sum" "$RUNNER_TEMP/go-program/go.sum"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/go-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/go-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/go-schema.json"

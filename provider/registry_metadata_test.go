@@ -116,7 +116,7 @@ var workflowJobPolicy = map[string]map[string]bool{
 	"prerelease.yml":           {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"release.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"run-acceptance-tests.yml": {"prerequisites": true, "build_sdks": true, "test": true, "lint": true},
-	"release-smoke.yml":         {"provider": false, "node": false, "python": false, "dotnet": false, "java": false, "go": true},
+	"release-smoke.yml":         {"validate-version": false, "provider": false, "node": false, "python": false, "dotnet": false, "java": false, "go": true},
 }
 
 func validateWorkflowSemantics(workflow map[string]any, name string) error {
@@ -184,39 +184,77 @@ func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
 		return fmt.Errorf("release smoke version input must be a required string")
 	}
 	jobs, ok := workflow["jobs"].(map[string]any)
-	if !ok || len(jobs) != 6 {
-		return fmt.Errorf("release smoke workflow must have six consumer jobs")
+	if !ok || len(jobs) != 7 {
+		return fmt.Errorf("release smoke workflow must have one validator and six consumer jobs")
+	}
+	validator, ok := jobs["validate-version"].(map[string]any)
+	if !ok || validator["needs"] != nil {
+		return fmt.Errorf("release smoke version validator must be independent")
+	}
+	validatorEnv, _ := validator["env"].(map[string]any)
+	validatorRun := workflowValueText(validator)
+	if validatorEnv["VERSION_INPUT"] != "${{ inputs.version }}" || !strings.Contains(validatorRun, "GITHUB_OUTPUT") {
+		return fmt.Errorf("release smoke version validator must safely emit a validated output")
 	}
 	for _, jobName := range []string{"provider", "node", "python", "dotnet", "java", "go"} {
 		job, ok := jobs[jobName].(map[string]any)
 		if !ok {
 			return fmt.Errorf("release smoke job %q is missing", jobName)
 		}
+		if job["needs"] != "validate-version" {
+			return fmt.Errorf("release smoke job %q must depend on validate-version", jobName)
+		}
 		permissions, ok := job["permissions"].(map[string]any)
 		if !ok || len(permissions) != 1 || permissions["contents"] != "read" {
 			return fmt.Errorf("release smoke job %q must have read-only contents permission", jobName)
 		}
-		env, ok := job["env"].(map[string]any)
-		if !ok || env["PULUMI_HOME"] != "${{ runner.temp }}/pulumi-home-${{ github.job }}" {
-			return fmt.Errorf("release smoke job %q must isolate PULUMI_HOME", jobName)
+		jobEnv, ok := job["env"].(map[string]any)
+		if !ok || jobEnv["VERSION"] != "${{ needs.validate-version.outputs.version }}" {
+			return fmt.Errorf("release smoke job %q must use the validated version output", jobName)
 		}
-		if !strings.Contains(workflowValueText(env), "${{ runner.temp }}") {
+		isolatedCache := false
+		for _, step := range workflowJobRunSteps(workflow, jobName) {
+			if step.env["PULUMI_HOME"] == "${{ runner.temp }}/pulumi-home-${{ github.job }}" && strings.Contains(workflowValueText(step.env), "${{ runner.temp }}") {
+				isolatedCache = true
+			}
+		}
+		if !isolatedCache {
 			return fmt.Errorf("release smoke job %q must use fresh runner-temp caches", jobName)
 		}
-		if !strings.Contains(workflowValueText(job), "${{ inputs.version }}") {
-			return fmt.Errorf("release smoke job %q must use the exact requested version", jobName)
+		for _, step := range workflowJobRunSteps(workflow, jobName) {
+			if strings.Contains(step.run, "inputs.version") {
+				return fmt.Errorf("release smoke job %q must not interpolate the raw input in shell", jobName)
+			}
 		}
-		if !strings.Contains(workflowValueText(job), "pulumi plugin ls") && !strings.Contains(workflowValueText(job), "pulumi plugin install") {
+		if jobName == "provider" && !strings.Contains(workflowValueText(job), "pulumi plugin install") {
 			return fmt.Errorf("release smoke job %q must verify provider plugin acquisition", jobName)
 		}
 		jobText := workflowValueText(job)
 		requiredCommands := []string{"pulumi package get-schema", "PULUMI_HOME/plugins", "test -n"}
 		if jobName != "provider" {
 			requiredCommands = append(requiredCommands, "pulumi preview --non-interactive")
+			if strings.Contains(jobText, "pulumi plugin install") {
+				return fmt.Errorf("release smoke consumer job %q must rely on SDK metadata for plugin acquisition", jobName)
+			}
 		}
 		for _, required := range requiredCommands {
 			if !strings.Contains(jobText, required) {
 				return fmt.Errorf("release smoke job %q is missing %q", jobName, required)
+			}
+		}
+	}
+	for jobName, markers := range map[string][]string{
+		"node":   {"require(\"@pulumi/pulumi\")", "require(\"@dimeskigj/pulumi-dokploy\")", "new dokploy.Provider"},
+		"python": {"import pulumi", "import pulumi_dokploy", "pulumi_dokploy.Provider"},
+		"dotnet": {"using Pulumi;", "using Dimeskigj.Pulumi.Dokploy;", "new Provider"},
+		"java":   {"import com.pulumi.Pulumi;", "import net.dimeski.pulumi.dokploy.Provider;", "new Provider"},
+		"go":     {"pulumi.Run", "dokploy.NewProvider"},
+	} {
+		job := jobs[jobName].(map[string]any)
+		jobText := workflowValueText(job)
+		for _, marker := range markers {
+			if !strings.Contains(jobText, marker) {
+				return fmt.Errorf("release smoke job %q is missing SDK program marker %q", jobName, marker)
 			}
 		}
 	}
@@ -225,11 +263,12 @@ func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
 		"checksums.txt",
 		"sha256sum",
 		"pulumi package get-schema",
-		"@dimeskigj/pulumi-dokploy@${{ inputs.version }}",
-		"pulumi_dokploy==${{ inputs.version }}",
-		"Dimeskigj.Pulumi.Dokploy",
-		"net.dimeski.pulumi:dokploy:${{ inputs.version }}",
-		"github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v${{ inputs.version }}",
+		"cd \"$RUNNER_TEMP/provider-download\"",
+		"@dimeskigj/pulumi-dokploy@$VERSION",
+		"pulumi_dokploy==$VERSION",
+		"Dimeskigj.Pulumi.Dokploy --version \"$VERSION\"",
+		"net.dimeski.pulumi:dokploy:$VERSION",
+		"github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v$VERSION",
 	} {
 		if !strings.Contains(text, required) {
 			return fmt.Errorf("release smoke workflow is missing %q", required)
@@ -252,7 +291,7 @@ func TestReleaseSmokeWorkflowRejectsPolicyDrift(t *testing.T) {
 	workflow, text := readWorkflow(t, "release-smoke.yml")
 	jobs := workflow["jobs"].(map[string]any)
 	delete(jobs, "go")
-	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, text), "six consumer jobs")
+	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, text), "one validator and six consumer jobs")
 }
 
 func validateSchemaCompatibilityStep(workflow map[string]any) error {

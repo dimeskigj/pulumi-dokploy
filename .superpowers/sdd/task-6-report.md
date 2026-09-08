@@ -25,3 +25,14 @@ Implemented and committed as `ci: verify released provider packages`.
 
 The workflow was statically validated by the repository's YAML-parsing
 semantic tests. A real public-release dispatch was not run in this change.
+
+## Reviewer follow-up
+
+- Moved SemVer validation into an independent `validate-version` job. Consumer
+  jobs use only its validated output through environment variables.
+- Fixed checksum verification to run from the directory containing both the
+  downloaded archive and `checksums.txt`.
+- Removed explicit plugin installation from all SDK consumers. Each now runs a
+  language-native provider program and relies on SDK metadata during preview,
+  then asserts the matching plugin in its fresh `PULUMI_HOME`.
+- `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 .github/workflows/release-smoke.yml` — PASS
