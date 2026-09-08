@@ -210,15 +210,16 @@ is recorded here.
 
 | Focused resource | Controller command | Result | Duration | Cleanup / stop marker |
 | --- | --- | ---: | ---: | --- |
-| Application | `go test ./provider -run '^TestLiveTier2Workloads/Application$' -parallel=1 -count=1 -v` | **PASS** | 3.64s | wrapper confirmed configured marker absent after command |
-| Environment | `go test ./provider -run '^TestLiveTier1ControlPlane/Environment$' -parallel=1 -count=1 -v` | **PASS** | 1.19s | wrapper confirmed configured marker absent after command |
-| ProjectTag | `go test ./provider -run '^TestLiveTier1ControlPlane/ProjectTag$' -parallel=1 -count=1 -v` | **PASS** | 1.58s | wrapper confirmed configured marker absent after command |
-| SSHKey | `go test ./provider -run '^TestLiveTier1ControlPlane/SSHKey$' -parallel=1 -count=1 -v` | **PASS** | 1.98s | wrapper confirmed configured marker absent after command |
+| Application | `go test ./provider -run '^TestLiveTier2Workloads/Application$' -parallel=1 -count=1 -v` | **PASS** | 3.64s | lifecycle test passed; stop marker absent; cleanup not separately logged |
+| Environment | `go test ./provider -run '^TestLiveTier1ControlPlane/Environment$' -parallel=1 -count=1 -v` | **PASS** | 1.19s | lifecycle test passed; stop marker absent; cleanup not separately logged |
+| ProjectTag | `go test ./provider -run '^TestLiveTier1ControlPlane/ProjectTag$' -parallel=1 -count=1 -v` | **PASS** | 1.58s | lifecycle test passed; stop marker absent; cleanup not separately logged |
+| SSHKey | `go test ./provider -run '^TestLiveTier1ControlPlane/SSHKey$' -parallel=1 -count=1 -v` | **PASS** | 1.98s | lifecycle test passed; stop marker absent; cleanup not separately logged |
 
-The controller test logs show the focused package/test PASS results. Cleanup
-and marker status were not inferred from those logs: the controller wrapper
-separately checked the configured stop marker after each command and found it
-absent.
+The controller test logs show the focused test/package PASS results. The
+configured stop marker remained absent after each command. Cleanup detail was
+not emitted by the sanitized log and therefore is not independently evidenced
+by the preserved artifact. The test implementation's cleanup-and-absence
+checks are a separate lifecycle contract, not additional artifact evidence.
 
 ### Controller PostgreSQL correction
 
@@ -228,7 +229,9 @@ The corrected controller command was:
 `go test ./provider -run '^TestLiveTier3Databases/Postgres$' -parallel=1 -count=1 -v`
 
 It passed: the `Postgres` subtest completed in **11.28s** and the package test
-output was PASS. The controller wrapper separately checked the configured stop
-marker after the command and found it absent. No endpoint, resource ID, request
-or response payload, credential, SSH material, or database value is recorded
-here.
+output was PASS; the stop marker remained absent. Cleanup detail was not
+emitted by the sanitized log and therefore is not independently evidenced by
+the preserved artifact. The test implementation's cleanup-and-absence checks
+are a separate lifecycle contract, not additional artifact evidence. No
+endpoint, resource ID, request or response payload, credential, SSH material,
+or database value is recorded here.
