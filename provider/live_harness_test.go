@@ -198,6 +198,55 @@ func requireWorkloadCreateNoError(t *testing.T, operation string, err error, key
 	t.Fatalf("%s create failed: %s", operation, classification)
 }
 
+func classifyWorkloadLifecycleError(operation string, err error) (string, error) {
+	if operation != "domain" && operation != "mount" {
+		return "", fmt.Errorf("unsupported workload operation")
+	}
+	status, code := 0, ""
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) {
+		status, code = apiErr.StatusCode, apiErr.Code
+	}
+	statusClass := "transport"
+	switch {
+	case status >= 200 && status < 300:
+		statusClass = "2xx"
+	case status >= 400 && status < 500:
+		statusClass = "4xx"
+	case status >= 500 && status < 600:
+		statusClass = "5xx"
+	}
+	if !isSafeWorkloadAPICode(code) {
+		code = "unknown"
+	}
+	return fmt.Sprintf("operation=%s;status=%s;code=%s", operation, statusClass, code), nil
+}
+
+func requireWorkloadLifecycleNoError(t *testing.T, operation string, err error) {
+	t.Helper()
+	if err == nil {
+		return
+	}
+	classification, classificationErr := classifyWorkloadLifecycleError(operation, err)
+	requireNoError(t, classificationErr)
+	t.Fatalf("%s", classification)
+}
+
+func deleteAndVerifyOnce(remove func() error, read func() (string, error), markUnowned func()) error {
+	if err := remove(); err != nil && !client.IsNotFound(err) {
+		return err
+	}
+	markUnowned()
+	id, err := read()
+	if err != nil {
+		return err
+	}
+	if id != "" {
+		return fmt.Errorf("resource remained after delete verification")
+	}
+	return nil
+}
+
 func cleanupAfterCreateErrorNeedsImmediateCleanup(id string, createErr error) bool {
 	return id != "" && createErr != nil
 }

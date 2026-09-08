@@ -2,6 +2,7 @@ package dokploy
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -163,6 +164,39 @@ func TestTier2WorkloadLifecycleDeletesTargetsOnlyAfterDependents(t *testing.T) {
 func TestSuccessfulCreateDoesNotRegisterSubtestCleanup(t *testing.T) {
 	require.False(t, cleanupAfterCreateErrorNeedsImmediateCleanup("resource-id", nil))
 	require.True(t, cleanupAfterCreateErrorNeedsImmediateCleanup("resource-id", context.Canceled))
+}
+
+func TestWorkloadLifecycleDiagnosticsExcludeUnstructuredFailureDetails(t *testing.T) {
+	err := &client.APIError{StatusCode: 500, Code: "INTERNAL_ERROR", Message: `update failed: sql=insert into mount values ('id-sentinel', '/host/path', 'secret-sentinel')`}
+	for _, operation := range []string{"domain", "mount"} {
+		for _, phase := range []string{"create", "read", "update", "delete"} {
+			t.Run(operation+"/"+phase, func(t *testing.T) {
+				got, classifyErr := classifyWorkloadLifecycleError(operation, err)
+				require.NoError(t, classifyErr)
+				require.Equal(t, "operation="+operation+";status=5xx;code=unknown", got)
+				for _, sentinel := range []string{"insert into", "id-sentinel", "/host/path", "secret-sentinel", "INTERNAL_ERROR"} {
+					require.NotContains(t, got, sentinel)
+				}
+			})
+		}
+	}
+}
+
+func TestDeleteAndVerifyOnceMarksOwnershipBeforeVerification(t *testing.T) {
+	deleteCalls, readCalls := 0, 0
+	owned := true
+	err := deleteAndVerifyOnce(func() error {
+		deleteCalls++
+		return nil
+	}, func() (string, error) {
+		readCalls++
+		require.False(t, owned)
+		return "still-present", errors.New("verification sentinel")
+	}, func() { owned = false })
+	require.Error(t, err)
+	require.Equal(t, 1, deleteCalls)
+	require.Equal(t, 1, readCalls)
+	require.False(t, owned)
 }
 
 func TestCleanupContextHasFiniteFiveMinuteDeadline(t *testing.T) {
