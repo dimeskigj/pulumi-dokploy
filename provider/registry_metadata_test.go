@@ -116,6 +116,7 @@ var workflowJobPolicy = map[string]map[string]bool{
 	"prerelease.yml":           {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"release.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"run-acceptance-tests.yml": {"prerequisites": true, "build_sdks": true, "test": true, "lint": true},
+	"release-smoke.yml":         {"provider": false, "node": false, "python": false, "dotnet": false, "java": false, "go": true},
 }
 
 func validateWorkflowSemantics(workflow map[string]any, name string) error {
@@ -163,6 +164,95 @@ func validateWorkflowSemantics(workflow map[string]any, name string) error {
 		}
 	}
 	return nil
+}
+
+func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
+	on, ok := workflow["on"].(map[string]any)
+	if !ok || len(on) != 1 {
+		return fmt.Errorf("release smoke workflow must only use workflow_dispatch")
+	}
+	dispatch, ok := on["workflow_dispatch"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("release smoke workflow must define workflow_dispatch inputs")
+	}
+	inputs, ok := dispatch["inputs"].(map[string]any)
+	if !ok || len(inputs) != 1 {
+		return fmt.Errorf("release smoke workflow must define exactly one input")
+	}
+	version, ok := inputs["version"].(map[string]any)
+	if !ok || version["required"] != true || version["type"] != "string" {
+		return fmt.Errorf("release smoke version input must be a required string")
+	}
+	jobs, ok := workflow["jobs"].(map[string]any)
+	if !ok || len(jobs) != 6 {
+		return fmt.Errorf("release smoke workflow must have six consumer jobs")
+	}
+	for _, jobName := range []string{"provider", "node", "python", "dotnet", "java", "go"} {
+		job, ok := jobs[jobName].(map[string]any)
+		if !ok {
+			return fmt.Errorf("release smoke job %q is missing", jobName)
+		}
+		permissions, ok := job["permissions"].(map[string]any)
+		if !ok || len(permissions) != 1 || permissions["contents"] != "read" {
+			return fmt.Errorf("release smoke job %q must have read-only contents permission", jobName)
+		}
+		env, ok := job["env"].(map[string]any)
+		if !ok || env["PULUMI_HOME"] != "${{ runner.temp }}/pulumi-home-${{ github.job }}" {
+			return fmt.Errorf("release smoke job %q must isolate PULUMI_HOME", jobName)
+		}
+		if !strings.Contains(workflowValueText(env), "${{ runner.temp }}") {
+			return fmt.Errorf("release smoke job %q must use fresh runner-temp caches", jobName)
+		}
+		if !strings.Contains(workflowValueText(job), "${{ inputs.version }}") {
+			return fmt.Errorf("release smoke job %q must use the exact requested version", jobName)
+		}
+		if !strings.Contains(workflowValueText(job), "pulumi plugin ls") && !strings.Contains(workflowValueText(job), "pulumi plugin install") {
+			return fmt.Errorf("release smoke job %q must verify provider plugin acquisition", jobName)
+		}
+		jobText := workflowValueText(job)
+		requiredCommands := []string{"pulumi package get-schema", "PULUMI_HOME/plugins", "test -n"}
+		if jobName != "provider" {
+			requiredCommands = append(requiredCommands, "pulumi preview --non-interactive")
+		}
+		for _, required := range requiredCommands {
+			if !strings.Contains(jobText, required) {
+				return fmt.Errorf("release smoke job %q is missing %q", jobName, required)
+			}
+		}
+	}
+	for _, required := range []string{
+		"=~ ^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)",
+		"checksums.txt",
+		"sha256sum",
+		"pulumi package get-schema",
+		"@dimeskigj/pulumi-dokploy@${{ inputs.version }}",
+		"pulumi_dokploy==${{ inputs.version }}",
+		"Dimeskigj.Pulumi.Dokploy",
+		"net.dimeski.pulumi:dokploy:${{ inputs.version }}",
+		"github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v${{ inputs.version }}",
+	} {
+		if !strings.Contains(text, required) {
+			return fmt.Errorf("release smoke workflow is missing %q", required)
+		}
+	}
+	for _, forbidden := range []string{"secrets.", "publish", "npm publish", "twine upload", "dotnet nuget push", "maven-publish"} {
+		if strings.Contains(strings.ToLower(text), strings.ToLower(forbidden)) {
+			return fmt.Errorf("release smoke workflow contains forbidden %q", forbidden)
+		}
+	}
+	return nil
+}
+
+func TestReleaseSmokeWorkflowContracts(t *testing.T) {
+	workflow, text := readWorkflow(t, "release-smoke.yml")
+	require.NoError(t, validateReleaseSmokeWorkflow(workflow, text))
+}
+
+func TestReleaseSmokeWorkflowRejectsPolicyDrift(t *testing.T) {
+	workflow, text := readWorkflow(t, "release-smoke.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	delete(jobs, "go")
+	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, text), "six consumer jobs")
 }
 
 func validateSchemaCompatibilityStep(workflow map[string]any) error {

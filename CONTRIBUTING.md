@@ -35,3 +35,19 @@ Trusted Publisher on npmjs.com for each release workflow file
 
 The manually dispatched live acceptance workflow uses separate protected
 Dokploy and registry secrets in the `dokploy-acceptance` environment.
+
+## Released-package smoke test
+
+After a version's GitHub Release, npm, PyPI, NuGet, Maven Central, and Go
+module are all visible, dispatch **release-smoke** from the Actions tab. Enter
+the exact SemVer without a leading `v` (for example, `1.2.3` or
+`1.2.3-rc.1`). The workflow is read-only, uses fresh temporary caches in each
+job, and never publishes packages or reads repository secrets.
+
+The jobs independently verify the provider archive checksum and schema, then
+install and compile the public Node.js, Python, .NET, Java, and Go coordinates
+for that exact version before running a minimal Pulumi preview. A failure in
+one ecosystem usually means that registry's publication or propagation has
+not completed; a provider or schema failure points to the GitHub Release
+archive, checksum, plugin, or generated schema instead. Dispatch again only
+after the affected public registry reports the package as available.
