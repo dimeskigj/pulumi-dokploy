@@ -77,6 +77,7 @@ jobs:
       - id: tier1
         name: Test live Tier 1 control plane
         run: mise exec -- go test ./provider -run TestLiveTier1ControlPlane -parallel=1 -count=1 -v
+        continue-on-error: true
         env:
           DOKPLOY_ACCEPTANCE: "1"
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
@@ -88,6 +89,7 @@ jobs:
           DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
       - id: tier1_gate
         name: Check Tier 1 stop marker
+        if: ${{ always() }}
         run: |
           if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
             exit 1
@@ -97,8 +99,9 @@ jobs:
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
       - id: tier2
         name: Test live Tier 2 workloads
-        if: ${{ success() && steps.tier1_gate.outputs.marker_absent == 'true' }}
+        if: ${{ steps.tier1_gate.outputs.marker_absent == 'true' }}
         run: mise exec -- go test ./provider -run TestLiveTier2Workloads -parallel=1 -count=1 -v
+        continue-on-error: true
         env:
           DOKPLOY_ACCEPTANCE: "1"
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
@@ -110,6 +113,7 @@ jobs:
           DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
       - id: tier2_gate
         name: Check Tier 2 stop marker
+        if: ${{ always() }}
         run: |
           if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
             exit 1
@@ -119,8 +123,9 @@ jobs:
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
       - id: tier3
         name: Test live Tier 3 databases
-        if: ${{ success() && steps.tier2_gate.outputs.marker_absent == 'true' }}
+        if: ${{ steps.tier2_gate.outputs.marker_absent == 'true' }}
         run: mise exec -- go test ./provider -run TestLiveTier3Databases -parallel=1 -count=1 -v
+        continue-on-error: true
         env:
           DOKPLOY_ACCEPTANCE: "1"
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
@@ -128,6 +133,7 @@ jobs:
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
       - id: tier3_gate
         name: Check Tier 3 stop marker
+        if: ${{ always() }}
         run: |
           if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
             exit 1
@@ -137,8 +143,9 @@ jobs:
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
       - id: tier4
         name: Test live Tier 4 backups
-        if: ${{ success() && steps.tier3_gate.outputs.marker_absent == 'true' }}
+        if: ${{ steps.tier3_gate.outputs.marker_absent == 'true' }}
         run: mise exec -- go test ./provider -run TestLiveTier4Backups -parallel=1 -count=1 -v
+        continue-on-error: true
         env:
           DOKPLOY_ACCEPTANCE: "1"
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
@@ -146,6 +153,7 @@ jobs:
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
       - id: tier4_gate
         name: Check Tier 4 stop marker
+        if: ${{ always() }}
         run: |
           if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
             exit 1
@@ -155,13 +163,29 @@ jobs:
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
       - id: smoke
         name: Test Pulumi lifecycle smoke
-        if: ${{ success() && steps.tier4_gate.outputs.marker_absent == 'true' }}
+        if: ${{ steps.tier4_gate.outputs.marker_absent == 'true' }}
         run: mise exec -- go test ./tests -run TestAccLifecycleSmoke -parallel=1 -count=1 -v
+        continue-on-error: true
         env:
           DOKPLOY_ACCEPTANCE: "1"
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
           DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+      - name: Report acceptance failures
+        if: ${{ always() }}
+        run: |
+          failed=0
+          for outcome in \
+            "${{ steps.tier1.outcome }}" \
+            "${{ steps.tier2.outcome }}" \
+            "${{ steps.tier3.outcome }}" \
+            "${{ steps.tier4.outcome }}" \
+            "${{ steps.smoke.outcome }}"; do
+            if [ "$outcome" = "failure" ] || [ "$outcome" = "cancelled" ]; then
+              failed=1
+            fi
+          done
+          exit "$failed"
       - name: Tar provider binaries
         run: tar -zcf ${{ github.workspace }}/bin/provider.tar.gz -C ${{ github.workspace }}/bin/ pulumi-resource-${{ env.PROVIDER }}
       - name: Upload artifacts

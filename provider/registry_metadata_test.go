@@ -505,16 +505,16 @@ func TestOwnedWorkflow(t *testing.T) {
 		if i == 0 {
 			require.NotContains(t, step, "if")
 		} else {
-			require.Equal(t, "${{ success() && steps."+expectedIDs[i-1]+"_gate.outputs.marker_absent == 'true' }}", step["if"])
+			require.Equal(t, "${{ steps."+expectedIDs[i-1]+"_gate.outputs.marker_absent == 'true' }}", step["if"])
 			require.NotContains(t, step["if"], "!= 'true'")
 		}
-		require.NotContains(t, step, "continue-on-error")
+		require.Equal(t, true, step["continue-on-error"])
 		require.Contains(t, liveSteps[i].run, "-parallel=1 -count=1 -v")
 	}
 	for i, name := range []string{"Tier 1", "Tier 2", "Tier 3", "Tier 4"} {
 		gate := steps[findStepIndex(steps, "Check "+name+" stop marker")].(map[string]any)
 		require.Equal(t, expectedIDs[i]+"_gate", gate["id"])
-		require.NotContains(t, gate, "if")
+		require.Equal(t, "${{ always() }}", gate["if"])
 		require.NotContains(t, gate, "continue-on-error")
 		require.Equal(t, map[string]any{"DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath}, gate["env"])
 		require.Contains(t, gate["run"], "marker_absent=true")
@@ -524,10 +524,14 @@ func TestOwnedWorkflow(t *testing.T) {
 	for _, name := range orderedNames {
 		index := findStepIndex(steps, name)
 		require.Greater(t, index, previous, "workflow step order for %s", name)
-		if name != "Test live Tier 2 workloads" && name != "Test live Tier 3 databases" && name != "Test live Tier 4 backups" && name != "Test Pulumi lifecycle smoke" {
+		if !strings.HasPrefix(name, "Test live ") && name != "Test Pulumi lifecycle smoke" && !strings.HasPrefix(name, "Check Tier ") {
 			require.NotContains(t, steps[index].(map[string]any), "if", name)
 		}
-		require.NotContains(t, steps[index].(map[string]any), "continue-on-error", name)
+		if strings.HasPrefix(name, "Test live ") || name == "Test Pulumi lifecycle smoke" {
+			require.Equal(t, true, steps[index].(map[string]any)["continue-on-error"], name)
+		} else {
+			require.NotContains(t, steps[index].(map[string]any), "continue-on-error", name)
+		}
 		previous = index
 	}
 	pulumiCLI := steps[findStepIndex(steps, "Verify Pulumi CLI")].(map[string]any)
@@ -542,9 +546,19 @@ func TestOwnedWorkflow(t *testing.T) {
 		require.Equal(t, tierIndex-1, gateIndex)
 		gateID := expectedIDs[i] + "_gate"
 		tier := steps[tierIndex].(map[string]any)
-		require.Equal(t, "${{ success() && steps."+gateID+".outputs.marker_absent == 'true' }}", tier["if"])
+		require.Equal(t, "${{ steps."+gateID+".outputs.marker_absent == 'true' }}", tier["if"])
 		require.NotContains(t, tier["if"], "!= 'true'")
 	}
+	reportIndex := findStepIndex(steps, "Report acceptance failures")
+	require.Equal(t, findStepIndex(steps, "Test Pulumi lifecycle smoke")+1, reportIndex)
+	report := steps[reportIndex].(map[string]any)
+	require.Equal(t, "${{ always() }}", report["if"])
+	reportRun := report["run"].(string)
+	for _, outcome := range []string{"steps.tier1.outcome", "steps.tier2.outcome", "steps.tier3.outcome", "steps.tier4.outcome", "steps.smoke.outcome"} {
+		require.Contains(t, reportRun, "${{ "+outcome+" }}")
+	}
+	require.Contains(t, reportRun, `[ "$outcome" = "failure" ] || [ "$outcome" = "cancelled" ]`)
+	require.Contains(t, reportRun, `exit "$failed"`)
 	for jobName, rawJob := range jobs {
 		job := rawJob.(map[string]any)
 		jobSteps, _ := job["steps"].([]any)
