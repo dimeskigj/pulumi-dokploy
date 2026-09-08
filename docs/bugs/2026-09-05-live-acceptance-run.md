@@ -208,12 +208,17 @@ is recorded here.
   by the tracked generated-file diff passed. `make check_openapi` itself was
   unavailable because `mise` is not installed in this environment.
 
-| Focused resource | Result | Duration | Cleanup / stop marker |
-| --- | --- | ---: | --- |
-| Application | **PASS** | 3.64s | clean; no cleanup or stop-marker failure |
-| Environment | **PASS** | 1.19s | clean; no cleanup or stop-marker failure |
-| ProjectTag | **PASS** | 1.58s | clean; no cleanup or stop-marker failure |
-| SSHKey | **PASS** | 1.98s | clean; no cleanup or stop-marker failure |
+| Focused resource | Controller command | Result | Duration | Cleanup / stop marker |
+| --- | --- | ---: | ---: | --- |
+| Application | `go test ./provider -run '^TestLiveTier2Workloads/Application$' -parallel=1 -count=1 -v` | **PASS** | 3.64s | wrapper confirmed configured marker absent after command |
+| Environment | `go test ./provider -run '^TestLiveTier1ControlPlane/Environment$' -parallel=1 -count=1 -v` | **PASS** | 1.19s | wrapper confirmed configured marker absent after command |
+| ProjectTag | `go test ./provider -run '^TestLiveTier1ControlPlane/ProjectTag$' -parallel=1 -count=1 -v` | **PASS** | 1.58s | wrapper confirmed configured marker absent after command |
+| SSHKey | `go test ./provider -run '^TestLiveTier1ControlPlane/SSHKey$' -parallel=1 -count=1 -v` | **PASS** | 1.98s | wrapper confirmed configured marker absent after command |
+
+The controller test logs show the focused package/test PASS results. Cleanup
+and marker status were not inferred from those logs: the controller wrapper
+separately checked the configured stop marker after each command and found it
+absent.
 
 ### Controller PostgreSQL correction
 
@@ -222,6 +227,8 @@ The corrected controller command was:
 
 `go test ./provider -run '^TestLiveTier3Databases/Postgres$' -parallel=1 -count=1 -v`
 
-It passed: the `Postgres` subtest completed in **11.28s**, the package passed,
-and the stop marker was absent. No endpoint, resource ID, request or response
-payload, credential, SSH material, or database value is recorded here.
+It passed: the `Postgres` subtest completed in **11.28s** and the package test
+output was PASS. The controller wrapper separately checked the configured stop
+marker after the command and found it absent. No endpoint, resource ID, request
+or response payload, credential, SSH material, or database value is recorded
+here.
