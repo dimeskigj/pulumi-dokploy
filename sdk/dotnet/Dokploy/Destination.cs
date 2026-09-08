@@ -99,6 +99,7 @@ namespace Dimeskigj.Pulumi.Dokploy
             var defaultOptions = new CustomResourceOptions
             {
                 Version = Utilities.Version,
+                PluginDownloadURL = "github://api.github.com/dimeskigj/pulumi-dokploy",
                 AdditionalSecretOutputs =
                 {
                     "secretAccessKey",

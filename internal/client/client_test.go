@@ -52,6 +52,54 @@ func TestNewNormalizesEndpointAndAuthenticates(t *testing.T) {
 	require.Equal(t, "application/json", server.LastRequest().Header.Get("Accept"))
 }
 
+func TestNewSendsProviderUserAgent(t *testing.T) {
+	server := newHeaderServer(t)
+	c, err := New(server.server.URL, "key", WithUserAgentVersion("v1.2.3"))
+	require.NoError(t, err)
+	_, err = c.ProjectOneWithResponse(t.Context(), &generated.ProjectOneParams{ProjectId: "p1"})
+	require.NoError(t, err)
+	require.Equal(t, "pulumi-dokploy/1.2.3", server.LastRequest().Header.Get("User-Agent"))
+}
+
+func TestNewUsesDevelopmentUserAgentFallback(t *testing.T) {
+	for _, version := range []string{"", "   "} {
+		server := newHeaderServer(t)
+		c, err := New(server.server.URL, "key", WithUserAgentVersion(version))
+		require.NoError(t, err)
+		_, err = c.ProjectOneWithResponse(t.Context(), &generated.ProjectOneParams{ProjectId: "p1"})
+		require.NoError(t, err)
+		require.Equal(t, "pulumi-dokploy/dev", server.LastRequest().Header.Get("User-Agent"))
+	}
+}
+
+func TestNewPreservesProviderUserAgentAcrossRetries(t *testing.T) {
+	var mu sync.Mutex
+	var userAgents []string
+	attempt := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		userAgents = append(userAgents, r.Header.Get("User-Agent"))
+		attempt++
+		currentAttempt := attempt
+		mu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		if currentAttempt == 1 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte(`{"code":"TEMPORARY","message":"retry"}`))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id":"p1"}`))
+	}))
+	t.Cleanup(server.Close)
+
+	c, err := New(server.URL, "key", WithUserAgentVersion("v1.2.3"), WithRetryPolicy(RetryPolicy{Attempts: 2, InitialDelay: 0, MaxDelay: time.Second}))
+	require.NoError(t, err)
+	_, err = c.ProjectOneWithResponse(t.Context(), &generated.ProjectOneParams{ProjectId: "p1"})
+	require.NoError(t, err)
+	require.Equal(t, []string{"pulumi-dokploy/1.2.3", "pulumi-dokploy/1.2.3"}, userAgents)
+}
+
 func TestNewNormalizesEndpointForms(t *testing.T) {
 	for _, tc := range []struct{ input, want string }{
 		{"https://example.test", "https://example.test/api"},

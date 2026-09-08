@@ -29,6 +29,12 @@ func TestProviderSchema(t *testing.T) {
 	require.True(t, spec.Config.Variables["apiKey"].Secret)
 	require.Equal(t, []string{"DOKPLOY_ENDPOINT"}, spec.Config.Variables["endpoint"].DefaultInfo.Environment)
 	require.Equal(t, []string{"DOKPLOY_API_KEY"}, spec.Config.Variables["apiKey"].DefaultInfo.Environment)
+	require.Equal(t, "github://api.github.com/dimeskigj/pulumi-dokploy", spec.PluginDownloadURL)
+	require.ElementsMatch(t, []string{
+		"category/infrastructure", "kind/native", "dokploy",
+		"deployment", "self-hosted", "paas",
+	}, spec.Keywords)
+	require.Empty(t, spec.LogoURL)
 }
 
 func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {

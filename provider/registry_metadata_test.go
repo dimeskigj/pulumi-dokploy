@@ -1,8 +1,12 @@
 package dokploy
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -112,6 +116,7 @@ var workflowJobPolicy = map[string]map[string]bool{
 	"prerelease.yml":           {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"release.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"run-acceptance-tests.yml": {"prerequisites": true, "build_sdks": true, "test": true, "lint": true},
+	"release-smoke.yml":        {"validate-version": false, "provider": false, "node": false, "python": false, "dotnet": false, "java": false, "go": true},
 }
 
 func validateWorkflowSemantics(workflow map[string]any, name string) error {
@@ -159,6 +164,325 @@ func validateWorkflowSemantics(workflow map[string]any, name string) error {
 		}
 	}
 	return nil
+}
+
+func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
+	on, ok := workflow["on"].(map[string]any)
+	if !ok || len(on) != 1 {
+		return fmt.Errorf("release smoke workflow must only use workflow_dispatch")
+	}
+	dispatch, ok := on["workflow_dispatch"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("release smoke workflow must define workflow_dispatch inputs")
+	}
+	inputs, ok := dispatch["inputs"].(map[string]any)
+	if !ok || len(inputs) != 1 {
+		return fmt.Errorf("release smoke workflow must define exactly one input")
+	}
+	version, ok := inputs["version"].(map[string]any)
+	if !ok || version["required"] != true || version["type"] != "string" {
+		return fmt.Errorf("release smoke version input must be a required string")
+	}
+	jobs, ok := workflow["jobs"].(map[string]any)
+	if !ok || len(jobs) != 7 {
+		return fmt.Errorf("release smoke workflow must have one validator and six consumer jobs")
+	}
+	validator, ok := jobs["validate-version"].(map[string]any)
+	if !ok || validator["needs"] != nil {
+		return fmt.Errorf("release smoke version validator must be independent")
+	}
+	validatorEnv, _ := validator["env"].(map[string]any)
+	validatorRun := workflowValueText(validator)
+	if validatorEnv["VERSION_INPUT"] != "${{ inputs.version }}" || !strings.Contains(validatorRun, "GITHUB_OUTPUT") {
+		return fmt.Errorf("release smoke version validator must safely emit a validated output")
+	}
+	for _, jobName := range []string{"provider", "node", "python", "dotnet", "java", "go"} {
+		job, ok := jobs[jobName].(map[string]any)
+		if !ok {
+			return fmt.Errorf("release smoke job %q is missing", jobName)
+		}
+		if job["needs"] != "validate-version" {
+			return fmt.Errorf("release smoke job %q must depend on validate-version", jobName)
+		}
+		permissions, ok := job["permissions"].(map[string]any)
+		if !ok || len(permissions) != 1 || permissions["contents"] != "read" {
+			return fmt.Errorf("release smoke job %q must have read-only contents permission", jobName)
+		}
+		jobEnv, ok := job["env"].(map[string]any)
+		if !ok || jobEnv["VERSION"] != "${{ needs.validate-version.outputs.version }}" {
+			return fmt.Errorf("release smoke job %q must use the validated version output", jobName)
+		}
+		isolatedCache := false
+		for _, step := range workflowJobRunSteps(workflow, jobName) {
+			if step.env["PULUMI_HOME"] == "${{ runner.temp }}/pulumi-home-${{ github.job }}" && strings.Contains(workflowValueText(step.env), "${{ runner.temp }}") {
+				isolatedCache = true
+			}
+		}
+		if !isolatedCache {
+			return fmt.Errorf("release smoke job %q must use fresh runner-temp caches", jobName)
+		}
+		for _, step := range workflowJobRunSteps(workflow, jobName) {
+			if strings.Contains(step.run, "inputs.version") {
+				return fmt.Errorf("release smoke job %q must not interpolate the raw input in shell", jobName)
+			}
+		}
+		if jobName == "provider" && !strings.Contains(workflowValueText(job), "pulumi plugin install") {
+			return fmt.Errorf("release smoke job %q must verify provider plugin acquisition", jobName)
+		}
+		jobText := workflowValueText(job)
+		requiredCommands := []string{"pulumi package get-schema", "PULUMI_HOME/plugins", "test -n"}
+		if jobName != "provider" {
+			requiredCommands = append(requiredCommands, "pulumi preview --non-interactive")
+			if strings.Contains(jobText, "pulumi plugin install") {
+				return fmt.Errorf("release smoke consumer job %q must rely on SDK metadata for plugin acquisition", jobName)
+			}
+		}
+		for _, required := range requiredCommands {
+			if !strings.Contains(jobText, required) {
+				return fmt.Errorf("release smoke job %q is missing %q", jobName, required)
+			}
+		}
+	}
+	for jobName, markers := range map[string][]string{
+		"node":   {"require(\"@pulumi/pulumi\")", "require(\"@dimeskigj/pulumi-dokploy\")", "new dokploy.Provider"},
+		"python": {"import pulumi", "import pulumi_dokploy", "pulumi_dokploy.Provider"},
+		"dotnet": {"using Pulumi;", "using Dimeskigj.Pulumi.Dokploy;", "new Provider"},
+		"java":   {"import com.pulumi.Pulumi;", "import net.dimeski.pulumi.dokploy.Provider;", "new Provider"},
+		"go":     {"pulumi.Run", "dokploy.NewProvider"},
+	} {
+		job := jobs[jobName].(map[string]any)
+		jobText := workflowValueText(job)
+		for _, marker := range markers {
+			if !strings.Contains(jobText, marker) {
+				return fmt.Errorf("release smoke job %q is missing SDK program marker %q", jobName, marker)
+			}
+		}
+	}
+	for jobName, contract := range map[string]struct {
+		command string
+		caches  []string
+	}{
+		"node":   {"npm install", []string{"npm_config_cache"}},
+		"python": {"pip install", []string{"PIP_CACHE_DIR"}},
+		"dotnet": {"dotnet add package", []string{"NUGET_PACKAGES"}},
+		"java":   {"mvn -B -ntp", []string{"MAVEN_OPTS"}},
+		"go":     {"go get", []string{"GOPATH", "GOMODCACHE"}},
+	} {
+		found := false
+		for _, step := range workflowJobRunSteps(workflow, jobName) {
+			if !strings.Contains(step.run, contract.command) {
+				continue
+			}
+			found = true
+			for _, cache := range contract.caches {
+				if !strings.Contains(fmt.Sprint(step.env[cache]), "${{ runner.temp }}") {
+					return fmt.Errorf("release smoke job %q must set %s before dependency resolution", jobName, cache)
+				}
+			}
+		}
+		if !found {
+			return fmt.Errorf("release smoke job %q is missing dependency-resolution command %q", jobName, contract.command)
+		}
+	}
+	javaText := workflowValueText(jobs["java"])
+	for _, required := range []string{"<artifactId>dokploy</artifactId>", "<version>$VERSION</version>", "exec-maven-plugin", "<mainClass>smoke.Main</mainClass>", "runtime: java", "mvn -B -ntp package"} {
+		if !strings.Contains(javaText, required) {
+			return fmt.Errorf("release smoke Java consumer is missing runnable Maven metadata %q", required)
+		}
+	}
+	if strings.Contains(text, "pulumi-v3.159.0-linux-x64.tar.gz") {
+		return fmt.Errorf("release smoke workflow contains stale Pulumi CLI pin 3.159.0")
+	}
+	for _, required := range []string{
+		"=~ ^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)",
+		"pulumi-v3.259.0-linux-x64.tar.gz",
+		"checksums.txt",
+		"sha256sum",
+		"pulumi package get-schema",
+		"cd \"$RUNNER_TEMP/provider-download\"",
+		"@dimeskigj/pulumi-dokploy@$VERSION",
+		"pulumi_dokploy==$VERSION",
+		"Dimeskigj.Pulumi.Dokploy --version \"$VERSION\"",
+		"<groupId>net.dimeski.pulumi</groupId><artifactId>dokploy</artifactId><version>$VERSION</version>",
+		"github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v$VERSION",
+	} {
+		if !strings.Contains(text, required) {
+			return fmt.Errorf("release smoke workflow is missing %q", required)
+		}
+	}
+	if strings.Count(text, "pulumi-v3.259.0-linux-x64.tar.gz") != 6 {
+		return fmt.Errorf("release smoke workflow must pin Pulumi CLI 3.259.0 in every job")
+	}
+	if strings.Contains(text, "options:\n    main:") || strings.Contains(text, "options:\n    build:") {
+		return fmt.Errorf("release smoke Java runtime must rely on Maven runtime detection")
+	}
+	for _, forbidden := range []string{"secrets.", "publish", "npm publish", "twine upload", "dotnet nuget push", "maven-publish"} {
+		if strings.Contains(strings.ToLower(text), strings.ToLower(forbidden)) {
+			return fmt.Errorf("release smoke workflow contains forbidden %q", forbidden)
+		}
+	}
+	return nil
+}
+
+func TestReleaseSmokeWorkflowContracts(t *testing.T) {
+	workflow, text := readWorkflow(t, "release-smoke.yml")
+	require.NoError(t, validateReleaseSmokeWorkflow(workflow, text))
+}
+
+func TestReleaseSmokeWorkflowRejectsPolicyDrift(t *testing.T) {
+	workflow, text := readWorkflow(t, "release-smoke.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	delete(jobs, "go")
+	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, text), "one validator and six consumer jobs")
+}
+
+func TestReleaseSmokeWorkflowRejectsStalePulumiPin(t *testing.T) {
+	workflow, text := readWorkflow(t, "release-smoke.yml")
+	stale := strings.ReplaceAll(text, "pulumi-v3.259.0-linux-x64.tar.gz", "pulumi-v3.159.0-linux-x64.tar.gz")
+	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, stale), "stale Pulumi CLI pin 3.159.0")
+}
+
+func TestJavaExampleFixtureHasRunnableMavenMetadata(t *testing.T) {
+	pom, err := os.ReadFile("../examples/java/pom.xml")
+	require.NoError(t, err)
+	for _, marker := range []string{"exec-maven-plugin", "<mainClass>${mainClass}</mainClass>", "<artifactId>pulumi</artifactId>"} {
+		require.Contains(t, string(pom), marker)
+	}
+	pulumiYAML, err := os.ReadFile("../examples/java/Pulumi.yaml")
+	require.NoError(t, err)
+	require.Contains(t, string(pulumiYAML), "runtime: java")
+	program, err := os.ReadFile("../examples/java/src/main/java/generated_program/App.java")
+	require.NoError(t, err)
+	require.Contains(t, string(program), "Pulumi.run")
+}
+
+func validateSchemaCompatibilityStep(workflow map[string]any) error {
+	jobs, ok := workflow["jobs"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("build workflow has no jobs")
+	}
+	prerequisites, ok := jobs["prerequisites"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("build workflow has no prerequisites job")
+	}
+	steps, ok := prerequisites["steps"].([]any)
+	if !ok {
+		return fmt.Errorf("build prerequisites has no steps")
+	}
+	buildSchemaIndex := -1
+	checkCount := 0
+	for i, rawStep := range steps {
+		step, _ := rawStep.(map[string]any)
+		if step["name"] == "Build Schema" {
+			buildSchemaIndex = i
+		}
+		if step["name"] == "Check Schema is Valid" {
+			checkCount++
+		}
+	}
+	if buildSchemaIndex < 0 {
+		return fmt.Errorf("build workflow has no schema generation step")
+	}
+	if checkCount != 1 {
+		return fmt.Errorf("build workflow must have exactly one schema compatibility check, found %d", checkCount)
+	}
+	comparisonCount := 0
+	for i, rawStep := range steps {
+		step, _ := rawStep.(map[string]any)
+		if step["name"] != "Check Schema is Valid" {
+			continue
+		}
+		if i <= buildSchemaIndex {
+			return fmt.Errorf("schema compatibility check must follow schema generation")
+		}
+		if step["if"] != "github.event_name == 'pull_request'" {
+			return fmt.Errorf("schema compatibility check must be pull-request-only")
+		}
+		run, _ := step["run"].(string)
+		comparisonCount += strings.Count(run, "schema-tools compare")
+		for _, required := range []string{
+			"schema-tools compare",
+			"cat \"$RUNNER_TEMP/schema-check-report.md\"",
+			"Looking good! No breaking changes found.",
+			"exit 1",
+		} {
+			if !strings.Contains(run, required) {
+				return fmt.Errorf("schema compatibility check is missing %q", required)
+			}
+		}
+		if env, ok := step["env"].(map[string]any); !ok || env["GITHUB_TOKEN"] != "${{ secrets.GITHUB_TOKEN }}" {
+			return fmt.Errorf("schema compatibility check must receive GITHUB_TOKEN")
+		}
+		if comparisonCount != 1 {
+			return fmt.Errorf("build workflow must have exactly one schema-tools comparison, found %d", comparisonCount)
+		}
+		return nil
+	}
+	return fmt.Errorf("build workflow has no schema compatibility check")
+}
+
+func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output string, status string) (int, string) {
+	t.Helper()
+	j := workflow["jobs"].(map[string]any)
+	steps := j["prerequisites"].(map[string]any)["steps"].([]any)
+	var run string
+	for _, rawStep := range steps {
+		step := rawStep.(map[string]any)
+		if step["name"] == "Check Schema is Valid" {
+			run = step["run"].(string)
+		}
+	}
+	require.NotEmpty(t, run)
+	tmp := t.TempDir()
+	bin := filepath.Join(tmp, "bin")
+	require.NoError(t, os.Mkdir(bin, 0o755))
+	schemaTools := filepath.Join(bin, "schema-tools")
+	require.NoError(t, os.WriteFile(schemaTools, []byte("#!/bin/sh\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o600))
+	require.NoError(t, os.Chmod(schemaTools, 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(tmp, "provider.json"), []byte("{}"), 0o600))
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("RUNNER_TEMP", tmp)
+	t.Setenv("PROVIDER", "dokploy")
+	t.Setenv("DEFAULT_BRANCH", "main")
+	t.Setenv("SCHEMA_TOOLS_OUTPUT", output)
+	t.Setenv("SCHEMA_TOOLS_STATUS", status)
+	command := exec.Command("bash", "-euo", "pipefail", "-c", run)
+	err := command.Run()
+	result := 0
+	if err != nil {
+		result = command.ProcessState.ExitCode()
+	}
+	report, readErr := os.ReadFile(filepath.Join(tmp, "schema-check-report.md"))
+	require.NoError(t, readErr)
+	return result, string(report)
+}
+
+func TestSchemaCompatibilityCheckExecutesItsResult(t *testing.T) {
+	workflow, _ := readWorkflow(t, "build.yml")
+	t.Run("success marker passes", func(t *testing.T) {
+		status, report := runSchemaCompatibilityCheck(t, workflow, "Looking good! No breaking changes found.", "0")
+		require.Equal(t, 0, status)
+		require.Contains(t, report, "Looking good! No breaking changes found.")
+	})
+	t.Run("incompatible result fails and retains report", func(t *testing.T) {
+		status, report := runSchemaCompatibilityCheck(t, workflow, "Breaking change detected", "1")
+		require.NotEqual(t, 0, status)
+		require.Contains(t, report, "Breaking change detected")
+	})
+}
+
+func TestSchemaCompatibilityValidationRejectsDuplicateChecks(t *testing.T) {
+	workflow, _ := readWorkflow(t, "build.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	steps := jobs["prerequisites"].(map[string]any)["steps"].([]any)
+	for _, rawStep := range steps {
+		step := rawStep.(map[string]any)
+		if step["name"] == "Check Schema is Valid" {
+			jobs["prerequisites"].(map[string]any)["steps"] = append(steps, step)
+			break
+		}
+	}
+	require.ErrorContains(t, validateSchemaCompatibilityStep(workflow), "exactly one schema compatibility check")
 }
 
 func TestRegistryMetadata(t *testing.T) {
@@ -263,6 +587,11 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Contains(t, buildText, "make test_race")
 	require.Contains(t, buildText, "make test_examples")
 	require.NotContains(t, buildText, "Configure AWS Credentials")
+	require.NoError(t, validateSchemaCompatibilityStep(build))
+	require.Contains(t, buildText, "schema-tools compare")
+	require.Contains(t, buildText, "github.event_name == 'pull_request'")
+	require.Contains(t, buildText, "Looking good! No breaking changes found.")
+	require.Contains(t, buildText, "exit 1", "schema incompatibility must fail the PR workflow")
 	on, ok := build["on"].(map[string]any)
 	require.True(t, ok)
 	push, ok := on["push"].(map[string]any)
@@ -305,6 +634,8 @@ func TestRegistryMetadata(t *testing.T) {
 	}
 	require.NotContains(t, releaseText, "dispatch_docs_build")
 	require.NotContains(t, releaseText, "pulumictl create docs-build")
+	require.NotContains(t, releaseText, "schema-tools compare")
+	require.NotContains(t, prereleaseText, "schema-tools compare")
 	sdkTestCommand := "cd examples && $GO_TEST_EXEC -tags=${{ matrix.language }} -v -count=1 -coverprofile=coverage.txt ."
 	for name, workflow := range map[string]map[string]any{
 		"build.yml":      build,
@@ -607,7 +938,9 @@ func validateReleaseWorkflowContracts(workflow map[string]any, name string) erro
 		}
 		expected := map[string]any{"contents": "read"}
 		switch jobName {
-		case "publish", "publish_go_sdk":
+		case "publish":
+			expected = map[string]any{"contents": "write", "id-token": "write", "attestations": "write"}
+		case "publish_go_sdk":
 			expected = map[string]any{"contents": "write"}
 		case "publish_sdk":
 			expected = map[string]any{"contents": "read", "id-token": "write"}
@@ -985,4 +1318,194 @@ jobs:
 			}
 		})
 	}
+}
+
+func TestGoReleaserConfigsPublishChecksumsSbomsAndNeutralWindowsBuild(t *testing.T) {
+	for _, name := range []string{".goreleaser.yml", ".goreleaser.prerelease.yml"} {
+		t.Run(name, func(t *testing.T) {
+			content, err := os.ReadFile("../" + name)
+			require.NoError(t, err)
+			text := string(content)
+			require.NotContains(t, text, "sign-windows")
+			require.NotContains(t, text, "sign-goreleaser")
+
+			config := map[string]any{}
+			require.NoError(t, yaml.Unmarshal(content, &config))
+			require.Equal(t, 2, config["version"])
+			checksum, ok := config["checksum"].(map[string]any)
+			require.True(t, ok, "checksum must be a mapping")
+			require.Equal(t, "checksums.txt", checksum["name_template"])
+			require.Equal(t, "sha256", checksum["algorithm"])
+			archives, ok := config["archives"].([]any)
+			require.True(t, ok, "archives must be a list")
+			if !ok {
+				return
+			}
+			require.Len(t, archives, 1)
+			archive, ok := archives[0].(map[string]any)
+			require.True(t, ok, "archive must be a mapping")
+			if !ok {
+				return
+			}
+			require.Equal(t, "{{ .Binary }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}", archive["name_template"])
+			sboms, ok := config["sboms"].([]any)
+			require.True(t, ok, "sboms must be a list")
+			if !ok {
+				return
+			}
+			require.Len(t, sboms, 1)
+			sbom, ok := sboms[0].(map[string]any)
+			require.True(t, ok, "sbom must be a mapping")
+			if !ok {
+				return
+			}
+			require.Equal(t, "archive", sbom["artifacts"])
+
+			builds, ok := config["builds"].([]any)
+			require.True(t, ok, "builds must be a list")
+			if !ok {
+				return
+			}
+			var windowsBuild map[string]any
+			for _, rawBuild := range builds {
+				build, ok := rawBuild.(map[string]any)
+				require.True(t, ok, "build must be a mapping")
+				if !ok {
+					return
+				}
+				goos, ok := build["goos"].([]any)
+				require.True(t, ok, "build goos must be a list")
+				if !ok {
+					return
+				}
+				if len(goos) == 1 && goos[0] == "windows" {
+					windowsBuild = build
+				}
+			}
+			require.NotNil(t, windowsBuild)
+			require.Equal(t, "build-provider-windows", windowsBuild["id"])
+			require.NotContains(t, windowsBuild, "hooks")
+		})
+	}
+}
+
+func TestReleasePublishJobsProvisionSyftBeforeGoReleaser(t *testing.T) {
+	toolsContent, err := os.ReadFile("../.mise.toml")
+	require.NoError(t, err)
+	match := regexp.MustCompile(`(?m)^syft = "([^"]+)"$`).FindStringSubmatch(string(toolsContent))
+	require.Len(t, match, 2)
+	require.Equal(t, "1.51.1", match[1])
+
+	setupContent, err := os.ReadFile("../.github/actions/setup-tools/action.yml")
+	require.NoError(t, err)
+	require.Contains(t, string(setupContent), "jdx/mise-action@")
+	require.NotContains(t, string(setupContent), "install: false")
+	for _, name := range []string{"release.yml", "prerelease.yml"} {
+		t.Run(name, func(t *testing.T) {
+			workflow, _ := readWorkflow(t, name)
+			publish := workflow["jobs"].(map[string]any)["publish"].(map[string]any)
+			steps := publish["steps"].([]any)
+			setupIndex := -1
+			goreleaserIndex := -1
+			goreleaserArgs := ""
+			for i, rawStep := range steps {
+				step := rawStep.(map[string]any)
+				uses, _ := step["uses"].(string)
+				if uses == "./.github/actions/setup-tools" {
+					setupIndex = i
+				}
+				if strings.Contains(uses, "goreleaser/goreleaser-action@") {
+					goreleaserIndex = i
+					goreleaserArgs = step["with"].(map[string]any)["args"].(string)
+				}
+			}
+			require.GreaterOrEqual(t, setupIndex, 0)
+			require.Greater(t, goreleaserIndex, setupIndex)
+			if name == "prerelease.yml" {
+				require.NotContains(t, goreleaserArgs, "--skip=validate")
+			}
+		})
+	}
+}
+
+func TestReleasePublishJobsAttestAllProviderArtifacts(t *testing.T) {
+	shaPattern := regexp.MustCompile(`^actions/attest-build-provenance@[0-9a-f]{40}$`)
+	for _, name := range []string{"release.yml", "prerelease.yml"} {
+		t.Run(name, func(t *testing.T) {
+			workflow, _ := readWorkflow(t, name)
+			publish := workflow["jobs"].(map[string]any)["publish"].(map[string]any)
+			require.Equal(t, map[string]any{
+				"contents":     "write",
+				"id-token":     "write",
+				"attestations": "write",
+			}, publish["permissions"])
+
+			steps := publish["steps"].([]any)
+			goreleaserIndex := -1
+			attestationIndex := -1
+			for i, rawStep := range steps {
+				step := rawStep.(map[string]any)
+				uses, _ := step["uses"].(string)
+				if strings.Contains(uses, "goreleaser/goreleaser-action@") {
+					goreleaserIndex = i
+				}
+				if strings.HasPrefix(uses, "actions/attest-build-provenance@") {
+					attestationIndex = i
+					require.Regexp(t, shaPattern, uses)
+					require.NotContains(t, workflowValueText(step), "secrets.")
+					with := step["with"].(map[string]any)
+					subjectPath := with["subject-path"].(string)
+					for _, requiredPath := range []string{"dist/*.tar.gz", "dist/*.zip", "dist/checksums.txt", "dist/*.sbom.json"} {
+						require.Contains(t, subjectPath, requiredPath)
+					}
+				}
+			}
+			require.GreaterOrEqual(t, goreleaserIndex, 0)
+			require.Greater(t, attestationIndex, goreleaserIndex)
+		})
+	}
+}
+
+func TestReleaseSnapshotArtifactsMatchAttestationPatterns(t *testing.T) {
+	if os.Getenv("RELEASE_SNAPSHOT_CHECK") != "1" {
+		t.Skip("set RELEASE_SNAPSHOT_CHECK=1 after a local GoReleaser snapshot")
+	}
+
+	dist := "../dist"
+	archives, err := filepath.Glob(filepath.Join(dist, "*.tar.gz"))
+	require.NoError(t, err)
+	zips, err := filepath.Glob(filepath.Join(dist, "*.zip"))
+	require.NoError(t, err)
+	sboms, err := filepath.Glob(filepath.Join(dist, "*.sbom.json"))
+	require.NoError(t, err)
+	checksums, err := filepath.Glob(filepath.Join(dist, "checksums.txt"))
+	require.NoError(t, err)
+	require.NotEmpty(t, archives, "snapshot must produce tar.gz release archives")
+	require.NotEmpty(t, sboms, "snapshot must produce SBOMs for release archives")
+	require.Len(t, checksums, 1)
+
+	checksumEntries := map[string]string{}
+	for _, line := range strings.Split(string(mustReadFile(t, checksums[0])), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 2 {
+			checksumEntries[fields[1]] = fields[0]
+		}
+	}
+	for _, path := range append(archives, sboms...) {
+		name := filepath.Base(path)
+		expected, ok := checksumEntries[name]
+		require.True(t, ok, "checksum missing %s", name)
+		hash := sha256.Sum256(mustReadFile(t, path))
+		require.Equal(t, hex.EncodeToString(hash[:]), expected, name)
+	}
+	for _, path := range append(archives, zips...) {
+		require.True(t, strings.HasPrefix(filepath.Base(path), "pulumi-resource-dokploy-"), path)
+	}
+}
+
+func mustReadFile(t *testing.T, path string) []byte {
+	t.Helper()
+	content, err := os.ReadFile(path)
+	require.NoError(t, err)
+	return content
 }

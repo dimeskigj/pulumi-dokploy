@@ -52,6 +52,22 @@ jobs:
       run: make codegen
     - name: Build Schema
       run: make generate_schema
+    - if: github.event_name == 'pull_request'
+      name: Check Schema is Valid
+      run: |
+        set +e
+        schema-tools compare -p "$PROVIDER" -o "$DEFAULT_BRANCH" -n --local-path="provider/cmd/pulumi-resource-$PROVIDER/schema.json" > "$RUNNER_TEMP/schema-check-report.md"
+        compare_status=$?
+        set -e
+        cat "$RUNNER_TEMP/schema-check-report.md"
+        if [ "$compare_status" -ne 0 ] || ! grep -Fq 'Looking good! No breaking changes found.' "$RUNNER_TEMP/schema-check-report.md"; then
+          echo "Schema compatibility check failed"
+          exit 1
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PROVIDER: ${{ env.PROVIDER }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
     - name: Setup Node for docs
       uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
       with:

@@ -18,13 +18,15 @@ const Name = "dokploy"
 func Provider() p.Provider {
 	return infer.Provider(infer.Options{
 		Metadata: schema.Metadata{
-			DisplayName: "Dokploy",
-			Description: "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, backup destinations, database backups, and volume backups.",
-			Namespace:   "dimeskigj",
-			Homepage:    "https://github.com/dimeskigj/pulumi-dokploy",
-			Repository:  "https://github.com/dimeskigj/pulumi-dokploy",
-			Publisher:   "dimeskigj",
-			License:     "Apache-2.0",
+			DisplayName:       "Dokploy",
+			Description:       "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, backup destinations, database backups, and volume backups.",
+			PluginDownloadURL: "github://api.github.com/dimeskigj/pulumi-dokploy",
+			Keywords:          []string{"category/infrastructure", "kind/native", "dokploy", "deployment", "self-hosted", "paas"},
+			Namespace:         "dimeskigj",
+			Homepage:          "https://github.com/dimeskigj/pulumi-dokploy",
+			Repository:        "https://github.com/dimeskigj/pulumi-dokploy",
+			Publisher:         "dimeskigj",
+			License:           "Apache-2.0",
 			LanguageMap: map[string]any{
 				"go":     map[string]any{"importBasePath": "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"},
 				"nodejs": map[string]any{"packageName": "@dimeskigj/pulumi-dokploy"},

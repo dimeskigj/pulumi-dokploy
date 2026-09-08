@@ -1,6 +1,14 @@
 {
     "name": "@dimeskigj/pulumi-dokploy",
     "version": "${VERSION}",
+    "keywords": [
+        "category/infrastructure",
+        "kind/native",
+        "dokploy",
+        "deployment",
+        "self-hosted",
+        "paas"
+    ],
     "homepage": "https://github.com/dimeskigj/pulumi-dokploy",
     "repository": "https://github.com/dimeskigj/pulumi-dokploy",
     "license": "Apache-2.0",
@@ -16,6 +24,7 @@
     },
     "pulumi": {
         "resource": true,
-        "name": "dokploy"
+        "name": "dokploy",
+        "server": "github://api.github.com/dimeskigj/pulumi-dokploy"
     }
 }

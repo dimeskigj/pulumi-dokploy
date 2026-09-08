@@ -70,6 +70,7 @@ def genPulumiResources = tasks.register('genPulumiResources') {
         builder {
             resource true
             name "dokploy"
+            server "github://api.github.com/dimeskigj/pulumi-dokploy"
             version resolvedVersion
         }
         def infoJson = builder.toPrettyString()

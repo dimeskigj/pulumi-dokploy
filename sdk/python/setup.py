@@ -24,6 +24,7 @@ setup(name='pulumi_dokploy',
       description="Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, backup destinations, database backups, and volume backups.",
       long_description=readme(),
       long_description_content_type='text/markdown',
+      keywords='category/infrastructure kind/native dokploy deployment self-hosted paas',
       url='https://github.com/dimeskigj/pulumi-dokploy',
       project_urls={
           'Repository': 'https://github.com/dimeskigj/pulumi-dokploy'

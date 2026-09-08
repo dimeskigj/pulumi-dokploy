@@ -1,58 +1,60 @@
-# Task 1 Report
+# Task 1 Report: Provider-Specific User-Agent
 
-## Files changed
+## Status
 
-- `provider/backup.go`
-- `provider/backup_test.go`
+Implemented and committed on `feat/registry-release-readiness`.
 
-## RED evidence
+## RED
+
+Added client header tests for a versioned User-Agent and the development fallback.
 
 Command:
 
 ```text
-go test ./provider -run '^TestBackupObservationMatchesCreate$' -count=1
+go test ./internal/client -run '^TestNew(SendsProviderUserAgent|UsesDevelopmentUserAgentFallback)$' -count=1
 ```
 
-Result: failed to compile with `undefined: backupObservation` (and related undefined references), as expected before implementation.
+Result: expected failure during compilation because `WithUserAgentVersion` did not yet exist.
 
-## GREEN evidence
+## GREEN
 
-Command:
+Implemented `WithUserAgentVersion` and `providerUserAgent` in `internal/client`, including trimming, one leading `v` removal, and the `dev` fallback. The request editor now sets `User-Agent: pulumi-dokploy/<version>`. Added retry-preservation coverage and passed `Version` from provider configuration.
 
-```text
-go test ./provider -run '^TestBackupObservationMatchesCreate$' -count=1
-```
-
-Result: passed (`ok github.com/dimeskigj/pulumi-dokploy/provider 0.033s`).
-
-Command:
+Commands and results:
 
 ```text
-go test ./provider -run '^TestBackup' -count=1
-```
+go test ./internal/client -run 'UserAgent' -count=1
+PASS
 
-Result: the matcher test passed, while four pre-existing create-discovery tests failed because their fixture observations contain only IDs and do not yet provide the fields required for exact matching. This is the expected Task 2 follow-up identified by the brief.
+go test ./internal/client ./provider -run 'UserAgent|Config' -count=1
+PASS
 
-Command:
+go test -short ./provider/... ./internal/... -count=1
+PASS
 
-```text
+go test ./internal/client ./provider -count=1
+PASS
+
 git diff --check
+PASS
 ```
 
-Result: passed with no output.
+The supplied baseline warning about `provider/live_harness_unit_test.go` referencing undefined `classifyWorkloadCreateError` was not reproduced in this worktree; the focused provider and short package test commands both passed. That unrelated file was not modified.
 
-## Commit SHA
+## Commit
 
-Implementation commit: `83055dc` (`refactor: model observed Dokploy backups`).
+```text
+e38fa0e feat: identify provider API requests
+```
 
 ## Self-review
 
-- Added direct exact matching for required fields, optional observed `enabled`, and nullable retention.
-- Replaced ID-only target parsing with typed observations across all four target endpoints.
-- Malformed nested records and non-integral/out-of-range retention values are skipped.
-- Preserved target dispatch and incomplete-response errors.
-- Only Task 1 source and test files were included in the implementation commit.
+- Only the four Task 1 implementation/test files were changed in the feature commit.
+- Endpoint and API-key validation paths remain unchanged.
+- Retry attempts receive the same request editor and User-Agent.
+- Provider configuration consumes linker-injected `Version` without introducing a provider dependency into `internal/client`.
+- `git diff --check` passed.
 
 ## Concerns
 
-- Existing create tests that use ID-only nested backup fixtures fail until bounded discovery and its fixtures are updated in Task 2.
+No known Task 1 concerns. The reported unrelated baseline compile failure could not be observed with the required commands in this checkout.

@@ -1,3 +1,4 @@
+version: 2
 project_name: pulumi-dokploy
 builds:
 - id: build-provider
@@ -19,7 +20,7 @@ builds:
     - -X
       github.com/dimeskigj/pulumi-dokploy/provider.Version={{.Tag}}
   binary: pulumi-resource-dokploy
-- id: build-provider-sign-windows
+- id: build-provider-windows
   dir: provider
   env:
   - CGO_ENABLED=0
@@ -33,16 +34,18 @@ builds:
   main: ./cmd/pulumi-resource-dokploy/
   ldflags: *a2
   binary: pulumi-resource-dokploy
-  hooks:
-    post:
-    - make sign-goreleaser-exe-{{ .Arch }}
 archives:
 - name_template: "{{ .Binary }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"
   id: archive
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+sboms:
+- artifacts: archive
 snapshot:
-  name_template: "{{ .Tag }}-SNAPSHOT"
+  version_template: "{{ .Version }}-SNAPSHOT"
 changelog:
-  skip: true
+  disable: true
 release:
   prerelease: auto
   disable: false
