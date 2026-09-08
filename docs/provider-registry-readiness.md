@@ -50,8 +50,8 @@ the corrected release exists, and publication has been verified.
 - A real public release dispatch was not run; static workflow and semantic tests
   do not replace dispatch evidence.
 - Pulumi CLI downloads used by the workflow are not checksum-verified.
-- The Java consumer's runtime options may not be supported by every published
-  Pulumi Java runtime; this remains a release-dispatch concern.
+- Java package and runtime behavior remains unverified because no real public
+  release dispatch was run.
 - The workflow's static tests validate its contract but cannot prove package
   availability, plugin acquisition, or language-runtime behavior.
 

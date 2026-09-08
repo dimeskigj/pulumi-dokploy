@@ -7,8 +7,9 @@ provider is explicitly not marked Registry-ready because maintainer inputs, a
 corrected public release, and Registry publication remain outstanding.
 
 Task 6 residuals are recorded: no real public release dispatch, no checksum
-verification for Pulumi CLI downloads, potentially unsupported Java runtime
-options, and the limitation that static tests do not replace dispatch.
+verification for Pulumi CLI downloads, unverified Java package/runtime behavior
+because no real release dispatch ran, and the limitation that static tests do
+not replace dispatch.
 
 ## Ledger changes
 
@@ -50,7 +51,7 @@ Registry PR/release publication, lookup functions, and broad engine acceptance.
 - Removed Java `runtime.options.main` and `runtime.options.build`, leaving
   Maven metadata and the Java runtime to detect the entry point and build.
 - Strengthened the workflow contract to require exactly six 3.259.0 CLI pins,
-  reject stale 3.159.0 pins, and reject unsupported Java runtime options.
+  reject stale 3.159.0 pins, and require Java runtime options to remain absent.
 
 Follow-up verification:
 
