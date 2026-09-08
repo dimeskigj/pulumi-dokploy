@@ -1,6 +1,6 @@
 # Contributing
 
-1. Install the versions in `.mise.toml` with `mise install`.
+1. Install the versions in `.mise.toml` with `mise install`; this installs the Pulumi CLI used by acceptance tests and code generation.
 2. Make changes in provider source and tests; use TDD for behavior changes.
 3. Run `make lint`, `make check_openapi`, `make codegen`, `make build_sdks`, and `make test`.
 4. Update the owned GitHub Actions workflows directly when CI behavior changes.
