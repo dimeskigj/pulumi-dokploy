@@ -1,6 +1,8 @@
 package dokploy
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"os/exec"
@@ -1116,18 +1118,53 @@ func TestGoReleaserConfigsPublishChecksumsSbomsAndNeutralWindowsBuild(t *testing
 
 			config := map[string]any{}
 			require.NoError(t, yaml.Unmarshal(content, &config))
-			checksum := config["checksum"].(map[string]any)
+			require.Equal(t, 2, config["version"])
+			checksum, ok := config["checksum"].(map[string]any)
+			require.True(t, ok, "checksum must be a mapping")
 			require.Equal(t, "checksums.txt", checksum["name_template"])
 			require.Equal(t, "sha256", checksum["algorithm"])
-			sboms := config["sboms"].([]any)
+			archives, ok := config["archives"].([]any)
+			require.True(t, ok, "archives must be a list")
+			if !ok {
+				return
+			}
+			require.Len(t, archives, 1)
+			archive, ok := archives[0].(map[string]any)
+			require.True(t, ok, "archive must be a mapping")
+			if !ok {
+				return
+			}
+			require.Equal(t, "{{ .Binary }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}", archive["name_template"])
+			sboms, ok := config["sboms"].([]any)
+			require.True(t, ok, "sboms must be a list")
+			if !ok {
+				return
+			}
 			require.Len(t, sboms, 1)
-			require.Equal(t, "archive", sboms[0].(map[string]any)["artifacts"])
+			sbom, ok := sboms[0].(map[string]any)
+			require.True(t, ok, "sbom must be a mapping")
+			if !ok {
+				return
+			}
+			require.Equal(t, "archive", sbom["artifacts"])
 
-			builds := config["builds"].([]any)
+			builds, ok := config["builds"].([]any)
+			require.True(t, ok, "builds must be a list")
+			if !ok {
+				return
+			}
 			var windowsBuild map[string]any
 			for _, rawBuild := range builds {
-				build := rawBuild.(map[string]any)
-				goos := build["goos"].([]any)
+				build, ok := rawBuild.(map[string]any)
+				require.True(t, ok, "build must be a mapping")
+				if !ok {
+					return
+				}
+				goos, ok := build["goos"].([]any)
+				require.True(t, ok, "build goos must be a list")
+				if !ok {
+					return
+				}
 				if len(goos) == 1 && goos[0] == "windows" {
 					windowsBuild = build
 				}
@@ -1135,6 +1172,45 @@ func TestGoReleaserConfigsPublishChecksumsSbomsAndNeutralWindowsBuild(t *testing
 			require.NotNil(t, windowsBuild)
 			require.Equal(t, "build-provider-windows", windowsBuild["id"])
 			require.NotContains(t, windowsBuild, "hooks")
+		})
+	}
+}
+
+func TestReleasePublishJobsProvisionSyftBeforeGoReleaser(t *testing.T) {
+	toolsContent, err := os.ReadFile("../.mise.toml")
+	require.NoError(t, err)
+	match := regexp.MustCompile(`(?m)^syft = "([^"]+)"$`).FindStringSubmatch(string(toolsContent))
+	require.Len(t, match, 2)
+	require.Equal(t, "1.51.1", match[1])
+
+	setupContent, err := os.ReadFile("../.github/actions/setup-tools/action.yml")
+	require.NoError(t, err)
+	require.Contains(t, string(setupContent), "jdx/mise-action@")
+	require.NotContains(t, string(setupContent), "install: false")
+	for _, name := range []string{"release.yml", "prerelease.yml"} {
+		t.Run(name, func(t *testing.T) {
+			workflow, _ := readWorkflow(t, name)
+			publish := workflow["jobs"].(map[string]any)["publish"].(map[string]any)
+			steps := publish["steps"].([]any)
+			setupIndex := -1
+			goreleaserIndex := -1
+			goreleaserArgs := ""
+			for i, rawStep := range steps {
+				step := rawStep.(map[string]any)
+				uses, _ := step["uses"].(string)
+				if uses == "./.github/actions/setup-tools" {
+					setupIndex = i
+				}
+				if strings.Contains(uses, "goreleaser/goreleaser-action@") {
+					goreleaserIndex = i
+					goreleaserArgs = step["with"].(map[string]any)["args"].(string)
+				}
+			}
+			require.GreaterOrEqual(t, setupIndex, 0)
+			require.Greater(t, goreleaserIndex, setupIndex)
+			if name == "prerelease.yml" {
+				require.NotContains(t, goreleaserArgs, "--skip=validate")
+			}
 		})
 	}
 }
@@ -1175,4 +1251,48 @@ func TestReleasePublishJobsAttestAllProviderArtifacts(t *testing.T) {
 			require.Greater(t, attestationIndex, goreleaserIndex)
 		})
 	}
+}
+
+func TestReleaseSnapshotArtifactsMatchAttestationPatterns(t *testing.T) {
+	if os.Getenv("RELEASE_SNAPSHOT_CHECK") != "1" {
+		t.Skip("set RELEASE_SNAPSHOT_CHECK=1 after a local GoReleaser snapshot")
+	}
+
+	dist := "../dist"
+	archives, err := filepath.Glob(filepath.Join(dist, "*.tar.gz"))
+	require.NoError(t, err)
+	zips, err := filepath.Glob(filepath.Join(dist, "*.zip"))
+	require.NoError(t, err)
+	sboms, err := filepath.Glob(filepath.Join(dist, "*.sbom.json"))
+	require.NoError(t, err)
+	checksums, err := filepath.Glob(filepath.Join(dist, "checksums.txt"))
+	require.NoError(t, err)
+	require.NotEmpty(t, archives, "snapshot must produce tar.gz release archives")
+	require.NotEmpty(t, sboms, "snapshot must produce SBOMs for release archives")
+	require.Len(t, checksums, 1)
+
+	checksumEntries := map[string]string{}
+	for _, line := range strings.Split(string(mustReadFile(t, checksums[0])), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 2 {
+			checksumEntries[fields[1]] = fields[0]
+		}
+	}
+	for _, path := range append(archives, sboms...) {
+		name := filepath.Base(path)
+		expected, ok := checksumEntries[name]
+		require.True(t, ok, "checksum missing %s", name)
+		hash := sha256.Sum256(mustReadFile(t, path))
+		require.Equal(t, hex.EncodeToString(hash[:]), expected, name)
+	}
+	for _, path := range append(archives, zips...) {
+		require.True(t, strings.HasPrefix(filepath.Base(path), "pulumi-resource-dokploy-"), path)
+	}
+}
+
+func mustReadFile(t *testing.T, path string) []byte {
+	t.Helper()
+	content, err := os.ReadFile(path)
+	require.NoError(t, err)
+	return content
 }

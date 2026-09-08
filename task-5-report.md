@@ -30,3 +30,16 @@ publishing credentials are not passed to the attestation step.
 The repository does not have a `goreleaser` or `mise` executable available
 locally, so validation used the Go toolchain's automatic Go 1.27.1 toolchain
 download with GoReleaser v2.18.1.
+
+## Follow-up verification
+
+- Added `syft = "1.51.1"` to `.mise.toml`. The shared setup action invokes
+  `jdx/mise-action` with its default `install: true`, so publish jobs install
+  the pinned Syft version before GoReleaser.
+- Removed prerelease `--skip=validate`.
+- `RELEASE_SNAPSHOT_CHECK=1 go test ./provider -run 'Release|Workflow' -count=1`
+  — PASS after a local snapshot.
+- Local snapshot command (no publishing):
+  `PATH=/tmp/task5-syft:$PATH go run github.com/goreleaser/goreleaser/v2@v2.18.1 release --snapshot --clean --skip=publish -f .goreleaser.yml`
+  — PASS; produced six archives, six archive SBOMs, and `dist/checksums.txt`,
+  with SHA256 entries matching all generated files and attestation globs.
