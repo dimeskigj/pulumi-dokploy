@@ -116,7 +116,7 @@ var workflowJobPolicy = map[string]map[string]bool{
 	"prerelease.yml":           {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"release.yml":              {"prerequisites": true, "build_sdks": true, "test": true, "publish": true, "publish_sdk": true, "publish_java_sdk": true, "publish_go_sdk": true},
 	"run-acceptance-tests.yml": {"prerequisites": true, "build_sdks": true, "test": true, "lint": true},
-	"release-smoke.yml":         {"validate-version": false, "provider": false, "node": false, "python": false, "dotnet": false, "java": false, "go": true},
+	"release-smoke.yml":        {"validate-version": false, "provider": false, "node": false, "python": false, "dotnet": false, "java": false, "go": true},
 }
 
 func validateWorkflowSemantics(workflow map[string]any, name string) error {
@@ -420,7 +420,9 @@ func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output s
 	tmp := t.TempDir()
 	bin := filepath.Join(tmp, "bin")
 	require.NoError(t, os.Mkdir(bin, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(bin, "schema-tools"), []byte("#!/bin/sh\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o755))
+	schemaTools := filepath.Join(bin, "schema-tools")
+	require.NoError(t, os.WriteFile(schemaTools, []byte("#!/bin/sh\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o600))
+	require.NoError(t, os.Chmod(schemaTools, 0o700))
 	require.NoError(t, os.WriteFile(filepath.Join(tmp, "provider.json"), []byte("{}"), 0o600))
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("RUNNER_TEMP", tmp)
