@@ -2,7 +2,9 @@ package dokploy
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -161,9 +163,29 @@ func TestTier2WorkloadLifecycleDeletesTargetsOnlyAfterDependents(t *testing.T) {
 	require.Equal(t, 1, strings.Count(text, "deleteAndReadCompose(t, ctx"))
 }
 
-func TestSuccessfulCreateDoesNotRegisterSubtestCleanup(t *testing.T) {
-	require.False(t, cleanupAfterCreateErrorNeedsImmediateCleanup("resource-id", nil))
-	require.True(t, cleanupAfterCreateErrorNeedsImmediateCleanup("resource-id", context.Canceled))
+func TestSuccessfulCreateRegistersCleanupAndExplicitDeleteReleasesIt(t *testing.T) {
+	deletes := 0
+	owner := newLiveCleanupOwner(func() { deletes++ })
+	owner.release()
+	owner.cleanupOnce()
+	require.Equal(t, 0, deletes)
+
+	owner = newLiveCleanupOwner(func() { deletes++ })
+	owner.cleanupOnce()
+	owner.cleanupOnce()
+	require.Equal(t, 1, deletes)
+}
+
+func TestExplicitDeleteReleasesOwnershipBeforeFailedAbsenceVerification(t *testing.T) {
+	owner := newLiveCleanupOwner(func() { t.Fatal("fallback cleanup must not run") })
+	deleteCalls := 0
+	err := deleteAndVerifyLiveOwned(t.Context(), func() error {
+		deleteCalls++
+		return nil
+	}, func() (string, error) { return "present", errors.New("verification sentinel") }, owner.release)
+	require.Error(t, err)
+	require.Equal(t, 1, deleteCalls)
+	owner.cleanupOnce()
 }
 
 func TestWorkloadLifecycleDiagnosticsExcludeUnstructuredFailureDetails(t *testing.T) {
@@ -180,6 +202,42 @@ func TestWorkloadLifecycleDiagnosticsExcludeUnstructuredFailureDetails(t *testin
 			})
 		}
 	}
+}
+
+func TestWorkloadCallPathsEmitOnlyStructuralDiagnostics(t *testing.T) {
+	s := newScriptedServer(t,
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.create", Body: json.RawMessage(`{"applicationId":"app","certificateType":"letsencrypt","domainType":"application","host":"example.test","https":false,"stripPath":false}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"BAD_REQUEST","message":"sql=insert domain-id-sentinel /raw/path"}`)},
+		scriptedRequest{Method: http.MethodPost, Path: "/api/mounts.create", Body: json.RawMessage(`{"content":null,"filePath":null,"hostPath":"/host","mountPath":"/mnt","serviceId":"app","serviceType":"application","type":"bind","volumeName":null}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"BAD_REQUEST","message":"content=mount-content-sentinel path=/raw/path"}`)},
+	)
+	domainErr := mustDomainCreateError(t, Domain{client: fixedClient(s.API())})
+	mountErr := mustMountCreateError(t, Mount{client: fixedClient(s.API())})
+	for _, test := range []struct {
+		operation string
+		err       error
+	}{
+		{"domain", domainErr}, {"mount", mountErr},
+	} {
+		got, err := classifyWorkloadLifecycleError(test.operation, test.err)
+		require.NoError(t, err)
+		require.Equal(t, "operation="+test.operation+";status=4xx;code=BAD_REQUEST", got)
+		for _, sentinel := range []string{"domain-id-sentinel", "/raw/path", "mount-content-sentinel", "insert domain"} {
+			require.NotContains(t, got, sentinel)
+		}
+	}
+}
+
+func mustDomainCreateError(t *testing.T, r Domain) error {
+	t.Helper()
+	_, err := r.Create(t.Context(), infer.CreateRequest[DomainArgs]{Inputs: DomainArgs{ApplicationID: stringPtr("app"), Host: "example.test"}})
+	require.Error(t, err)
+	return err
+}
+
+func mustMountCreateError(t *testing.T, r Mount) error {
+	t.Helper()
+	_, err := r.Create(t.Context(), infer.CreateRequest[MountArgs]{Inputs: MountArgs{Type: mountTypeBind, MountPath: "/mnt", HostPath: stringPtr("/host"), ApplicationID: stringPtr("app")}})
+	require.Error(t, err)
+	return err
 }
 
 func TestDeleteAndVerifyOnceMarksOwnershipBeforeVerification(t *testing.T) {

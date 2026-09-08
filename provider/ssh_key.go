@@ -124,14 +124,18 @@ func (r SSHKey) Create(ctx context.Context, req infer.CreateRequest[SSHKeyArgs])
 		Name: req.Inputs.Name, Description: description, OrganizationId: state.OrganizationID,
 		PrivateKey: req.Inputs.PrivateKey, PublicKey: req.Inputs.PublicKey,
 	})
-	if err != nil {
-		return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(err, req.Inputs)
-	}
+	createErr := err
 	after, err := api.SshKeyAllWithResponse(ctx)
 	if err != nil {
+		if createErr != nil {
+			return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(createErr, req.Inputs)
+		}
 		return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(err, req.Inputs)
 	}
 	if after.JSON200 == nil {
+		if createErr != nil {
+			return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(createErr, req.Inputs)
+		}
 		return infer.CreateResponse[SSHKeyState]{}, fmt.Errorf("sshKey.all returned incomplete SSH key list")
 	}
 	var candidates []string
@@ -143,12 +147,22 @@ func (r SSHKey) Create(ctx context.Context, req infer.CreateRequest[SSHKeyArgs])
 		}
 	}
 	if len(candidates) == 0 {
+		if createErr != nil {
+			return infer.CreateResponse[SSHKeyState]{}, sanitizeSSHKeyError(createErr, req.Inputs)
+		}
 		return infer.CreateResponse[SSHKeyState]{}, initFailed(fmt.Errorf("sshKey.create returned no discoverable SSH key"))
 	}
 	if len(candidates) != 1 {
 		return infer.CreateResponse[SSHKeyState]{}, initFailed(fmt.Errorf("sshKey.create returned ambiguous SSH key discovery"))
 	}
 	state.SSHKeyID = candidates[0]
+	if createErr != nil {
+		read, readErr := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: state.SSHKeyID, State: state})
+		if readErr == nil && read.ID != "" {
+			state = read.State
+		}
+		return infer.CreateResponse[SSHKeyState]{ID: state.SSHKeyID, Output: state}, initFailed(sanitizeSSHKeyError(createErr, req.Inputs))
+	}
 	read, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: state.SSHKeyID, State: state})
 	if err != nil {
 		return infer.CreateResponse[SSHKeyState]{ID: state.SSHKeyID, Output: state}, initFailed(sanitizeSSHKeyError(err, req.Inputs))

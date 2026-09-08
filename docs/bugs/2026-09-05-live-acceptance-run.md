@@ -195,6 +195,33 @@ live tiers skipped closed by missing opt-in/credentials. `golangci-lint` and
 - The boolean update-response mismatch remains the only confirmed provider/API
   defect; no standalone bug report is committed.
 
+## Task 3 — final Tier 2 compatibility evidence
+
+The final serial Tier 2 execution took **110.07s**. The acceptance stop marker
+was absent. Application and Compose passed. All Application/Compose Mount
+lifecycle cases and dispatch cases passed. The two Domain cases (Application
+and Compose) each returned only the sanitized classification
+`operation=domain;status=4xx;code=BAD_REQUEST`.
+
+No request-shape mismatch was established. The deterministic provider and
+generated-request matrices match the pinned OpenAPI contract. The deployed
+revision and applied migrations are unavailable from the approved local
+metadata; they must not be invented or inferred from the live result.
+
+This is therefore classified as a server-owned compatibility finding, with the
+exact cause unresolved. No provider Domain patch is justified. Follow-up is to
+compare the deployed revision and applied migrations with the pinned source,
+then patch Dokploy if the Application or Compose foreign-key handling is
+absent or inconsistent. Registry and GitLab source variants were skipped
+because dedicated credentials were not configured, as designed.
+
+### Cleanup evidence limitation
+
+The sanitized final log records lifecycle outcomes and no stop condition, but
+does not independently enumerate cleanup confirmations for each case. No
+cleanup failure is present in that log; cleanup verification remains limited to
+the harness evidence retained outside this tracked summary.
+
 ## Task 5 fix verification
 
 This section adds verification evidence for the contract fixes; the historical

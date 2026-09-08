@@ -43,6 +43,42 @@ type liveHeavyOperationLease struct {
 	released bool
 }
 
+type liveCleanupOwner struct {
+	mu      sync.Mutex
+	owned   bool
+	cleanup func()
+}
+
+func newLiveCleanupOwner(cleanup func()) *liveCleanupOwner {
+	return &liveCleanupOwner{owned: true, cleanup: cleanup}
+}
+
+func (o *liveCleanupOwner) release() {
+	o.mu.Lock()
+	o.owned = false
+	o.mu.Unlock()
+}
+
+func (o *liveCleanupOwner) cleanupOnce() {
+	o.mu.Lock()
+	if !o.owned {
+		o.mu.Unlock()
+		return
+	}
+	o.owned = false
+	cleanup := o.cleanup
+	o.mu.Unlock()
+	cleanup()
+}
+
+func deleteAndVerifyLiveOwned(ctx context.Context, remove func() error, read func() (string, error), release func()) error {
+	if err := remove(); err != nil && !client.IsNotFound(err) {
+		return err
+	}
+	release()
+	return waitForDatabaseAbsence(ctx, func(context.Context) (string, error) { return read() })
+}
+
 func beginLiveHeavyOperation(t *testing.T, kind string) *liveHeavyOperationLease {
 	t.Helper()
 	if !heavyLiveTierAvailable() {
@@ -408,12 +444,14 @@ func liveCleanupVerified(t *testing.T, kind, id string, remove func(context.Cont
 	}
 }
 
-func registerLiveCleanup(t *testing.T, kind, id string, remove func(context.Context) error, read func(context.Context) (string, error)) {
+func registerLiveCleanup(t *testing.T, kind, id string, remove func(context.Context) error, read func(context.Context) (string, error)) func() {
 	t.Helper()
 	if id == "" {
-		return
+		return func() {}
 	}
-	t.Cleanup(func() { liveCleanupVerified(t, kind, id, remove, read) })
+	owner := newLiveCleanupOwner(func() { liveCleanupVerified(t, kind, id, remove, read) })
+	t.Cleanup(owner.cleanupOnce)
+	return owner.release
 }
 
 func verifyLiveCleanup(ctx context.Context, remove func(context.Context) error, read func(context.Context) (string, error)) error {
