@@ -258,6 +258,38 @@ func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
 			}
 		}
 	}
+	for jobName, contract := range map[string]struct {
+		command string
+		caches  []string
+	}{
+		"node":   {"npm install", []string{"npm_config_cache"}},
+		"python": {"pip install", []string{"PIP_CACHE_DIR"}},
+		"dotnet": {"dotnet add package", []string{"NUGET_PACKAGES"}},
+		"java":   {"mvn -B -ntp", []string{"MAVEN_OPTS"}},
+		"go":     {"go get", []string{"GOPATH", "GOMODCACHE"}},
+	} {
+		found := false
+		for _, step := range workflowJobRunSteps(workflow, jobName) {
+			if !strings.Contains(step.run, contract.command) {
+				continue
+			}
+			found = true
+			for _, cache := range contract.caches {
+				if !strings.Contains(fmt.Sprint(step.env[cache]), "${{ runner.temp }}") {
+					return fmt.Errorf("release smoke job %q must set %s before dependency resolution", jobName, cache)
+				}
+			}
+		}
+		if !found {
+			return fmt.Errorf("release smoke job %q is missing dependency-resolution command %q", jobName, contract.command)
+		}
+	}
+	javaText := workflowValueText(jobs["java"])
+	for _, required := range []string{"<artifactId>dokploy</artifactId>", "<version>$VERSION</version>", "exec-maven-plugin", "<mainClass>smoke.Main</mainClass>", "runtime:\\n  name: java", "mvn -B -ntp package"} {
+		if !strings.Contains(javaText, required) {
+			return fmt.Errorf("release smoke Java consumer is missing runnable Maven metadata %q", required)
+		}
+	}
 	for _, required := range []string{
 		"=~ ^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)",
 		"checksums.txt",
@@ -267,7 +299,7 @@ func validateReleaseSmokeWorkflow(workflow map[string]any, text string) error {
 		"@dimeskigj/pulumi-dokploy@$VERSION",
 		"pulumi_dokploy==$VERSION",
 		"Dimeskigj.Pulumi.Dokploy --version \"$VERSION\"",
-		"net.dimeski.pulumi:dokploy:$VERSION",
+		"<groupId>net.dimeski.pulumi</groupId><artifactId>dokploy</artifactId><version>$VERSION</version>",
 		"github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v$VERSION",
 	} {
 		if !strings.Contains(text, required) {
@@ -292,6 +324,20 @@ func TestReleaseSmokeWorkflowRejectsPolicyDrift(t *testing.T) {
 	jobs := workflow["jobs"].(map[string]any)
 	delete(jobs, "go")
 	require.ErrorContains(t, validateReleaseSmokeWorkflow(workflow, text), "one validator and six consumer jobs")
+}
+
+func TestJavaExampleFixtureHasRunnableMavenMetadata(t *testing.T) {
+	pom, err := os.ReadFile("../examples/java/pom.xml")
+	require.NoError(t, err)
+	for _, marker := range []string{"exec-maven-plugin", "<mainClass>${mainClass}</mainClass>", "<artifactId>pulumi</artifactId>"} {
+		require.Contains(t, string(pom), marker)
+	}
+	pulumiYAML, err := os.ReadFile("../examples/java/Pulumi.yaml")
+	require.NoError(t, err)
+	require.Contains(t, string(pulumiYAML), "runtime: java")
+	program, err := os.ReadFile("../examples/java/src/main/java/generated_program/App.java")
+	require.NoError(t, err)
+	require.Contains(t, string(program), "Pulumi.run")
 }
 
 func validateSchemaCompatibilityStep(workflow map[string]any) error {

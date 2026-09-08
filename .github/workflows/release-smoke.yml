@@ -96,6 +96,8 @@ jobs:
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Node package and compile
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/node-consumer"
@@ -141,6 +143,8 @@ jobs:
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Python package and compile
+        env:
+          PIP_CACHE_DIR: ${{ runner.temp }}/pip-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/python-consumer"
@@ -187,6 +191,8 @@ jobs:
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact .NET package and compile
+        env:
+          NUGET_PACKAGES: ${{ runner.temp }}/nuget-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/dotnet-consumer"
@@ -233,24 +239,39 @@ jobs:
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Java package and compile
+        env:
+          MAVEN_OPTS: -Dmaven.repo.local=${{ runner.temp }}/maven-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/java-consumer/src/main/java/smoke"
           cd "$RUNNER_TEMP/java-consumer"
-          printf 'rootProject.name = "release-smoke"\n' > settings.gradle
-          printf 'plugins { id "java" }\nrepositories { mavenCentral() }\ndependencies { implementation "net.dimeski.pulumi:dokploy:$VERSION"; implementation "com.pulumi:pulumi:1.0.0" }\n' > build.gradle
-          printf 'package smoke;\nimport com.pulumi.Pulumi;\nimport net.dimeski.pulumi.dokploy.Provider;\npublic class Main { public static void main(String[] args) { Pulumi.run(ctx -> { var provider = new Provider("smoke", new net.dimeski.pulumi.dokploy.ProviderArgs.Builder().endpoint("https://example.invalid").apiKey("smoke").build()); ctx.export("providerUrn", provider.urn()); }); } }\n' > src/main/java/smoke/Main.java
-          gradle compileJava --no-daemon
+          cat > pom.xml <<EOF
+          <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>smoke</groupId><artifactId>release-smoke</artifactId><version>1.0.0</version>
+            <properties><maven.compiler.release>11</maven.compiler.release><mainClass>smoke.Main</mainClass></properties>
+            <dependencies>
+              <dependency><groupId>com.pulumi</groupId><artifactId>pulumi</artifactId><version>1.0.0</version></dependency>
+              <dependency><groupId>net.dimeski.pulumi</groupId><artifactId>dokploy</artifactId><version>$VERSION</version></dependency>
+            </dependencies>
+            <build><plugins>
+              <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.1.0</version><configuration><mainClass>smoke.Main</mainClass></configuration></plugin>
+              <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.3.0</version><configuration><archive><manifest><mainClass>smoke.Main</mainClass></manifest></archive></configuration></plugin>
+            </plugins></build>
+          </project>
+          EOF
+          printf 'package smoke;\nimport com.pulumi.Context;\nimport com.pulumi.Pulumi;\nimport net.dimeski.pulumi.dokploy.Provider;\nimport net.dimeski.pulumi.dokploy.ProviderArgs;\npublic class Main { public static void main(String[] args) { Pulumi.run(Main::stack); } static void stack(Context ctx) { var provider = new Provider("smoke", ProviderArgs.builder().endpoint("https://example.invalid").apiKey("smoke").build()); ctx.export("providerUrn", provider.urn()); } }\n' > src/main/java/smoke/Main.java
+          mvn -B -ntp package
       - name: Preview with fresh provider cache
         env:
           PULUMI_HOME: ${{ runner.temp }}/pulumi-home-${{ github.job }}
           PULUMI_BACKEND_URL: file://${{ runner.temp }}/pulumi-backend-${{ github.job }}
           PULUMI_CONFIG_PASSPHRASE: smoke
-          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-cache-${{ github.job }}
+          MAVEN_OPTS: -Dmaven.repo.local=${{ runner.temp }}/maven-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/java-program"
-          printf 'name: release-smoke\nruntime: java\nmain: .\n' > "$RUNNER_TEMP/java-program/Pulumi.yaml"
+          printf 'name: release-smoke\nruntime:\n  name: java\n  options:\n    main: smoke.Main\n    build: mvn -B -ntp package\n' > "$RUNNER_TEMP/java-program/Pulumi.yaml"
           cp -R "$RUNNER_TEMP/java-consumer"/. "$RUNNER_TEMP/java-program/"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/java-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/java-program"
@@ -278,6 +299,9 @@ jobs:
           tar -xzf "$RUNNER_TEMP/pulumi.tgz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/pulumi" >> "$GITHUB_PATH"
       - name: Install exact Go module and compile
+        env:
+          GOPATH: ${{ runner.temp }}/go-cache-${{ github.job }}
+          GOMODCACHE: ${{ runner.temp }}/gomod-cache-${{ github.job }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/go-consumer"

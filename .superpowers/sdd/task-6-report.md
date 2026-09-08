@@ -36,3 +36,13 @@ semantic tests. A real public-release dispatch was not run in this change.
   language-native provider program and relies on SDK metadata during preview,
   then asserts the matching plugin in its fresh `PULUMI_HOME`.
 - `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 .github/workflows/release-smoke.yml` — PASS
+
+## Java/cache follow-up
+
+- Replaced the Java Gradle consumer with a Maven `pom.xml`, executable
+  `smoke.Main`, `exec-maven-plugin`, package validation, and Pulumi Java runtime
+  options.
+- Applied npm, pip, NuGet, Maven, Go, and Go module cache paths before each
+  dependency-resolution step and again for preview.
+- Added static checks for Maven runtime metadata, exact dependency coordinates,
+  and cache placement; Java example metadata is checked without network access.
