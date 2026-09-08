@@ -31,6 +31,34 @@ func requireNoError(t *testing.T, err error, msgAndArgs ...interface{}) {
 	}
 }
 
+// Lifecycle diagnostics intentionally identify only structure. IDs, paths,
+// SQL, and file contents must never be copied into acceptance output.
+func liveLifecycleDiagnostic(resource, operation, field string, _ interface{}) string {
+	if field == "" {
+		return fmt.Sprintf("%s %s failed", resource, operation)
+	}
+	return fmt.Sprintf("%s %s failed for field %s", resource, operation, field)
+}
+
+func requireLiveLifecycleNoError(t *testing.T, resource, operation string, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("%s", liveLifecycleDiagnostic(resource, operation, "", err))
+	}
+}
+
+func readReadyMountTarget(read func() (string, error), create func()) error {
+	status, err := read()
+	if err != nil {
+		return fmt.Errorf("mount target read failed")
+	}
+	if status != statusDone {
+		return fmt.Errorf("mount target is not ready")
+	}
+	create()
+	return nil
+}
+
 func liveClient(t *testing.T) *client.Client {
 	t.Helper()
 	requireLiveAcceptance(t)

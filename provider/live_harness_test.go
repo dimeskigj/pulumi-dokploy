@@ -17,6 +17,7 @@ import (
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/google/uuid"
+	p "github.com/pulumi/pulumi-go-provider"
 )
 
 const liveCleanupTimeout = 5 * time.Minute
@@ -230,6 +231,26 @@ func requireWorkloadLifecycleNoError(t *testing.T, operation string, err error) 
 	classification, classificationErr := classifyWorkloadLifecycleError(operation, err)
 	requireNoError(t, classificationErr)
 	t.Fatalf("%s", classification)
+}
+
+func liveDiffKind(diff map[string]p.PropertyDiff, field string) (p.DiffKind, bool) {
+	property, ok := diff[field]
+	if !ok {
+		return p.DiffKind(""), false
+	}
+	return property.Kind, true
+}
+
+func requireLiveDiffKind(t *testing.T, diff map[string]p.PropertyDiff, field string, want p.DiffKind) {
+	t.Helper()
+	kind, ok := liveDiffKind(diff, field)
+	if !ok {
+		t.Errorf("live diff missing field %s", field)
+		return
+	}
+	if kind != want {
+		t.Errorf("live diff field %s did not have expected kind", field)
+	}
 }
 
 func deleteAndVerifyOnce(remove func() error, read func() (string, error), markUnowned func()) error {

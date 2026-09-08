@@ -370,6 +370,31 @@ func TestRedactedLiveMismatchExcludesSecretSentinel(t *testing.T) {
 	require.Contains(t, message, "application.buildSecrets")
 }
 
+func TestLiveLifecycleDiagnosticContainsOnlyStructure(t *testing.T) {
+	message := liveLifecycleDiagnostic("Mount", "Diff", "mountPath", "alphanumeric-id SQL /etc/config secret-content")
+	require.Equal(t, "Mount Diff failed for field mountPath", message)
+	for _, sensitive := range []string{"alphanumeric-id", "SQL", "/etc/config", "secret-content"} {
+		require.NotContains(t, message, sensitive)
+	}
+}
+
+func TestLiveTargetReadMustPrecedeCreate(t *testing.T) {
+	var order []string
+	read := func() (string, error) {
+		order = append(order, "read")
+		return statusDone, nil
+	}
+	create := func() { order = append(order, "create") }
+	require.NoError(t, readReadyMountTarget(read, create))
+	require.Equal(t, []string{"read", "create"}, order)
+}
+
+func TestLiveDiffKindMissingFieldIsReportedWithoutPanic(t *testing.T) {
+	kind, ok := liveDiffKind(map[string]p.PropertyDiff{}, "missing")
+	require.False(t, ok)
+	require.Zero(t, kind)
+}
+
 func TestMountDiffCoversTypeTargetCartesianMatrix(t *testing.T) {
 	types := []string{mountTypeBind, mountTypeVolume, mountTypeFile}
 	targets := []string{"applicationId", "composeId", "postgresId", "mysqlId", "mariadbId", "redisId"}

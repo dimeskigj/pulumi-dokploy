@@ -197,7 +197,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 		target := target
 		t.Run("Domain/"+target.name, func(t *testing.T) {
 			targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
-			requireNoError(t, readErr)
+			requireLiveLifecycleNoError(t, "Domain", "read ready target", readErr)
 			if !targetPresent || !targetReady {
 				classification, classificationErr := classifyWorkloadCreateAttempt("domain", 0, "", domainCreateRequestKeys(target.compose), targetPresent, targetReady)
 				requireNoError(t, classificationErr)
@@ -229,31 +229,31 @@ func TestLiveTier2Workloads(t *testing.T) {
 			requireWorkloadLifecycleNoError(t, "domain", err)
 			postUpdate, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: updatedState.Output})
 			requireWorkloadLifecycleNoError(t, "domain", err)
-			require.Equal(t, updated.Host, postUpdate.Inputs.Host)
-			require.Equal(t, updated.Path, postUpdate.Inputs.Path)
-			require.Equal(t, updated.InternalPath, postUpdate.Inputs.InternalPath)
-			require.Equal(t, updated.Port, postUpdate.Inputs.Port)
-			require.Equal(t, updated.Enabled, postUpdate.Inputs.Enabled)
+			requireLiveEqual(t, "domain.host", updated.Host, postUpdate.Inputs.Host)
+			requireLiveEqual(t, "domain.path", updated.Path, postUpdate.Inputs.Path)
+			requireLiveEqual(t, "domain.internalPath", updated.InternalPath, postUpdate.Inputs.InternalPath)
+			requireLiveEqual(t, "domain.port", updated.Port, postUpdate.Inputs.Port)
+			requireLiveEqual(t, "domain.enabled", updated.Enabled, postUpdate.Inputs.Enabled)
 			// Import-style reads must reconstruct state from the ID alone.
 			imported, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
 			requireWorkloadLifecycleNoError(t, "domain", err)
-			require.Equal(t, updated.Host, imported.Inputs.Host)
-			require.Equal(t, updated.Path, imported.Inputs.Path)
-			require.Equal(t, updated.InternalPath, imported.Inputs.InternalPath)
-			require.Equal(t, updated.Port, imported.Inputs.Port)
-			require.Equal(t, updated.Enabled, imported.Inputs.Enabled)
-			require.Equal(t, updated.CertificateType, imported.Inputs.CertificateType)
+			requireLiveEqual(t, "domain.host", updated.Host, imported.Inputs.Host)
+			requireLiveEqual(t, "domain.path", updated.Path, imported.Inputs.Path)
+			requireLiveEqual(t, "domain.internalPath", updated.InternalPath, imported.Inputs.InternalPath)
+			requireLiveEqual(t, "domain.port", updated.Port, imported.Inputs.Port)
+			requireLiveEqual(t, "domain.enabled", updated.Enabled, imported.Inputs.Enabled)
+			requireLiveEqual(t, "domain.certificateType", updated.CertificateType, imported.Inputs.CertificateType)
 			if target.compose {
-				require.Equal(t, target.id, value(imported.Inputs.ComposeID))
-				require.Equal(t, "web", value(imported.Inputs.ServiceName))
+				requireLiveEqual(t, "domain.composeId", target.id, value(imported.Inputs.ComposeID))
+				requireLiveEqual(t, "domain.serviceName", "web", value(imported.Inputs.ServiceName))
 			} else {
-				require.Equal(t, target.id, value(imported.Inputs.ApplicationID))
+				requireLiveEqual(t, "domain.applicationId", target.id, value(imported.Inputs.ApplicationID))
 			}
 			_, err = r.Delete(ctx, infer.DeleteRequest[DomainState]{ID: created.ID})
 			requireWorkloadLifecycleNoError(t, "domain", err)
 			gone, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
 			requireWorkloadLifecycleNoError(t, "domain", err)
-			require.Empty(t, gone.ID)
+			requireLiveEqual(t, "domain.id after delete", "", gone.ID)
 		})
 	}
 
@@ -306,24 +306,24 @@ func TestLiveTier2Workloads(t *testing.T) {
 					requireWorkloadLifecycleNoError(t, "mount", err)
 					postUpdate, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: changed.Output})
 					requireWorkloadLifecycleNoError(t, "mount", err)
-					require.Equal(t, updated.MountPath, postUpdate.Inputs.MountPath)
-					require.Equal(t, updated.Type, postUpdate.Inputs.Type)
+					requireLiveEqual(t, "mount.mountPath", updated.MountPath, postUpdate.Inputs.MountPath)
+					requireLiveEqual(t, "mount.type", updated.Type, postUpdate.Inputs.Type)
 					switch updated.Type {
 					case mountTypeBind:
-						require.Equal(t, updated.HostPath, postUpdate.Inputs.HostPath)
+						requireLiveEqual(t, "mount.hostPath", updated.HostPath, postUpdate.Inputs.HostPath)
 					case mountTypeVolume:
-						require.Equal(t, updated.VolumeName, postUpdate.Inputs.VolumeName)
+						requireLiveEqual(t, "mount.volumeName", updated.VolumeName, postUpdate.Inputs.VolumeName)
 					case mountTypeFile:
-						require.Equal(t, updated.FilePath, postUpdate.Inputs.FilePath)
+						requireLiveEqual(t, "mount.filePath", updated.FilePath, postUpdate.Inputs.FilePath)
 						requireLiveEqual(t, "mount.content", updated.Content, postUpdate.Inputs.Content)
 					}
 					imported, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 					requireWorkloadLifecycleNoError(t, "mount", err)
-					require.Equal(t, created.ID, imported.State.MountID)
+					requireLiveEqual(t, "mount.mountId", created.ID, imported.State.MountID)
 					replacement := mountReplacement(postUpdate.Inputs, inputs.Type)
 					diff, err := r.Diff(ctx, infer.DiffRequest[MountArgs, MountState]{ID: created.ID, Inputs: replacement, State: postUpdate.State})
-					requireNoError(t, err)
-					require.Equal(t, p.UpdateReplace, diff.DetailedDiff["type"].Kind)
+					requireWorkloadLifecycleNoError(t, "mount", err)
+					requireLiveDiffKind(t, diff.DetailedDiff, "type", p.UpdateReplace)
 					targetReplacement := replacement
 					if target.compose {
 						targetReplacement.ApplicationID, targetReplacement.ComposeID = nil, &applicationID
@@ -331,17 +331,17 @@ func TestLiveTier2Workloads(t *testing.T) {
 						targetReplacement.ApplicationID, targetReplacement.ComposeID = &composeID, nil
 					}
 					diff, err = r.Diff(ctx, infer.DiffRequest[MountArgs, MountState]{ID: created.ID, Inputs: targetReplacement, State: postUpdate.State})
-					requireNoError(t, err)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					targetField := "applicationId"
 					if target.compose {
 						targetField = "composeId"
 					}
-					require.Equal(t, p.UpdateReplace, diff.DetailedDiff[targetField].Kind)
+					requireLiveDiffKind(t, diff.DetailedDiff, targetField, p.UpdateReplace)
 					_, err = r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: imported.State})
 					requireWorkloadLifecycleNoError(t, "mount", err)
 					gone, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 					requireWorkloadLifecycleNoError(t, "mount", err)
-					require.Empty(t, gone.ID)
+					requireLiveEqual(t, "mount.id after delete", "", gone.ID)
 				})
 			}
 		})
@@ -371,7 +371,20 @@ func TestLiveTier2Workloads(t *testing.T) {
 			t.Cleanup(registerLiveSecrets(value(mount.Content), value(mount.HostPath), value(mount.VolumeName)))
 			setMountTarget(&mount, targetIDField(serviceType), targetID)
 			r := Mount{client: fixedClient(api)}
-			created, err := r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: mount})
+			var created infer.CreateResponse[MountState]
+			var err error
+			readyErr := readReadyMountTarget(func() (string, error) {
+				if serviceType != "compose" {
+					return statusDone, nil
+				}
+				fresh, readErr := (Compose{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: targetID})
+				requireWorkloadLifecycleNoError(t, "mount", readErr)
+				requireLiveEqual(t, "compose.id", targetID, fresh.ID)
+				return fresh.State.Status, nil
+			}, func() {
+				created, err = r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: mount})
+			})
+			requireLiveLifecycleNoError(t, "Mount", "read ready target", readyErr)
 			cleanupAfterCreateError(t, "mount", created.ID, err, func(c context.Context) error {
 				_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
 				return e
@@ -384,12 +397,12 @@ func TestLiveTier2Workloads(t *testing.T) {
 			requireWorkloadLifecycleNoError(t, "mount", err)
 			imported, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: read.State})
 			requireWorkloadLifecycleNoError(t, "mount", err)
-			require.Equal(t, targetID, mountTargetID(imported.Inputs, serviceType))
+			requireLiveEqual(t, "mount."+serviceType+"Id", targetID, mountTargetID(imported.Inputs, serviceType))
 			_, err = r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: imported.State})
 			requireWorkloadLifecycleNoError(t, "mount", err)
 			gone, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 			requireWorkloadLifecycleNoError(t, "mount", err)
-			require.Empty(t, gone.ID)
+			requireLiveEqual(t, "mount.id after delete", "", gone.ID)
 			if target != "compose" {
 				fixture.cleanup(t)
 			}
