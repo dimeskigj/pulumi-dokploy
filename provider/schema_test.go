@@ -124,6 +124,7 @@ func TestGeneratedPublishingMetadata(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(readGenerated(t, parts...)), &pluginMetadata))
 		require.Equal(t, true, pluginMetadata["resource"])
 		require.Equal(t, "dokploy", pluginMetadata["name"])
+		require.Equal(t, "github://api.github.com/dimeskigj/pulumi-dokploy", pluginMetadata["server"])
 	}
 
 	pythonUtilities := readGenerated(t, "sdk", "python", "pulumi_dokploy", "_utilities.py")
