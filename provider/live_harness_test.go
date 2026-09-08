@@ -133,9 +133,9 @@ func recordLiveOutcome(kind, classification string) {
 	recordLiveResult(kind, classification)
 }
 
-func classifyWorkloadCreateAttempt(operation string, status int, apiCode string, keys []string, targetPresent bool, targetReady bool) string {
+func classifyWorkloadCreateAttempt(operation string, status int, apiCode string, keys []string, targetPresent bool, targetReady bool) (string, error) {
 	if operation != "domain" && operation != "mount" {
-		operation = "unknown"
+		return "", fmt.Errorf("unsupported workload operation")
 	}
 	statusClass := "transport"
 	switch {
@@ -146,13 +146,13 @@ func classifyWorkloadCreateAttempt(operation string, status int, apiCode string,
 	case status >= 500 && status < 600:
 		statusClass = "5xx"
 	}
-	if !isSafeWorkloadMetadata(apiCode) {
+	if !isSafeWorkloadAPICode(apiCode) {
 		apiCode = "unknown"
 	}
 	safeKeys := make([]string, 0, len(keys))
 	seen := make(map[string]struct{}, len(keys))
 	for _, key := range keys {
-		if !isSafeWorkloadMetadata(key) {
+		if !isSafeWorkloadRequestKey(key) {
 			continue
 		}
 		if _, ok := seen[key]; ok {
@@ -173,27 +173,35 @@ func classifyWorkloadCreateAttempt(operation string, status int, apiCode string,
 			target = "ready"
 		}
 	}
-	return fmt.Sprintf("operation=%s;status=%s;code=%s;keys=%s;target=%s", operation, statusClass, apiCode, keysLabel, target)
+	return fmt.Sprintf("operation=%s;status=%s;code=%s;keys=%s;target=%s", operation, statusClass, apiCode, keysLabel, target), nil
 }
 
 func classifyWorkloadCreateError(operation string, err error, keys []string, targetPresent bool, targetReady bool) string {
 	var apiErr *client.APIError
 	if errors.As(err, &apiErr) {
-		return classifyWorkloadCreateAttempt(operation, apiErr.StatusCode, apiErr.Code, keys, targetPresent, targetReady)
+		classification, _ := classifyWorkloadCreateAttempt(operation, apiErr.StatusCode, apiErr.Code, keys, targetPresent, targetReady)
+		return classification
 	}
-	return classifyWorkloadCreateAttempt(operation, 0, "", keys, targetPresent, targetReady)
+	classification, _ := classifyWorkloadCreateAttempt(operation, 0, "", keys, targetPresent, targetReady)
+	return classification
 }
 
-func isSafeWorkloadMetadata(value string) bool {
-	if value == "" {
+func isSafeWorkloadAPICode(code string) bool {
+	switch code {
+	case "BAD_REQUEST", "NOT_FOUND", "VALIDATION_ERROR":
+		return true
+	default:
 		return false
 	}
-	for _, char := range value {
-		if (char < 'a' || char > 'z') && (char < 'A' || char > 'Z') && (char < '0' || char > '9') {
-			return false
-		}
+}
+
+func isSafeWorkloadRequestKey(key string) bool {
+	switch key {
+	case "host", "https", "stripPath", "certificateType", "path", "internalPath", "port", "serviceName", "customCertResolver", "applicationId", "domainType", "composeId", "mountPath", "serviceId", "serviceType", "type", "hostPath", "volumeName", "filePath", "content":
+		return true
+	default:
+		return false
 	}
-	return true
 }
 
 func classifyEnvironmentUpdateComparison(providerErr, directErr error) string {

@@ -199,7 +199,9 @@ func TestLiveTier2Workloads(t *testing.T) {
 			targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
 			requireNoError(t, readErr)
 			if !targetPresent || !targetReady {
-				t.Fatalf("workload target unavailable: %s", classifyWorkloadCreateAttempt("domain", 0, "", domainCreateRequestKeys(target.compose), targetPresent, targetReady))
+				classification, classificationErr := classifyWorkloadCreateAttempt("domain", 0, "", domainCreateRequestKeys(target.compose), targetPresent, targetReady)
+				requireNoError(t, classificationErr)
+				t.Fatalf("workload target unavailable: %s", classification)
 			}
 			r := Domain{client: fixedClient(api)}
 			args := DomainArgs{Host: liveRunName("domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
@@ -286,7 +288,9 @@ func TestLiveTier2Workloads(t *testing.T) {
 					targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
 					requireNoError(t, readErr)
 					if !targetPresent || !targetReady {
-						t.Fatalf("workload target unavailable: %s", classifyWorkloadCreateAttempt("mount", 0, "", mountCreateRequestKeys(inputs), targetPresent, targetReady))
+						classification, classificationErr := classifyWorkloadCreateAttempt("mount", 0, "", mountCreateRequestKeys(inputs), targetPresent, targetReady)
+						requireNoError(t, classificationErr)
+						t.Fatalf("workload target unavailable: %s", classification)
 					}
 					created, err := r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: inputs})
 					cleanupAfterCreateError(t, "mount", created.ID, err, func(c context.Context) error {
@@ -506,15 +510,15 @@ func readLiveWorkloadTarget(ctx context.Context, api *client.Client, id string, 
 }
 
 func domainCreateRequestKeys(compose bool) []string {
-	keys := []string{"certificateType", "enabled", "host", "port"}
+	keys := []string{"certificateType", "customCertResolver", "host", "https", "internalPath", "path", "port", "serviceName", "stripPath"}
 	if compose {
-		return append(keys, "composeId", "serviceName")
+		return append(keys, "composeId", "domainType")
 	}
-	return append(keys, "applicationId")
+	return append(keys, "applicationId", "domainType")
 }
 
 func mountCreateRequestKeys(inputs MountArgs) []string {
-	keys := []string{"mountPath", "type"}
+	keys := []string{"mountPath", "serviceId", "serviceType", "type"}
 	switch inputs.Type {
 	case mountTypeBind:
 		keys = append(keys, "hostPath")

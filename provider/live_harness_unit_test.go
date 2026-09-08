@@ -52,35 +52,48 @@ func TestClassifyWorkloadCreateAttempt(t *testing.T) {
 	}{
 		{
 			name:      "ready domain with sorted keys",
-			operation: "domain", status: 201, code: "VALIDATION", keys: []string{"environmentId", "applicationId"},
+			operation: "domain", status: 201, code: "VALIDATION_ERROR", keys: []string{"serviceName", "applicationId"},
 			targetPresent: true, targetReady: true,
-			want: "operation=domain;status=2xx;code=VALIDATION;keys=applicationId,environmentId;target=ready",
+			want: "operation=domain;status=2xx;code=VALIDATION_ERROR;keys=applicationId,serviceName;target=ready",
 		},
 		{
 			name:      "missing target is safe",
 			operation: "mount", status: 404, code: "NOT_FOUND", keys: []string{"applicationId"},
-			want: "operation=mount;status=4xx;code=unknown;keys=applicationId;target=missing",
+			want: "operation=mount;status=4xx;code=NOT_FOUND;keys=applicationId;target=missing",
 		},
 		{
 			name:      "unsafe metadata is omitted",
-			operation: "unknown-operation", status: 503, code: "bad code; DROP TABLE secrets", keys: []string{"host.example/id", "apiKey", "composeId"},
+			operation: "mount", status: 503, code: "bad code; DROP TABLE secrets", keys: []string{"host.example/id", "apiKey", "composeId"},
 			targetPresent: true,
-			want:          "operation=unknown;status=5xx;code=unknown;keys=apiKey,composeId;target=present-not-ready",
+			want:          "operation=mount;status=5xx;code=unknown;keys=composeId;target=present-not-ready",
 		},
 		{
 			name:      "transport has no server metadata",
 			operation: "domain", status: 0, code: "SAFECODE", keys: []string{"api-key-secret"},
-			want: "operation=domain;status=transport;code=SAFECODE;keys=none;target=missing",
+			want: "operation=domain;status=transport;code=unknown;keys=none;target=missing",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := classifyWorkloadCreateAttempt(tt.operation, tt.status, tt.code, tt.keys, tt.targetPresent, tt.targetReady)
+			got, err := classifyWorkloadCreateAttempt(tt.operation, tt.status, tt.code, tt.keys, tt.targetPresent, tt.targetReady)
+			require.NoError(t, err)
 			require.Equal(t, tt.want, got)
 			for _, sentinel := range []string{"application-id-sentinel", "host.example", "/id", "DROP TABLE", "SECRET"} {
 				require.NotContains(t, got, sentinel)
 			}
 		})
+	}
+}
+
+func TestClassifyWorkloadCreateAttemptRejectsUnknownOperationAndSentinels(t *testing.T) {
+	_, err := classifyWorkloadCreateAttempt("application", 400, "SECRET123", []string{"applicationId", "abc123", "serviceId"}, true, false)
+	require.Error(t, err)
+
+	got, err := classifyWorkloadCreateAttempt("mount", 400, "SECRET123", []string{"mountPath", "SECRET123", "abc123", "serviceId"}, true, false)
+	require.NoError(t, err)
+	require.Equal(t, "operation=mount;status=4xx;code=unknown;keys=mountPath,serviceId;target=present-not-ready", got)
+	for _, sentinel := range []string{"SECRET123", "abc123"} {
+		require.NotContains(t, got, sentinel)
 	}
 }
 
