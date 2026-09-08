@@ -161,6 +161,59 @@ func validateWorkflowSemantics(workflow map[string]any, name string) error {
 	return nil
 }
 
+func validateSchemaCompatibilityStep(workflow map[string]any) error {
+	jobs, ok := workflow["jobs"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("build workflow has no jobs")
+	}
+	prerequisites, ok := jobs["prerequisites"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("build workflow has no prerequisites job")
+	}
+	steps, ok := prerequisites["steps"].([]any)
+	if !ok {
+		return fmt.Errorf("build prerequisites has no steps")
+	}
+	buildSchemaIndex := -1
+	for i, rawStep := range steps {
+		step, _ := rawStep.(map[string]any)
+		if step["name"] == "Build Schema" {
+			buildSchemaIndex = i
+		}
+	}
+	if buildSchemaIndex < 0 {
+		return fmt.Errorf("build workflow has no schema generation step")
+	}
+	for i, rawStep := range steps {
+		step, _ := rawStep.(map[string]any)
+		if step["name"] != "Check Schema is Valid" {
+			continue
+		}
+		if i <= buildSchemaIndex {
+			return fmt.Errorf("schema compatibility check must follow schema generation")
+		}
+		if step["if"] != "github.event_name == 'pull_request'" {
+			return fmt.Errorf("schema compatibility check must be pull-request-only")
+		}
+		run, _ := step["run"].(string)
+		for _, required := range []string{
+			"schema-tools compare",
+			"cat \"$RUNNER_TEMP/schema-check-report.md\"",
+			"Looking good! No breaking changes found.",
+			"exit 1",
+		} {
+			if !strings.Contains(run, required) {
+				return fmt.Errorf("schema compatibility check is missing %q", required)
+			}
+		}
+		if env, ok := step["env"].(map[string]any); !ok || env["GITHUB_TOKEN"] != "${{ secrets.GITHUB_TOKEN }}" {
+			return fmt.Errorf("schema compatibility check must receive GITHUB_TOKEN")
+		}
+		return nil
+	}
+	return fmt.Errorf("build workflow has no schema compatibility check")
+}
+
 func TestRegistryMetadata(t *testing.T) {
 	spec := providerSchema(t)
 	require.Equal(t, "https://github.com/dimeskigj/pulumi-dokploy", spec.Repository)
@@ -263,6 +316,11 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Contains(t, buildText, "make test_race")
 	require.Contains(t, buildText, "make test_examples")
 	require.NotContains(t, buildText, "Configure AWS Credentials")
+	require.NoError(t, validateSchemaCompatibilityStep(build))
+	require.Contains(t, buildText, "schema-tools compare")
+	require.Contains(t, buildText, "github.event_name == 'pull_request'")
+	require.Contains(t, buildText, "Looking good! No breaking changes found.")
+	require.Contains(t, buildText, "exit 1", "schema incompatibility must fail the PR workflow")
 	on, ok := build["on"].(map[string]any)
 	require.True(t, ok)
 	push, ok := on["push"].(map[string]any)
@@ -305,6 +363,8 @@ func TestRegistryMetadata(t *testing.T) {
 	}
 	require.NotContains(t, releaseText, "dispatch_docs_build")
 	require.NotContains(t, releaseText, "pulumictl create docs-build")
+	require.NotContains(t, releaseText, "schema-tools compare")
+	require.NotContains(t, prereleaseText, "schema-tools compare")
 	sdkTestCommand := "cd examples && $GO_TEST_EXEC -tags=${{ matrix.language }} -v -count=1 -coverprofile=coverage.txt ."
 	for name, workflow := range map[string]map[string]any{
 		"build.yml":      build,
