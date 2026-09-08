@@ -519,7 +519,7 @@ func TestOwnedWorkflow(t *testing.T) {
 		require.Equal(t, map[string]any{"DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath}, gate["env"])
 		require.Contains(t, gate["run"], "marker_absent=true")
 	}
-	orderedNames := []string{"Checkout Repo", "Set Provider Version", "Prepare acceptance stop marker", "Require Dokploy acceptance credentials", "Setup Tools", "Build codegen binaries", "Build Schema", "Build Provider", "Test Provider Library", "Test live Tier 1 control plane", "Check Tier 1 stop marker", "Test live Tier 2 workloads", "Check Tier 2 stop marker", "Test live Tier 3 databases", "Check Tier 3 stop marker", "Test live Tier 4 backups", "Check Tier 4 stop marker", "Test Pulumi lifecycle smoke"}
+	orderedNames := []string{"Checkout Repo", "Set Provider Version", "Prepare acceptance stop marker", "Require Dokploy acceptance credentials", "Setup Tools", "Verify Pulumi CLI", "Build codegen binaries", "Build Schema", "Build Provider", "Expose local provider", "Test Provider Library", "Test live Tier 1 control plane", "Check Tier 1 stop marker", "Test live Tier 2 workloads", "Check Tier 2 stop marker", "Test live Tier 3 databases", "Check Tier 3 stop marker", "Test live Tier 4 backups", "Check Tier 4 stop marker", "Test Pulumi lifecycle smoke"}
 	previous := -1
 	for _, name := range orderedNames {
 		index := findStepIndex(steps, name)
@@ -530,6 +530,12 @@ func TestOwnedWorkflow(t *testing.T) {
 		require.NotContains(t, steps[index].(map[string]any), "continue-on-error", name)
 		previous = index
 	}
+	pulumiCLI := steps[findStepIndex(steps, "Verify Pulumi CLI")].(map[string]any)
+	require.Equal(t, "mise exec -- pulumi version", pulumiCLI["run"])
+	localProvider := steps[findStepIndex(steps, "Expose local provider")].(map[string]any)
+	require.Equal(t, `echo "${{ github.workspace }}/bin" >> "$GITHUB_PATH"`, localProvider["run"])
+	require.NotContains(t, localProvider["run"], "ls")
+	require.NotContains(t, localProvider["run"], "find")
 	for i, name := range []string{"Tier 1", "Tier 2", "Tier 3", "Tier 4"} {
 		gateIndex := findStepIndex(steps, "Check "+name+" stop marker")
 		tierIndex := findStepIndex(steps, expected[i+1].name)

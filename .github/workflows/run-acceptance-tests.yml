@@ -60,12 +60,16 @@ jobs:
         with:
           cache: 'true'
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify Pulumi CLI
+        run: mise exec -- pulumi version
       - name: Build codegen binaries
         run: make codegen
       - name: Build Schema
         run: make generate_schema
       - name: Build Provider
         run: make provider
+      - name: Expose local provider
+        run: echo "${{ github.workspace }}/bin" >> "$GITHUB_PATH"
       - name: Test Provider Library
         run: make test_provider
         env:
