@@ -257,18 +257,30 @@ discovery and the pinned CLI version were not verified in this local preflight.
 
 ## Task 4 controller verification (2026-09-08)
 
-The controller bootstrapped the exact pinned Pulumi CLI version `v3.259.0` in a
-temporary repository-safe location, without changing user configuration. With
-that CLI and the locally built provider available on `PATH`, the lifecycle
-smoke executed successfully. Credentials, endpoint details, stack state,
-resource IDs, and configuration values are intentionally omitted.
+The controller bootstrapped the exact pinned Pulumi CLI version in a temporary
+repository-safe location, without changing user configuration. Before cleanup,
+`pulumi version` reported `v3.259.0` and `pulumi plugin ls` completed
+successfully with an empty plugin cache. An empty plugin cache is expected here:
+the command does not list provider executables discovered directly on `PATH`.
+The successful Automation API stack is the behavioral evidence that the local
+`bin/pulumi-resource-dokploy` executable was discoverable. Credentials,
+endpoint details, stack state, resource IDs, and configuration values are
+intentionally omitted.
 
 | Check | Result | Duration / cleanup |
 | --- | --- | --- |
 | `make provider` | **PASS** | provider built before smoke |
+| `pulumi version` | **PASS** | reported `v3.259.0` before cleanup |
+| `pulumi plugin ls` | **PASS** | empty cache; PATH-discovered executables are not listed |
 | `TestAccLifecycleSmoke` | **PASS** | test 12.83 s; package 12.848 s; stop marker absent |
+| temporary CLI files | **PASS** | removed and verified absent after the run |
 
 This supersedes the Task 4 local placeholder's **NOT RUN** smoke result for
 the 2026-09-08 controller verification. The historical 2026-09-05 live
-non-run evidence above remains unchanged. The sanitized controller artifact
-reported no cleanup failure; no live state details are recorded here.
+non-run evidence above remains unchanged. By test control flow, the passing
+smoke necessarily completed revision-one preview/up/refresh and revision-two
+preview/up/refresh: each phase fails the test immediately on error. Cleanup is
+registered before those phases, and destroy/remove errors call `t.Errorf`; the
+overall PASS therefore implies both cleanup calls returned without a reported
+error. This is an inference from the test control flow, not direct phase-log
+evidence. No live state details are recorded here.
