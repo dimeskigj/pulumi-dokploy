@@ -176,14 +176,13 @@ func classifyWorkloadCreateAttempt(operation string, status int, apiCode string,
 	return fmt.Sprintf("operation=%s;status=%s;code=%s;keys=%s;target=%s", operation, statusClass, apiCode, keysLabel, target), nil
 }
 
-func classifyWorkloadCreateError(operation string, err error, keys []string, targetPresent bool, targetReady bool) string {
+func classifyWorkloadCreateError(operation string, err error, keys []string, targetPresent bool, targetReady bool) (string, error) {
+	status, code := 0, ""
 	var apiErr *client.APIError
 	if errors.As(err, &apiErr) {
-		classification, _ := classifyWorkloadCreateAttempt(operation, apiErr.StatusCode, apiErr.Code, keys, targetPresent, targetReady)
-		return classification
+		status, code = apiErr.StatusCode, apiErr.Code
 	}
-	classification, _ := classifyWorkloadCreateAttempt(operation, 0, "", keys, targetPresent, targetReady)
-	return classification
+	return classifyWorkloadCreateAttempt(operation, status, code, keys, targetPresent, targetReady)
 }
 
 func isSafeWorkloadAPICode(code string) bool {

@@ -105,6 +105,12 @@ func TestLiveRunNameUsesKindAndUUID(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClassifyWorkloadCreateErrorPropagatesUnknownOperation(t *testing.T) {
+	classification, err := classifyWorkloadCreateError("unknown-operation", nil, nil, false, false)
+	require.Error(t, err)
+	require.Empty(t, classification)
+}
+
 func TestCleanupContextHasFiniteFiveMinuteDeadline(t *testing.T) {
 	ctx, cancel := cleanupContext()
 	defer cancel()

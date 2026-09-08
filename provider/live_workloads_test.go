@@ -219,7 +219,9 @@ func TestLiveTier2Workloads(t *testing.T) {
 				return v.ID, e
 			})
 			if err != nil {
-				recordLiveOutcome("Domain/"+target.name, classifyWorkloadCreateError("domain", err, domainCreateRequestKeys(target.compose), targetPresent, targetReady))
+				classification, classificationErr := classifyWorkloadCreateError("domain", err, domainCreateRequestKeys(target.compose), targetPresent, targetReady)
+				requireNoError(t, classificationErr)
+				recordLiveOutcome("Domain/"+target.name, classification)
 			}
 			requireNoError(t, err)
 			read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: created.Output})
@@ -301,7 +303,9 @@ func TestLiveTier2Workloads(t *testing.T) {
 						return v.ID, e
 					})
 					if err != nil {
-						recordLiveOutcome("Mount/"+target.name+"/"+inputs.Type, classifyWorkloadCreateError("mount", err, mountCreateRequestKeys(inputs), targetPresent, targetReady))
+						classification, classificationErr := classifyWorkloadCreateError("mount", err, mountCreateRequestKeys(inputs), targetPresent, targetReady)
+						requireNoError(t, classificationErr)
+						recordLiveOutcome("Mount/"+target.name+"/"+inputs.Type, classification)
 					}
 					requireNoError(t, err)
 					read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
