@@ -136,7 +136,11 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		ctx := liveContext(t, 2*time.Minute)
 		organization, err := api.OrganizationActiveWithResponse(ctx)
 		requireNoError(t, err)
-		if organization == nil || classifyOrganizationActiveShape(organization.GetBody()) != "flat-non-empty-id" {
+		shape := "missing-id"
+		if organization != nil {
+			shape = classifyOrganizationActiveShape(organization.GetBody())
+		}
+		if shape != "flat-id" && shape != "flat-organization-id" {
 			recordLiveOutcome("SSHKey", "organization-active-shape-incompatible")
 			t.Skip("organization.active did not return a flat non-empty organization ID")
 		}

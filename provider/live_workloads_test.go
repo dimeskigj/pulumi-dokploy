@@ -196,8 +196,12 @@ func TestLiveTier2Workloads(t *testing.T) {
 	for _, target := range workloadTargets {
 		target := target
 		t.Run("Domain/"+target.name, func(t *testing.T) {
-			if !workloadDependencyReady(target.id, target.status) {
-				t.Skip("dependent workload target was not created successfully")
+			targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
+			requireLiveLifecycleNoError(t, "Domain", "read ready target", readErr)
+			if !targetPresent || !targetReady {
+				classification, classificationErr := classifyWorkloadCreateAttempt("domain", 0, "", domainCreateRequestKeys(target.compose), targetPresent, targetReady)
+				requireNoError(t, classificationErr)
+				t.Fatalf("workload target unavailable: %s", classification)
 			}
 			r := Domain{client: fixedClient(api)}
 			args := DomainArgs{Host: liveRunName("domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
@@ -214,22 +218,27 @@ func TestLiveTier2Workloads(t *testing.T) {
 				v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
 				return v.ID, e
 			})
-			if err != nil {
-				classification, classificationErr := classifyWorkloadCreateError("domain", err, domainCreateRequestKeys(target.compose), true, true)
-				requireLiveLifecycleNoError(t, "Domain", "classify Create", classificationErr)
-				recordLiveOutcome("Domain/"+target.name, classification)
+			release := func() {}
+			if err == nil {
+				release = registerLiveCleanup(t, "domain", created.ID, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
+					return v.ID, e
+				})
 			}
-			requireLiveLifecycleNoError(t, "Domain", "Create", err)
+			requireWorkloadCreateNoError(t, "domain", err, domainCreateRequestKeys(target.compose), targetPresent, targetReady, "Domain/"+target.name)
 			read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: created.Output})
-			requireLiveLifecycleNoError(t, "Domain", "Read", err)
+			requireWorkloadLifecycleNoError(t, "domain", err)
 			updated := read.Inputs
 			updated.Host = liveRunName("updated-domain") + ".example.invalid"
 			updated.Path, updated.InternalPath, updated.Port = stringPtr("/public"), stringPtr("/internal"), intPtr(8080)
 			updated.Enabled = false
 			updatedState, err := r.Update(ctx, infer.UpdateRequest[DomainArgs, DomainState]{ID: created.ID, Inputs: updated, State: read.State})
-			requireLiveLifecycleNoError(t, "Domain", "Update", err)
+			requireWorkloadLifecycleNoError(t, "domain", err)
 			postUpdate, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: updatedState.Output})
-			requireLiveLifecycleNoError(t, "Domain", "Read after update", err)
+			requireWorkloadLifecycleNoError(t, "domain", err)
 			requireLiveEqual(t, "domain.host", updated.Host, postUpdate.Inputs.Host)
 			requireLiveEqual(t, "domain.path", updated.Path, postUpdate.Inputs.Path)
 			requireLiveEqual(t, "domain.internalPath", updated.InternalPath, postUpdate.Inputs.InternalPath)
@@ -237,7 +246,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 			requireLiveEqual(t, "domain.enabled", updated.Enabled, postUpdate.Inputs.Enabled)
 			// Import-style reads must reconstruct state from the ID alone.
 			imported, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
-			requireLiveLifecycleNoError(t, "Domain", "Read import", err)
+			requireWorkloadLifecycleNoError(t, "domain", err)
 			requireLiveEqual(t, "domain.host", updated.Host, imported.Inputs.Host)
 			requireLiveEqual(t, "domain.path", updated.Path, imported.Inputs.Path)
 			requireLiveEqual(t, "domain.internalPath", updated.InternalPath, imported.Inputs.InternalPath)
@@ -250,10 +259,16 @@ func TestLiveTier2Workloads(t *testing.T) {
 			} else {
 				requireLiveEqual(t, "domain.applicationId", target.id, value(imported.Inputs.ApplicationID))
 			}
-			_, err = r.Delete(ctx, infer.DeleteRequest[DomainState]{ID: created.ID})
-			requireLiveLifecycleNoError(t, "Domain", "Delete", err)
+			err = deleteAndVerifyLiveOwned(ctx, func() error {
+				_, e := r.Delete(ctx, infer.DeleteRequest[DomainState]{ID: created.ID})
+				return e
+			}, func() (string, error) {
+				gone, e := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
+				return gone.ID, e
+			}, release)
+			requireWorkloadLifecycleNoError(t, "domain", err)
 			gone, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
-			requireLiveLifecycleNoError(t, "Domain", "Read after delete", err)
+			requireWorkloadLifecycleNoError(t, "domain", err)
 			requireLiveEqual(t, "domain.id after delete", "", gone.ID)
 		})
 	}
@@ -261,9 +276,6 @@ func TestLiveTier2Workloads(t *testing.T) {
 	for _, target := range workloadTargets {
 		target := target
 		t.Run("Mounts/"+target.name, func(t *testing.T) {
-			if !workloadDependencyReady(target.id, target.status) {
-				t.Skip("dependent workload target was not created successfully")
-			}
 			r := Mount{client: fixedClient(api)}
 			mounts := []MountArgs{
 				{Type: mountTypeBind, MountPath: "/mnt/bind", HostPath: stringPtr(filepath.Join("/tmp", liveRunName("mount")))},
@@ -286,23 +298,14 @@ func TestLiveTier2Workloads(t *testing.T) {
 						inputs.ApplicationID = &target.id
 					}
 					t.Cleanup(registerLiveSecrets(value(inputs.Content), value(inputs.HostPath), value(inputs.VolumeName)))
-					var created infer.CreateResponse[MountState]
-					var err error
-					readyErr := readReadyMountTarget(func() (string, error) {
-						if target.compose {
-							fresh, readErr := (Compose{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: target.id})
-							requireLiveLifecycleNoError(t, "Compose", "Read before Mount.Create", readErr)
-							requireLiveEqual(t, "compose.id", target.id, fresh.ID)
-							return fresh.State.Status, nil
-						}
-						fresh, readErr := (Application{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: target.id})
-						requireLiveLifecycleNoError(t, "Application", "Read before Mount.Create", readErr)
-						requireLiveEqual(t, "application.id", target.id, fresh.ID)
-						return fresh.State.Status, nil
-					}, func() {
-						created, err = r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: inputs})
-					})
-					requireLiveLifecycleNoError(t, "Mount", "read ready target", readyErr)
+					targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
+					requireWorkloadLifecycleNoError(t, "mount", readErr)
+					if !targetPresent || !targetReady {
+						classification, classificationErr := classifyWorkloadCreateAttempt("mount", 0, "", mountCreateRequestKeys(inputs), targetPresent, targetReady)
+						requireNoError(t, classificationErr)
+						t.Fatalf("workload target unavailable: %s", classification)
+					}
+					created, err := r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: inputs})
 					cleanupAfterCreateError(t, "mount", created.ID, err, func(c context.Context) error {
 						_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
 						return e
@@ -310,20 +313,25 @@ func TestLiveTier2Workloads(t *testing.T) {
 						v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 						return v.ID, e
 					})
-					if err != nil {
-						classification, classificationErr := classifyWorkloadCreateError("mount", err, mountCreateRequestKeys(inputs), true, true)
-						requireLiveLifecycleNoError(t, "Mount", "classify Create", classificationErr)
-						recordLiveOutcome("Mount/"+target.name+"/"+inputs.Type, classification)
+					release := func() {}
+					if err == nil {
+						release = registerLiveCleanup(t, "mount", created.ID, func(c context.Context) error {
+							_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
+							return e
+						}, func(c context.Context) (string, error) {
+							v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
+							return v.ID, e
+						})
 					}
-					requireLiveLifecycleNoError(t, "Mount", "Create", err)
+					requireWorkloadCreateNoError(t, "mount", err, mountCreateRequestKeys(inputs), targetPresent, targetReady, "Mount/"+target.name+"/"+inputs.Type)
 					read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
-					requireLiveLifecycleNoError(t, "Mount", "Read", err)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					updated := read.Inputs
 					updated.MountPath += "-updated"
 					changed, err := r.Update(ctx, infer.UpdateRequest[MountArgs, MountState]{ID: created.ID, Inputs: updated, State: read.State})
-					requireLiveLifecycleNoError(t, "Mount", "Update", err)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					postUpdate, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: changed.Output})
-					requireLiveLifecycleNoError(t, "Mount", "Read after update", err)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					requireLiveEqual(t, "mount.mountPath", updated.MountPath, postUpdate.Inputs.MountPath)
 					requireLiveEqual(t, "mount.type", updated.Type, postUpdate.Inputs.Type)
 					switch updated.Type {
@@ -336,12 +344,12 @@ func TestLiveTier2Workloads(t *testing.T) {
 						requireLiveEqual(t, "mount.content", updated.Content, postUpdate.Inputs.Content)
 					}
 					imported, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
-					requireLiveLifecycleNoError(t, "Mount", "Read import", err)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					requireLiveEqual(t, "mount.mountId", created.ID, imported.State.MountID)
 					replacement := mountReplacement(postUpdate.Inputs, inputs.Type)
 					diff, err := r.Diff(ctx, infer.DiffRequest[MountArgs, MountState]{ID: created.ID, Inputs: replacement, State: postUpdate.State})
-					requireLiveLifecycleNoError(t, "Mount", "Diff", err)
-					requireLiveEqual(t, "mount.diff.type", p.UpdateReplace, diff.DetailedDiff["type"].Kind)
+					requireWorkloadLifecycleNoError(t, "mount", err)
+					requireLiveDiffKind(t, diff.DetailedDiff, "type", p.UpdateReplace)
 					targetReplacement := replacement
 					if target.compose {
 						targetReplacement.ApplicationID, targetReplacement.ComposeID = nil, &applicationID
@@ -349,16 +357,22 @@ func TestLiveTier2Workloads(t *testing.T) {
 						targetReplacement.ApplicationID, targetReplacement.ComposeID = &composeID, nil
 					}
 					diff, err = r.Diff(ctx, infer.DiffRequest[MountArgs, MountState]{ID: created.ID, Inputs: targetReplacement, State: postUpdate.State})
-					requireLiveLifecycleNoError(t, "Mount", "Diff", err)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					targetField := "applicationId"
 					if target.compose {
 						targetField = "composeId"
 					}
-					requireLiveEqual(t, "mount.diff."+targetField, p.UpdateReplace, diff.DetailedDiff[targetField].Kind)
-					_, err = r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: imported.State})
-					requireLiveLifecycleNoError(t, "Mount", "Delete", err)
+					requireLiveDiffKind(t, diff.DetailedDiff, targetField, p.UpdateReplace)
+					err = deleteAndVerifyLiveOwned(ctx, func() error {
+						_, e := r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: imported.State})
+						return e
+					}, func() (string, error) {
+						gone, e := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
+						return gone.ID, e
+					}, release)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					gone, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
-					requireLiveLifecycleNoError(t, "Mount", "Read after delete", err)
+					requireWorkloadLifecycleNoError(t, "mount", err)
 					requireLiveEqual(t, "mount.id after delete", "", gone.ID)
 				})
 			}
@@ -396,7 +410,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 					return statusDone, nil
 				}
 				fresh, readErr := (Compose{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: targetID})
-				requireLiveLifecycleNoError(t, "Compose", "Read before Mount.Create", readErr)
+				requireWorkloadLifecycleNoError(t, "mount", readErr)
 				requireLiveEqual(t, "compose.id", targetID, fresh.ID)
 				return fresh.State.Status, nil
 			}, func() {
@@ -410,16 +424,32 @@ func TestLiveTier2Workloads(t *testing.T) {
 				v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 				return v.ID, e
 			})
-			requireLiveLifecycleNoError(t, "Mount", "Create", err)
+			release := func() {}
+			if err == nil {
+				release = registerLiveCleanup(t, "mount", created.ID, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
+					return v.ID, e
+				})
+			}
+			requireWorkloadCreateNoError(t, "mount", err, mountCreateRequestKeys(mount), targetID != "", targetID != "", "MountDispatch/"+target)
 			read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
-			requireLiveLifecycleNoError(t, "Mount", "Read", err)
+			requireWorkloadLifecycleNoError(t, "mount", err)
 			imported, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: read.State})
-			requireLiveLifecycleNoError(t, "Mount", "Read import", err)
+			requireWorkloadLifecycleNoError(t, "mount", err)
 			requireLiveEqual(t, "mount."+serviceType+"Id", targetID, mountTargetID(imported.Inputs, serviceType))
-			_, err = r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: imported.State})
-			requireLiveLifecycleNoError(t, "Mount", "Delete", err)
+			err = deleteAndVerifyLiveOwned(ctx, func() error {
+				_, e := r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: imported.State})
+				return e
+			}, func() (string, error) {
+				gone, e := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
+				return gone.ID, e
+			}, release)
+			requireWorkloadLifecycleNoError(t, "mount", err)
 			gone, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
-			requireLiveLifecycleNoError(t, "Mount", "Read after delete", err)
+			requireWorkloadLifecycleNoError(t, "mount", err)
 			requireLiveEqual(t, "mount.id after delete", "", gone.ID)
 			if target != "compose" {
 				fixture.cleanup(t)
@@ -509,13 +539,29 @@ func TestLiveTier2Workloads(t *testing.T) {
 	// Keep both workloads alive through every dependent Domain/Mount and
 	// metadata subtest; these are the final explicit lifecycle operations.
 	if applicationID != "" {
-		deleteAndReadApplication(t, ctx, Application{client: fixedClient(api)}, applicationID)
+		deleteAndReadApplication(t, ctx, Application{client: fixedClient(api)}, &applicationID)
 		applicationID = ""
 	}
 	if composeID != "" {
-		deleteAndReadCompose(t, ctx, Compose{client: fixedClient(api)}, composeID)
+		deleteAndReadCompose(t, ctx, Compose{client: fixedClient(api)}, &composeID)
 		composeID = ""
 	}
+}
+
+func workloadDependencyReady(id, status string) bool {
+	return id != "" && status == statusDone
+}
+
+func readLiveWorkloadTarget(ctx context.Context, api *client.Client, id string, compose bool) (bool, bool, error) {
+	if id == "" {
+		return false, false, nil
+	}
+	if compose {
+		read, err := (Compose{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: id})
+		return read.ID != "", read.State.Status == statusDone, err
+	}
+	read, err := (Application{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
+	return read.ID != "", read.State.Status == statusDone, err
 }
 
 func domainCreateRequestKeys(compose bool) []string {
@@ -534,13 +580,24 @@ func mountCreateRequestKeys(inputs MountArgs) []string {
 	case mountTypeVolume:
 		keys = append(keys, "volumeName")
 	case mountTypeFile:
-		keys = append(keys, "filePath", "content")
+		keys = append(keys, "content", "filePath")
+	}
+	for _, target := range []struct {
+		name string
+		set  bool
+	}{
+		{name: "applicationId", set: inputs.ApplicationID != nil},
+		{name: "composeId", set: inputs.ComposeID != nil},
+		{name: "postgresId", set: inputs.PostgresID != nil},
+		{name: "mysqlId", set: inputs.MySQLID != nil},
+		{name: "mariadbId", set: inputs.MariaDBID != nil},
+		{name: "redisId", set: inputs.RedisID != nil},
+	} {
+		if target.set {
+			keys = append(keys, target.name)
+		}
 	}
 	return keys
-}
-
-func workloadDependencyReady(id, status string) bool {
-	return id != "" && status == statusDone
 }
 
 func composeDiffInputs(base ComposeArgs) (ComposeArgs, ComposeArgs) {
@@ -736,30 +793,36 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 
 func cleanupAfterCreateError(t *testing.T, kind, id string, createErr error, remove func(context.Context) error, read func(context.Context) (string, error)) {
 	t.Helper()
-	if id != "" {
-		registerLiveCleanup(t, kind, id, remove, read)
-		if createErr != nil {
-			// A provider create may return a partial ID. Clean it now, before
-			// asserting the create error, rather than leaving a live workload
-			// behind while the test continues.
-			liveCleanupVerified(t, kind, id, remove, read)
-			return
-		}
+	if !cleanupAfterCreateErrorNeedsImmediateCleanup(id, createErr) {
+		return
 	}
+	// A provider create may return a partial ID. Clean it now, before
+	// asserting the create error, rather than leaving a live workload
+	// behind while the test continues. Successful workloads are owned by
+	// the parent test and deleted after all dependent checks complete.
+	liveCleanupVerified(t, kind, id, remove, read)
 }
 
-func deleteAndReadApplication(t *testing.T, ctx context.Context, r Application, id string) {
-	_, err := r.Delete(ctx, infer.DeleteRequest[ApplicationState]{ID: id})
+func deleteAndReadApplication(t *testing.T, ctx context.Context, r Application, ownedID *string) {
+	id := *ownedID
+	err := deleteAndVerifyOnce(func() error {
+		_, err := r.Delete(ctx, infer.DeleteRequest[ApplicationState]{ID: id})
+		return err
+	}, func() (string, error) {
+		read, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
+		return read.ID, err
+	}, func() { *ownedID = "" })
 	requireNoError(t, err)
-	read, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
-	requireNoError(t, err)
-	require.Empty(t, read.ID)
 }
 
-func deleteAndReadCompose(t *testing.T, ctx context.Context, r Compose, id string) {
-	_, err := r.Delete(ctx, infer.DeleteRequest[ComposeState]{ID: id})
+func deleteAndReadCompose(t *testing.T, ctx context.Context, r Compose, ownedID *string) {
+	id := *ownedID
+	err := deleteAndVerifyOnce(func() error {
+		_, err := r.Delete(ctx, infer.DeleteRequest[ComposeState]{ID: id})
+		return err
+	}, func() (string, error) {
+		read, err := r.Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: id})
+		return read.ID, err
+	}, func() { *ownedID = "" })
 	requireNoError(t, err)
-	read, err := r.Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: id})
-	requireNoError(t, err)
-	require.Empty(t, read.ID)
 }

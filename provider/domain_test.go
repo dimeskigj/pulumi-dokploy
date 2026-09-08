@@ -2,9 +2,11 @@ package dokploy
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
@@ -109,6 +111,77 @@ func TestDomainCreateApplicationAndDisabledUpdate(t *testing.T) {
 	got, err := r.Create(t.Context(), infer.CreateRequest[DomainArgs]{Inputs: DomainArgs{ApplicationID: stringPtr("a1"), Host: "app.example.com", Enabled: false, HTTPS: true, CertificateType: CertificateLetsencrypt}})
 	require.NoError(t, err)
 	require.Equal(t, "d1", got.ID)
+}
+
+func TestDomainCreateBodyMatrix(t *testing.T) {
+	cases := []struct {
+		name       string
+		args       DomainArgs
+		targetType string
+	}{
+		{"application", DomainArgs{ApplicationID: stringPtr("a1"), Host: "app.example.com", Port: intPtr(80), CertificateType: CertificateNone, HTTPS: false, StripPath: false}, "application"},
+		{"compose", DomainArgs{ComposeID: stringPtr("c1"), ServiceName: stringPtr("web"), Host: "app.example.com", Port: intPtr(80), CertificateType: CertificateNone, HTTPS: false, StripPath: false}, "compose"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			body := jsonObject(t, domainCreateBody(tc.args))
+			require.Equal(t, tc.targetType, body["domainType"])
+			require.Equal(t, float64(80), body["port"])
+			require.Equal(t, false, body["https"])
+			require.Equal(t, false, body["stripPath"])
+			require.Equal(t, "none", body["certificateType"])
+			assertGeneratedDomainCreateRequest(t, domainCreateBody(tc.args), body)
+			if tc.name == "application" {
+				require.Equal(t, "a1", body["applicationId"])
+				require.NotContains(t, body, "composeId")
+				require.NotContains(t, body, "serviceName")
+			} else {
+				require.Equal(t, "c1", body["composeId"])
+				require.Equal(t, "web", body["serviceName"])
+				require.NotContains(t, body, "applicationId")
+			}
+		})
+	}
+}
+
+func jsonObject(t *testing.T, value any) map[string]any {
+	t.Helper()
+	encoded, err := json.Marshal(value)
+	require.NoError(t, err)
+	var object map[string]any
+	require.NoError(t, json.Unmarshal(encoded, &object))
+	return object
+}
+
+func assertGeneratedDomainCreateRequest(t *testing.T, requestBody generated.DomainCreateJSONRequestBody, providerBody map[string]any) {
+	t.Helper()
+	transport := &recordingTransport{}
+	request, err := generated.NewDomainCreateRequest("https://example.test/api", requestBody)
+	require.NoError(t, err)
+	require.Equal(t, http.MethodPost, request.Method)
+	require.Equal(t, "/domain.create", request.URL.Path)
+	require.Equal(t, "application/json", request.Header.Get("Content-Type"))
+	response, err := (&http.Client{Transport: transport}).Do(request)
+	require.NoError(t, err)
+	require.NoError(t, response.Body.Close())
+	expected, err := json.Marshal(providerBody)
+	require.NoError(t, err)
+	require.JSONEq(t, string(expected), string(transport.body))
+}
+
+type recordingTransport struct {
+	request *http.Request
+	body    []byte
+}
+
+func (t *recordingTransport) RoundTrip(request *http.Request) (*http.Response, error) {
+	t.request = request
+	var err error
+	t.body, err = io.ReadAll(request.Body)
+	if err != nil {
+		return nil, err
+	}
+	return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
 }
 
 func TestDomainCreateComposePreviewAndRoutingUpdate(t *testing.T) {

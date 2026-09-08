@@ -87,7 +87,7 @@ func TestMongoDBReadReconstructsReplicaSetsFlag(t *testing.T) {
 }
 
 func TestMongoDBMetadataUpdateDoesNotDeploy(t *testing.T) {
-	s := newScriptedServer(t, expectPOST("/api/mongo.update", `{"description":null,"name":"new","mongoId":"r1"}`, `{}`))
+	s := newScriptedServer(t, expectPOST("/api/mongo.update", `{"description":null,"name":"new","mongoId":"r1"}`, `true`))
 	_, err := (MongoDB{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[MongoDBArgs, MongoDBState]{ID: "r1", Inputs: MongoDBArgs{Name: "new", EnvironmentID: "env", DatabasePassword: "pw", DockerImage: "mongo:8"}, State: MongoDBState{MongoDBArgs: MongoDBArgs{Name: "old", EnvironmentID: "env", DatabasePassword: "pw", DockerImage: "mongo:8"}}})
 	require.NoError(t, err)
 }
@@ -99,7 +99,7 @@ func TestMongoDBRuntimeUpdateClearsValuesAndDeploys(t *testing.T) {
 	waitPollInterval = 0
 	t.Cleanup(func() { waitPollInterval = old })
 	s := newScriptedServer(t,
-		expectPOST("/api/mongo.update", `{"databasePassword":"NEW-PASSWORD","databaseUser":"user","description":null,"dockerImage":"mongo:8","name":"cache","mongoId":"r1"}`, `{}`),
+		expectPOST("/api/mongo.update", `{"databasePassword":"NEW-PASSWORD","databaseUser":"user","description":null,"dockerImage":"mongo:8","name":"cache","mongoId":"r1"}`, `true`),
 		expectPOST("/api/mongo.saveEnvironment", `{"env":null,"mongoId":"r1"}`, `true`),
 		expectPOST("/api/mongo.saveExternalPort", `{"externalPort":null,"mongoId":"r1"}`, `true`),
 		expectPOST("/api/mongo.deploy", `{"mongoId":"r1"}`, `"running"`),
@@ -161,7 +161,7 @@ func TestMongoDBPasswordErrorsRedactOldAndNewAcrossDeployAndPoll(t *testing.T) {
 			waitPollInterval = 0
 			t.Cleanup(func() { waitPollInterval = old })
 			expectations := []scriptedRequest{
-				expectPOST("/api/mongo.update", `{"databasePassword":"NEW-PASSWORD","databaseUser":"user","description":null,"dockerImage":"mongo:8","name":"cache","mongoId":"r1"}`, `{}`),
+				expectPOST("/api/mongo.update", `{"databasePassword":"NEW-PASSWORD","databaseUser":"user","description":null,"dockerImage":"mongo:8","name":"cache","mongoId":"r1"}`, `true`),
 				{Method: http.MethodPost, Path: "/api/mongo.deploy", Body: json.RawMessage(`{"mongoId":"r1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"OLD-PASSWORD NEW-PASSWORD"}`)},
 			}
 			if stage == "poll" {

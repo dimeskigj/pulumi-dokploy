@@ -1,52 +1,38 @@
-# Final Review Fix Report
+# Final broad-review fix report
 
-## Status
+Implemented on `fix/live-acceptance-findings` without live calls or `.env` use.
 
-PASS — both final review findings are fixed and verified.
+## Evidence
 
-## Fixes
-
-- Backup snapshots now retain every non-empty `backupId`, even when another
-  observation field is missing or malformed. Such observations are marked
-  invalid and can never match a create request. A regression test proves an
-  existing malformed record is not adopted when it later becomes complete.
-- Target backup discovery failures now return the fixed operation-level error
-  `backup.create could not read target backups`. Target IDs and API payload
-  messages are not included. Cancellation and deadline errors remain wrapped
-  so `errors.Is` continues to work.
-
-## TDD Evidence
-
-### RED
-
-```text
-go test ./provider -run '^TestBackupCreate(DoesNotAdoptMalformedPreExistingBackup|DiscoveryErrorOmitsTargetAndAPIMessage)$' -count=1
-```
-
-Failed as expected: the malformed pre-existing record was incorrectly adopted,
-and discovery returned the previous incomplete/API error instead of the fixed
-safe message.
-
-### GREEN
-
-```text
-go test ./provider -run '^TestBackup(CreateDoesNotAdoptMalformedPreExistingBackup|DiscoveryErrorOmitsTargetAndAPIMessage|PostCreateDiscoveryErrorIsSafe|ObservationMatchesCreate)$' -count=1
-```
-
-Passed.
+- Domain, Mount, and MountDispatch successful creates now register bounded
+  fallback ownership immediately. Explicit deletion releases ownership before
+  absence verification, preventing duplicate cleanup after verification errors.
+- SSH key create performs one post-error list discovery. A single novel
+  same-name key returns partial state and `initFailed`; no candidate returns the
+  sanitized original create error; ambiguous discovery returns a sanitized
+  ambiguity initialization error without an ID. Create is never retried.
+- Workload call-path diagnostic tests use a scripted fake client and verify
+  raw IDs, paths, SQL, and content do not appear in structural diagnostics.
+- Tier 2 documentation records the final sanitized evidence and preserves the
+  cleanup limitation and historical findings.
 
 ## Verification
 
-- `go test ./provider -run '^TestBackup' -count=1` — PASS
-- `go test -short ./provider/... ./internal/... -count=1` — PASS
-- `go test -race ./provider/... ./internal/... -count=1` — PASS
-- `git diff --check` — PASS
+- `go test ./provider -run 'TestSSHKeyCreate(Recovers|ReturnsOriginal|ReturnsAmbiguous)' -count=1` — PASS.
+- `go test ./provider -run 'TestWorkloadCallPathsEmitOnlyStructuralDiagnostics' -count=1` — PASS.
+- `go test ./provider -count=1` — PASS.
+- `go test ./... -count=1` — PASS.
+- `go test -race ./provider/... ./internal/... -count=1` — PASS.
+- `make docs_check` — PASS (Astro check: 0 errors/warnings/hints; 44 docs tests and 2 built-site tests passed).
+- `git diff --check` — PASS.
 
-## Commit
+## Earlier concurrent main review evidence
 
-`4ae4185 fix: harden backup discovery review findings`
-
-## Concerns
-
-No known concerns. Live Dokploy acceptance was not run; these fixes were
-verified with the scripted provider tests and offline suites.
+- Backup snapshots retain every non-empty `backupId`, mark malformed observations
+  invalid, and never adopt them on a later complete observation.
+- Target-backup discovery failures use the fixed operation-level message
+  `backup.create could not read target backups`; cancellation and deadline
+  wrapping remains intact for `errors.Is`.
+- The focused backup regression suite, short provider/internal suite, provider/
+  internal race suite, and whitespace check passed. Live Dokploy acceptance was
+  not run for those backup fixes.

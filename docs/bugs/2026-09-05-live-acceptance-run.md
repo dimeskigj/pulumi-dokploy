@@ -198,48 +198,124 @@ live tiers skipped closed by missing opt-in/credentials. `golangci-lint` and
 ## Task 3 — final Tier 2 compatibility evidence
 
 The final serial Tier 2 execution took **110.07s**. The acceptance stop marker
-was absent. Application and Compose passed. All six Application/Compose Mount
-lifecycle cases passed, as did the Compose, PostgreSQL, MySQL, MariaDB, and
-Redis MountDispatch cases. Registry and GitLab source variants were skipped
-because their dedicated credentials were not configured, as designed.
+was absent. Application and Compose passed. All Application/Compose Mount
+lifecycle cases and dispatch cases passed. The two Domain cases (Application
+and Compose) each returned only the sanitized classification
+`operation=domain;status=4xx;code=BAD_REQUEST`.
 
-The two Domain cases (Application and Compose) each returned only the
-sanitized classification `operation=domain;status=4xx;code=BAD_REQUEST`.
 No request-shape mismatch was established. The deterministic provider and
-generated-request matrices match the pinned OpenAPI contract.
+generated-request matrices match the pinned OpenAPI contract. The deployed
+revision and applied migrations are unavailable from the approved local
+metadata; they must not be invented or inferred from the live result.
 
-### Revision and source comparison
+This is therefore classified as a server-owned compatibility finding, with the
+exact cause unresolved. No provider Domain patch is justified. Follow-up is to
+compare the deployed revision and applied migrations with the pinned source,
+then patch Dokploy if the Application or Compose foreign-key handling is
+absent or inconsistent. Registry and GitLab source variants were skipped
+because dedicated credentials were not configured, as designed.
 
-The deployed Dokploy revision is **unavailable** from the already-safe local
-metadata and no server administration metadata was queried. It must not be
-invented or inferred from the live result. The pinned OpenAPI source revision
-remains the repository-recorded source of contract comparison.
-
-Inspection of the pinned Dokploy source shows that Domain create selects the
-Application or Compose authorization target from `domainType`, accepts the
-corresponding foreign-key field, and retains `serviceName` for Compose. Mount
-create dispatches `serviceId` to the Application or Compose foreign-key field;
-the same dispatch pattern is used by the working database branches. The pinned
-schema declares the corresponding nullable foreign keys, and the pinned source
-includes the migrations that establish them. Applied migration state on the
-deployed instance is **unavailable** without an approved server-side metadata
-source.
-
-### Decision and ownership
-
-Because no provider request mismatch was reproduced, no OpenAPI correction,
-provider mapping change, or create-time null-omission change is justified.
-The Domain failures are classified as Dokploy server/deployed-version
-compatibility evidence, owned by the Dokploy deployment and migration path.
-The exact follow-up boundary is to compare the deployed revision and applied
-migrations with the pinned source, then patch Dokploy if the Application or
-Compose foreign-key handling is absent or inconsistent. A targeted provider
-compatibility diagnostic can be added only after a minimum compatible Dokploy
-version is established.
+The pinned Dokploy source selects the Application or Compose authorization
+target from `domainType`, accepts the corresponding foreign-key field, and
+retains `serviceName` for Compose. Mount creation dispatches `serviceId` to
+the Application or Compose foreign-key field, matching the working database
+branches. The pinned schema declares the nullable foreign keys and includes
+the migrations establishing them; applied migration state on the deployed
+instance is unavailable without an approved server-side metadata source.
 
 ### Cleanup evidence limitation
 
-The supplied sanitized final log records the lifecycle outcomes and no stop
-condition, but does not independently enumerate cleanup confirmations for each
-case. No cleanup failure is present in that log; cleanup verification remains
-limited to the harness evidence retained outside this tracked summary.
+The sanitized final log records lifecycle outcomes and no stop condition, but
+does not independently enumerate cleanup confirmations for each case. No
+cleanup failure is present in that log; cleanup verification remains limited to
+the harness evidence retained outside this tracked summary.
+
+## Task 5 fix verification
+
+This section adds verification evidence for the contract fixes; the historical
+rows and evidence above are unchanged. No endpoint, resource ID, request or
+response payload, credential, SSH material, database value, or stop-file path
+is recorded here.
+
+- **Provider revision:** `64fc03f`
+- **Static verification:** the short test suite and race suite passed. The
+  repository OpenAPI normalization diff passed, and code generation followed
+  by the tracked generated-file diff passed. `make check_openapi` itself was
+  unavailable because `mise` is not installed in this environment.
+
+| Focused resource | Controller command | Result | Duration | Cleanup / stop marker |
+| --- | --- | ---: | ---: | --- |
+| Application | `go test ./provider -run '^TestLiveTier2Workloads/Application$' -parallel=1 -count=1 -v` | **PASS** | 3.64s | lifecycle test passed; stop marker absent; cleanup not separately logged |
+| Environment | `go test ./provider -run '^TestLiveTier1ControlPlane/Environment$' -parallel=1 -count=1 -v` | **PASS** | 1.19s | lifecycle test passed; stop marker absent; cleanup not separately logged |
+| ProjectTag | `go test ./provider -run '^TestLiveTier1ControlPlane/ProjectTag$' -parallel=1 -count=1 -v` | **PASS** | 1.58s | lifecycle test passed; stop marker absent; cleanup not separately logged |
+| SSHKey | `go test ./provider -run '^TestLiveTier1ControlPlane/SSHKey$' -parallel=1 -count=1 -v` | **PASS** | 1.98s | lifecycle test passed; stop marker absent; cleanup not separately logged |
+
+The controller test logs show the focused test/package PASS results. The
+configured stop marker remained absent after each command. Cleanup detail was
+not emitted by the sanitized log and therefore is not independently evidenced
+by the preserved artifact. The test implementation's cleanup-and-absence
+checks are a separate lifecycle contract, not additional artifact evidence.
+
+### Controller PostgreSQL correction
+
+The earlier selector using `PostgreSQL` matched no subtest and is not evidence.
+The corrected controller command was:
+
+`go test ./provider -run '^TestLiveTier3Databases/Postgres$' -parallel=1 -count=1 -v`
+
+It passed: the `Postgres` subtest completed in **11.28s** and the package test
+output was PASS; the stop marker remained absent. Cleanup detail was not
+emitted by the sanitized log and therefore is not independently evidenced by
+the preserved artifact. The test implementation's cleanup-and-absence checks
+are a separate lifecycle contract, not additional artifact evidence. No
+endpoint, resource ID, request or response payload, credential, SSH material,
+or database value is recorded here.
+
+## Task 4 non-live runner verification (2026-09-08 local preflight)
+
+Provider revision: `b127bbc`. No live smoke was run by this task, and no
+credentials or `.env` files were read.
+
+| Check | Result | Duration / limitation |
+| --- | --- | --- |
+| `mise install` | **NOT RUN** | `mise` is unavailable (`command not found`) |
+| `mise exec -- pulumi version` | **NOT RUN** | `mise` is unavailable; pinned version `3.259.0` could not be checked |
+| `make provider` | **PASS** | 217 ms; `bin/pulumi-resource-dokploy` built |
+| `PATH="$PWD/bin:$PATH" mise exec -- pulumi plugin ls` | **NOT RUN** | `mise` is unavailable |
+| `go test -short -count=1 ./provider/... ./internal/... ./tests/...` | **PASS** | 2.601 s |
+| `git diff --check` | **PASS** | no whitespace errors |
+| focused live smoke | **NOT RUN** | controller-only; protected credentials were not sourced |
+
+The direct `pulumi plugin ls` fallback was also unavailable because the Pulumi
+CLI was not installed outside `mise`. The provider build completed, but plugin
+discovery and the pinned CLI version were not verified in this local preflight.
+
+## Task 4 controller verification (2026-09-08)
+
+The controller bootstrapped the exact pinned Pulumi CLI version in a temporary
+repository-safe location, without changing user configuration. Before cleanup,
+`pulumi version` reported `v3.259.0` and `pulumi plugin ls` completed
+successfully with an empty plugin cache. An empty plugin cache is expected here:
+the command does not list provider executables discovered directly on `PATH`.
+The successful Automation API stack is the behavioral evidence that the local
+`bin/pulumi-resource-dokploy` executable was discoverable. Credentials,
+endpoint details, stack state, resource IDs, and configuration values are
+intentionally omitted.
+
+| Check | Result | Duration / cleanup |
+| --- | --- | --- |
+| `make provider` | **PASS** | provider built before smoke |
+| `pulumi version` | **PASS** | reported `v3.259.0` before cleanup |
+| `pulumi plugin ls` | **PASS** | empty cache; PATH-discovered executables are not listed |
+| `TestAccLifecycleSmoke` | **PASS** | test 12.83 s; package 12.848 s; stop marker absent |
+| temporary CLI files | **PASS** | removed and verified absent after the run |
+
+This supersedes the Task 4 local placeholder's **NOT RUN** smoke result for
+the 2026-09-08 controller verification. The historical 2026-09-05 live
+non-run evidence above remains unchanged. By test control flow, the passing
+smoke necessarily completed revision-one preview/up/refresh and revision-two
+preview/up/refresh: each phase fails the test immediately on error. Cleanup is
+registered before those phases, and destroy/remove errors call `t.Errorf`; the
+overall PASS therefore implies both cleanup calls returned without a reported
+error. This is an inference from the test control flow, not direct phase-log
+evidence. No live state details are recorded here.

@@ -97,10 +97,10 @@ func (r ProjectTag) Read(ctx context.Context, req infer.ReadRequest[ProjectTagAr
 	if resp.JSON200 == nil || resp.JSON200.ProjectId == nil || *resp.JSON200.ProjectId == "" {
 		return infer.ReadResponse[ProjectTagArgs, ProjectTagState]{}, fmt.Errorf("project.one returned incomplete project")
 	}
-	if resp.JSON200.Tags == nil {
+	if resp.JSON200.ProjectTags == nil {
 		return infer.ReadResponse[ProjectTagArgs, ProjectTagState]{ID: ""}, nil
 	}
-	for _, tag := range *resp.JSON200.Tags {
+	for _, tag := range *resp.JSON200.ProjectTags {
 		if tag.TagId == tagID {
 			args := ProjectTagArgs{ProjectID: projectID, TagID: tagID}
 			return infer.ReadResponse[ProjectTagArgs, ProjectTagState]{ID: req.ID, Inputs: args, State: ProjectTagState{ProjectTagArgs: args}}, nil

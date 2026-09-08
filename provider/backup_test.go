@@ -321,9 +321,9 @@ func TestBackupCreate_Deadline(t *testing.T) {
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
 		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
 	}
-	for i := 0; i < 3; i++ {
-		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged))
-	}
+	waitForDeadline := expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged)
+	waitForDeadline.WaitForContextDone = true
+	expectations = append(expectations, waitForDeadline)
 	s := newScriptedServer(t, expectations...)
 	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
 	defer cancel()
@@ -342,9 +342,9 @@ func TestBackupCreateDeadlineErrorOmitsTargetID(t *testing.T) {
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged),
 		expectPOST("/api/backup.create", strings.ReplaceAll(backupCreateArgsJSON, "pg1", sentinel), ``),
 	}
-	for i := 0; i < 3; i++ {
-		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged))
-	}
+	waitForDeadline := expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged)
+	waitForDeadline.WaitForContextDone = true
+	expectations = append(expectations, waitForDeadline)
 	s := newScriptedServer(t, expectations...)
 	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
 	defer cancel()

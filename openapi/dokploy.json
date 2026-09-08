@@ -2602,7 +2602,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Application"
+                  "type": "boolean"
                 }
               }
             },
@@ -6877,7 +6877,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MariaDB"
+                  "type": "boolean"
                 }
               }
             },
@@ -8133,7 +8133,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MongoDB"
+                  "type": "boolean"
                 }
               }
             },
@@ -9929,7 +9929,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MySQL"
+                  "type": "boolean"
                 }
               }
             },
@@ -11247,7 +11247,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Postgres"
+                  "type": "boolean"
                 }
               }
             },
@@ -12840,7 +12840,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Redis"
+                  "type": "boolean"
                 }
               }
             },
@@ -13367,6 +13367,81 @@
         ]
       }
     },
+    "/sshKey.all": {
+      "get": {
+        "operationId": "sshKey-all",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SSHKeyList"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "sshKey"
+        ]
+      }
+    },
     "/sshKey.create": {
       "post": {
         "operationId": "sshKey-create",
@@ -13414,13 +13489,6 @@
         },
         "responses": {
           "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SSHKey"
-                }
-              }
-            },
             "description": "Successful response"
           },
           "400": {
@@ -15358,13 +15426,13 @@
       "Organization": {
         "additionalProperties": true,
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "organizationId": {
             "type": "string"
           }
         },
-        "required": [
-          "organizationId"
-        ],
         "type": "object"
       },
       "Postgres": {
@@ -15424,7 +15492,7 @@
           "projectId": {
             "type": "string"
           },
-          "tags": {
+          "projectTags": {
             "items": {
               "additionalProperties": true,
               "properties": {
@@ -15588,6 +15656,12 @@
           "sshKeyId"
         ],
         "type": "object"
+      },
+      "SSHKeyList": {
+        "items": {
+          "$ref": "#/components/schemas/SSHKey"
+        },
+        "type": "array"
       },
       "Tag": {
         "additionalProperties": true,

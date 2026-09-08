@@ -67,7 +67,7 @@ func TestRedisCreateConfiguresBeforeDeployAndPolls(t *testing.T) {
 }
 
 func TestRedisMetadataUpdateDoesNotDeploy(t *testing.T) {
-	s := newScriptedServer(t, expectPOST("/api/redis.update", `{"description":null,"name":"new","redisId":"r1"}`, `{}`))
+	s := newScriptedServer(t, expectPOST("/api/redis.update", `{"description":null,"name":"new","redisId":"r1"}`, `true`))
 	_, err := (Redis{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[RedisArgs, RedisState]{ID: "r1", Inputs: RedisArgs{Name: "new", EnvironmentID: "env", DatabasePassword: "pw", DockerImage: "redis:8"}, State: RedisState{RedisArgs: RedisArgs{Name: "old", EnvironmentID: "env", DatabasePassword: "pw", DockerImage: "redis:8"}}})
 	require.NoError(t, err)
 }
@@ -79,7 +79,7 @@ func TestRedisRuntimeUpdateClearsValuesAndDeploys(t *testing.T) {
 	waitPollInterval = 0
 	t.Cleanup(func() { waitPollInterval = old })
 	s := newScriptedServer(t,
-		expectPOST("/api/redis.update", `{"databasePassword":"NEW-PASSWORD","description":null,"dockerImage":"redis:8","name":"cache","redisId":"r1"}`, `{}`),
+		expectPOST("/api/redis.update", `{"databasePassword":"NEW-PASSWORD","description":null,"dockerImage":"redis:8","name":"cache","redisId":"r1"}`, `true`),
 		expectPOST("/api/redis.saveEnvironment", `{"env":null,"redisId":"r1"}`, `true`),
 		expectPOST("/api/redis.saveExternalPort", `{"externalPort":null,"redisId":"r1"}`, `true`),
 		expectPOST("/api/redis.deploy", `{"redisId":"r1"}`, `"running"`),
@@ -141,7 +141,7 @@ func TestRedisPasswordErrorsRedactOldAndNewAcrossDeployAndPoll(t *testing.T) {
 			waitPollInterval = 0
 			t.Cleanup(func() { waitPollInterval = old })
 			expectations := []scriptedRequest{
-				expectPOST("/api/redis.update", `{"databasePassword":"NEW-PASSWORD","description":null,"dockerImage":"redis:8","name":"cache","redisId":"r1"}`, `{}`),
+				expectPOST("/api/redis.update", `{"databasePassword":"NEW-PASSWORD","description":null,"dockerImage":"redis:8","name":"cache","redisId":"r1"}`, `true`),
 				{Method: http.MethodPost, Path: "/api/redis.deploy", Body: json.RawMessage(`{"redisId":"r1"}`), Status: http.StatusBadRequest, Response: []byte(`{"message":"OLD-PASSWORD NEW-PASSWORD"}`)},
 			}
 			if stage == "poll" {

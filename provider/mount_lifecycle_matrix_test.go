@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
 )
@@ -62,6 +63,90 @@ func TestMountCreateBodyMatrix(t *testing.T) {
 			require.Equal(t, tc.response[12:14], got.ID)
 		})
 	}
+}
+
+func TestMountCreateBodyCartesianMatrix(t *testing.T) {
+	targets := []struct {
+		name, field, serviceType, id string
+	}{
+		{"application", "applicationId", "application", "a1"},
+		{"compose", "composeId", "compose", "c1"},
+		{"postgres", "postgresId", "postgres", "p1"},
+		{"mysql", "mysqlId", "mysql", "my1"},
+		{"mariadb", "mariadbId", "mariadb", "ma1"},
+		{"redis", "redisId", "redis", "r1"},
+	}
+	mounts := []struct {
+		name, typ, selectedField, selectedValue string
+	}{
+		{"bind", "bind", "hostPath", "/host"},
+		{"volume", "volume", "volumeName", "vol"},
+		{"file", "file", "filePath", "/etc/config"},
+	}
+	for _, target := range targets {
+		for _, mount := range mounts {
+			t.Run(target.name+"/"+mount.name, func(t *testing.T) {
+				args := MountArgs{Type: mount.typ, MountPath: "/data", ApplicationID: nil}
+				setMountTarget(&args, target.field, target.id)
+				switch mount.selectedField {
+				case "hostPath":
+					args.HostPath = stringPtr(mount.selectedValue)
+				case "volumeName":
+					args.VolumeName = stringPtr(mount.selectedValue)
+				case "filePath":
+					args.FilePath, args.Content = stringPtr(mount.selectedValue), stringPtr("content")
+				}
+				targetBody, err := mountTargetFor(args)
+				require.NoError(t, err)
+				body := jsonObject(t, mountCreateBody(args, targetBody))
+				require.Equal(t, target.id, body["serviceId"])
+				require.Equal(t, target.serviceType, body["serviceType"])
+				require.Equal(t, mount.typ, body["type"])
+				assertGeneratedMountCreateRequest(t, mountCreateBody(args, targetBody), body)
+				for _, field := range []string{"hostPath", "volumeName", "filePath", "content"} {
+					if field == mount.selectedField || (mount.typ == "file" && field == "content") {
+						require.Equal(t, argsField(args, field), body[field])
+					} else {
+						require.Nil(t, body[field])
+					}
+				}
+			})
+		}
+	}
+}
+
+func argsField(args MountArgs, field string) string {
+	var value *string
+	switch field {
+	case "hostPath":
+		value = args.HostPath
+	case "volumeName":
+		value = args.VolumeName
+	case "filePath":
+		value = args.FilePath
+	case "content":
+		value = args.Content
+	}
+	if value == nil {
+		return ""
+	}
+	return *value
+}
+
+func assertGeneratedMountCreateRequest(t *testing.T, requestBody generated.MountsCreateJSONRequestBody, providerBody map[string]any) {
+	t.Helper()
+	transport := &recordingTransport{}
+	request, err := generated.NewMountsCreateRequest("https://example.test/api", requestBody)
+	require.NoError(t, err)
+	require.Equal(t, http.MethodPost, request.Method)
+	require.Equal(t, "/mounts.create", request.URL.Path)
+	require.Equal(t, "application/json", request.Header.Get("Content-Type"))
+	response, err := (&http.Client{Transport: transport}).Do(request)
+	require.NoError(t, err)
+	require.NoError(t, response.Body.Close())
+	expected, err := json.Marshal(providerBody)
+	require.NoError(t, err)
+	require.JSONEq(t, string(expected), string(transport.body))
 }
 
 func TestMountUpdateBodyClearsOptionalValuesWithExplicitNulls(t *testing.T) {

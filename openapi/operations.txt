@@ -79,6 +79,7 @@ volumeBackups.one
 volumeBackups.update
 organization.active
 sshKey.create
+sshKey.all
 sshKey.one
 sshKey.update
 sshKey.remove

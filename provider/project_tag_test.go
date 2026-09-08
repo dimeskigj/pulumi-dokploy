@@ -41,24 +41,29 @@ func TestProjectTagDiffReplacesBothFields(t *testing.T) {
 func TestProjectTagCreateReadDeleteIsolatesAssociation(t *testing.T) {
 	s := newScriptedServer(t,
 		scriptedRequest{Method: http.MethodPost, Path: "/api/tag.assignToProject", Body: json.RawMessage(`{"projectId":"p1","tagId":"t1"}`), Status: http.StatusOK, Response: []byte(`{}`)},
-		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","tags":[{"tagId":"other"},{"tagId":"t1"}]}`),
-		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","tags":[{"tagId":"other"},{"tagId":"t1"}]}`),
+		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","projectTags":[{"tagId":"other","tag":{"tagId":"other"}},{"tagId":"t1","tag":{"tagId":"t1"}}]}`),
+		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","projectTags":[{"tagId":"other","tag":{"tagId":"other"}},{"tagId":"t1","tag":{"tagId":"t1"}}]}`),
 		scriptedRequest{Method: http.MethodPost, Path: "/api/tag.removeFromProject", Body: json.RawMessage(`{"projectId":"p1","tagId":"t1"}`), Status: http.StatusOK, Response: []byte(`{}`)},
 	)
 	r := ProjectTag{client: fixedClient(s.API())}
 	created, err := r.Create(t.Context(), infer.CreateRequest[ProjectTagArgs]{Inputs: ProjectTagArgs{ProjectID: "p1", TagID: "t1"}})
 	require.NoError(t, err)
 	require.Equal(t, "p1/t1", created.ID)
+	require.Equal(t, "p1", created.Output.ProjectID)
+	require.Equal(t, "t1", created.Output.TagID)
 	read, err := r.Read(t.Context(), infer.ReadRequest[ProjectTagArgs, ProjectTagState]{ID: "p1/t1"})
 	require.NoError(t, err)
 	require.Equal(t, "p1", read.Inputs.ProjectID)
+	require.Equal(t, "t1", read.Inputs.TagID)
+	require.Equal(t, "p1", read.State.ProjectID)
+	require.Equal(t, "t1", read.State.TagID)
 	_, err = r.Delete(t.Context(), infer.DeleteRequest[ProjectTagState]{ID: "p1/t1"})
 	require.NoError(t, err)
 }
 
 func TestProjectTagReadMissingAssociationAndProject(t *testing.T) {
 	s := newScriptedServer(t,
-		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","tags":[{"tagId":"other"}]}`),
+		expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK, `{"projectId":"p1","projectTags":[{"tagId":"other"}]}`),
 		expectGET("/api/project.one", map[string][]string{"projectId": {"missing"}}, http.StatusNotFound, `{"code":"NOT_FOUND"}`),
 	)
 	r := ProjectTag{client: fixedClient(s.API())}

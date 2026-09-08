@@ -2,6 +2,9 @@ package dokploy
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,6 +42,64 @@ func TestLiveGateRequiresBothCredentials(t *testing.T) {
 	}
 }
 
+func TestClassifyWorkloadCreateAttempt(t *testing.T) {
+	tests := []struct {
+		name          string
+		operation     string
+		status        int
+		code          string
+		keys          []string
+		targetPresent bool
+		targetReady   bool
+		want          string
+	}{
+		{
+			name:      "ready domain with sorted keys",
+			operation: "domain", status: 201, code: "VALIDATION_ERROR", keys: []string{"serviceName", "applicationId"},
+			targetPresent: true, targetReady: true,
+			want: "operation=domain;status=2xx;code=VALIDATION_ERROR;keys=applicationId,serviceName;target=ready",
+		},
+		{
+			name:      "missing target is safe",
+			operation: "mount", status: 404, code: "NOT_FOUND", keys: []string{"applicationId"},
+			want: "operation=mount;status=4xx;code=NOT_FOUND;keys=applicationId;target=missing",
+		},
+		{
+			name:      "unsafe metadata is omitted",
+			operation: "mount", status: 503, code: "bad code; DROP TABLE secrets", keys: []string{"host.example/id", "apiKey", "composeId"},
+			targetPresent: true,
+			want:          "operation=mount;status=5xx;code=unknown;keys=composeId;target=present-not-ready",
+		},
+		{
+			name:      "transport has no server metadata",
+			operation: "domain", status: 0, code: "SAFECODE", keys: []string{"api-key-secret"},
+			want: "operation=domain;status=transport;code=unknown;keys=none;target=missing",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := classifyWorkloadCreateAttempt(tt.operation, tt.status, tt.code, tt.keys, tt.targetPresent, tt.targetReady)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+			for _, sentinel := range []string{"application-id-sentinel", "host.example", "/id", "DROP TABLE", "SECRET"} {
+				require.NotContains(t, got, sentinel)
+			}
+		})
+	}
+}
+
+func TestClassifyWorkloadCreateAttemptRejectsUnknownOperationAndSentinels(t *testing.T) {
+	_, err := classifyWorkloadCreateAttempt("application", 400, "SECRET123", []string{"applicationId", "abc123", "serviceId"}, true, false)
+	require.Error(t, err)
+
+	got, err := classifyWorkloadCreateAttempt("mount", 400, "SECRET123", []string{"mountPath", "SECRET123", "abc123", "serviceId"}, true, false)
+	require.NoError(t, err)
+	require.Equal(t, "operation=mount;status=4xx;code=unknown;keys=mountPath,serviceId;target=present-not-ready", got)
+	for _, sentinel := range []string{"SECRET123", "abc123"} {
+		require.NotContains(t, got, sentinel)
+	}
+}
+
 func TestLiveRunNameUsesKindAndUUID(t *testing.T) {
 	name := liveRunName("application")
 	parts := strings.Split(name, "-")
@@ -51,6 +112,149 @@ func TestClassifyWorkloadCreateErrorPropagatesUnknownOperation(t *testing.T) {
 	classification, err := classifyWorkloadCreateError("unknown-operation", nil, nil, false, false)
 	require.Error(t, err)
 	require.Empty(t, classification)
+}
+
+func TestClassifyWorkloadCreateErrorNeverIncludesRawServerDetails(t *testing.T) {
+	err := &client.APIError{StatusCode: 400, Code: "BAD_REQUEST", Message: `insert into mount values ('mount-id-sentinel', 'target-id-sentinel')`}
+	for _, test := range []struct {
+		name      string
+		operation string
+	}{
+		{name: "Domain/application", operation: "domain"},
+		{name: "Domain/compose", operation: "domain"},
+		{name: "Mounts/application", operation: "mount"},
+		{name: "Mounts/compose", operation: "mount"},
+		{name: "MountDispatch/compose", operation: "mount"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got, classifyErr := classifyWorkloadCreateError(test.operation, err, []string{"mountPath", "composeId", "target-id-sentinel"}, true, true)
+			require.NoError(t, classifyErr)
+			require.Equal(t, "operation="+test.operation+";status=4xx;code=BAD_REQUEST;keys=composeId,mountPath;target=ready", got)
+			require.NotContains(t, got, "insert into")
+			require.NotContains(t, got, "mount-id-sentinel")
+			require.NotContains(t, got, "target-id-sentinel")
+		})
+	}
+}
+
+func TestTier2WorkloadLifecycleDeletesTargetsOnlyAfterDependents(t *testing.T) {
+	_, filename, _, ok := runtime.Caller(0)
+	require.True(t, ok)
+	source, err := os.ReadFile(filepath.Join(filepath.Dir(filename), "live_workloads_test.go"))
+	require.NoError(t, err)
+	text := string(source)
+	ordered := []string{
+		"workloadTargets :=",
+		"t.Run(\"Domain/\"+target.name",
+		"t.Run(\"Mounts/\"+target.name",
+		"t.Run(\"MountDispatch/\"+target",
+		"t.Run(\"SourceVariants\"",
+		"deleteAndReadApplication(t, ctx",
+		"deleteAndReadCompose(t, ctx",
+	}
+	previous := -1
+	for _, marker := range ordered {
+		position := strings.Index(text, marker)
+		require.GreaterOrEqual(t, position, 0, "missing lifecycle marker %q", marker)
+		require.Greater(t, position, previous, "lifecycle marker %q is out of order", marker)
+		previous = position
+	}
+	require.Equal(t, 1, strings.Count(text, "deleteAndReadApplication(t, ctx"))
+	require.Equal(t, 1, strings.Count(text, "deleteAndReadCompose(t, ctx"))
+}
+
+func TestSuccessfulCreateRegistersCleanupAndExplicitDeleteReleasesIt(t *testing.T) {
+	deletes := 0
+	owner := newLiveCleanupOwner(func() { deletes++ })
+	owner.release()
+	owner.cleanupOnce()
+	require.Equal(t, 0, deletes)
+
+	owner = newLiveCleanupOwner(func() { deletes++ })
+	owner.cleanupOnce()
+	owner.cleanupOnce()
+	require.Equal(t, 1, deletes)
+}
+
+func TestExplicitDeleteReleasesOwnershipBeforeFailedAbsenceVerification(t *testing.T) {
+	owner := newLiveCleanupOwner(func() { t.Fatal("fallback cleanup must not run") })
+	deleteCalls := 0
+	err := deleteAndVerifyLiveOwned(t.Context(), func() error {
+		deleteCalls++
+		return nil
+	}, func() (string, error) { return "present", errors.New("verification sentinel") }, owner.release)
+	require.Error(t, err)
+	require.Equal(t, 1, deleteCalls)
+	owner.cleanupOnce()
+}
+
+func TestWorkloadLifecycleDiagnosticsExcludeUnstructuredFailureDetails(t *testing.T) {
+	err := &client.APIError{StatusCode: 500, Code: "INTERNAL_ERROR", Message: `update failed: sql=insert into mount values ('id-sentinel', '/host/path', 'secret-sentinel')`}
+	for _, operation := range []string{"domain", "mount"} {
+		for _, phase := range []string{"create", "read", "update", "delete"} {
+			t.Run(operation+"/"+phase, func(t *testing.T) {
+				got, classifyErr := classifyWorkloadLifecycleError(operation, err)
+				require.NoError(t, classifyErr)
+				require.Equal(t, "operation="+operation+";status=5xx;code=unknown", got)
+				for _, sentinel := range []string{"insert into", "id-sentinel", "/host/path", "secret-sentinel", "INTERNAL_ERROR"} {
+					require.NotContains(t, got, sentinel)
+				}
+			})
+		}
+	}
+}
+
+func TestWorkloadCallPathsEmitOnlyStructuralDiagnostics(t *testing.T) {
+	s := newScriptedServer(t,
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.create", Body: json.RawMessage(`{"applicationId":"app","certificateType":"letsencrypt","domainType":"application","host":"example.test","https":false,"stripPath":false}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"BAD_REQUEST","message":"sql=insert domain-id-sentinel /raw/path"}`)},
+		scriptedRequest{Method: http.MethodPost, Path: "/api/mounts.create", Body: json.RawMessage(`{"content":null,"filePath":null,"hostPath":"/host","mountPath":"/mnt","serviceId":"app","serviceType":"application","type":"bind","volumeName":null}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"BAD_REQUEST","message":"content=mount-content-sentinel path=/raw/path"}`)},
+	)
+	domainErr := mustDomainCreateError(t, Domain{client: fixedClient(s.API())})
+	mountErr := mustMountCreateError(t, Mount{client: fixedClient(s.API())})
+	for _, test := range []struct {
+		operation string
+		err       error
+	}{
+		{"domain", domainErr}, {"mount", mountErr},
+	} {
+		got, err := classifyWorkloadLifecycleError(test.operation, test.err)
+		require.NoError(t, err)
+		require.Equal(t, "operation="+test.operation+";status=4xx;code=BAD_REQUEST", got)
+		for _, sentinel := range []string{"domain-id-sentinel", "/raw/path", "mount-content-sentinel", "insert domain"} {
+			require.NotContains(t, got, sentinel)
+		}
+	}
+}
+
+func mustDomainCreateError(t *testing.T, r Domain) error {
+	t.Helper()
+	_, err := r.Create(t.Context(), infer.CreateRequest[DomainArgs]{Inputs: DomainArgs{ApplicationID: stringPtr("app"), Host: "example.test"}})
+	require.Error(t, err)
+	return err
+}
+
+func mustMountCreateError(t *testing.T, r Mount) error {
+	t.Helper()
+	_, err := r.Create(t.Context(), infer.CreateRequest[MountArgs]{Inputs: MountArgs{Type: mountTypeBind, MountPath: "/mnt", HostPath: stringPtr("/host"), ApplicationID: stringPtr("app")}})
+	require.Error(t, err)
+	return err
+}
+
+func TestDeleteAndVerifyOnceMarksOwnershipBeforeVerification(t *testing.T) {
+	deleteCalls, readCalls := 0, 0
+	owned := true
+	err := deleteAndVerifyOnce(func() error {
+		deleteCalls++
+		return nil
+	}, func() (string, error) {
+		readCalls++
+		require.False(t, owned)
+		return "still-present", errors.New("verification sentinel")
+	}, func() { owned = false })
+	require.Error(t, err)
+	require.Equal(t, 1, deleteCalls)
+	require.Equal(t, 1, readCalls)
+	require.False(t, owned)
 }
 
 func TestCleanupContextHasFiniteFiveMinuteDeadline(t *testing.T) {
@@ -241,6 +445,12 @@ func TestLiveTargetReadMustPrecedeCreate(t *testing.T) {
 	create := func() { order = append(order, "create") }
 	require.NoError(t, readReadyMountTarget(read, create))
 	require.Equal(t, []string{"read", "create"}, order)
+}
+
+func TestLiveDiffKindMissingFieldIsReportedWithoutPanic(t *testing.T) {
+	kind, ok := liveDiffKind(map[string]p.PropertyDiff{}, "missing")
+	require.False(t, ok)
+	require.Zero(t, kind)
 }
 
 func TestMountDiffCoversTypeTargetCartesianMatrix(t *testing.T) {

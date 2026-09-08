@@ -47,7 +47,7 @@ func corrections() Corrections {
 }
 
 var newResourceOperations = []string{
-	"organization.active", "sshKey.create", "sshKey.one", "sshKey.update", "sshKey.remove",
+	"organization.active", "sshKey.create", "sshKey.all", "sshKey.one", "sshKey.update", "sshKey.remove",
 	"registry.create", "registry.one", "registry.update", "registry.remove", "registry.testRegistry",
 	"tag.create", "tag.one", "tag.update", "tag.remove", "tag.assignToProject", "tag.removeFromProject",
 	"mounts.create", "mounts.one", "mounts.update", "mounts.remove",
@@ -281,6 +281,19 @@ func TestNormalizeCorrectsRegistryUpdateServerIDToNullable(t *testing.T) {
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, schema, "serverId"))
 }
 
+func TestNormalizeEnvironmentUpdateDescriptionIsOptionalString(t *testing.T) {
+	output := normalizeRealContract(t)
+	schema := operationRequestSchema(t, output, "environment.update")
+	properties, ok := schema["properties"].(map[string]any)
+	require.True(t, ok, "environment.update request properties are not an object")
+	description, ok := properties["description"].(map[string]any)
+	require.True(t, ok, "environment.update request has no description property")
+	require.Equal(t, "string", description["type"])
+	required, ok := schema["required"].([]any)
+	require.True(t, ok, "environment.update request required is not an array")
+	require.NotContains(t, required, "description")
+}
+
 func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	output := normalizeRealContract(t)
 	ids := normalizedOperationIDs(t, output)
@@ -302,7 +315,7 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 		method string
 	}{
 		"organization.active": {schema: "Organization", method: httpMethodGet},
-		"sshKey.create":       {schema: "SSHKey", method: httpMethodPost},
+		"sshKey.all":          {schema: "SSHKeyList", method: httpMethodGet},
 		"sshKey.one":          {schema: "SSHKey", method: httpMethodGet},
 		"sshKey.update":       {schema: "SSHKey", method: httpMethodPost},
 		"registry.create":     {schema: "Registry", method: httpMethodPost},
@@ -318,23 +331,63 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	for operation, assertion := range responses {
 		require.Equal(t, "#/components/schemas/"+assertion.schema, responseSchema(t, output, "/"+operation, assertion.method, "200").Ref, "response correction for %s", operation)
 	}
-	for _, operation := range []string{"sshKey.remove", "registry.remove", "registry.testRegistry", "tag.remove", "tag.assignToProject", "tag.removeFromProject", "mounts.remove"} {
+	for _, operation := range []string{
+		"application.update", "postgres.update", "mysql.update",
+		"mariadb.update", "mongo.update", "redis.update",
+	} {
+		require.Equal(t, "boolean", responseSchemaType(t, output, "/"+operation, httpMethodPost, "200"), "response correction for %s", operation)
+		require.Empty(t, responseSchema(t, output, "/"+operation, httpMethodPost, "200").Ref, "response correction for %s", operation)
+	}
+	for _, operation := range []string{"sshKey.create", "sshKey.remove", "registry.remove", "registry.testRegistry", "tag.remove", "tag.assignToProject", "tag.removeFromProject", "mounts.remove"} {
 		require.Empty(t, responseSchema(t, output, "/"+operation, httpMethodPost, "200").Ref, "response correction for %s should be empty", operation)
 	}
 
 	project := componentSchema(t, output, "Project")
 	projectProperties, ok := project["properties"].(map[string]any)
 	require.True(t, ok, "Project properties are not an object")
-	tags, ok := projectProperties["tags"].(map[string]any)
-	require.True(t, ok, "Project.tags is not an object")
+	tags, ok := projectProperties["projectTags"].(map[string]any)
+	require.True(t, ok, "Project.projectTags is not an object")
 	require.Equal(t, "array", tags["type"])
 	tagItems, ok := tags["items"].(map[string]any)
-	require.True(t, ok, "Project.tags items are not an object")
+	require.True(t, ok, "Project.projectTags items are not an object")
 	tagItemProperties, ok := tagItems["properties"].(map[string]any)
-	require.True(t, ok, "Project.tags item properties are not an object")
+	require.True(t, ok, "Project.projectTags item properties are not an object")
 	require.Contains(t, tagItemProperties, "tagId")
+	require.Equal(t, []any{"tagId"}, tagItems["required"])
 
 	application := componentSchema(t, output, "Application")
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, application, "registryId"))
 	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, application, "buildRegistryId"))
+	organization := componentSchema(t, output, "Organization")
+	organizationProperties, ok := organization["properties"].(map[string]any)
+	require.True(t, ok)
+	require.Equal(t, map[string]any{"type": "string"}, organizationProperties["id"])
+	require.Equal(t, map[string]any{"type": "string"}, organizationProperties["organizationId"])
+	require.NotContains(t, organization, "required")
+}
+
+func responseSchemaType(t *testing.T, d *Document, path, method, status string) string {
+	t.Helper()
+	pathItem, ok := d.Paths[path]
+	require.True(t, ok, "missing path %s", path)
+	op := pathItem.Post
+	if method == httpMethodGet {
+		op = pathItem.Get
+	}
+	require.NotNil(t, op, "missing %s operation for path %s", method, path)
+	responses, ok := op.Raw["responses"].(map[string]any)
+	require.True(t, ok, "responses for %s are not an object", path)
+	response, ok := responses[status]
+	require.True(t, ok, "missing %s response for %s", status, path)
+	b, err := json.Marshal(response)
+	require.NoError(t, err)
+	var decoded struct {
+		Content map[string]struct {
+			Schema struct {
+				Type string `json:"type"`
+			} `json:"schema"`
+		} `json:"content"`
+	}
+	require.NoError(t, json.Unmarshal(b, &decoded))
+	return decoded.Content["application/json"].Schema.Type
 }

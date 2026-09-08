@@ -1,6 +1,7 @@
 package dokploy
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/google/uuid"
+	p "github.com/pulumi/pulumi-go-provider"
 )
 
 const liveCleanupTimeout = 5 * time.Minute
@@ -39,6 +41,42 @@ var liveHeavyOperation struct {
 type liveHeavyOperationLease struct {
 	kind     string
 	released bool
+}
+
+type liveCleanupOwner struct {
+	mu      sync.Mutex
+	owned   bool
+	cleanup func()
+}
+
+func newLiveCleanupOwner(cleanup func()) *liveCleanupOwner {
+	return &liveCleanupOwner{owned: true, cleanup: cleanup}
+}
+
+func (o *liveCleanupOwner) release() {
+	o.mu.Lock()
+	o.owned = false
+	o.mu.Unlock()
+}
+
+func (o *liveCleanupOwner) cleanupOnce() {
+	o.mu.Lock()
+	if !o.owned {
+		o.mu.Unlock()
+		return
+	}
+	o.owned = false
+	cleanup := o.cleanup
+	o.mu.Unlock()
+	cleanup()
+}
+
+func deleteAndVerifyLiveOwned(ctx context.Context, remove func() error, read func() (string, error), release func()) error {
+	if err := remove(); err != nil && !client.IsNotFound(err) {
+		return err
+	}
+	release()
+	return waitForDatabaseAbsence(ctx, func(context.Context) (string, error) { return read() })
 }
 
 func beginLiveHeavyOperation(t *testing.T, kind string) *liveHeavyOperationLease {
@@ -184,6 +222,92 @@ func classifyWorkloadCreateError(operation string, err error, keys []string, tar
 	return classifyWorkloadCreateAttempt(operation, status, code, keys, targetPresent, targetReady)
 }
 
+func requireWorkloadCreateNoError(t *testing.T, operation string, err error, keys []string, targetPresent bool, targetReady bool, outcome string) {
+	t.Helper()
+	if err == nil {
+		return
+	}
+	classification, classificationErr := classifyWorkloadCreateError(operation, err, keys, targetPresent, targetReady)
+	requireNoError(t, classificationErr)
+	if outcome != "" {
+		recordLiveOutcome(outcome, classification)
+	}
+	t.Fatalf("%s create failed: %s", operation, classification)
+}
+
+func classifyWorkloadLifecycleError(operation string, err error) (string, error) {
+	if operation != "domain" && operation != "mount" {
+		return "", fmt.Errorf("unsupported workload operation")
+	}
+	status, code := 0, ""
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) {
+		status, code = apiErr.StatusCode, apiErr.Code
+	}
+	statusClass := "transport"
+	switch {
+	case status >= 200 && status < 300:
+		statusClass = "2xx"
+	case status >= 400 && status < 500:
+		statusClass = "4xx"
+	case status >= 500 && status < 600:
+		statusClass = "5xx"
+	}
+	if !isSafeWorkloadAPICode(code) {
+		code = "unknown"
+	}
+	return fmt.Sprintf("operation=%s;status=%s;code=%s", operation, statusClass, code), nil
+}
+
+func requireWorkloadLifecycleNoError(t *testing.T, operation string, err error) {
+	t.Helper()
+	if err == nil {
+		return
+	}
+	classification, classificationErr := classifyWorkloadLifecycleError(operation, err)
+	requireNoError(t, classificationErr)
+	t.Fatalf("%s", classification)
+}
+
+func liveDiffKind(diff map[string]p.PropertyDiff, field string) (p.DiffKind, bool) {
+	property, ok := diff[field]
+	if !ok {
+		return p.DiffKind(""), false
+	}
+	return property.Kind, true
+}
+
+func requireLiveDiffKind(t *testing.T, diff map[string]p.PropertyDiff, field string, want p.DiffKind) {
+	t.Helper()
+	kind, ok := liveDiffKind(diff, field)
+	if !ok {
+		t.Errorf("live diff missing field %s", field)
+		return
+	}
+	if kind != want {
+		t.Errorf("live diff field %s did not have expected kind", field)
+	}
+}
+
+func deleteAndVerifyOnce(remove func() error, read func() (string, error), markUnowned func()) error {
+	if err := remove(); err != nil && !client.IsNotFound(err) {
+		return err
+	}
+	markUnowned()
+	id, err := read()
+	if err != nil {
+		return err
+	}
+	if id != "" {
+		return fmt.Errorf("resource remained after delete verification")
+	}
+	return nil
+}
+
+func cleanupAfterCreateErrorNeedsImmediateCleanup(id string, createErr error) bool {
+	return id != "" && createErr != nil
+}
+
 func isSafeWorkloadAPICode(code string) bool {
 	switch code {
 	case "BAD_REQUEST", "NOT_FOUND", "VALIDATION_ERROR":
@@ -195,7 +319,7 @@ func isSafeWorkloadAPICode(code string) bool {
 
 func isSafeWorkloadRequestKey(key string) bool {
 	switch key {
-	case "host", "https", "stripPath", "certificateType", "path", "internalPath", "port", "serviceName", "customCertResolver", "applicationId", "domainType", "composeId", "mountPath", "serviceId", "serviceType", "type", "hostPath", "volumeName", "filePath", "content":
+	case "host", "https", "stripPath", "certificateType", "path", "internalPath", "port", "serviceName", "customCertResolver", "applicationId", "domainType", "composeId", "mountPath", "serviceId", "serviceType", "type", "hostPath", "volumeName", "filePath", "content", "postgresId", "mysqlId", "mariadbId", "redisId":
 		return true
 	default:
 		return false
@@ -218,13 +342,38 @@ func classifyEnvironmentUpdateComparison(providerErr, directErr error) string {
 func classifyOrganizationActiveShape(body []byte) string {
 	var payload map[string]json.RawMessage
 	if json.Unmarshal(body, &payload) != nil {
-		return "missing-id"
+		return "invalid-json"
+	}
+	classify := func(raw json.RawMessage) (valid bool, label string) {
+		var id string
+		if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+			return false, "null-id"
+		}
+		if json.Unmarshal(raw, &id) != nil {
+			return false, "wrong-type-id"
+		}
+		if id == "" {
+			return false, "empty-id"
+		}
+		return true, ""
+	}
+	if raw, ok := payload["id"]; ok {
+		if valid, _ := classify(raw); valid {
+			return "flat-id"
+		}
 	}
 	if raw, ok := payload["organizationId"]; ok {
-		var id string
-		if json.Unmarshal(raw, &id) == nil && id != "" {
-			return "flat-non-empty-id"
+		if valid, _ := classify(raw); valid {
+			return "flat-organization-id"
 		}
+	}
+	if raw, ok := payload["id"]; ok {
+		_, label := classify(raw)
+		return label
+	}
+	if raw, ok := payload["organizationId"]; ok {
+		_, label := classify(raw)
+		return label
 	}
 	if raw, ok := payload["organization"]; ok {
 		var nested map[string]json.RawMessage
@@ -295,12 +444,14 @@ func liveCleanupVerified(t *testing.T, kind, id string, remove func(context.Cont
 	}
 }
 
-func registerLiveCleanup(t *testing.T, kind, id string, remove func(context.Context) error, read func(context.Context) (string, error)) {
+func registerLiveCleanup(t *testing.T, kind, id string, remove func(context.Context) error, read func(context.Context) (string, error)) func() {
 	t.Helper()
 	if id == "" {
-		return
+		return func() {}
 	}
-	t.Cleanup(func() { liveCleanupVerified(t, kind, id, remove, read) })
+	owner := newLiveCleanupOwner(func() { liveCleanupVerified(t, kind, id, remove, read) })
+	t.Cleanup(owner.cleanupOnce)
+	return owner.release
 }
 
 func verifyLiveCleanup(ctx context.Context, remove func(context.Context) error, read func(context.Context) (string, error)) error {
