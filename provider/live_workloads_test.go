@@ -218,12 +218,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 				v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
 				return v.ID, e
 			})
-			if err != nil {
-				classification, classificationErr := classifyWorkloadCreateError("domain", err, domainCreateRequestKeys(target.compose), targetPresent, targetReady)
-				requireNoError(t, classificationErr)
-				recordLiveOutcome("Domain/"+target.name, classification)
-			}
-			requireNoError(t, err)
+			requireWorkloadCreateNoError(t, "domain", err, domainCreateRequestKeys(target.compose), targetPresent, targetReady, "Domain/"+target.name)
 			read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: created.Output})
 			requireNoError(t, err)
 			updated := read.Inputs
@@ -302,12 +297,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 						v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 						return v.ID, e
 					})
-					if err != nil {
-						classification, classificationErr := classifyWorkloadCreateError("mount", err, mountCreateRequestKeys(inputs), targetPresent, targetReady)
-						requireNoError(t, classificationErr)
-						recordLiveOutcome("Mount/"+target.name+"/"+inputs.Type, classification)
-					}
-					requireNoError(t, err)
+					requireWorkloadCreateNoError(t, "mount", err, mountCreateRequestKeys(inputs), targetPresent, targetReady, "Mount/"+target.name+"/"+inputs.Type)
 					read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
 					requireNoError(t, err)
 					updated := read.Inputs
@@ -389,7 +379,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 				v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 				return v.ID, e
 			})
-			requireNoError(t, err)
+			requireWorkloadCreateNoError(t, "mount", err, mountCreateRequestKeys(mount), targetID != "", targetID != "", "MountDispatch/"+target)
 			read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
 			requireNoError(t, err)
 			imported, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: read.State})
@@ -742,16 +732,14 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 
 func cleanupAfterCreateError(t *testing.T, kind, id string, createErr error, remove func(context.Context) error, read func(context.Context) (string, error)) {
 	t.Helper()
-	if id != "" {
-		registerLiveCleanup(t, kind, id, remove, read)
-		if createErr != nil {
-			// A provider create may return a partial ID. Clean it now, before
-			// asserting the create error, rather than leaving a live workload
-			// behind while the test continues.
-			liveCleanupVerified(t, kind, id, remove, read)
-			return
-		}
+	if !cleanupAfterCreateErrorNeedsImmediateCleanup(id, createErr) {
+		return
 	}
+	// A provider create may return a partial ID. Clean it now, before
+	// asserting the create error, rather than leaving a live workload
+	// behind while the test continues. Successful workloads are owned by
+	// the parent test and deleted after all dependent checks complete.
+	liveCleanupVerified(t, kind, id, remove, read)
 }
 
 func deleteAndReadApplication(t *testing.T, ctx context.Context, r Application, id string) {

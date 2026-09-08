@@ -111,6 +111,60 @@ func TestClassifyWorkloadCreateErrorPropagatesUnknownOperation(t *testing.T) {
 	require.Empty(t, classification)
 }
 
+func TestClassifyWorkloadCreateErrorNeverIncludesRawServerDetails(t *testing.T) {
+	err := &client.APIError{StatusCode: 400, Code: "BAD_REQUEST", Message: `insert into mount values ('mount-id-sentinel', 'target-id-sentinel')`}
+	for _, test := range []struct {
+		name      string
+		operation string
+	}{
+		{name: "Domain/application", operation: "domain"},
+		{name: "Domain/compose", operation: "domain"},
+		{name: "Mounts/application", operation: "mount"},
+		{name: "Mounts/compose", operation: "mount"},
+		{name: "MountDispatch/compose", operation: "mount"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got, classifyErr := classifyWorkloadCreateError(test.operation, err, []string{"mountPath", "composeId", "target-id-sentinel"}, true, true)
+			require.NoError(t, classifyErr)
+			require.Equal(t, "operation="+test.operation+";status=4xx;code=BAD_REQUEST;keys=composeId,mountPath;target=ready", got)
+			require.NotContains(t, got, "insert into")
+			require.NotContains(t, got, "mount-id-sentinel")
+			require.NotContains(t, got, "target-id-sentinel")
+		})
+	}
+}
+
+func TestTier2WorkloadLifecycleDeletesTargetsOnlyAfterDependents(t *testing.T) {
+	_, filename, _, ok := runtime.Caller(0)
+	require.True(t, ok)
+	source, err := os.ReadFile(filepath.Join(filepath.Dir(filename), "live_workloads_test.go"))
+	require.NoError(t, err)
+	text := string(source)
+	ordered := []string{
+		"workloadTargets :=",
+		"t.Run(\"Domain/\"+target.name",
+		"t.Run(\"Mounts/\"+target.name",
+		"t.Run(\"MountDispatch/\"+target",
+		"t.Run(\"SourceVariants\"",
+		"deleteAndReadApplication(t, ctx",
+		"deleteAndReadCompose(t, ctx",
+	}
+	previous := -1
+	for _, marker := range ordered {
+		position := strings.Index(text, marker)
+		require.GreaterOrEqual(t, position, 0, "missing lifecycle marker %q", marker)
+		require.Greater(t, position, previous, "lifecycle marker %q is out of order", marker)
+		previous = position
+	}
+	require.Equal(t, 1, strings.Count(text, "deleteAndReadApplication(t, ctx"))
+	require.Equal(t, 1, strings.Count(text, "deleteAndReadCompose(t, ctx"))
+}
+
+func TestSuccessfulCreateDoesNotRegisterSubtestCleanup(t *testing.T) {
+	require.False(t, cleanupAfterCreateErrorNeedsImmediateCleanup("resource-id", nil))
+	require.True(t, cleanupAfterCreateErrorNeedsImmediateCleanup("resource-id", context.Canceled))
+}
+
 func TestCleanupContextHasFiniteFiveMinuteDeadline(t *testing.T) {
 	ctx, cancel := cleanupContext()
 	defer cancel()

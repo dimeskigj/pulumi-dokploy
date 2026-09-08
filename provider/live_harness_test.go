@@ -185,6 +185,23 @@ func classifyWorkloadCreateError(operation string, err error, keys []string, tar
 	return classifyWorkloadCreateAttempt(operation, status, code, keys, targetPresent, targetReady)
 }
 
+func requireWorkloadCreateNoError(t *testing.T, operation string, err error, keys []string, targetPresent bool, targetReady bool, outcome string) {
+	t.Helper()
+	if err == nil {
+		return
+	}
+	classification, classificationErr := classifyWorkloadCreateError(operation, err, keys, targetPresent, targetReady)
+	requireNoError(t, classificationErr)
+	if outcome != "" {
+		recordLiveOutcome(outcome, classification)
+	}
+	t.Fatalf("%s create failed: %s", operation, classification)
+}
+
+func cleanupAfterCreateErrorNeedsImmediateCleanup(id string, createErr error) bool {
+	return id != "" && createErr != nil
+}
+
 func isSafeWorkloadAPICode(code string) bool {
 	switch code {
 	case "BAD_REQUEST", "NOT_FOUND", "VALIDATION_ERROR":
@@ -196,7 +213,7 @@ func isSafeWorkloadAPICode(code string) bool {
 
 func isSafeWorkloadRequestKey(key string) bool {
 	switch key {
-	case "host", "https", "stripPath", "certificateType", "path", "internalPath", "port", "serviceName", "customCertResolver", "applicationId", "domainType", "composeId", "mountPath", "serviceId", "serviceType", "type", "hostPath", "volumeName", "filePath", "content":
+	case "host", "https", "stripPath", "certificateType", "path", "internalPath", "port", "serviceName", "customCertResolver", "applicationId", "domainType", "composeId", "mountPath", "serviceId", "serviceType", "type", "hostPath", "volumeName", "filePath", "content", "postgresId", "mysqlId", "mariadbId", "redisId":
 		return true
 	default:
 		return false
