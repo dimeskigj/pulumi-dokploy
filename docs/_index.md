@@ -1,5 +1,7 @@
 ---
+layout: package
 title: Dokploy
+meta_desc: Pulumi provider for managing Dokploy resources.
 description: Pulumi provider for managing Dokploy resources.
 ---
 
@@ -30,13 +32,14 @@ import * as dokploy from "@dimeskigj/pulumi-dokploy";
 
 const config = new pulumi.Config("dokploy");
 const endpoint = config.require("endpoint");
-const apiKey = config.requireSecret("apiKey");
-
 const project = new dokploy.Project("example", {
   name: "example",
   description: "Managed by Pulumi",
 });
 
 export const projectId = project.id;
-export { endpoint, apiKey };
 ```
+
+Support and source code are available on the [repository](https://github.com/dimeskigj/pulumi-dokploy).
+Report problems in [GitHub issues](https://github.com/dimeskigj/pulumi-dokploy/issues)
+and see the [contributing guide](https://github.com/dimeskigj/pulumi-dokploy/blob/main/CONTRIBUTING.md).

@@ -1,27 +1,45 @@
 ---
+layout: package
 title: Installation and configuration
+meta_desc: Install and configure the community-maintained Pulumi Dokploy provider.
 description: Install and configure the community-maintained Pulumi Dokploy provider.
 ---
 
 # Installation and configuration
 
-The provider's package metadata points Pulumi at its GitHub release artifacts.
-Pulumi can acquire the provider plugin automatically when a package is added or
-used; no separate plugin download is normally required.
+The provider's `pluginDownloadURL` metadata is
+`github://api.github.com/dimeskigj/pulumi-dokploy`, which points Pulumi at the
+GitHub release artifacts. Pulumi can acquire the provider plugin automatically
+when a package is added or used; no separate plugin download is normally
+required.
 
-Install the SDK for your language:
+Install the SDK for your language. Replace `${DOKPLOY_VERSION}` with the
+provider version you are using:
 
 ```bash
 npm install @dimeskigj/pulumi-dokploy
 pip install pulumi_dokploy
 go get github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy
 dotnet add package Dimeskigj.Pulumi.Dokploy
-mvn dependency:get -Dartifact=net.dimeski.pulumi:dokploy
 pulumi package add github.com/dimeskigj/pulumi-dokploy dokploy
 ```
 
-The last command adds the provider to a YAML program. The other commands install
-the TypeScript, Python, Go, .NET, and Java SDKs respectively.
+For Java, add this dependency to your Maven project's `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>net.dimeski.pulumi</groupId>
+  <artifactId>dokploy</artifactId>
+  <version>${DOKPLOY_VERSION}</version>
+</dependency>
+```
+
+The last command adds the provider to a YAML program. Add the XML dependency to
+your Java project's `pom.xml`; its artifact coordinate is
+`net.dimeski.pulumi:dokploy:${DOKPLOY_VERSION}`. This XML declares the Java SDK
+dependency rather than installing anything by itself.
+The other commands install the TypeScript,
+Python, Go, and .NET SDKs respectively.
 
 ## Configuration
 
