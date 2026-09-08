@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"strconv"
@@ -23,8 +24,8 @@ func TestAccLifecycleSmoke(t *testing.T) {
 	if endpoint == "" || apiKey == "" {
 		t.Skip("live Dokploy credentials are not configured")
 	}
-	if !pulumiCLIAvailable(exec.LookPath) {
-		t.Skip("Pulumi CLI prerequisite is unavailable; install pulumi before running live acceptance")
+	if err := requirePulumiCLI(true, exec.LookPath); err != nil {
+		t.Fatal(err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
@@ -42,6 +43,42 @@ func TestPulumiCLIAvailabilityHelper(t *testing.T) {
 			t.Fatal("missing Pulumi CLI was reported available")
 		}
 	})
+}
+
+func TestRequirePulumiCLI(t *testing.T) {
+	lookupMissing := func(string) (string, error) { return "", exec.ErrNotFound }
+	lookupPresent := func(string) (string, error) { return "/usr/bin/pulumi", nil }
+	tests := []struct {
+		name           string
+		acceptance     bool
+		lookPath       func(string) (string, error)
+		wantErrMessage string
+	}{
+		{name: "disabled acceptance does not require CLI", lookPath: lookupMissing},
+		{name: "enabled acceptance requires CLI", acceptance: true, lookPath: lookupMissing, wantErrMessage: "Pulumi CLI prerequisite is unavailable"},
+		{name: "enabled acceptance accepts available CLI", acceptance: true, lookPath: lookupPresent},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := requirePulumiCLI(tt.acceptance, tt.lookPath)
+			if tt.wantErrMessage == "" {
+				if err != nil {
+					t.Fatalf("requirePulumiCLI() error = %v, want nil", err)
+				}
+				return
+			}
+			if err == nil || err.Error() != tt.wantErrMessage {
+				t.Fatalf("requirePulumiCLI() error = %v, want %q", err, tt.wantErrMessage)
+			}
+		})
+	}
+}
+
+func requirePulumiCLI(acceptanceEnabled bool, lookPath func(string) (string, error)) error {
+	if !acceptanceEnabled || pulumiCLIAvailable(lookPath) {
+		return nil
+	}
+	return errors.New("Pulumi CLI prerequisite is unavailable")
 }
 
 func TestLifecycleSmokeProgram(t *testing.T) {
