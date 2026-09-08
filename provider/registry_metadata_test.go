@@ -3,6 +3,8 @@ package dokploy
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -175,15 +177,23 @@ func validateSchemaCompatibilityStep(workflow map[string]any) error {
 		return fmt.Errorf("build prerequisites has no steps")
 	}
 	buildSchemaIndex := -1
+	checkCount := 0
 	for i, rawStep := range steps {
 		step, _ := rawStep.(map[string]any)
 		if step["name"] == "Build Schema" {
 			buildSchemaIndex = i
 		}
+		if step["name"] == "Check Schema is Valid" {
+			checkCount++
+		}
 	}
 	if buildSchemaIndex < 0 {
 		return fmt.Errorf("build workflow has no schema generation step")
 	}
+	if checkCount != 1 {
+		return fmt.Errorf("build workflow must have exactly one schema compatibility check, found %d", checkCount)
+	}
+	comparisonCount := 0
 	for i, rawStep := range steps {
 		step, _ := rawStep.(map[string]any)
 		if step["name"] != "Check Schema is Valid" {
@@ -196,6 +206,7 @@ func validateSchemaCompatibilityStep(workflow map[string]any) error {
 			return fmt.Errorf("schema compatibility check must be pull-request-only")
 		}
 		run, _ := step["run"].(string)
+		comparisonCount += strings.Count(run, "schema-tools compare")
 		for _, required := range []string{
 			"schema-tools compare",
 			"cat \"$RUNNER_TEMP/schema-check-report.md\"",
@@ -209,9 +220,74 @@ func validateSchemaCompatibilityStep(workflow map[string]any) error {
 		if env, ok := step["env"].(map[string]any); !ok || env["GITHUB_TOKEN"] != "${{ secrets.GITHUB_TOKEN }}" {
 			return fmt.Errorf("schema compatibility check must receive GITHUB_TOKEN")
 		}
+		if comparisonCount != 1 {
+			return fmt.Errorf("build workflow must have exactly one schema-tools comparison, found %d", comparisonCount)
+		}
 		return nil
 	}
 	return fmt.Errorf("build workflow has no schema compatibility check")
+}
+
+func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output string, status string) (int, string) {
+	t.Helper()
+	j := workflow["jobs"].(map[string]any)
+	steps := j["prerequisites"].(map[string]any)["steps"].([]any)
+	var run string
+	for _, rawStep := range steps {
+		step := rawStep.(map[string]any)
+		if step["name"] == "Check Schema is Valid" {
+			run = step["run"].(string)
+		}
+	}
+	require.NotEmpty(t, run)
+	tmp := t.TempDir()
+	bin := filepath.Join(tmp, "bin")
+	require.NoError(t, os.Mkdir(bin, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(bin, "schema-tools"), []byte("#!/bin/sh\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(tmp, "provider.json"), []byte("{}"), 0o600))
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("RUNNER_TEMP", tmp)
+	t.Setenv("PROVIDER", "dokploy")
+	t.Setenv("DEFAULT_BRANCH", "main")
+	t.Setenv("SCHEMA_TOOLS_OUTPUT", output)
+	t.Setenv("SCHEMA_TOOLS_STATUS", status)
+	command := exec.Command("bash", "-euo", "pipefail", "-c", run)
+	err := command.Run()
+	result := 0
+	if err != nil {
+		result = command.ProcessState.ExitCode()
+	}
+	report, readErr := os.ReadFile(filepath.Join(tmp, "schema-check-report.md"))
+	require.NoError(t, readErr)
+	return result, string(report)
+}
+
+func TestSchemaCompatibilityCheckExecutesItsResult(t *testing.T) {
+	workflow, _ := readWorkflow(t, "build.yml")
+	t.Run("success marker passes", func(t *testing.T) {
+		status, report := runSchemaCompatibilityCheck(t, workflow, "Looking good! No breaking changes found.", "0")
+		require.Equal(t, 0, status)
+		require.Contains(t, report, "Looking good! No breaking changes found.")
+	})
+	t.Run("incompatible result fails and retains report", func(t *testing.T) {
+		status, report := runSchemaCompatibilityCheck(t, workflow, "Breaking change detected", "1")
+		require.NotEqual(t, 0, status)
+		require.Contains(t, report, "Breaking change detected")
+	})
+}
+
+func TestSchemaCompatibilityValidationRejectsDuplicateChecks(t *testing.T) {
+	workflow, _ := readWorkflow(t, "build.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	steps := jobs["prerequisites"].(map[string]any)["steps"].([]any)
+	for _, rawStep := range steps {
+		step := rawStep.(map[string]any)
+		if step["name"] == "Check Schema is Valid" {
+			jobs["prerequisites"].(map[string]any)["steps"] = append(steps, step)
+			break
+		}
+	}
+	require.ErrorContains(t, validateSchemaCompatibilityStep(workflow), "exactly one schema compatibility check")
 }
 
 func TestRegistryMetadata(t *testing.T) {
