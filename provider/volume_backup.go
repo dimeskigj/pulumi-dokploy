@@ -11,7 +11,10 @@ import (
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
-const volumeBackupComposeService = "compose"
+const (
+	volumeBackupApplicationService = "application"
+	volumeBackupComposeService     = "compose"
+)
 
 type VolumeBackupArgs struct {
 	Name            string  `pulumi:"name"`
@@ -143,7 +146,7 @@ func volumeBackupBody(a VolumeBackupArgs) (applicationID, composeID, serviceName
 	switch {
 	case a.ApplicationID != nil:
 		applicationID = nullable.NewNullableWithValue(*a.ApplicationID)
-		serviceType = "application"
+		serviceType = volumeBackupApplicationService
 	case a.ComposeID != nil:
 		composeID = nullable.NewNullableWithValue(*a.ComposeID)
 		serviceType = volumeBackupComposeService

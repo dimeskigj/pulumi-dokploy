@@ -234,7 +234,10 @@ func TestSSHKeyAPIErrorsRedactCurrentAndPriorSecrets(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			expectations := []scriptedRequest{{Method: test.method, Path: test.path, Body: json.RawMessage(test.body), Status: http.StatusBadRequest, Response: []byte(`{"message":"current-private current-public prior-private prior-public"}`)}}
 			if test.name == "create" {
-				expectations = append([]scriptedRequest{{Method: http.MethodGet, Path: "/api/sshKey.all", Status: http.StatusOK, Response: []byte(`[]`)}, scriptedRequest{Method: http.MethodGet, Path: "/api/organization.active", Status: http.StatusOK, Response: []byte(`{"organizationId":"org1"}`)}}, expectations...)
+				expectations = append([]scriptedRequest{
+					{Method: http.MethodGet, Path: "/api/sshKey.all", Status: http.StatusOK, Response: []byte(`[]`)},
+					{Method: http.MethodGet, Path: "/api/organization.active", Status: http.StatusOK, Response: []byte(`{"organizationId":"org1"}`)},
+				}, expectations...)
 				expectations = append(expectations, scriptedRequest{Method: http.MethodGet, Path: "/api/sshKey.all", Status: http.StatusOK, Response: []byte(`[]`)})
 			}
 			s := newScriptedServer(t, expectations...)

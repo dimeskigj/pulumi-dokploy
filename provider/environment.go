@@ -125,7 +125,7 @@ func (r Environment) Update(ctx context.Context, req infer.UpdateRequest[Environ
 		return infer.UpdateResponse[EnvironmentState]{Output: EnvironmentState{EnvironmentArgs: req.Inputs, EnvironmentID: req.State.EnvironmentID, IsDefault: req.State.IsDefault}}, nil
 	}
 	if req.State.Description != nil && req.Inputs.Description == nil {
-		return infer.UpdateResponse[EnvironmentState]{}, errors.New("Dokploy does not support clearing an environment description")
+		return infer.UpdateResponse[EnvironmentState]{}, errors.New("dokploy does not support clearing an environment description")
 	}
 	body := generated.EnvironmentUpdateJSONRequestBody{
 		EnvironmentId: req.ID,

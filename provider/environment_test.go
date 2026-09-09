@@ -117,7 +117,7 @@ func TestEnvironmentUpdateRejectsDescriptionRemoval(t *testing.T) {
 	require.NoError(t, err)
 	r := Environment{client: fixedClient(api)}
 	_, err = r.Update(t.Context(), infer.UpdateRequest[EnvironmentArgs, EnvironmentState]{ID: "e1", Inputs: EnvironmentArgs{Name: "renamed"}, State: EnvironmentState{EnvironmentID: "e1", EnvironmentArgs: EnvironmentArgs{Description: stringPtr("existing")}}})
-	require.ErrorContains(t, err, "Dokploy does not support clearing an environment description")
+	require.ErrorContains(t, err, "dokploy does not support clearing an environment description")
 	require.Zero(t, requests.Load())
 }
 
