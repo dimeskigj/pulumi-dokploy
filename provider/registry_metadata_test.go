@@ -1431,6 +1431,28 @@ func TestReleasePublishJobsProvisionSyftBeforeGoReleaser(t *testing.T) {
 	}
 }
 
+func TestSetupToolsPersistsMiseConfigTrust(t *testing.T) {
+	setupContent, err := os.ReadFile("../.github/actions/setup-tools/action.yml")
+	require.NoError(t, err)
+	setup := map[string]any{}
+	require.NoError(t, yaml.Unmarshal(setupContent, &setup))
+	steps := setup["runs"].(map[string]any)["steps"].([]any)
+	miseIndex := -1
+	trustIndex := -1
+	for i, rawStep := range steps {
+		step := rawStep.(map[string]any)
+		if uses, _ := step["uses"].(string); strings.Contains(uses, "jdx/mise-action@") {
+			miseIndex = i
+		}
+		if run, _ := step["run"].(string); run == `mise trust "$GITHUB_WORKSPACE/.mise.toml"` {
+			trustIndex = i
+			require.Equal(t, "bash", step["shell"])
+		}
+	}
+	require.GreaterOrEqual(t, miseIndex, 0)
+	require.Equal(t, miseIndex+1, trustIndex)
+}
+
 func TestReleasePublishJobsAttestAllProviderArtifacts(t *testing.T) {
 	shaPattern := regexp.MustCompile(`^actions/attest-build-provenance@[0-9a-f]{40}$`)
 	for _, name := range []string{"release.yml", "prerelease.yml"} {
