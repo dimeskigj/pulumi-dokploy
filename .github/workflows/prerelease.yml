@@ -218,13 +218,13 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
+      uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
       env:
         GORELEASER_CURRENT_TAG: v${{ steps.version.outputs.version }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         args: -p 3 -f .goreleaser.prerelease.yml --clean --timeout 60m0s
-        version: latest
+        version: '~> v2'
     - name: Attest provider release artifacts
       uses: actions/attest-build-provenance@62fc1d596301d0ab9914e1fec14dc5c8d93f65cd # v3.2.0
       with:

@@ -650,14 +650,17 @@ func TestRegistryMetadata(t *testing.T) {
 		publish := jobs["publish"].(map[string]any)
 		require.Equal(t, "write", publish["permissions"].(map[string]any)["contents"], name)
 		var goreleaserEnv map[string]any
+		var goreleaserVersion any
 		for _, rawStep := range publish["steps"].([]any) {
 			step := rawStep.(map[string]any)
 			if uses, _ := step["uses"].(string); strings.Contains(uses, "goreleaser/goreleaser-action@") {
 				goreleaserEnv = step["env"].(map[string]any)
+				goreleaserVersion = step["with"].(map[string]any)["version"]
 			}
 		}
 		require.NotNil(t, goreleaserEnv, name)
 		require.Equal(t, "${{ secrets.GITHUB_TOKEN }}", goreleaserEnv["GITHUB_TOKEN"], name)
+		require.Equal(t, "~> v2", goreleaserVersion, name)
 		require.Equal(t, "publish", jobs["publish_sdk"].(map[string]any)["needs"], name)
 		require.Equal(t, []any{"publish_sdk", "publish_java_sdk"}, jobs["publish_go_sdk"].(map[string]any)["needs"], name)
 		scriptsCheckout := findWorkflowStepWithRepository(jobs["publish_sdk"].(map[string]any), "actions/checkout@", "pulumi/scripts")
