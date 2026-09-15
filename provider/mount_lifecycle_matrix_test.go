@@ -249,16 +249,12 @@ func TestPostgresMountCleanupOwnershipRunsMountBeforeFixture(t *testing.T) {
 }
 
 func TestDispatchFixtureCarriesConcreteReadiness(t *testing.T) {
-	called := false
-	fixture := liveDispatchFixture{readiness: func(context.Context) (bool, bool, error) {
-		called = true
-		return true, true, nil
-	}}
+	s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","applicationStatus":"done"}`))
+	fixture := newPostgresDispatchFixture(s.API(), "p1", &liveHeavyOperationLease{}, func(context.Context) error { return nil })
 	present, ready, err := fixture.readiness(t.Context())
 	require.NoError(t, err)
 	require.True(t, present)
 	require.True(t, ready)
-	require.True(t, called)
 }
 
 func mountArgsForMatrix(mountType, targetField, targetID string) MountArgs {
