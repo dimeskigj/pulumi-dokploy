@@ -162,16 +162,40 @@ func TestValidateLiveTargetPropagatesReadErrorWithoutInventingHealthFailure(t *t
 	require.False(t, heavyLiveTierStopped())
 }
 
+func TestTargetReadErrorWithHealthyProbeRemainsOrdinary(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "1")
+	t.Setenv("DOKPLOY_ENDPOINT", "https://example.invalid")
+	t.Setenv("DOKPLOY_API_KEY", "test-key")
+	readErr := errors.New("read sentinel")
+	_, err := validateLiveTargetWithHealthProbe(t.Context(), "mount", []string{"postgresId"}, func(context.Context) (bool, bool, error) {
+		return false, false, readErr
+	}, func(context.Context) error {
+		return nil
+	})
+	require.ErrorIs(t, err, readErr)
+	require.False(t, heavyLiveTierStopped())
+}
+
 func TestTargetReadErrorStopsOnlyAfterFailedHealthProbe(t *testing.T) {
 	resetLiveHarnessState()
 	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "1")
+	t.Setenv("DOKPLOY_ENDPOINT", "https://example.invalid")
+	t.Setenv("DOKPLOY_API_KEY", "test-key")
 	marker := filepath.Join(t.TempDir(), "stop")
 	t.Setenv(liveStopMarkerEnvironment, marker)
+	readErr := errors.New("read sentinel")
 	probeErr := &client.APIError{StatusCode: http.StatusServiceUnavailable, Code: "SERVICE_UNAVAILABLE"}
-	require.Error(t, maybeVerifyLiveServerHealth(t.Context(), func(context.Context) error { return probeErr }))
-	recordServerHealthFailure("mount-target-read", probeErr)
+	_, err := validateLiveTargetWithHealthProbe(t.Context(), "mount", []string{"postgresId"}, func(context.Context) (bool, bool, error) {
+		return false, false, readErr
+	}, func(context.Context) error {
+		return probeErr
+	})
+	require.ErrorIs(t, err, readErr)
 	require.True(t, heavyLiveTierStopped())
-	_, err := os.Stat(marker)
+	_, err = os.Stat(marker)
 	require.NoError(t, err)
 }
 
