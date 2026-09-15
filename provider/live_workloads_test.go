@@ -933,6 +933,17 @@ func cleanupDirectCompose(t *testing.T, api *client.Client, id string) {
 	})
 }
 
+func validateLiveTarget(ctx context.Context, operation string, keys []string, readiness liveTargetReadiness) (string, error) {
+	present, ready, err := readiness(ctx)
+	if err != nil {
+		return "", err
+	}
+	if present && ready {
+		return "", nil
+	}
+	return classifyWorkloadCreateAttempt(operation, 0, "", keys, present, ready)
+}
+
 func mountReplacement(input MountArgs, currentType string) MountArgs {
 	input.HostPath, input.VolumeName, input.FilePath, input.Content = nil, nil, nil, nil
 	switch currentType {
@@ -950,11 +961,20 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	t.Helper()
 	r := Mount{client: fixedClient(api)}
 	t.Cleanup(registerLiveSecrets(value(inputs.Content), value(inputs.HostPath), value(inputs.VolumeName)))
-	targetPresent, targetReady, err := readiness(ctx)
-	requireWorkloadLifecycleNoError(t, "mount", err)
-	if !targetPresent || !targetReady {
-		classification, classificationErr := classifyWorkloadCreateAttempt("mount", 0, "", mountCreateRequestKeys(inputs), targetPresent, targetReady)
-		requireNoError(t, classificationErr)
+	var targetPresent, targetReady bool
+	var err error
+	classification := ""
+	classification, err = validateLiveTarget(ctx, "mount", mountCreateRequestKeys(inputs), func(ctx context.Context) (bool, bool, error) {
+		targetPresent, targetReady, err = readiness(ctx)
+		return targetPresent, targetReady, err
+	})
+	if err != nil {
+		if probeErr := maybeVerifyLiveServerHealth(ctx, liveServerHealthProbe(api)); probeErr != nil {
+			recordServerHealthFailure("mount-target-read", probeErr)
+		}
+		requireWorkloadLifecycleNoError(t, "mount", err)
+	}
+	if classification != "" {
 		t.Fatalf("workload target unavailable: %s", classification)
 	}
 	createLease := beginLiveHeavyOperation(t, "mount-create", liveServerHealthProbe(api))
