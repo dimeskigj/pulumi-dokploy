@@ -140,6 +140,41 @@ func TestClassifyWorkloadCreateAttemptRejectsUnknownOperationAndSentinels(t *tes
 	}
 }
 
+func TestValidateLiveTargetClassifiesMissingWithoutStopping(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	classification, err := validateLiveTarget(t.Context(), "mount", []string{"postgresId", "mountPath"}, func(context.Context) (bool, bool, error) {
+		return false, false, nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, "operation=mount;status=transport;code=unknown;keys=mountPath,postgresId;target=missing", classification)
+	require.False(t, heavyLiveTierStopped())
+}
+
+func TestValidateLiveTargetPropagatesReadErrorWithoutInventingHealthFailure(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	readErr := errors.New("read sentinel")
+	_, err := validateLiveTarget(t.Context(), "mount", []string{"postgresId"}, func(context.Context) (bool, bool, error) {
+		return false, false, readErr
+	})
+	require.ErrorIs(t, err, readErr)
+	require.False(t, heavyLiveTierStopped())
+}
+
+func TestTargetReadErrorStopsOnlyAfterFailedHealthProbe(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	marker := filepath.Join(t.TempDir(), "stop")
+	t.Setenv(liveStopMarkerEnvironment, marker)
+	probeErr := &client.APIError{StatusCode: http.StatusServiceUnavailable, Code: "SERVICE_UNAVAILABLE"}
+	require.Error(t, maybeVerifyLiveServerHealth(t.Context(), func(context.Context) error { return probeErr }))
+	recordServerHealthFailure("mount-target-read", probeErr)
+	require.True(t, heavyLiveTierStopped())
+	_, err := os.Stat(marker)
+	require.NoError(t, err)
+}
+
 func TestLiveRunNameUsesKindAndUUID(t *testing.T) {
 	name := liveRunName("application")
 	parts := strings.Split(name, "-")
