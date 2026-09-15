@@ -944,6 +944,16 @@ func validateLiveTarget(ctx context.Context, operation string, keys []string, re
 	return classifyWorkloadCreateAttempt(operation, 0, "", keys, present, ready)
 }
 
+func validateLiveTargetWithHealthProbe(ctx context.Context, operation string, keys []string, readiness liveTargetReadiness, probe func(context.Context) error) (string, error) {
+	classification, err := validateLiveTarget(ctx, operation, keys, readiness)
+	if err != nil {
+		if probeErr := maybeVerifyLiveServerHealth(ctx, probe); probeErr != nil {
+			recordServerHealthFailure(operation+"-target-read", probeErr)
+		}
+	}
+	return classification, err
+}
+
 func mountReplacement(input MountArgs, currentType string) MountArgs {
 	input.HostPath, input.VolumeName, input.FilePath, input.Content = nil, nil, nil, nil
 	switch currentType {
@@ -964,14 +974,11 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	var targetPresent, targetReady bool
 	var err error
 	classification := ""
-	classification, err = validateLiveTarget(ctx, "mount", mountCreateRequestKeys(inputs), func(ctx context.Context) (bool, bool, error) {
+	classification, err = validateLiveTargetWithHealthProbe(ctx, "mount", mountCreateRequestKeys(inputs), func(ctx context.Context) (bool, bool, error) {
 		targetPresent, targetReady, err = readiness(ctx)
 		return targetPresent, targetReady, err
-	})
+	}, liveServerHealthProbe(api))
 	if err != nil {
-		if probeErr := maybeVerifyLiveServerHealth(ctx, liveServerHealthProbe(api)); probeErr != nil {
-			recordServerHealthFailure("mount-target-read", probeErr)
-		}
 		requireWorkloadLifecycleNoError(t, "mount", err)
 	}
 	if classification != "" {
