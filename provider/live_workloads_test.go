@@ -414,7 +414,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 		targetReplacement := mount
 		targetReplacement.PostgresID = nil
 		targetReplacement.ApplicationID = &applicationID
-		runLiveMountLifecycle(t, ctx, api, mount, targetReplacement, postgresTargetReadiness(api, fixture.id))
+		runLiveMountLifecycle(t, ctx, api, mount, targetReplacement, fixture.readiness)
 		// The mount helper disarms its owner after absence is verified. Only then
 		// clean the fixture, exactly once, while retaining the heavy-operation
 		// lease until the dependent mount is gone.
@@ -1108,10 +1108,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			_, e := (Postgres{client: fixedClient(api)}).Delete(c, infer.DeleteRequest[PostgresState]{ID: created.ID})
 			return e
 		}
-		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readiness: postgresTargetReadiness(api, created.ID), readID: func(c context.Context) (string, error) {
-			v, e := (Postgres{client: fixedClient(api)}).Read(c, infer.ReadRequest[PostgresArgs, PostgresState]{ID: created.ID})
-			return v.ID, e
-		}}
+		fixture := newPostgresDispatchFixture(api, created.ID, lease, remove)
 		handleLiveHeavyCreateError(t, lease, created.ID, err, func() { fixture.cleanup(t) }, liveServerHealthProbe(api))
 		return fixture
 	case "mysql":
@@ -1157,6 +1154,16 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 	default:
 		t.Fatalf("unsupported dispatch database %q", kind)
 		return &liveDispatchFixture{lease: lease}
+	}
+}
+
+func newPostgresDispatchFixture(api *client.Client, id string, lease *liveHeavyOperationLease, remove func(context.Context) error) *liveDispatchFixture {
+	return &liveDispatchFixture{
+		id: id, api: api, lease: lease, remove: remove, readiness: postgresTargetReadiness(api, id),
+		readID: func(c context.Context) (string, error) {
+			v, e := (Postgres{client: fixedClient(api)}).Read(c, infer.ReadRequest[PostgresArgs, PostgresState]{ID: id})
+			return v.ID, e
+		},
 	}
 }
 

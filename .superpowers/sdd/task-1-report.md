@@ -1,60 +1,95 @@
-# Task 1 Report: Provider-Specific User-Agent
+# Task 1 report
 
-## Status
+## Base and commit
 
-Implemented and committed on `feat/registry-release-readiness`.
+- Base HEAD: `0a98621b6c81da6613fc37baebb7c68e81c9ae88`
+- Commit: `d4e57b0241ab89786c06ec8f91535a4b89088105`
+- Commit message: `test: fix mount dispatch readiness`
 
 ## RED
-
-Added client header tests for a versioned User-Agent and the development fallback.
 
 Command:
 
 ```text
-go test ./internal/client -run '^TestNew(SendsProviderUserAgent|UsesDevelopmentUserAgentFallback)$' -count=1
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestLiveTargetReadinessUsesConcreteResourceReader$' -count=1 -v
 ```
 
-Result: expected failure during compilation because `WithUserAgentVersion` did not yet exist.
+Result: expected build failure. The new readiness type and six concrete readiness constructors were undefined. The fixture test also initially required the `context` import.
 
-## GREEN
+## GREEN and verification
 
-Implemented `WithUserAgentVersion` and `providerUserAgent` in `internal/client`, including trimming, one leading `v` removal, and the `dev` fallback. The request editor now sets `User-Agent: pulumi-dokploy/<version>`. Added retry-preservation coverage and passed `Version` from provider configuration.
-
-Commands and results:
+Command:
 
 ```text
-go test ./internal/client -run 'UserAgent' -count=1
-PASS
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^(TestLiveTargetReadinessUsesConcreteResourceReader|TestPostgresTargetReadinessReportsNotReadyAndMissing)$' -count=1 -v
+```
 
-go test ./internal/client ./provider -run 'UserAgent|Config' -count=1
-PASS
+Result: PASS. The concrete-reader matrix and Postgres ready/not-ready/missing cases passed.
 
-go test -short ./provider/... ./internal/... -count=1
-PASS
+Command:
 
-go test ./internal/client ./provider -count=1
-PASS
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDispatchFixtureCarriesConcreteReadiness$' -count=1 -v
+```
 
+Result: PASS.
+
+Command:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^(TestLiveTargetReadiness|TestPostgresTargetReadiness|TestDispatchFixture|TestPostgresMountCleanupOwnership)' -count=1 -v
+```
+
+Result: PASS; all selected tests passed.
+
+Command:
+
+```text
 git diff --check
-PASS
 ```
 
-The supplied baseline warning about `provider/live_harness_unit_test.go` referencing undefined `classifyWorkloadCreateError` was not reproduced in this worktree; the focused provider and short package test commands both passed. That unrelated file was not modified.
+Result: PASS.
 
-## Commit
+The unfiltered provider test command was also attempted with the required environment clearing, but exceeded the 120-second command timeout without producing output. No live tests were run.
+
+## Files changed
+
+- `provider/live_workloads_test.go`: added concrete resource readiness callbacks, threaded readiness through mount lifecycle and dispatch fixtures, and removed generic inferred workload dispatch.
+- `provider/live_harness_unit_test.go`: added the concrete-reader matrix and readiness-state tests.
+- `provider/mount_lifecycle_matrix_test.go`: added fixture readiness wiring coverage.
+
+## Concern
+
+The brief’s application and compose response examples are insufficient for their existing concrete `Read` implementations, which reconstruct required source data. The deterministic matrix responses therefore include the minimal non-sensitive source metadata needed for those existing readers; production behavior was not changed.
+
+## Review fix
+
+Finding addressed: PostgreSQL `MountDispatch` now passes `fixture.readiness`, matching the stored readiness callback used by the other database dispatch branches.
+
+The fixture wiring test now constructs a PostgreSQL dispatch fixture through the same helper used by the PostgreSQL creation branch and verifies its concrete readiness callback against a scripted local server. No live calls are made.
+
+Command (TDD RED):
 
 ```text
-e38fa0e feat: identify provider API requests
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDispatchFixtureCarriesConcreteReadiness$' -count=1 -v
 ```
 
-## Self-review
+Result: expected build failure before implementation because `newPostgresDispatchFixture` was undefined.
 
-- Only the four Task 1 implementation/test files were changed in the feature commit.
-- Endpoint and API-key validation paths remain unchanged.
-- Retry attempts receive the same request editor and User-Agent.
-- Provider configuration consumes linker-injected `Version` without introducing a provider dependency into `internal/client`.
-- `git diff --check` passed.
+Command (GREEN):
 
-## Concerns
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDispatchFixtureCarriesConcreteReadiness$' -count=1 -v
+```
 
-No known Task 1 concerns. The reported unrelated baseline compile failure could not be observed with the required commands in this checkout.
+Result: PASS.
+
+Command (focused regression verification):
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^(TestLiveTargetReadiness|TestPostgresTargetReadiness|TestDispatchFixture|TestPostgresMountCleanupOwnership)' -count=1 -v
+```
+
+Result: PASS; all selected tests passed.
+
+Self-review: `git diff --check` passed; no production provider behavior, live tests, credentials, endpoints, resource IDs, or response bodies were emitted in this report.
