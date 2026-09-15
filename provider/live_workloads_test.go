@@ -208,7 +208,11 @@ func TestLiveTier2Workloads(t *testing.T) {
 	for _, target := range workloadTargets {
 		target := target
 		t.Run("Domain/"+target.name, func(t *testing.T) {
-			targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
+			readiness := applicationTargetReadiness(api, target.id)
+			if target.compose {
+				readiness = composeTargetReadiness(api, target.id)
+			}
+			targetPresent, targetReady, readErr := readiness(ctx)
 			requireLiveLifecycleNoError(t, "Domain", "read ready target", readErr)
 			if !targetPresent || !targetReady {
 				classification, classificationErr := classifyWorkloadCreateAttempt("domain", 0, "", domainCreateRequestKeys(target.compose), targetPresent, targetReady)
@@ -303,7 +307,11 @@ func TestLiveTier2Workloads(t *testing.T) {
 			register := registerLiveSecrets(resolver)
 			t.Cleanup(register)
 			r := Domain{client: fixedClient(api)}
-			targetPresent, targetReady, readErr := readLiveWorkloadTarget(ctx, api, target.id, target.compose)
+			readiness := applicationTargetReadiness(api, target.id)
+			if target.compose {
+				readiness = composeTargetReadiness(api, target.id)
+			}
+			targetPresent, targetReady, readErr := readiness(ctx)
 			requireLiveLifecycleNoError(t, "custom Domain", "read ready target", readErr)
 			if !targetPresent || !targetReady {
 				t.Skip("workload target is not ready for custom certificate coverage")
@@ -380,7 +388,11 @@ func TestLiveTier2Workloads(t *testing.T) {
 					} else {
 						targetReplacement.ApplicationID, targetReplacement.ComposeID = nil, &composeID
 					}
-					runLiveMountLifecycle(t, ctx, api, inputs, targetReplacement)
+					readiness := applicationTargetReadiness(api, target.id)
+					if target.compose {
+						readiness = composeTargetReadiness(api, target.id)
+					}
+					runLiveMountLifecycle(t, ctx, api, inputs, targetReplacement, readiness)
 				})
 			}
 		})
@@ -402,7 +414,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 		targetReplacement := mount
 		targetReplacement.PostgresID = nil
 		targetReplacement.ApplicationID = &applicationID
-		runLiveMountLifecycle(t, ctx, api, mount, targetReplacement)
+		runLiveMountLifecycle(t, ctx, api, mount, targetReplacement, postgresTargetReadiness(api, fixture.id))
 		// The mount helper disarms its owner after absence is verified. Only then
 		// clean the fixture, exactly once, while retaining the heavy-operation
 		// lease until the dependent mount is gone.
@@ -432,14 +444,22 @@ func TestLiveTier2Workloads(t *testing.T) {
 			r := Mount{client: fixedClient(api)}
 			var created infer.CreateResponse[MountState]
 			var err error
+			readiness := composeTargetReadiness(api, targetID)
+			if fixture != nil {
+				readiness = fixture.readiness
+			}
 			readyErr := readReadyMountTarget(func() (string, error) {
-				if serviceType != "compose" {
+				present, ready, readErr := readiness(ctx)
+				if readErr != nil {
+					return "", readErr
+				}
+				if !present {
+					return "", nil
+				}
+				if ready {
 					return statusDone, nil
 				}
-				fresh, readErr := (Compose{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: targetID})
-				requireWorkloadLifecycleNoError(t, "mount", readErr)
-				requireLiveEqual(t, "compose.id", targetID, fresh.ID)
-				return fresh.State.Status, nil
+				return "running", nil
 			}, func() {
 				created, err = r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: mount})
 			})
@@ -670,16 +690,48 @@ func workloadDependencyReady(id, status string) bool {
 	return id != "" && status == statusDone
 }
 
-func readLiveWorkloadTarget(ctx context.Context, api *client.Client, id string, compose bool) (bool, bool, error) {
-	if id == "" {
-		return false, false, nil
+type liveTargetReadiness func(context.Context) (present bool, ready bool, err error)
+
+func applicationTargetReadiness(api *client.Client, id string) liveTargetReadiness {
+	return func(ctx context.Context) (bool, bool, error) {
+		read, err := (Application{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
+		return read.ID != "", read.State.Status == statusDone, err
 	}
-	if compose {
+}
+
+func composeTargetReadiness(api *client.Client, id string) liveTargetReadiness {
+	return func(ctx context.Context) (bool, bool, error) {
 		read, err := (Compose{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: id})
 		return read.ID != "", read.State.Status == statusDone, err
 	}
-	read, err := (Application{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
-	return read.ID != "", read.State.Status == statusDone, err
+}
+
+func postgresTargetReadiness(api *client.Client, id string) liveTargetReadiness {
+	return func(ctx context.Context) (bool, bool, error) {
+		read, err := (Postgres{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[PostgresArgs, PostgresState]{ID: id})
+		return read.ID != "", read.State.Status == statusDone, err
+	}
+}
+
+func mysqlTargetReadiness(api *client.Client, id string) liveTargetReadiness {
+	return func(ctx context.Context) (bool, bool, error) {
+		read, err := (MySQL{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[MySQLArgs, MySQLState]{ID: id})
+		return read.ID != "", read.State.Status == statusDone, err
+	}
+}
+
+func mariadbTargetReadiness(api *client.Client, id string) liveTargetReadiness {
+	return func(ctx context.Context) (bool, bool, error) {
+		read, err := (MariaDB{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[MariaDBArgs, MariaDBState]{ID: id})
+		return read.ID != "", read.State.Status == statusDone, err
+	}
+}
+
+func redisTargetReadiness(api *client.Client, id string) liveTargetReadiness {
+	return func(ctx context.Context) (bool, bool, error) {
+		read, err := (Redis{client: fixedClient(api)}).Read(ctx, infer.ReadRequest[RedisArgs, RedisState]{ID: id})
+		return read.ID != "", read.State.Status == statusDone, err
+	}
 }
 
 func domainCreateRequestKeys(compose bool) []string {
@@ -894,13 +946,11 @@ func mountReplacement(input MountArgs, currentType string) MountArgs {
 	return input
 }
 
-func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client, inputs, targetReplacement MountArgs) {
+func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client, inputs, targetReplacement MountArgs, readiness liveTargetReadiness) {
 	t.Helper()
 	r := Mount{client: fixedClient(api)}
 	t.Cleanup(registerLiveSecrets(value(inputs.Content), value(inputs.HostPath), value(inputs.VolumeName)))
-	targetID := mountTargetID(inputs, mountServiceType(inputs))
-	compose := inputs.ComposeID != nil
-	targetPresent, targetReady, err := readLiveWorkloadTarget(ctx, api, targetID, compose)
+	targetPresent, targetReady, err := readiness(ctx)
 	requireWorkloadLifecycleNoError(t, "mount", err)
 	if !targetPresent || !targetReady {
 		classification, classificationErr := classifyWorkloadCreateAttempt("mount", 0, "", mountCreateRequestKeys(inputs), targetPresent, targetReady)
@@ -1019,12 +1069,13 @@ func mountTargetID(args MountArgs, serviceType string) string {
 }
 
 type liveDispatchFixture struct {
-	id      string
-	api     *client.Client
-	lease   *liveHeavyOperationLease
-	remove  func(context.Context) error
-	readID  func(context.Context) (string, error)
-	cleaned bool
+	id        string
+	api       *client.Client
+	lease     *liveHeavyOperationLease
+	remove    func(context.Context) error
+	readID    func(context.Context) (string, error)
+	readiness liveTargetReadiness
+	cleaned   bool
 }
 
 func (fixture *liveDispatchFixture) cleanup(t *testing.T) {
@@ -1057,7 +1108,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			_, e := (Postgres{client: fixedClient(api)}).Delete(c, infer.DeleteRequest[PostgresState]{ID: created.ID})
 			return e
 		}
-		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readID: func(c context.Context) (string, error) {
+		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readiness: postgresTargetReadiness(api, created.ID), readID: func(c context.Context) (string, error) {
 			v, e := (Postgres{client: fixedClient(api)}).Read(c, infer.ReadRequest[PostgresArgs, PostgresState]{ID: created.ID})
 			return v.ID, e
 		}}
@@ -1071,7 +1122,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			_, e := (MySQL{client: fixedClient(api)}).Delete(c, infer.DeleteRequest[MySQLState]{ID: created.ID})
 			return e
 		}
-		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readID: func(c context.Context) (string, error) {
+		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readiness: mysqlTargetReadiness(api, created.ID), readID: func(c context.Context) (string, error) {
 			v, e := (MySQL{client: fixedClient(api)}).Read(c, infer.ReadRequest[MySQLArgs, MySQLState]{ID: created.ID})
 			return v.ID, e
 		}}
@@ -1084,7 +1135,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			_, e := (MariaDB{client: fixedClient(api)}).Delete(c, infer.DeleteRequest[MariaDBState]{ID: created.ID})
 			return e
 		}
-		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readID: func(c context.Context) (string, error) {
+		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readiness: mariadbTargetReadiness(api, created.ID), readID: func(c context.Context) (string, error) {
 			v, e := (MariaDB{client: fixedClient(api)}).Read(c, infer.ReadRequest[MariaDBArgs, MariaDBState]{ID: created.ID})
 			return v.ID, e
 		}}
@@ -1097,7 +1148,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			_, e := (Redis{client: fixedClient(api)}).Delete(c, infer.DeleteRequest[RedisState]{ID: created.ID})
 			return e
 		}
-		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readID: func(c context.Context) (string, error) {
+		fixture := &liveDispatchFixture{id: created.ID, api: api, lease: lease, remove: remove, readiness: redisTargetReadiness(api, created.ID), readID: func(c context.Context) (string, error) {
 			v, e := (Redis{client: fixedClient(api)}).Read(c, infer.ReadRequest[RedisArgs, RedisState]{ID: created.ID})
 			return v.ID, e
 		}}

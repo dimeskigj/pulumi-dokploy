@@ -1,6 +1,7 @@
 package dokploy
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -245,6 +246,19 @@ func TestPostgresMountCleanupOwnershipRunsMountBeforeFixture(t *testing.T) {
 	fixtureOwner.cleanupOnce()
 
 	require.Equal(t, []string{"mount", "fixture"}, order)
+}
+
+func TestDispatchFixtureCarriesConcreteReadiness(t *testing.T) {
+	called := false
+	fixture := liveDispatchFixture{readiness: func(context.Context) (bool, bool, error) {
+		called = true
+		return true, true, nil
+	}}
+	present, ready, err := fixture.readiness(t.Context())
+	require.NoError(t, err)
+	require.True(t, present)
+	require.True(t, ready)
+	require.True(t, called)
 }
 
 func mountArgsForMatrix(mountType, targetField, targetID string) MountArgs {

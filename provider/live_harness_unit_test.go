@@ -42,6 +42,46 @@ func TestLiveGateRequiresBothCredentials(t *testing.T) {
 	}
 }
 
+func TestLiveTargetReadinessUsesConcreteResourceReader(t *testing.T) {
+	cases := []struct {
+		name, path, queryKey, id, response string
+		makeRead                           func(*client.Client, string) liveTargetReadiness
+	}{
+		{"application", "/api/application.one", "applicationId", "a1", `{"applicationId":"a1","applicationStatus":"done","type":"docker","image":"test/image"}`, applicationTargetReadiness},
+		{"compose", "/api/compose.one", "composeId", "c1", `{"composeId":"c1","composeStatus":"done","type":"raw"}`, composeTargetReadiness},
+		{"postgres", "/api/postgres.one", "postgresId", "p1", `{"postgresId":"p1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","applicationStatus":"done"}`, postgresTargetReadiness},
+		{"mysql", "/api/mysql.one", "mysqlId", "m1", `{"mysqlId":"m1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","applicationStatus":"done"}`, mysqlTargetReadiness},
+		{"mariadb", "/api/mariadb.one", "mariadbId", "md1", `{"mariadbId":"md1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","applicationStatus":"done"}`, mariadbTargetReadiness},
+		{"redis", "/api/redis.one", "redisId", "r1", `{"redisId":"r1","name":"db","environmentId":"e1","applicationStatus":"done"}`, redisTargetReadiness},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectGET(tc.path, map[string][]string{tc.queryKey: {tc.id}}, http.StatusOK, tc.response))
+			present, ready, err := tc.makeRead(s.API(), tc.id)(t.Context())
+			require.NoError(t, err)
+			require.True(t, present)
+			require.True(t, ready)
+		})
+	}
+}
+
+func TestPostgresTargetReadinessReportsNotReadyAndMissing(t *testing.T) {
+	t.Run("not ready", func(t *testing.T) {
+		s := newScriptedServer(t, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"p1"}}, http.StatusOK, `{"postgresId":"p1","name":"db","environmentId":"e1","databaseName":"app","databaseUser":"app","applicationStatus":"running"}`))
+		present, ready, err := postgresTargetReadiness(s.API(), "p1")(t.Context())
+		require.NoError(t, err)
+		require.True(t, present)
+		require.False(t, ready)
+	})
+	t.Run("missing", func(t *testing.T) {
+		s := newScriptedServer(t, scriptedRequest{Method: http.MethodGet, Path: "/api/postgres.one", Query: map[string][]string{"postgresId": {"p1"}}, Status: http.StatusNotFound, Response: []byte(`{"code":"NOT_FOUND"}`)})
+		present, ready, err := postgresTargetReadiness(s.API(), "p1")(t.Context())
+		require.NoError(t, err)
+		require.False(t, present)
+		require.False(t, ready)
+	})
+}
+
 func TestClassifyWorkloadCreateAttempt(t *testing.T) {
 	tests := []struct {
 		name          string
