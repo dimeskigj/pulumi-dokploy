@@ -2,6 +2,8 @@ package dokploy
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -234,6 +236,21 @@ func TestLiveTier2Workloads(t *testing.T) {
 				v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
 				return v.ID, e
 			})
+			if err != nil && !heavyLiveTierStopped() {
+				providerKeys, keysErr := domainCreateRequestKeysFromBody(domainCreateBody(args))
+				requireNoError(t, keysErr)
+				providerClassification, classificationErr := classifyWorkloadCreateError("domain", err, providerKeys, targetPresent, targetReady)
+				requireNoError(t, classificationErr)
+				providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys}
+				directArgs := args
+				directArgs.Host = liveRunName("domain-direct") + ".example.invalid"
+				comparison := compareDomainAttempts(func() liveDomainCreateResult {
+					return providerResult
+				}, func() liveDomainCreateResult {
+					return runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)
+				})
+				recordLiveOutcome("domain-comparison", comparison)
+			}
 			release := func() {}
 			if err == nil {
 				release = registerLiveCleanup(t, "domain", created.ID, func(c context.Context) error {
@@ -740,6 +757,85 @@ func domainCreateRequestKeys(compose bool) []string {
 		return append(keys, "composeId", "domainType")
 	}
 	return append(keys, "applicationId", "domainType")
+}
+
+func runLiveDomainCreateAttempt(t *testing.T, ctx context.Context, api *client.Client, target string, args DomainArgs) liveDomainCreateResult {
+	t.Helper()
+	body := domainCreateBody(args)
+	keys, err := domainCreateRequestKeysFromBody(body)
+	if err != nil {
+		t.Fatalf("domain request keys unavailable")
+	}
+	r := Domain{client: fixedClient(api)}
+	created, createErr := r.Create(ctx, infer.CreateRequest[DomainArgs]{Inputs: args})
+	if createErr != nil {
+		cleanupAfterCreateError(t, "domain", created.ID, createErr, func(c context.Context) error {
+			_, removeErr := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
+			return removeErr
+		}, func(c context.Context) (string, error) {
+			read, readErr := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
+			return read.ID, readErr
+		})
+		classification, classificationErr := classifyWorkloadCreateError("domain", createErr, keys, true, true)
+		requireNoError(t, classificationErr)
+		return liveDomainCreateResult{path: "provider", target: target, classification: classification, keys: keys}
+	}
+	if created.ID == "" {
+		classification, classificationErr := classifyWorkloadCreateAttempt("domain", http.StatusOK, "", keys, true, true)
+		requireNoError(t, classificationErr)
+		return liveDomainCreateResult{path: "provider", target: target, classification: classification, keys: keys}
+	}
+	registerLiveCleanup(t, "domain", created.ID, func(c context.Context) error {
+		_, removeErr := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
+		return removeErr
+	}, func(c context.Context) (string, error) {
+		read, readErr := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
+		return read.ID, readErr
+	})
+	classification, classificationErr := classifyWorkloadCreateAttempt("domain", http.StatusOK, "", keys, true, true)
+	requireNoError(t, classificationErr)
+	return liveDomainCreateResult{path: "provider", target: target, classification: classification, keys: keys, created: true}
+}
+
+func runGeneratedDomainCreateAttempt(t *testing.T, ctx context.Context, api *client.Client, target string, args DomainArgs) liveDomainCreateResult {
+	t.Helper()
+	body := domainCreateBody(args)
+	keys, err := domainCreateRequestKeysFromBody(body)
+	if err != nil {
+		t.Fatalf("domain request keys unavailable")
+	}
+	response, requestErr := api.DomainCreateWithResponse(ctx, body)
+	status := 0
+	if response != nil && response.HTTPResponse != nil {
+		status = response.HTTPResponse.StatusCode
+	}
+	if requestErr == nil && response != nil && response.JSON200 != nil && response.JSON200.DomainId != nil && *response.JSON200.DomainId != "" {
+		id := *response.JSON200.DomainId
+		registerLiveCleanup(t, "domain", id, func(c context.Context) error {
+			_, removeErr := api.DomainDeleteWithResponse(c, generated.DomainDeleteJSONRequestBody{DomainId: id})
+			return removeErr
+		}, func(c context.Context) (string, error) {
+			read, readErr := api.DomainOneWithResponse(c, &generated.DomainOneParams{DomainId: id})
+			if readErr != nil {
+				return "", readErr
+			}
+			if read == nil || read.JSON200 == nil || read.JSON200.DomainId == nil {
+				return "", nil
+			}
+			return *read.JSON200.DomainId, nil
+		})
+		classification, classificationErr := classifyWorkloadCreateAttempt("domain", status, "", keys, true, true)
+		requireNoError(t, classificationErr)
+		return liveDomainCreateResult{path: "generated", target: target, classification: classification, keys: keys, created: true}
+	}
+	apiCode := ""
+	var apiErr *client.APIError
+	if errors.As(requestErr, &apiErr) {
+		apiCode = apiErr.Code
+	}
+	classification, classificationErr := classifyWorkloadCreateAttempt("domain", status, apiCode, keys, true, true)
+	requireNoError(t, classificationErr)
+	return liveDomainCreateResult{path: "generated", target: target, classification: classification, keys: keys}
 }
 
 func mountCreateRequestKeys(inputs MountArgs) []string {
