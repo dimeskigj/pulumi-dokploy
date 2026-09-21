@@ -52,9 +52,9 @@ Per the safety gate, Domain application and compose diagnostics were **not run**
   fixed in this round.
 - The six remaining unresolved lint findings are classified as pre-existing at
   base `0a98621`: one goconst, three gosec, and two unused helpers.
-- The race failure is classified as pre-existing/unrelated: the unchanged
-  `provider/backup_test.go` cancellation test is the failing test, and this
-  round did not modify that file or rerun the race suite.
+- Race attribution remains unconfirmed because the race suite was not rerun
+  after the fixes. The unchanged `provider/backup_test.go` cancellation test
+  produced the earlier failure, but an unchanged file alone is not conclusive.
 - Focused deterministic tests were rerun after the deletions: PASS.
 - `mise exec -- golangci-lint run` was rerun after the deletions: FAIL with
   exactly six unresolved findings, matching the pre-existing classification.
