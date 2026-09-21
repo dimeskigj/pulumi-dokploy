@@ -150,6 +150,8 @@ func TestClassifyDomainComparison(t *testing.T) {
 		{"provider mismatch", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=2xx;code=unknown", keys: keys, created: true}, "provider-serialization-mismatch"},
 		{"server rejection", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, "server-contract-rejection"},
 		{"environment failure", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=transport;code=unknown", keys: keys}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, "environment-or-health-failure"},
+		{"provider created only", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys, created: true}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, "provider-serialization-mismatch"},
+		{"generated created only", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys, created: true}, "provider-serialization-mismatch"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -160,6 +162,26 @@ func TestClassifyDomainComparison(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("sentinel-bearing metadata has fixed output", func(t *testing.T) {
+		provider := liveDomainCreateResult{path: "secret-sentinel", target: "application", classification: "operation=domain;status=4xx;code=secret-sentinel", keys: keys}
+		generated := liveDomainCreateResult{path: "https://private.example", target: "application", classification: provider.classification, keys: keys}
+		got := classifyDomainComparison(provider, generated)
+		require.Equal(t, "server-contract-rejection", got)
+		for _, sentinel := range []string{"secret-sentinel", "resource-id-sentinel", "private.example", "https://"} {
+			require.NotContains(t, got, sentinel)
+		}
+	})
+
+	t.Run("sentinel target and key have fixed output", func(t *testing.T) {
+		provider := liveDomainCreateResult{path: "provider", target: "resource-id-sentinel", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: append(keys, "secret-sentinel")}
+		generated := liveDomainCreateResult{path: "generated", target: "application", classification: provider.classification, keys: keys}
+		got := classifyDomainComparison(provider, generated)
+		require.Equal(t, "provider-serialization-mismatch", got)
+		for _, sentinel := range []string{"secret-sentinel", "resource-id-sentinel", "private.example", "https://"} {
+			require.NotContains(t, got, sentinel)
+		}
+	})
 }
 
 func TestValidateLiveTargetClassifiesMissingWithoutStopping(t *testing.T) {
