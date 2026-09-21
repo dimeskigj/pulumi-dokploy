@@ -205,7 +205,7 @@ func (r VolumeBackup) Read(ctx context.Context, req infer.ReadRequest[VolumeBack
 	}
 	a.ApplicationID, a.ComposeID, a.ServiceName = nil, nil, nil
 	switch value(v.ServiceType) {
-	case "application":
+	case volumeBackupApplicationService:
 		a.ApplicationID = v.ApplicationId
 	case volumeBackupComposeService:
 		a.ComposeID, a.ServiceName = v.ComposeId, v.ServiceName

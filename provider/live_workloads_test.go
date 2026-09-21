@@ -976,34 +976,6 @@ func gitLabComposeSource() ComposeSource {
 	return ComposeSource{Type: ComposeSourceGitLab, GitLab: &GitLabComposeSource{IntegrationID: id, ProjectID: projectID, Owner: owner, Namespace: namespace, Repository: repository, Branch: branch, ComposePath: defaultComposePath}}
 }
 
-func cleanupDirectApplication(t *testing.T, api *client.Client, id string) {
-	t.Helper()
-	t.Cleanup(func() {
-		r := Application{client: fixedClient(api)}
-		liveCleanupVerified(t, "application", id, func(ctx context.Context) error {
-			_, err := r.Delete(ctx, infer.DeleteRequest[ApplicationState]{ID: id})
-			return err
-		}, func(ctx context.Context) (string, error) {
-			read, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
-			return read.ID, err
-		})
-	})
-}
-
-func cleanupDirectCompose(t *testing.T, api *client.Client, id string) {
-	t.Helper()
-	t.Cleanup(func() {
-		r := Compose{client: fixedClient(api)}
-		liveCleanupVerified(t, "compose", id, func(ctx context.Context) error {
-			_, err := r.Delete(ctx, infer.DeleteRequest[ComposeState]{ID: id})
-			return err
-		}, func(ctx context.Context) (string, error) {
-			read, err := r.Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: id})
-			return read.ID, err
-		})
-	})
-}
-
 func validateLiveTarget(ctx context.Context, operation string, keys []string, readiness liveTargetReadiness) (string, error) {
 	present, ready, err := readiness(ctx)
 	if err != nil {

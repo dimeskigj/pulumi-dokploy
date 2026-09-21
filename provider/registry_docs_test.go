@@ -142,7 +142,7 @@ func TestBuildDotnetCreatesVersionFileForCleanCheckout(t *testing.T) {
 		"test \"$$(cat sdk/dotnet/version.txt)\" = \"$(VERSION_GENERIC)\"", 1)
 	directory := t.TempDir()
 	require.NoError(t, os.MkdirAll(filepath.Join(directory, "sdk", "dotnet"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(directory, "Makefile"), []byte("VERSION_GENERIC ?= clean-checkout\n"+buildDotnet), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(directory, "Makefile"), []byte("VERSION_GENERIC ?= clean-checkout\n"+buildDotnet), 0o600))
 	command := exec.Command("make", "-f", "Makefile", "build_dotnet")
 	command.Dir = directory
 	output, err := command.CombinedOutput()
@@ -376,7 +376,7 @@ func TestLogoRendererDerivesOutputFromSVG(t *testing.T) {
 	svg := filepath.Join(directory, "logo.svg")
 	output := filepath.Join(directory, "logo.png")
 	canonical := readProjectFile(t, "../website/public/logo.svg")
-	require.NoError(t, os.WriteFile(svg, []byte(canonical), 0o644))
+	require.NoError(t, os.WriteFile(svg, []byte(canonical), 0o600))
 	render := func() []byte {
 		command := exec.Command("python3", "scripts/generate-logo-png.py", svg, output)
 		command.Dir = ".."
@@ -389,10 +389,10 @@ func TestLogoRendererDerivesOutputFromSVG(t *testing.T) {
 	first := render()
 	require.Equal(t, first, render())
 	changed := strings.Replace(canonical, `fill="#126782"`, `fill="#c0392b"`, 1)
-	require.NoError(t, os.WriteFile(svg, []byte(changed), 0o644))
+	require.NoError(t, os.WriteFile(svg, []byte(changed), 0o600))
 	require.NotEqual(t, first, render(), "changing SVG color must change PNG output")
 	changed = strings.Replace(changed, "397.65", "396.65", 1)
-	require.NoError(t, os.WriteFile(svg, []byte(changed), 0o644))
+	require.NoError(t, os.WriteFile(svg, []byte(changed), 0o600))
 	second := render()
 	require.NotEqual(t, first, second, "changing SVG geometry must change PNG output")
 	script := readProjectFile(t, "../scripts/generate-logo-png.py")
