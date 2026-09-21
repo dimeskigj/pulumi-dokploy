@@ -140,6 +140,28 @@ func TestClassifyWorkloadCreateAttemptRejectsUnknownOperationAndSentinels(t *tes
 	}
 }
 
+func TestClassifyDomainComparison(t *testing.T) {
+	keys := []string{"applicationId", "domainType", "host"}
+	tests := []struct {
+		name                string
+		provider, generated liveDomainCreateResult
+		want                string
+	}{
+		{"provider mismatch", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=2xx;code=unknown", keys: keys, created: true}, "provider-serialization-mismatch"},
+		{"server rejection", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, "server-contract-rejection"},
+		{"environment failure", liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=transport;code=unknown", keys: keys}, liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys}, "environment-or-health-failure"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := classifyDomainComparison(tt.provider, tt.generated)
+			require.Equal(t, tt.want, got)
+			for _, sentinel := range []string{"secret-sentinel", "resource-id-sentinel", "private.example", "https://"} {
+				require.NotContains(t, got, sentinel)
+			}
+		})
+	}
+}
+
 func TestValidateLiveTargetClassifiesMissingWithoutStopping(t *testing.T) {
 	resetLiveHarnessState()
 	t.Cleanup(resetLiveHarnessState)

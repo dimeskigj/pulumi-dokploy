@@ -170,6 +170,36 @@ func TestDomainCreateBodyMatrix(t *testing.T) {
 	}
 }
 
+func TestDomainCreateRequestKeysFromBody(t *testing.T) {
+	cases := []struct {
+		name string
+		args DomainArgs
+		want []string
+	}{
+		{"application", DomainArgs{ApplicationID: stringPtr("a1"), Host: "app.example.invalid", Port: intPtr(80), CertificateType: CertificateNone}, []string{"applicationId", "certificateType", "domainType", "host", "https", "port", "stripPath"}},
+		{"compose", DomainArgs{ComposeID: stringPtr("c1"), ServiceName: stringPtr("web"), Host: "compose.example.invalid", Port: intPtr(80), CertificateType: CertificateNone}, []string{"certificateType", "composeId", "domainType", "host", "https", "port", "serviceName", "stripPath"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := domainCreateRequestKeysFromBody(domainCreateBody(tc.args))
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	keys, err := domainCreateRequestKeysFromBody(domainCreateBody(DomainArgs{
+		ApplicationID:      stringPtr("resource-id-sentinel"),
+		Host:               "private.example",
+		CertificateType:    CertificateCustom,
+		CustomCertResolver: stringPtr("secret-sentinel"),
+	}))
+	require.NoError(t, err)
+	require.Equal(t, []string{"applicationId", "certificateType", "customCertResolver", "domainType", "host", "https", "stripPath"}, keys)
+	for _, sentinel := range []string{"secret-sentinel", "resource-id-sentinel", "private.example", "https://"} {
+		require.NotContains(t, keys, sentinel)
+	}
+}
+
 func TestDomainCustomCertificateRoundTrip(t *testing.T) {
 	resolver := "resolver-sentinel"
 	inputs := DomainArgs{ApplicationID: stringPtr("a1"), Host: "example.invalid", HTTPS: true, CertificateType: CertificateCustom, CustomCertResolver: &resolver, StripPath: true, Enabled: true}
