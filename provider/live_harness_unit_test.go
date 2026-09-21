@@ -184,6 +184,25 @@ func TestClassifyDomainComparison(t *testing.T) {
 	})
 }
 
+func TestCompareLiveDomainCreateRunsSerialAttemptsAndCleansCreatedResult(t *testing.T) {
+	order := []string{}
+	cleaned := false
+	classification := compareDomainAttempts(
+		func() liveDomainCreateResult {
+			order = append(order, "provider")
+			return liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: []string{"applicationId", "domainType", "host"}}
+		},
+		func() liveDomainCreateResult {
+			order = append(order, "generated")
+			cleaned = true
+			return liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=2xx;code=unknown", keys: []string{"applicationId", "domainType", "host"}, created: true}
+		},
+	)
+	require.Equal(t, []string{"provider", "generated"}, order)
+	require.True(t, cleaned)
+	require.Equal(t, "provider-serialization-mismatch", classification)
+}
+
 func TestValidateLiveTargetClassifiesMissingWithoutStopping(t *testing.T) {
 	resetLiveHarnessState()
 	t.Cleanup(resetLiveHarnessState)

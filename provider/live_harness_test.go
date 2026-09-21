@@ -307,6 +307,12 @@ func classifyDomainComparison(provider, generated liveDomainCreateResult) string
 	return "provider-serialization-mismatch"
 }
 
+func compareDomainAttempts(providerAttempt, generatedAttempt func() liveDomainCreateResult) string {
+	providerResult := providerAttempt()
+	generatedResult := generatedAttempt()
+	return classifyDomainComparison(providerResult, generatedResult)
+}
+
 func classifyWorkloadCreateError(operation string, err error, keys []string, targetPresent bool, targetReady bool) (string, error) {
 	status, code := 0, ""
 	var apiErr *client.APIError
