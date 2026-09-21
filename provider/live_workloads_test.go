@@ -3,7 +3,6 @@ package dokploy
 import (
 	"context"
 	"errors"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -759,44 +758,6 @@ func domainCreateRequestKeys(compose bool) []string {
 	return append(keys, "applicationId", "domainType")
 }
 
-func runLiveDomainCreateAttempt(t *testing.T, ctx context.Context, api *client.Client, target string, args DomainArgs) liveDomainCreateResult {
-	t.Helper()
-	body := domainCreateBody(args)
-	keys, err := domainCreateRequestKeysFromBody(body)
-	if err != nil {
-		t.Fatalf("domain request keys unavailable")
-	}
-	r := Domain{client: fixedClient(api)}
-	created, createErr := r.Create(ctx, infer.CreateRequest[DomainArgs]{Inputs: args})
-	if createErr != nil {
-		cleanupAfterCreateError(t, "domain", created.ID, createErr, func(c context.Context) error {
-			_, removeErr := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
-			return removeErr
-		}, func(c context.Context) (string, error) {
-			read, readErr := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
-			return read.ID, readErr
-		})
-		classification, classificationErr := classifyWorkloadCreateError("domain", createErr, keys, true, true)
-		requireNoError(t, classificationErr)
-		return liveDomainCreateResult{path: "provider", target: target, classification: classification, keys: keys}
-	}
-	if created.ID == "" {
-		classification, classificationErr := classifyWorkloadCreateAttempt("domain", http.StatusOK, "", keys, true, true)
-		requireNoError(t, classificationErr)
-		return liveDomainCreateResult{path: "provider", target: target, classification: classification, keys: keys}
-	}
-	registerLiveCleanup(t, "domain", created.ID, func(c context.Context) error {
-		_, removeErr := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
-		return removeErr
-	}, func(c context.Context) (string, error) {
-		read, readErr := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
-		return read.ID, readErr
-	})
-	classification, classificationErr := classifyWorkloadCreateAttempt("domain", http.StatusOK, "", keys, true, true)
-	requireNoError(t, classificationErr)
-	return liveDomainCreateResult{path: "provider", target: target, classification: classification, keys: keys, created: true}
-}
-
 func runGeneratedDomainCreateAttempt(t *testing.T, ctx context.Context, api *client.Client, target string, args DomainArgs) liveDomainCreateResult {
 	t.Helper()
 	body := domainCreateBody(args)
@@ -1170,15 +1131,6 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	gone, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 	requireWorkloadLifecycleNoError(t, "mount", err)
 	requireLiveEqual(t, "mount.id after delete", "", gone.ID)
-}
-
-func mountServiceType(inputs MountArgs) string {
-	for _, target := range mountLifecycleTargetCases() {
-		if mountTargetID(inputs, target.serviceType) != "" {
-			return target.serviceType
-		}
-	}
-	return "application"
 }
 
 func targetIDField(serviceType string) string {
