@@ -805,37 +805,51 @@ func runGeneratedDomainCreateAttempt(t *testing.T, ctx context.Context, api *cli
 		t.Fatalf("domain request keys unavailable")
 	}
 	response, requestErr := api.DomainCreateWithResponse(ctx, body)
+	return finalizeGeneratedDomainCreateAttempt(t, target, keys, response, requestErr, func(id string) {
+		registerGeneratedDomainCleanup(t, api, id)
+	})
+}
+
+func registerGeneratedDomainCleanup(t *testing.T, api *client.Client, id string) {
+	registerLiveCleanup(t, "domain", id, func(c context.Context) error {
+		_, removeErr := api.DomainDeleteWithResponse(c, generated.DomainDeleteJSONRequestBody{DomainId: id})
+		return removeErr
+	}, func(c context.Context) (string, error) {
+		read, readErr := api.DomainOneWithResponse(c, &generated.DomainOneParams{DomainId: id})
+		if readErr != nil {
+			return "", readErr
+		}
+		if read == nil || read.JSON200 == nil || read.JSON200.DomainId == nil {
+			return "", nil
+		}
+		return *read.JSON200.DomainId, nil
+	})
+}
+
+func finalizeGeneratedDomainCreateAttempt(t *testing.T, target string, keys []string, response *generated.DomainCreateResponse, requestErr error, registerCleanup func(string)) liveDomainCreateResult {
+	t.Helper()
 	status := 0
 	if response != nil && response.HTTPResponse != nil {
 		status = response.HTTPResponse.StatusCode
-	}
-	if requestErr == nil && response != nil && response.JSON200 != nil && response.JSON200.DomainId != nil && *response.JSON200.DomainId != "" {
-		id := *response.JSON200.DomainId
-		registerLiveCleanup(t, "domain", id, func(c context.Context) error {
-			_, removeErr := api.DomainDeleteWithResponse(c, generated.DomainDeleteJSONRequestBody{DomainId: id})
-			return removeErr
-		}, func(c context.Context) (string, error) {
-			read, readErr := api.DomainOneWithResponse(c, &generated.DomainOneParams{DomainId: id})
-			if readErr != nil {
-				return "", readErr
-			}
-			if read == nil || read.JSON200 == nil || read.JSON200.DomainId == nil {
-				return "", nil
-			}
-			return *read.JSON200.DomainId, nil
-		})
-		classification, classificationErr := classifyWorkloadCreateAttempt("domain", status, "", keys, true, true)
-		requireNoError(t, classificationErr)
-		return liveDomainCreateResult{path: "generated", target: target, classification: classification, keys: keys, created: true}
 	}
 	apiCode := ""
 	var apiErr *client.APIError
 	if errors.As(requestErr, &apiErr) {
 		apiCode = apiErr.Code
+		if status == 0 {
+			status = apiErr.StatusCode
+		}
+	}
+	created := false
+	if response != nil && response.JSON200 != nil && response.JSON200.DomainId != nil && *response.JSON200.DomainId != "" {
+		registerCleanup(*response.JSON200.DomainId)
+		created = true
 	}
 	classification, classificationErr := classifyWorkloadCreateAttempt("domain", status, apiCode, keys, true, true)
-	requireNoError(t, classificationErr)
-	return liveDomainCreateResult{path: "generated", target: target, classification: classification, keys: keys}
+	if classificationErr != nil {
+		t.Fatalf("domain classification unavailable")
+	}
+	return liveDomainCreateResult{path: "generated", target: target, classification: classification, keys: keys, created: created}
 }
 
 func mountCreateRequestKeys(inputs MountArgs) []string {

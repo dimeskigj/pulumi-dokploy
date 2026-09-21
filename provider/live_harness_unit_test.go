@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
 	"github.com/google/uuid"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -201,6 +202,43 @@ func TestCompareLiveDomainCreateRunsSerialAttemptsAndCleansCreatedResult(t *test
 	require.Equal(t, []string{"provider", "generated"}, order)
 	require.True(t, cleaned)
 	require.Equal(t, "provider-serialization-mismatch", classification)
+}
+
+func TestGeneratedDomainCreateResultRegistersPartialIDBeforeErrorClassification(t *testing.T) {
+	keys := []string{"applicationId", "domainType", "host"}
+	id := "partial-domain-id"
+	response := &generated.DomainCreateResponse{
+		HTTPResponse: &http.Response{StatusCode: http.StatusBadRequest},
+		JSON200:      &generated.Domain{DomainId: &id},
+	}
+	registered := ""
+	result := finalizeGeneratedDomainCreateAttempt(t, "application", keys, response, &client.APIError{StatusCode: http.StatusBadRequest, Code: "BAD_REQUEST"}, func(got string) {
+		registered = got
+	})
+	require.NotEmpty(t, registered)
+	require.True(t, result.created)
+	require.Contains(t, result.classification, "status=4xx")
+}
+
+func TestGeneratedDomainCreateResultUsesTypedErrorStatusAndRunsVerifiedCleanup(t *testing.T) {
+	s := newScriptedServer(t,
+		scriptedRequest{Method: http.MethodPost, Path: "/api/domain.delete", Body: json.RawMessage(`{"domainId":"partial-domain-id"}`), Status: http.StatusOK, Response: []byte(`{}`)},
+		scriptedRequest{Method: http.MethodGet, Path: "/api/domain.one", Query: map[string][]string{"domainId": {"partial-domain-id"}}, Status: http.StatusNotFound, Response: []byte(`{"code":"NOT_FOUND"}`)},
+	)
+	keys := []string{"applicationId", "domainType", "host"}
+	id := "partial-domain-id"
+	response := &generated.DomainCreateResponse{
+		HTTPResponse: &http.Response{StatusCode: http.StatusBadRequest},
+		JSON200:      &generated.Domain{DomainId: &id},
+	}
+	result := finalizeGeneratedDomainCreateAttempt(t, "application", keys, response, &client.APIError{StatusCode: http.StatusServiceUnavailable, Code: "SERVICE_UNAVAILABLE"}, func(id string) {
+		registerGeneratedDomainCleanup(t, s.API(), id)
+	})
+	require.True(t, result.created)
+	require.Contains(t, result.classification, "status=4xx")
+
+	transportResult := finalizeGeneratedDomainCreateAttempt(t, "application", keys, nil, &client.APIError{StatusCode: http.StatusServiceUnavailable, Code: "SERVICE_UNAVAILABLE"}, func(string) {})
+	require.Contains(t, transportResult.classification, "status=5xx")
 }
 
 func TestValidateLiveTargetClassifiesMissingWithoutStopping(t *testing.T) {
