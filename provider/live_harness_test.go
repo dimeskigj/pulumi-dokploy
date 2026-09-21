@@ -298,7 +298,7 @@ func classifyDomainComparison(provider, generated liveDomainCreateResult) string
 	if strings.Contains(provider.classification, "status=transport") || strings.Contains(provider.classification, "status=5xx") || strings.Contains(generated.classification, "status=transport") || strings.Contains(generated.classification, "status=5xx") {
 		return "environment-or-health-failure"
 	}
-	if !provider.created && generated.created {
+	if provider.created != generated.created {
 		return "provider-serialization-mismatch"
 	}
 	if provider.classification == generated.classification {
