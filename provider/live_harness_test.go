@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -282,6 +283,30 @@ func classifyWorkloadCreateAttempt(operation string, status int, apiCode string,
 	return fmt.Sprintf("operation=%s;status=%s;code=%s;keys=%s;target=%s", operation, statusClass, apiCode, keysLabel, target), nil
 }
 
+type liveDomainCreateResult struct {
+	path           string
+	target         string
+	classification string
+	keys           []string
+	created        bool
+}
+
+func classifyDomainComparison(provider, generated liveDomainCreateResult) string {
+	if provider.target != generated.target || provider.target == "" || !slices.Equal(provider.keys, generated.keys) {
+		return "provider-serialization-mismatch"
+	}
+	if strings.Contains(provider.classification, "status=transport") || strings.Contains(provider.classification, "status=5xx") || strings.Contains(generated.classification, "status=transport") || strings.Contains(generated.classification, "status=5xx") {
+		return "environment-or-health-failure"
+	}
+	if !provider.created && generated.created {
+		return "provider-serialization-mismatch"
+	}
+	if provider.classification == generated.classification {
+		return "server-contract-rejection"
+	}
+	return "provider-serialization-mismatch"
+}
+
 func classifyWorkloadCreateError(operation string, err error, keys []string, targetPresent bool, targetReady bool) (string, error) {
 	status, code := 0, ""
 	var apiErr *client.APIError
@@ -391,6 +416,25 @@ func isSafeWorkloadRequestKey(key string) bool {
 	default:
 		return false
 	}
+}
+
+func domainCreateRequestKeysFromBody(body generated.DomainCreateJSONRequestBody) ([]string, error) {
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("domain request key encoding failed")
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(encoded, &fields); err != nil {
+		return nil, fmt.Errorf("domain request key decoding failed")
+	}
+	keys := make([]string, 0, len(fields))
+	for key := range fields {
+		if isSafeWorkloadRequestKey(key) {
+			keys = append(keys, key)
+		}
+	}
+	sort.Strings(keys)
+	return keys, nil
 }
 
 func classifyEnvironmentUpdateComparison(providerErr, directErr error) string {
