@@ -307,6 +307,53 @@ func classifyDomainComparison(provider, generated liveDomainCreateResult) string
 	return "provider-serialization-mismatch"
 }
 
+func domainResultStatus(classification string) (string, string) {
+	parts := strings.Split(classification, ";")
+	if len(parts) != 3 || parts[0] != "operation=domain" || !strings.HasPrefix(parts[1], "status=") || !strings.HasPrefix(parts[2], "code=") {
+		return "invalid", "invalid"
+	}
+	status := strings.TrimPrefix(parts[1], "status=")
+	code := strings.TrimPrefix(parts[2], "code=")
+	if status != "transport" && status != "2xx" && status != "4xx" && status != "5xx" {
+		return "invalid", "invalid"
+	}
+	if !isSafeWorkloadAPICode(code) && code != "unknown" {
+		return "invalid", "invalid"
+	}
+	return status, code
+}
+
+func formatDomainComparisonEvidence(provider, generated liveDomainCreateResult) string {
+	if provider.path != "provider" || generated.path != "generated" {
+		return "invalid-evidence"
+	}
+	if provider.target != generated.target || (provider.target != "application" && provider.target != "compose") {
+		return "invalid-evidence"
+	}
+	providerStatus, providerCode := domainResultStatus(provider.classification)
+	generatedStatus, generatedCode := domainResultStatus(generated.classification)
+	if providerStatus == "invalid" || generatedStatus == "invalid" || len(provider.keys) != len(generated.keys) {
+		return "invalid-evidence"
+	}
+	keys := append([]string(nil), provider.keys...)
+	generatedKeys := append([]string(nil), generated.keys...)
+	sort.Strings(keys)
+	sort.Strings(generatedKeys)
+	for i, key := range keys {
+		if !isSafeWorkloadRequestKey(key) || (i > 0 && keys[i-1] == key) {
+			return "invalid-evidence"
+		}
+		if generatedKeys[i] != key {
+			return "invalid-evidence"
+		}
+	}
+	return fmt.Sprintf(
+		"target=%s;provider=%s/%s;generated=%s/%s;keys=%s",
+		provider.target, providerStatus, providerCode,
+		generatedStatus, generatedCode, strings.Join(keys, ","),
+	)
+}
+
 func compareDomainAttempts(providerAttempt, generatedAttempt func() liveDomainCreateResult) string {
 	providerResult := providerAttempt()
 	generatedResult := generatedAttempt()
