@@ -291,6 +291,19 @@ type liveDomainCreateResult struct {
 	created        bool
 }
 
+type focusedDomainTarget struct {
+	id      string
+	name    string
+	compose bool
+}
+
+func runFocusedDomainTarget(t *testing.T, create func() (focusedDomainTarget, func()), run func(focusedDomainTarget)) {
+	t.Helper()
+	target, cleanup := create()
+	t.Cleanup(cleanup)
+	run(target)
+}
+
 func classifyDomainComparison(provider, generated liveDomainCreateResult) string {
 	if provider.target != generated.target || provider.target == "" || !slices.Equal(provider.keys, generated.keys) {
 		return "provider-serialization-mismatch"
@@ -309,7 +322,10 @@ func classifyDomainComparison(provider, generated liveDomainCreateResult) string
 
 func domainResultStatus(classification string) (string, string) {
 	parts := strings.Split(classification, ";")
-	if len(parts) != 3 || parts[0] != "operation=domain" || !strings.HasPrefix(parts[1], "status=") || !strings.HasPrefix(parts[2], "code=") {
+	if (len(parts) != 3 && len(parts) != 5) || parts[0] != "operation=domain" || !strings.HasPrefix(parts[1], "status=") || !strings.HasPrefix(parts[2], "code=") {
+		return "invalid", "invalid"
+	}
+	if len(parts) == 5 && (!strings.HasPrefix(parts[3], "keys=") || !strings.HasPrefix(parts[4], "target=")) {
 		return "invalid", "invalid"
 	}
 	status := strings.TrimPrefix(parts[1], "status=")
@@ -332,7 +348,7 @@ func formatDomainComparisonEvidence(provider, generated liveDomainCreateResult) 
 	}
 	providerStatus, providerCode := domainResultStatus(provider.classification)
 	generatedStatus, generatedCode := domainResultStatus(generated.classification)
-	if providerStatus == "invalid" || generatedStatus == "invalid" || len(provider.keys) != len(generated.keys) {
+	if providerStatus == "invalid" || generatedStatus == "invalid" {
 		return "invalid-evidence"
 	}
 	keys := append([]string(nil), provider.keys...)
@@ -343,9 +359,19 @@ func formatDomainComparisonEvidence(provider, generated liveDomainCreateResult) 
 		if !isSafeWorkloadRequestKey(key) || (i > 0 && keys[i-1] == key) {
 			return "invalid-evidence"
 		}
-		if generatedKeys[i] != key {
+	}
+	for i, key := range generatedKeys {
+		if !isSafeWorkloadRequestKey(key) || (i > 0 && generatedKeys[i-1] == key) {
 			return "invalid-evidence"
 		}
+	}
+	if !slices.Equal(keys, generatedKeys) {
+		return fmt.Sprintf(
+			"target=%s;provider=%s/%s;generated=%s/%s;providerKeys=%s;generatedKeys=%s",
+			provider.target, providerStatus, providerCode,
+			generatedStatus, generatedCode,
+			strings.Join(keys, ","), strings.Join(generatedKeys, ","),
+		)
 	}
 	return fmt.Sprintf(
 		"target=%s;provider=%s/%s;generated=%s/%s;keys=%s",

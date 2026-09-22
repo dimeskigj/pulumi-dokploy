@@ -199,6 +199,36 @@ func TestDomainComparisonEvidenceIsStructuralAndSanitized(t *testing.T) {
 	require.NotContains(t, got, "https://")
 }
 
+func TestDomainComparisonEvidenceReportsSafeKeyShapeMismatch(t *testing.T) {
+	providerKeys := []string{"applicationId", "domainType", "host"}
+	generatedKeys := []string{"applicationId", "host"}
+	got := formatDomainComparisonEvidence(
+		liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: providerKeys},
+		liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=2xx;code=unknown", keys: generatedKeys, created: true},
+	)
+	require.Contains(t, got, "target=application")
+	require.Contains(t, got, "providerKeys=applicationId,domainType,host")
+	require.Contains(t, got, "generatedKeys=applicationId,host")
+	require.NotContains(t, got, "secret-sentinel")
+	require.NotContains(t, got, "https://")
+}
+
+func TestRunFocusedDomainTargetOwnsAndCleansTarget(t *testing.T) {
+	var events []string
+	t.Run("focused target", func(t *testing.T) {
+		runFocusedDomainTarget(t, func() (focusedDomainTarget, func()) {
+			events = append(events, "create")
+			return focusedDomainTarget{id: "target", name: "application"}, func() {
+				events = append(events, "cleanup")
+			}
+		}, func(target focusedDomainTarget) {
+			events = append(events, "run:"+target.name+":"+target.id)
+		})
+		require.Equal(t, []string{"create", "run:application:target"}, events)
+	})
+	require.Equal(t, []string{"create", "run:application:target", "cleanup"}, events)
+}
+
 func TestCompareLiveDomainCreateRunsSerialAttemptsAndCleansCreatedResult(t *testing.T) {
 	order := []string{}
 	cleaned := false

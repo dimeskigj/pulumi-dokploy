@@ -1266,3 +1266,141 @@ func deleteAndReadCompose(t *testing.T, ctx context.Context, r Compose, ownedID 
 	}, func() { *ownedID = "" })
 	requireNoError(t, err)
 }
+
+func TestLiveDomainFocused(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 30*time.Minute)
+	_, environmentID, releaseProject := liveProject(t, ctx, api)
+	t.Cleanup(releaseProject)
+	for _, compose := range []bool{false, true} {
+		compose := compose
+		name := "application"
+		if compose {
+			name = "compose"
+		}
+		t.Run(name, func(t *testing.T) {
+			runFocusedLiveDomainTarget(t, ctx, api, environmentID, compose)
+		})
+	}
+}
+
+func runFocusedLiveDomainTarget(t *testing.T, ctx context.Context, api *client.Client, environmentID string, compose bool) {
+	t.Helper()
+	runFocusedDomainTarget(t, func() (focusedDomainTarget, func()) {
+		if compose {
+			r := Compose{client: fixedClient(api)}
+			inputs := ComposeArgs{Name: liveRunName("focused-compose"), EnvironmentID: environmentID, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services:\n  web:\n    image: nginx:1.27\n"}}}
+			lease := beginLiveHeavyOperation(t, "focused-compose-create", liveServerHealthProbe(api))
+			created, err := r.Create(ctx, infer.CreateRequest[ComposeArgs]{Inputs: inputs})
+			processErr := processLiveHeavyOperationError(t, lease, err, func() {
+				cleanupAfterCreateError(t, "compose", created.ID, err, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[ComposeState]{ID: created.ID})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[ComposeArgs, ComposeState]{ID: created.ID})
+					return v.ID, e
+				})
+			}, liveServerHealthProbe(api))
+			requireNoError(t, processErr)
+			lease.releaseIfNeeded(t)
+			requireLiveEqual(t, "compose.status", statusDone, created.Output.Status)
+			return focusedDomainTarget{id: created.ID, name: "compose", compose: true}, func() {
+				liveCleanupVerified(t, "compose", created.ID, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[ComposeState]{ID: created.ID})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[ComposeArgs, ComposeState]{ID: created.ID})
+					return v.ID, e
+				})
+			}
+		}
+
+		r := Application{client: fixedClient(api)}
+		inputs := ApplicationArgs{Name: liveRunName("focused-application"), EnvironmentID: environmentID, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx:1.27"}}}
+		lease := beginLiveHeavyOperation(t, "focused-application-create", liveServerHealthProbe(api))
+		created, err := r.Create(ctx, infer.CreateRequest[ApplicationArgs]{Inputs: inputs})
+		processErr := processLiveHeavyOperationError(t, lease, err, func() {
+			cleanupAfterCreateError(t, "application", created.ID, err, func(c context.Context) error {
+				_, e := r.Delete(c, infer.DeleteRequest[ApplicationState]{ID: created.ID})
+				return e
+			}, func(c context.Context) (string, error) {
+				v, e := r.Read(c, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: created.ID})
+				return v.ID, e
+			})
+		}, liveServerHealthProbe(api))
+		requireNoError(t, processErr)
+		lease.releaseIfNeeded(t)
+		requireLiveEqual(t, "application.status", statusDone, created.Output.Status)
+		return focusedDomainTarget{id: created.ID, name: "application"}, func() {
+			liveCleanupVerified(t, "application", created.ID, func(c context.Context) error {
+				_, e := r.Delete(c, infer.DeleteRequest[ApplicationState]{ID: created.ID})
+				return e
+			}, func(c context.Context) (string, error) {
+				v, e := r.Read(c, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: created.ID})
+				return v.ID, e
+			})
+		}
+	}, func(target focusedDomainTarget) {
+		readiness := applicationTargetReadiness(api, target.id)
+		if target.compose {
+			readiness = composeTargetReadiness(api, target.id)
+		}
+		present, ready, err := readiness(ctx)
+		requireLiveLifecycleNoError(t, "Domain", "read ready target", err)
+		requireLiveEqual(t, "domain.target.present", true, present)
+		requireLiveEqual(t, "domain.target.ready", true, ready)
+
+		args := DomainArgs{Host: liveRunName("focused-domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
+		if target.compose {
+			args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
+		} else {
+			args.ApplicationID = &target.id
+		}
+		r := Domain{client: fixedClient(api)}
+		created, err := r.Create(ctx, infer.CreateRequest[DomainArgs]{Inputs: args})
+		if err != nil {
+			providerKeys, keysErr := domainCreateRequestKeysFromBody(domainCreateBody(args))
+			requireNoError(t, keysErr)
+			providerClassification, classificationErr := classifyWorkloadCreateError("domain", err, providerKeys, present, ready)
+			requireNoError(t, classificationErr)
+			providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys}
+			directArgs := args
+			directArgs.Host = liveRunName("focused-domain-direct") + ".example.invalid"
+			generatedResult := runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)
+			evidence := formatDomainComparisonEvidence(providerResult, generatedResult)
+			t.Logf("domain comparison evidence: %s", evidence)
+			recordLiveOutcome("domain-comparison", evidence)
+			cleanupAfterCreateError(t, "domain", created.ID, err, func(c context.Context) error {
+				_, e := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
+				return e
+			}, func(c context.Context) (string, error) {
+				v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
+				return v.ID, e
+			})
+		}
+		requireWorkloadCreateNoError(t, "domain", err, domainCreateRequestKeys(target.compose), present, ready, "Domain/"+target.name)
+		domainID := created.ID
+		domainOwner := registerLiveCleanup(t, "domain", domainID, func(c context.Context) error {
+			_, e := r.Delete(c, infer.DeleteRequest[DomainState]{ID: domainID})
+			return e
+		}, func(c context.Context) (string, error) {
+			v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: domainID})
+			return v.ID, e
+		})
+		read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: domainID, State: created.Output})
+		requireWorkloadLifecycleNoError(t, "domain", err)
+		updated := read.Inputs
+		updated.Host = liveRunName("focused-domain-updated") + ".example.invalid"
+		updated.HTTPS = true
+		changed, err := r.Update(ctx, infer.UpdateRequest[DomainArgs, DomainState]{ID: domainID, Inputs: updated, State: read.State})
+		requireWorkloadLifecycleNoError(t, "domain", err)
+		postUpdate, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: domainID, State: changed.Output})
+		requireWorkloadLifecycleNoError(t, "domain", err)
+		requireLiveEqual(t, "domain.host", updated.Host, postUpdate.Inputs.Host)
+		requireLiveEqual(t, "domain.https", updated.HTTPS, postUpdate.Inputs.HTTPS)
+		imported, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: domainID})
+		requireWorkloadLifecycleNoError(t, "domain", err)
+		requireLiveEqual(t, "domain.import.id", domainID, imported.State.DomainID)
+		domainOwner()
+	})
+}

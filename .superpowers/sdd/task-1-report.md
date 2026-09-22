@@ -78,3 +78,66 @@ No provider/backup_test.go or provider/testserver_test.go changes were made or s
 ## Concern / blocker
 
 The live environment did not provide a ready application or Compose target to exercise Domain creation. A subsequent run with authorized ready targets is required before determining or changing the deployed Domain create contract.
+
+## Resumed Task 1: focused live harness
+
+### Root cause
+
+The prior focused commands selected `TestLiveTier2Workloads/Domain/...` without executing the sibling `Application` and `Compose` setup subtests. The Domain subtests therefore inherited no target IDs and stopped at readiness. The fix adds `TestLiveDomainFocused`, whose selected subtest creates its own disposable target, verifies readiness, runs the Domain lifecycle, and owns verified cleanup independently of sibling subtests.
+
+### Harness TDD evidence
+
+Added `TestRunFocusedDomainTargetOwnsAndCleansTarget` before implementing `runFocusedDomainTarget` and `focusedDomainTarget`.
+
+RED command:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestRunFocusedDomainTargetOwnsAndCleansTarget$' -count=1 -v
+```
+
+Result: expected build failure because the focused harness helper and target type were undefined.
+
+GREEN command:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestRunFocusedDomainTargetOwnsAndCleansTarget$' -count=1 -v
+```
+
+Result: PASS; create, run, and cleanup ownership ordering was verified.
+
+Added `TestDomainComparisonEvidenceReportsSafeKeyShapeMismatch` before extending the formatter to report safe provider/generated key sets when they differ. RED failed because the old formatter returned only `invalid-evidence`; GREEN passed after the formatter change.
+
+### Focused live evidence
+
+Fresh marker paths were absent before each run:
+
+```text
+/tmp/opencode/domain-focused-application.stop
+/tmp/opencode/domain-focused-compose.stop
+```
+
+Commands:
+
+```text
+DOKPLOY_ACCEPTANCE_STOP_FILE=/tmp/opencode/domain-focused-application.stop mise exec -- go test ./provider -run '^TestLiveDomainFocused/application$' -parallel=1 -count=1 -v
+DOKPLOY_ACCEPTANCE_STOP_FILE=/tmp/opencode/domain-focused-compose.stop mise exec -- go test ./provider -run '^TestLiveDomainFocused/compose$' -parallel=1 -count=1 -v
+```
+
+Both focused harnesses independently created a ready disposable target and reached Domain create. Both provider and generated paths returned the same sanitized structural result:
+
+```text
+target=application;provider=4xx/BAD_REQUEST;generated=4xx/BAD_REQUEST;keys=applicationId,certificateType,domainType,host,https,port,stripPath
+target=compose;provider=4xx/BAD_REQUEST;generated=4xx/BAD_REQUEST;keys=certificateType,composeId,domainType,host,https,port,serviceName,stripPath
+```
+
+The provider and generated request key sets were equal for each target, so the evidence is `server-contract-rejection`, not a provider serialization mismatch. No raw response, error, endpoint, host, ID, or field value was emitted. Both commands failed at the expected Domain create assertion after evidence collection. Their target and project cleanup callbacks completed without a recorded cleanup failure, and both fresh stop markers remained absent.
+
+### Contract decision
+
+The evidence proves the provider and generated-client paths are structurally equal and both rejected by the deployed server. It does not prove which request field the server rejects. Per the approved evidence gate, no speculative Domain payload correction, alternate retry, OpenAPI change, or generated-client change was made. A production correction remains blocked until a safe deployed contract source identifies the rejected field or the server exposes an approved structural contract diagnostic.
+
+### Additional changed files
+
+- `provider/live_harness_test.go`: focused target ownership helper and safe key-shape evidence.
+- `provider/live_harness_unit_test.go`: focused ownership and key-shape formatter regressions.
+- `provider/live_workloads_test.go`: self-contained focused Application/Compose Domain live harness and sanitized evidence logging.
