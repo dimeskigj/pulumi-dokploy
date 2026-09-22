@@ -243,12 +243,15 @@ func TestLiveTier2Workloads(t *testing.T) {
 				providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys}
 				directArgs := args
 				directArgs.Host = liveRunName("domain-direct") + ".example.invalid"
+				var generatedResult liveDomainCreateResult
 				comparison := compareDomainAttempts(func() liveDomainCreateResult {
 					return providerResult
 				}, func() liveDomainCreateResult {
-					return runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)
+					generatedResult = runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)
+					return generatedResult
 				})
-				recordLiveOutcome("domain-comparison", comparison)
+				_ = comparison
+				recordLiveOutcome("domain-comparison", formatDomainComparisonEvidence(providerResult, generatedResult))
 			}
 			release := func() {}
 			if err == nil {

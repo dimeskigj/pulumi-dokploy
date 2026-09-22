@@ -185,6 +185,20 @@ func TestClassifyDomainComparison(t *testing.T) {
 	})
 }
 
+func TestDomainComparisonEvidenceIsStructuralAndSanitized(t *testing.T) {
+	keys := []string{"applicationId", "certificateType", "domainType", "host", "https", "stripPath"}
+	got := formatDomainComparisonEvidence(
+		liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys},
+		liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys},
+	)
+	require.Contains(t, got, "target=application")
+	require.Contains(t, got, "provider=4xx/BAD_REQUEST")
+	require.Contains(t, got, "generated=4xx/BAD_REQUEST")
+	require.Contains(t, got, "keys=applicationId,certificateType,domainType,host,https,stripPath")
+	require.NotContains(t, got, "secret-sentinel")
+	require.NotContains(t, got, "https://")
+}
+
 func TestCompareLiveDomainCreateRunsSerialAttemptsAndCleansCreatedResult(t *testing.T) {
 	order := []string{}
 	cleaned := false

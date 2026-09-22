@@ -1,95 +1,80 @@
-# Task 1 report
+# Task 1 Report: Domain Creation Diagnostics
 
-## Base and commit
+## Result
 
-- Base HEAD: `0a98621b6c81da6613fc37baebb7c68e81c9ae88`
-- Commit: `d4e57b0241ab89786c06ec8f91535a4b89088105`
-- Commit message: `test: fix mount dispatch readiness`
+`DONE_WITH_CONCERNS`
 
-## RED
+The structural, sanitized comparison diagnostic was implemented and verified locally. The authorized live runs could not reach Domain creation because both target-readiness checks failed, so no deployed request contract evidence was obtained and no Domain contract repair was attempted.
 
-Command:
+## TDD evidence
+
+### RED
+
+Added `TestDomainComparisonEvidenceIsStructuralAndSanitized` first, then ran:
 
 ```text
-env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestLiveTargetReadinessUsesConcreteResourceReader$' -count=1 -v
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainComparisonEvidenceIsStructuralAndSanitized$' -count=1 -v
 ```
 
-Result: expected build failure. The new readiness type and six concrete readiness constructors were undefined. The fixture test also initially required the `context` import.
+Result: expected build failure because `formatDomainComparisonEvidence` was undefined.
 
-## GREEN and verification
+### GREEN
 
-Command:
+Implemented strict structural parsing and fixed invalid-evidence output. The formatter accepts only allowlisted paths, targets, status classes, API codes, and sorted request keys; it never interpolates field values or raw errors.
 
-```text
-env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^(TestLiveTargetReadinessUsesConcreteResourceReader|TestPostgresTargetReadinessReportsNotReadyAndMissing)$' -count=1 -v
-```
-
-Result: PASS. The concrete-reader matrix and Postgres ready/not-ready/missing cases passed.
-
-Command:
+Focused verification:
 
 ```text
-env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDispatchFixtureCarriesConcreteReadiness$' -count=1 -v
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'DomainComparison|DomainCreateRequestKeys|DomainCreateBody' -count=1 -v
 ```
 
 Result: PASS.
 
-Command:
+Final focused verification:
 
 ```text
-env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^(TestLiveTargetReadiness|TestPostgresTargetReadiness|TestDispatchFixture|TestPostgresMountCleanupOwnership)' -count=1 -v
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider ./tests -run 'Domain|LiveDiagnosticSourceContract' -count=1
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainComparisonEvidenceIsStructuralAndSanitized$' -count=1 -v
 ```
 
-Result: PASS; all selected tests passed.
+Result: both commands PASS.
 
-Command:
+## Authorized live verification
+
+Fresh marker paths were used and were absent before both runs:
 
 ```text
-git diff --check
+/tmp/opencode/domain-application-diagnostic.stop
+/tmp/opencode/domain-compose-diagnostic.stop
 ```
 
-Result: PASS.
-
-The unfiltered provider test command was also attempted with the required environment clearing, but exceeded the 120-second command timeout without producing output. No live tests were run.
-
-## Files changed
-
-- `provider/live_workloads_test.go`: added concrete resource readiness callbacks, threaded readiness through mount lifecycle and dispatch fixtures, and removed generic inferred workload dispatch.
-- `provider/live_harness_unit_test.go`: added the concrete-reader matrix and readiness-state tests.
-- `provider/mount_lifecycle_matrix_test.go`: added fixture readiness wiring coverage.
-
-## Concern
-
-The brief’s application and compose response examples are insufficient for their existing concrete `Read` implementations, which reconstruct required source data. The deterministic matrix responses therefore include the minimal non-sensitive source metadata needed for those existing readers; production behavior was not changed.
-
-## Review fix
-
-Finding addressed: PostgreSQL `MountDispatch` now passes `fixture.readiness`, matching the stored readiness callback used by the other database dispatch branches.
-
-The fixture wiring test now constructs a PostgreSQL dispatch fixture through the same helper used by the PostgreSQL creation branch and verifies its concrete readiness callback against a scripted local server. No live calls are made.
-
-Command (TDD RED):
+Commands:
 
 ```text
-env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDispatchFixtureCarriesConcreteReadiness$' -count=1 -v
+DOKPLOY_ACCEPTANCE_STOP_FILE=/tmp/opencode/domain-application-diagnostic.stop mise exec -- go test ./provider -run '^TestLiveTier2Workloads/Domain/application$' -parallel=1 -count=1 -v
+DOKPLOY_ACCEPTANCE_STOP_FILE=/tmp/opencode/domain-compose-diagnostic.stop mise exec -- go test ./provider -run '^TestLiveTier2Workloads/Domain/compose$' -parallel=1 -count=1 -v
 ```
 
-Result: expected build failure before implementation because `newPostgresDispatchFixture` was undefined.
+Both stopped at the sanitized target-readiness failure before Domain create, so neither produced comparison evidence. Neither fresh stop marker appeared afterward. No Domain create was reached and no owned Domain resource was created by these runs.
 
-Command (GREEN):
+The fixed live commands were not claimed as passing because the same prerequisite target-readiness failure prevented reaching the create path.
 
-```text
-env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDispatchFixtureCarriesConcreteReadiness$' -count=1 -v
-```
+## Changed files
 
-Result: PASS.
+- `provider/live_harness_test.go`: strict sanitized Domain comparison formatter.
+- `provider/live_harness_unit_test.go`: structural/sanitization regression test.
+- `provider/live_workloads_test.go`: record structural comparison evidence without a second generated create attempt.
 
-Command (focused regression verification):
+No provider/backup_test.go or provider/testserver_test.go changes were made or staged. No OpenAPI, generated client, or provider Domain payload changes were made because live contract evidence was unavailable.
 
-```text
-env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^(TestLiveTargetReadiness|TestPostgresTargetReadiness|TestDispatchFixture|TestPostgresMountCleanupOwnership)' -count=1 -v
-```
+## Self-review
 
-Result: PASS; all selected tests passed.
+- No alternate Domain payload, blind retry, or broad compatibility fallback was added.
+- Generated Domain comparison is executed once and the result is reused for evidence.
+- Evidence output is restricted to structural labels and sorted allowlisted keys.
+- Fresh stop markers remained absent.
+- `git diff --check` passed.
 
-Self-review: `git diff --check` passed; no production provider behavior, live tests, credentials, endpoints, resource IDs, or response bodies were emitted in this report.
+## Concern / blocker
+
+The live environment did not provide a ready application or Compose target to exercise Domain creation. A subsequent run with authorized ready targets is required before determining or changing the deployed Domain create contract.
