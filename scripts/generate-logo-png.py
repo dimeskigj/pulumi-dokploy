@@ -88,6 +88,104 @@ def png_chunk(kind: bytes, data: bytes) -> bytes:
     return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
 
 
+def png_pixel_data(data: bytes) -> tuple[int, int, bytes]:
+    signature = b"\x89PNG\r\n\x1a\n"
+    if not data.startswith(signature):
+        raise ValueError("not a PNG file")
+    cursor = 8
+    dimensions = None
+    compressed = bytearray()
+    seen_iend = False
+    idat_started = False
+    idat_ended = False
+    while cursor < len(data):
+        if cursor + 12 > len(data):
+            raise ValueError("truncated PNG chunk")
+        length = struct.unpack(">I", data[cursor : cursor + 4])[0]
+        kind = data[cursor + 4 : cursor + 8]
+        end = cursor + 12 + length
+        if end > len(data):
+            raise ValueError("truncated PNG chunk")
+        chunk = data[cursor + 8 : cursor + 8 + length]
+        actual_crc = struct.unpack(">I", data[cursor + 8 + length : end])[0]
+        if actual_crc != zlib.crc32(kind + chunk) & 0xFFFFFFFF:
+            raise ValueError("PNG chunk CRC mismatch")
+        cursor = end
+        if dimensions is None and kind != b"IHDR":
+            raise ValueError("PNG must start with IHDR")
+        if kind not in {b"IHDR", b"IDAT", b"IEND"} and 65 <= kind[0] <= 90:
+            raise ValueError("PNG contains an unknown critical chunk")
+        if kind == b"IHDR":
+            if dimensions is not None or length != 13:
+                raise ValueError("PNG must contain exactly one valid IHDR")
+            width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(
+                ">IIBBBBB", chunk
+            )
+            if width == 0 or height == 0:
+                raise ValueError("PNG dimensions must be positive")
+            if (bit_depth, color_type, compression, filtering, interlace) != (8, 6, 0, 0, 0):
+                raise ValueError("logo PNG must be an 8-bit RGBA image without interlacing")
+            dimensions = (width, height)
+        elif kind == b"IDAT":
+            if dimensions is None or idat_ended or seen_iend:
+                raise ValueError("invalid PNG IDAT order")
+            idat_started = True
+            compressed.extend(chunk)
+        elif kind == b"IEND":
+            if dimensions is None or not idat_started or length != 0:
+                raise ValueError("invalid PNG IEND")
+            seen_iend = True
+            break
+        elif idat_started:
+            idat_ended = True
+    if dimensions is None or not seen_iend or cursor != len(data):
+        raise ValueError("PNG must end with IEND")
+    try:
+        decompressor = zlib.decompressobj()
+        filtered = decompressor.decompress(compressed)
+        if not decompressor.eof or decompressor.unused_data or decompressor.unconsumed_tail:
+            raise ValueError("PNG image data has trailing or incomplete compressed data")
+    except zlib.error as error:
+        raise ValueError("invalid PNG image data") from error
+    width, height = dimensions
+    stride = width * 4
+    row_size = stride + 1
+    if len(filtered) != height * row_size:
+        raise ValueError("PNG scanline data has the wrong length")
+    pixels = bytearray()
+    previous = bytes(stride)
+    for offset in range(0, len(filtered), row_size):
+        filter_type = filtered[offset]
+        source = filtered[offset + 1 : offset + row_size]
+        row = bytearray(stride)
+        for index, value in enumerate(source):
+            left = row[index - 4] if index >= 4 else 0
+            above = previous[index]
+            upper_left = previous[index - 4] if index >= 4 else 0
+            if filter_type == 0:
+                reconstructed = value
+            elif filter_type == 1:
+                reconstructed = value + left
+            elif filter_type == 2:
+                reconstructed = value + above
+            elif filter_type == 3:
+                reconstructed = value + (left + above) // 2
+            elif filter_type == 4:
+                prediction = left + above - upper_left
+                distances = (abs(prediction - left), abs(prediction - above), abs(prediction - upper_left))
+                reconstructed = value + (left if distances[0] <= distances[1] and distances[0] <= distances[2] else above if distances[1] <= distances[2] else upper_left)
+            else:
+                raise ValueError("PNG uses an unsupported scanline filter")
+            row[index] = reconstructed & 255
+        pixels.extend(row)
+        previous = bytes(row)
+    return (*dimensions, bytes(pixels))
+
+
+def png_pixels_equal(left: bytes, right: bytes) -> bool:
+    return png_pixel_data(left) == png_pixel_data(right)
+
+
 def render(points: list[tuple[float, float]], color: tuple[int, int, int]) -> bytes:
     scale_x = WIDTH / VIEWBOX[2]
     scale_y = HEIGHT / VIEWBOX[3]
@@ -109,8 +207,14 @@ def render(points: list[tuple[float, float]], color: tuple[int, int, int]) -> by
 
 
 def main() -> int:
+    if len(sys.argv) == 4 and sys.argv[1] == "--check-pixels":
+        reference = sys.stdin.buffer.read() if sys.argv[2] == "-" else Path(sys.argv[2]).read_bytes()
+        generated = Path(sys.argv[3]).read_bytes()
+        if not png_pixels_equal(reference, generated):
+            raise SystemExit("logo pixels differ")
+        return 0
     if len(sys.argv) != 3:
-        raise SystemExit("usage: generate-logo-png.py SVG OUTPUT")
+        raise SystemExit("usage: generate-logo-png.py SVG OUTPUT | --check-pixels REFERENCE OUTPUT")
     points, color = parse_logo(Path(sys.argv[1]))
     output = Path(sys.argv[2])
     output.parent.mkdir(parents=True, exist_ok=True)
