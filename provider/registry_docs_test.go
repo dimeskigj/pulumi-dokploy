@@ -363,12 +363,21 @@ func TestCodegenUsesCheckedInLogoSource(t *testing.T) {
 
 func TestRepositorySetupDeclaresPortableJavaBuildTools(t *testing.T) {
 	mise := readProjectFile(t, "../.mise.toml")
-	require.Regexp(t, regexp.MustCompile(`(?m)^java\s*=\s*"11"\s*$`), mise)
+	require.Regexp(t, regexp.MustCompile(`(?m)^java\s*=\s*\["temurin-11\.0\.32\+101",\s*"temurin-17\.0\.20\+8"\]\s*$`), mise)
 	require.Regexp(t, regexp.MustCompile(`(?m)^gradle\s*=\s*"8\.14\.3"\s*$`), mise)
+	require.Regexp(t, regexp.MustCompile(`(?m)^maven\s*=\s*"3\.9\.11"\s*$`), mise)
 	action := readProjectFile(t, "../.github/actions/setup-tools/action.yml")
 	require.Contains(t, action, "uses: jdx/mise-action@")
 	require.Contains(t, action, "install: true")
-	require.Contains(t, readProjectFile(t, "../Makefile"), "build_sdks: build_go build_python build_nodejs build_dotnet build_java")
+	makefile := readProjectFile(t, "../Makefile")
+	require.Contains(t, makefile, "build_sdks: build_go build_python build_nodejs build_dotnet build_java")
+	for _, selection := range []string{
+		"mise exec java@temurin-11.0.32+101 gradle@8.14.3 --",
+		"mise exec java@temurin-17.0.20+8 maven@3.9.11 --",
+	} {
+		require.Contains(t, makefile, selection)
+	}
+	require.Contains(t, makefile, "-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2")
 }
 
 func TestLogoRendererDerivesOutputFromSVG(t *testing.T) {
