@@ -261,6 +261,58 @@ func TestAcceptanceFailureIsFieldOnly(t *testing.T) {
 	}
 }
 
+func TestAcceptanceStageErrorIsSanitized(t *testing.T) {
+	err := acceptanceStageError("stack-create", errors.New("secret-sentinel https://private.example resource-id-sentinel"))
+	if got, want := err.Error(), "Pulumi acceptance failed at stage stack-create: category=process"; got != want {
+		t.Fatalf("acceptance stage error = %q, want %q", got, want)
+	}
+}
+
+func TestAcceptanceStageErrorRejectsUnknownStage(t *testing.T) {
+	err := acceptanceStageError("secret-sentinel", errors.New("boom"))
+	if got, want := err.Error(), "Pulumi acceptance failed at stage unknown: category=process"; got != want {
+		t.Fatalf("acceptance stage error = %q, want %q", got, want)
+	}
+}
+
+func TestAcceptanceStageErrorClassifiesContextAndNilErrors(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		category string
+	}{
+		{name: "timeout", err: context.DeadlineExceeded, category: "timeout"},
+		{name: "canceled", err: context.Canceled, category: "canceled"},
+		{name: "nil", category: "unknown"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := acceptanceStageError("preview-1", tt.err)
+			want := "Pulumi acceptance failed at stage preview-1: category=" + tt.category
+			if got := err.Error(); got != want {
+				t.Fatalf("acceptance stage error = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+func TestAcceptanceStageErrorAllowsEverySmokeStage(t *testing.T) {
+	for stage := range acceptanceStages {
+		err := acceptanceStageError(stage, errors.New("sensitive process detail"))
+		want := "Pulumi acceptance failed at stage " + stage + ": category=process"
+		if got := err.Error(); got != want {
+			t.Errorf("stage %q produced %q, want %q", stage, got, want)
+		}
+	}
+}
+
+func TestAcceptanceRefreshOutputErrorIsStageSanitized(t *testing.T) {
+	err := acceptanceRefreshOutputError("refresh-1", errors.New("secret-sentinel https://private.example"))
+	if got, want := err.Error(), "Pulumi acceptance failed at stage refresh-1: category=process"; got != want {
+		t.Fatalf("refresh output error = %q, want %q", got, want)
+	}
+}
+
 func TestAccLifecycleSmoke(t *testing.T) {
 	if os.Getenv("DOKPLOY_ACCEPTANCE") != "1" {
 		t.Skip("set DOKPLOY_ACCEPTANCE=1 to run live acceptance tests")
