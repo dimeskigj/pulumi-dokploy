@@ -140,7 +140,8 @@ check_openapi: generate_openapi
 
 check_codegen:
 	$(MAKE) VERSION_GENERIC=0.0.1-alpha.0+dev codegen
-	git diff --exit-code -- provider/cmd/$(PROVIDER)/schema.json sdk
+	git show HEAD:sdk/dotnet/logo.png | python3 scripts/generate-logo-png.py --check-pixels - sdk/dotnet/logo.png
+	git diff --exit-code -- provider/cmd/$(PROVIDER)/schema.json sdk ':(exclude)sdk/dotnet/logo.png'
 
 govulncheck:
 	mise exec -- go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
