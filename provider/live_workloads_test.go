@@ -57,7 +57,7 @@ func domainContractExperimentCases(args DomainArgs, compose bool) []domainContra
 	if compose {
 		serviceNameOmitted := base
 		serviceNameOmitted.ServiceName = nullable.NewNullNullable[string]()
-		cases = append(cases, domainContractExperiment{field: "serviceName", body: serviceNameOmitted})
+		cases = append(cases, domainContractExperiment{field: domainServiceName, body: serviceNameOmitted})
 	}
 	return cases
 }
@@ -1091,7 +1091,12 @@ func validateLiveTargetWithHealthProbe(ctx context.Context, operation string, ke
 	classification, err := validateLiveTarget(ctx, operation, keys, readiness)
 	if err != nil {
 		if probeErr := maybeVerifyLiveServerHealth(ctx, probe); probeErr != nil {
-			recordServerHealthFailure(operation+"-target-read", probeErr)
+			var phaseErr *mountDispatchHealthProbeError
+			if errors.As(probeErr, &phaseErr) {
+				recordMountDispatchHealthFailure(probeErr)
+			} else {
+				recordServerHealthFailure(operation+"-target-read", probeErr)
+			}
 		}
 	}
 	return classification, err
@@ -1114,6 +1119,10 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	t.Helper()
 	isDispatch := len(dispatch) > 0 && dispatch[0]
 	r := Mount{client: fixedClient(api)}
+	healthProbe := liveServerHealthProbe(api)
+	if isDispatch {
+		healthProbe = mountDispatchHealthProbe(api)
+	}
 	t.Cleanup(registerLiveSecrets(value(inputs.Content), value(inputs.HostPath), value(inputs.VolumeName)))
 	var targetPresent, targetReady bool
 	var err error
@@ -1121,7 +1130,7 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	classification, err = validateLiveTargetWithHealthProbe(ctx, "mount", mountCreateRequestKeys(inputs), func(ctx context.Context) (bool, bool, error) {
 		targetPresent, targetReady, err = readiness(ctx)
 		return targetPresent, targetReady, err
-	}, liveServerHealthProbe(api))
+	}, healthProbe)
 	if err != nil {
 		if isDispatch {
 			requireMountDispatchPhaseNoError(t, "target-read", err)
@@ -1131,7 +1140,7 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	if classification != "" {
 		t.Fatalf("workload target unavailable: %s", classification)
 	}
-	createLease := beginLiveHeavyOperation(t, "mount-create", liveServerHealthProbe(api))
+	createLease := beginLiveHeavyOperation(t, "mount-create", healthProbe)
 	created, err := r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: inputs})
 	// Ownership is registered before the create result is asserted so a partial
 	// create cannot outlive this subtest.
@@ -1143,7 +1152,7 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 			v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 			return v.ID, e
 		})
-	}, liveServerHealthProbe(api))
+	}, healthProbe)
 	if isDispatch {
 		requireMountDispatchPhaseNoError(t, "mount-create", processErr)
 	}
@@ -1164,9 +1173,9 @@ func runLiveMountLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	requireWorkloadLifecycleNoError(t, "mount", err)
 	updated := read.Inputs
 	updated.MountPath += "-updated"
-	updateLease := beginLiveHeavyOperation(t, "mount-update", liveServerHealthProbe(api))
+	updateLease := beginLiveHeavyOperation(t, "mount-update", healthProbe)
 	changed, err := r.Update(ctx, infer.UpdateRequest[MountArgs, MountState]{ID: created.ID, Inputs: updated, State: read.State})
-	updateErr := processLiveHeavyOperationError(t, updateLease, err, nil, liveServerHealthProbe(api))
+	updateErr := processLiveHeavyOperationError(t, updateLease, err, nil, healthProbe)
 	if isDispatch {
 		requireMountDispatchPhaseNoError(t, "mount-update", updateErr)
 	}
@@ -1269,7 +1278,7 @@ func (fixture *liveDispatchFixture) cleanup(t *testing.T) {
 		return
 	}
 	if fixture.lease.released {
-		fixture.lease = beginLiveHeavyOperation(t, "mount-dispatch-cleanup", liveServerHealthProbe(fixture.api))
+		fixture.lease = beginLiveHeavyOperation(t, "mount-dispatch-cleanup", mountDispatchHealthProbe(fixture.api))
 	}
 	if finishDatabaseCleanup(t, fixture.lease, "mount-dispatch", fixture.id, fixture.remove, fixture.readID) {
 		fixture.cleaned = true
@@ -1278,9 +1287,16 @@ func (fixture *liveDispatchFixture) cleanup(t *testing.T) {
 	}
 }
 
+func handleDispatchFixtureCreateError(t *testing.T, api *client.Client, lease *liveHeavyOperationLease, id string, createErr error, cleanup func()) {
+	t.Helper()
+	if err := processLiveHeavyCreateError(t, lease, id, createErr, cleanup, mountDispatchHealthProbe(api)); err != nil {
+		requireMountDispatchPhaseNoError(t, "fixture-create", err)
+	}
+}
+
 func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Client, environmentID, kind string) *liveDispatchFixture {
 	t.Helper()
-	lease := beginLiveHeavyOperation(t, "mount-dispatch-"+kind, liveServerHealthProbe(api))
+	lease := beginLiveHeavyOperation(t, "mount-dispatch-"+kind, mountDispatchHealthProbe(api))
 	switch kind {
 	case "postgres":
 		t.Cleanup(registerLiveSecrets("live-test-password"))
@@ -1290,8 +1306,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			return e
 		}
 		fixture := newPostgresDispatchFixture(api, created.ID, lease, remove)
-		handleLiveHeavyCreateError(t, lease, created.ID, err, func() { fixture.cleanup(t) }, liveServerHealthProbe(api))
-		requireMountDispatchPhaseNoError(t, "fixture-create", err)
+		handleDispatchFixtureCreateError(t, api, lease, created.ID, err, func() { fixture.cleanup(t) })
 		return fixture
 	case "mysql":
 		root := "live-test-root-password"
@@ -1305,8 +1320,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			v, e := (MySQL{client: fixedClient(api)}).Read(c, infer.ReadRequest[MySQLArgs, MySQLState]{ID: created.ID})
 			return v.ID, e
 		}}
-		handleLiveHeavyCreateError(t, lease, created.ID, err, func() { fixture.cleanup(t) }, liveServerHealthProbe(api))
-		requireMountDispatchPhaseNoError(t, "fixture-create", err)
+		handleDispatchFixtureCreateError(t, api, lease, created.ID, err, func() { fixture.cleanup(t) })
 		return fixture
 	case "mariadb":
 		t.Cleanup(registerLiveSecrets("live-test-password"))
@@ -1319,8 +1333,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			v, e := (MariaDB{client: fixedClient(api)}).Read(c, infer.ReadRequest[MariaDBArgs, MariaDBState]{ID: created.ID})
 			return v.ID, e
 		}}
-		handleLiveHeavyCreateError(t, lease, created.ID, err, func() { fixture.cleanup(t) }, liveServerHealthProbe(api))
-		requireMountDispatchPhaseNoError(t, "fixture-create", err)
+		handleDispatchFixtureCreateError(t, api, lease, created.ID, err, func() { fixture.cleanup(t) })
 		return fixture
 	case "redis":
 		t.Cleanup(registerLiveSecrets("live-test-password"))
@@ -1333,8 +1346,7 @@ func createDispatchDatabase(t *testing.T, ctx context.Context, api *client.Clien
 			v, e := (Redis{client: fixedClient(api)}).Read(c, infer.ReadRequest[RedisArgs, RedisState]{ID: created.ID})
 			return v.ID, e
 		}}
-		handleLiveHeavyCreateError(t, lease, created.ID, err, func() { fixture.cleanup(t) }, liveServerHealthProbe(api))
-		requireMountDispatchPhaseNoError(t, "fixture-create", err)
+		handleDispatchFixtureCreateError(t, api, lease, created.ID, err, func() { fixture.cleanup(t) })
 		return fixture
 	default:
 		t.Fatalf("unsupported dispatch database %q", kind)

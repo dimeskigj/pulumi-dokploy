@@ -20,6 +20,7 @@ const (
 	CertificateLetsencrypt CertificateType = "letsencrypt"
 	CertificateNone        CertificateType = "none"
 	CertificateCustom      CertificateType = "custom"
+	domainServiceName      string          = "serviceName"
 )
 
 type DomainArgs struct {
@@ -144,12 +145,12 @@ func (r Domain) Diff(_ context.Context, req infer.DiffRequest[DomainArgs, Domain
 		name    string
 		changed bool
 	}{
-		{"serviceName", !sameOptionalString(in.ServiceName, old.ServiceName)}, {"host", in.Host != old.Host}, {"path", !sameOptionalString(in.Path, old.Path)}, {"internalPath", !sameOptionalString(in.InternalPath, old.InternalPath)}, {"port", !sameOptionalInt(in.Port, old.Port)}, {"https", in.HTTPS != old.HTTPS}, {"certificateType", in.CertificateType != old.CertificateType}, {"customCertResolver", !sameOptionalString(in.CustomCertResolver, old.CustomCertResolver)}, {"stripPath", in.StripPath != old.StripPath},
+		{domainServiceName, !sameOptionalString(in.ServiceName, old.ServiceName)}, {"host", in.Host != old.Host}, {"path", !sameOptionalString(in.Path, old.Path)}, {"internalPath", !sameOptionalString(in.InternalPath, old.InternalPath)}, {"port", !sameOptionalInt(in.Port, old.Port)}, {"https", in.HTTPS != old.HTTPS}, {"certificateType", in.CertificateType != old.CertificateType}, {"customCertResolver", !sameOptionalString(in.CustomCertResolver, old.CustomCertResolver)}, {"stripPath", in.StripPath != old.StripPath},
 		{"enabled", in.Enabled != old.Enabled},
 	} {
 		if field.changed {
 			kind := p.Update
-			if field.name == "serviceName" {
+			if field.name == domainServiceName {
 				kind = p.UpdateReplace
 			}
 			d[field.name] = p.PropertyDiff{Kind: kind}

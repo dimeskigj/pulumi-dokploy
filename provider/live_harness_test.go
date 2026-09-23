@@ -105,7 +105,12 @@ func beginLiveHeavyOperation(t *testing.T, kind string, probes ...func(context.C
 	}
 	lease, err := acquireLiveHeavyOperation(t.Context(), kind, probe)
 	if err != nil {
-		recordServerHealthFailure(kind, err)
+		var phaseErr *mountDispatchHealthProbeError
+		if errors.As(err, &phaseErr) {
+			recordMountDispatchHealthFailure(err)
+		} else {
+			recordServerHealthFailure(kind, err)
+		}
 		t.Skip("live acceptance stopped after server health failure")
 	}
 	return lease
@@ -195,7 +200,12 @@ func processLiveHeavyOperationError(t *testing.T, lease *liveHeavyOperationLease
 	} else if errors.Is(operationErr, context.DeadlineExceeded) {
 		for _, probe := range probes {
 			if probeErr := maybeVerifyLiveServerHealth(t.Context(), probe); probeErr != nil {
-				recordServerHealthFailure(lease.kind, probeErr)
+				var phaseErr *mountDispatchHealthProbeError
+				if errors.As(probeErr, &phaseErr) {
+					recordMountDispatchHealthFailure(probeErr)
+				} else {
+					recordServerHealthFailure(lease.kind, probeErr)
+				}
 				break
 			}
 		}
@@ -819,7 +829,6 @@ var mountDispatchPhases = map[string]struct{}{
 	"mount-delete":   {},
 	"fixture-delete": {},
 	"health-probe":   {},
-	"cleanup":        {},
 }
 
 func classifyMountDispatchPhase(phase string, err error) string {
@@ -850,6 +859,36 @@ func classifyMountDispatchPhase(phase string, err error) string {
 		}
 	}
 	return fmt.Sprintf("operation=mount-dispatch;phase=%s;status=%s;code=%s", phase, status, code)
+}
+
+type mountDispatchHealthProbeError struct{ err error }
+
+func (e *mountDispatchHealthProbeError) Error() string { return errLiveServerHealthProbe.Error() }
+func (e *mountDispatchHealthProbeError) Unwrap() error { return e.err }
+
+func classifyMountDispatchHealthProbe(err error) string {
+	return classifyMountDispatchPhase("health-probe", err)
+}
+
+func mountDispatchHealthProbe(api *client.Client) func(context.Context) error {
+	probe := liveServerHealthProbe(api)
+	return func(ctx context.Context) error {
+		if err := probe(ctx); err != nil {
+			return &mountDispatchHealthProbeError{err: err}
+		}
+		return nil
+	}
+}
+
+func recordMountDispatchHealthFailure(err error) string {
+	liveHeavyStop.Store(true)
+	message := classifyMountDispatchHealthProbe(err)
+	if markerErr := createLiveStopMarker(); markerErr != nil {
+		message += "; marker=write-failed"
+	}
+	sanitized := sanitizeLiveDiagnostic(message)
+	recordResult(liveResult{kind: "mount-dispatch", diagnostic: sanitized, heavyFailure: true})
+	return sanitized
 }
 
 func requireMountDispatchPhaseNoError(t *testing.T, phase string, err error) {

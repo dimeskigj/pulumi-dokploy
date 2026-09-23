@@ -449,7 +449,7 @@ func TestClassifyMountDispatchPhase(t *testing.T) {
 		want  string
 	}{
 		{name: "transport", phase: "target-read", err: errors.New("transport"), want: "operation=mount-dispatch;phase=target-read;status=transport;code=unknown"},
-		{name: "cleanup", phase: "cleanup", err: errLiveCleanup, want: "operation=mount-dispatch;phase=cleanup;status=failed;code=unknown"},
+		{name: "fixture-delete", phase: "fixture-delete", err: errLiveCleanup, want: "operation=mount-dispatch;phase=fixture-delete;status=failed;code=unknown"},
 		{name: "api", phase: "mount-create", err: &client.APIError{StatusCode: 400, Code: "BAD_REQUEST", Message: secret}, want: "operation=mount-dispatch;phase=mount-create;status=4xx;code=BAD_REQUEST"},
 		{name: "timeout", phase: "health-probe", err: context.DeadlineExceeded, want: "operation=mount-dispatch;phase=health-probe;status=timeout;code=unknown"},
 		{name: "unknown-phase", phase: "unexpected", err: errors.New(secret), want: "operation=mount-dispatch;phase=unknown;status=transport;code=unknown"},
@@ -460,6 +460,11 @@ func TestClassifyMountDispatchPhase(t *testing.T) {
 			require.NotContains(t, got, secret)
 		})
 	}
+}
+
+func TestMountDispatchHealthProbeEvidence(t *testing.T) {
+	require.Equal(t, "operation=mount-dispatch;phase=health-probe;status=timeout;code=unknown",
+		classifyMountDispatchHealthProbe(context.DeadlineExceeded))
 }
 
 func TestMountDispatchPhaseEvidenceIsSanitized(t *testing.T) {
@@ -477,9 +482,22 @@ func TestDispatchFixtureLeaseTransitionsAroundDependentMount(t *testing.T) {
 	fixture.releaseForDependentMount(t)
 
 	mountLease := beginLiveHeavyOperation(t, "mount-create")
-	require.True(t, mountLease.release(t))
-	cleanupLease := beginLiveHeavyOperation(t, "mount-dispatch-cleanup")
-	require.True(t, cleanupLease.release(t))
+	order := []string{}
+	mountAbsent := false
+	mountOwner := newLiveCleanupOwner(func() {
+		order = append(order, "mount-delete")
+		mountAbsent = true
+		require.True(t, mountLease.release(t))
+	})
+	fixtureOwner := newLiveCleanupOwner(func() {
+		require.True(t, mountAbsent)
+		cleanupLease := beginLiveHeavyOperation(t, "mount-dispatch-cleanup")
+		require.True(t, cleanupLease.release(t))
+		order = append(order, "fixture-delete")
+	})
+	mountOwner.cleanupOnce()
+	fixtureOwner.cleanupOnce()
+	require.Equal(t, []string{"mount-delete", "fixture-delete"}, order)
 }
 
 func TestClassifyWorkloadCreateErrorNeverIncludesRawServerDetails(t *testing.T) {
