@@ -141,3 +141,55 @@ The evidence proves the provider and generated-client paths are structurally equ
 - `provider/live_harness_test.go`: focused target ownership helper and safe key-shape evidence.
 - `provider/live_harness_unit_test.go`: focused ownership and key-shape formatter regressions.
 - `provider/live_workloads_test.go`: self-contained focused Application/Compose Domain live harness and sanitized evidence logging.
+
+## Resumed Task 1: approved server-side reason inspection
+
+### Access investigated
+
+The repository exposes the typed `client.APIError` fields `StatusCode`, `Code`, `Message`, and `Operation`. A sanitizer was added that inspects only the typed message in memory, allowlists Domain field names and fixed categories (`missing-field`, `invalid-value`, `unsupported`, `validation`), and records only the resulting structural classification. Raw response text, logs, message text, request values, IDs, hosts, endpoints, and errors are never emitted.
+
+TDD RED:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestSanitizeDomainValidationReasonAllowListsFieldAndCategory$' -count=1 -v
+```
+
+Result: expected build failure because `sanitizeDomainValidationReason` was undefined.
+
+TDD GREEN:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'SanitizeDomainValidationReason|DomainComparisonEvidence' -count=1 -v
+```
+
+Result: PASS. The sanitizer regression confirms a field/category classification is emitted without the sentinel message value.
+
+### Live reason result
+
+Fresh marker paths were absent before the runs:
+
+```text
+/tmp/opencode/domain-reason-application.stop
+/tmp/opencode/domain-reason-compose.stop
+```
+
+Commands:
+
+```text
+DOKPLOY_ACCEPTANCE_STOP_FILE=/tmp/opencode/domain-reason-application.stop mise exec -- go test ./provider -run '^TestLiveDomainFocused/application$' -parallel=1 -count=1 -v
+DOKPLOY_ACCEPTANCE_STOP_FILE=/tmp/opencode/domain-reason-compose.stop mise exec -- go test ./provider -run '^TestLiveDomainFocused/compose$' -parallel=1 -count=1 -v
+```
+
+Both self-contained focused runs reached Domain create. The typed provider and generated errors exposed no allowlisted server validation field/category; the sanitized result was `providerReason=category=unknown;generatedReason=category=unknown` for both targets. Both remained `4xx/BAD_REQUEST` with equal structural request key sets. No raw error, response, body, or value was recorded. Cleanup completed without a recorded cleanup failure and both fresh markers remained absent.
+
+### Finding / remaining blocker
+
+No approved server-side validation reason is accessible through the typed API error or the repository’s documented schema/log access. The missing access is a server response/log channel that exposes a sanitized Domain validation field or fixed category. Individual-field payload experiments remain unauthorized, so no Domain payload or generated contract change was made.
+
+Final local verification:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider ./tests -run 'Domain|LiveDiagnosticSourceContract' -count=1
+```
+
+Result: PASS.
