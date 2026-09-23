@@ -262,20 +262,31 @@ func TestDomainContractExperimentFailsClosedWithoutID(t *testing.T) {
 
 func TestDomainContractExperimentSequenceStopsAfterBaselineFailure(t *testing.T) {
 	calls := []string{}
-	runDomainContractExperimentSequence(t, generated.DomainCreateJSONRequestBody{}, []domainContractExperiment{{field: "domainType"}}, func(field string, _ generated.DomainCreateJSONRequestBody) string {
+	runDomainContractExperimentSequence(t, generated.DomainCreateJSONRequestBody{}, []domainContractExperiment{{field: "domainType"}}, func(field string, _ generated.DomainCreateJSONRequestBody) domainExperimentResult {
 		calls = append(calls, field)
-		return "field=" + field + ";category=cleanup-failure"
+		return domainExperimentResult{field: field, category: "cleanup-failure"}
 	})
 	require.Equal(t, []string{"baseline"}, calls)
 	calls = nil
-	runDomainContractExperimentSequence(t, generated.DomainCreateJSONRequestBody{}, []domainContractExperiment{{field: "domainType"}, {field: "port"}}, func(field string, _ generated.DomainCreateJSONRequestBody) string {
+	runDomainContractExperimentSequence(t, generated.DomainCreateJSONRequestBody{}, []domainContractExperiment{{field: "domainType"}, {field: "port"}}, func(field string, _ generated.DomainCreateJSONRequestBody) domainExperimentResult {
 		calls = append(calls, field)
 		if field == "domainType" {
-			return "field=domainType;category=cleanup-failure"
+			return domainExperimentResult{field: field, category: "cleanup-failure"}
 		}
-		return "field=" + field + ";category=rejected"
+		return domainExperimentResult{field: field, category: "rejected"}
 	})
 	require.Equal(t, []string{"baseline", "domainType"}, calls)
+}
+
+func TestDomainContractExperimentTargetsStopWhenMarkerIsSet(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	calls := []string{}
+	runDomainContractExperimentTargets(t, []string{"application", "compose"}, func(name string) {
+		calls = append(calls, name)
+		liveHeavyStop.Store(true)
+	})
+	require.Equal(t, []string{"application"}, calls)
 }
 
 func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
