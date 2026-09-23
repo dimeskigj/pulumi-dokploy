@@ -391,6 +391,26 @@ func isSafeDomainReasonCategory(category string) bool {
 	}
 }
 
+func serializedDomainFieldDiff(baseline, variant map[string]any) []string {
+	seen := make(map[string]struct{}, len(baseline)+len(variant))
+	for key := range baseline {
+		seen[key] = struct{}{}
+	}
+	for key := range variant {
+		seen[key] = struct{}{}
+	}
+	changed := make([]string, 0, len(seen))
+	for key := range seen {
+		baselineValue, _ := json.Marshal(baseline[key])
+		variantValue, _ := json.Marshal(variant[key])
+		if !bytes.Equal(baselineValue, variantValue) {
+			changed = append(changed, key)
+		}
+	}
+	sort.Strings(changed)
+	return changed
+}
+
 func domainResultStatus(classification string) (string, string) {
 	parts := strings.Split(classification, ";")
 	if (len(parts) != 3 && len(parts) != 5) || parts[0] != "operation=domain" || !strings.HasPrefix(parts[1], "status=") || !strings.HasPrefix(parts[2], "code=") {

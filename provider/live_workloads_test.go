@@ -24,6 +24,8 @@ type domainContractExperiment struct {
 	body  generated.DomainCreateJSONRequestBody
 }
 
+var errDomainExperimentMissingID = errors.New("domain experiment returned no resource id")
+
 func domainContractExperimentCases(args DomainArgs, compose bool) []domainContractExperiment {
 	base := domainCreateBody(args)
 	domainTypeOmitted := base
@@ -51,6 +53,20 @@ func domainContractExperimentCases(args DomainArgs, compose bool) []domainContra
 		cases = append(cases, domainContractExperiment{field: "serviceName", body: serviceNameOmitted})
 	}
 	return cases
+}
+
+func classifyDomainExperimentResult(statusClass string, hasID bool) (string, bool) {
+	switch statusClass {
+	case "2xx":
+		if !hasID {
+			return "cleanup-failure", false
+		}
+		return "accepted", false
+	case "transport", "5xx":
+		return "environment", false
+	default:
+		return "rejected", true
+	}
 }
 
 // TestLiveTier2Workloads is intentionally one serial test. Workload creates
@@ -1331,7 +1347,7 @@ func TestLiveDomainContractExperiments(t *testing.T) {
 				for _, experiment := range domainContractExperimentCases(args, target.compose) {
 					result := runDomainContractExperiment(t, ctx, api, target.name, experiment.field, experiment.body)
 					t.Logf("%s", result)
-					if strings.Contains(result, "category=accepted") {
+					if strings.Contains(result, "category=accepted") || strings.Contains(result, "category=cleanup-failure") || strings.Contains(result, "category=environment") {
 						break
 					}
 				}
@@ -1360,14 +1376,16 @@ func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.
 	classification, classificationErr := classifyWorkloadCreateAttempt("domain", status, code, keys, true, true)
 	requireNoError(t, classificationErr)
 	statusClass, safeCode := domainResultStatus(classification)
-	category := "rejected"
-	if statusClass == "2xx" {
-		category = "accepted"
+	hasID := response != nil && response.JSON200 != nil && response.JSON200.DomainId != nil && *response.JSON200.DomainId != ""
+	category, _ := classifyDomainExperimentResult(statusClass, hasID)
+	if category == "environment" {
+		recordServerHealthFailure("domain-experiment", errLiveServerHealthProbe)
 	}
-	if statusClass == "transport" || statusClass == "5xx" {
-		category = "environment"
+	if category == "cleanup-failure" {
+		recordCleanupResult("domain", errDomainExperimentMissingID)
+		return fmt.Sprintf("field=%s;status=%s;code=%s;category=%s", field, statusClass, safeCode, category)
 	}
-	if response != nil && response.JSON200 != nil && response.JSON200.DomainId != nil && *response.JSON200.DomainId != "" {
+	if hasID {
 		id := *response.JSON200.DomainId
 		cleanupCtx, cancel := cleanupContext()
 		cleanupErr := verifyLiveCleanup(cleanupCtx, func(c context.Context) error {
@@ -1381,7 +1399,10 @@ func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.
 			return *read.JSON200.DomainId, nil
 		})
 		cancel()
-		requireNoError(t, cleanupErr)
+		if cleanupErr != nil {
+			reportLiveCleanup(t, "domain", "experiment", cleanupErr)
+			category = "cleanup-failure"
+		}
 	}
 	return fmt.Sprintf("field=%s;status=%s;code=%s;category=%s", field, statusClass, safeCode, category)
 }
