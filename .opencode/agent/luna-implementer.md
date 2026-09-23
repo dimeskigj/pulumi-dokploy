@@ -1,7 +1,7 @@
 ---
 description: Implements one scoped development task from a supplied brief, including tests, verification, self-review, and commits. Use for SDD implementation and fix rounds.
 mode: subagent
-model: openai/gpt-5.6-luna
+model: openai/gpt-6-luna
 permission:
   edit: allow
   bash: allow

@@ -1,7 +1,7 @@
 ---
 description: Reviews a scoped implementation diff for specification compliance, correctness, regressions, security, and test quality. Use for SDD task reviews and final branch review.
 mode: subagent
-model: openai/gpt-5.6-luna
+model: openai/gpt-6-luna
 permission:
   edit: deny
   bash: allow
