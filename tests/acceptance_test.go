@@ -297,7 +297,18 @@ func TestAcceptanceStageErrorClassifiesContextAndNilErrors(t *testing.T) {
 }
 
 func TestAcceptanceStageErrorAllowsEverySmokeStage(t *testing.T) {
-	for stage := range acceptanceStages {
+	wantStages := []string{
+		"workspace", "plugin-discovery", "stack-create", "configure-endpoint",
+		"configure-api-key", "preview-1", "up-1", "refresh-1", "preview-2",
+		"up-2", "refresh-2", "destroy", "export", "remove-stack", "list-stacks",
+	}
+	if len(acceptanceStages) != len(wantStages) {
+		t.Fatalf("acceptance stage coverage = %d, want %d", len(acceptanceStages), len(wantStages))
+	}
+	for _, stage := range wantStages {
+		if _, ok := acceptanceStages[stage]; !ok {
+			t.Errorf("required stage %q is not allowlisted", stage)
+		}
 		err := acceptanceStageError(stage, errors.New("sensitive process detail"))
 		want := "Pulumi acceptance failed at stage " + stage + ": category=process"
 		if got := err.Error(); got != want {
