@@ -69,6 +69,23 @@ func classifyDomainExperimentResult(statusClass string, hasID bool) (string, boo
 	}
 }
 
+func domainExperimentMustStop(result string) bool {
+	return strings.Contains(result, "category=accepted") || strings.Contains(result, "category=cleanup-failure") || strings.Contains(result, "category=environment")
+}
+
+func runDomainContractExperimentSequence(t *testing.T, baseline generated.DomainCreateJSONRequestBody, experiments []domainContractExperiment, run func(string, generated.DomainCreateJSONRequestBody) string) {
+	t.Helper()
+	result := run("baseline", baseline)
+	if domainExperimentMustStop(result) {
+		return
+	}
+	for _, experiment := range experiments {
+		if domainExperimentMustStop(run(experiment.field, experiment.body)) {
+			return
+		}
+	}
+}
+
 // TestLiveTier2Workloads is intentionally one serial test. Workload creates
 // deploy containers and mounts cause another deploy, so parallel subtests
 // would needlessly increase load on the acceptance server.
@@ -1342,15 +1359,11 @@ func TestLiveDomainContractExperiments(t *testing.T) {
 					args.ApplicationID = &target.id
 				}
 				baseline := domainCreateBody(args)
-				result := runDomainContractExperiment(t, ctx, api, target.name, "baseline", baseline)
-				t.Logf("%s", result)
-				for _, experiment := range domainContractExperimentCases(args, target.compose) {
-					result := runDomainContractExperiment(t, ctx, api, target.name, experiment.field, experiment.body)
+				runDomainContractExperimentSequence(t, baseline, domainContractExperimentCases(args, target.compose), func(field string, body generated.DomainCreateJSONRequestBody) string {
+					result := runDomainContractExperiment(t, ctx, api, target.name, field, body)
 					t.Logf("%s", result)
-					if strings.Contains(result, "category=accepted") || strings.Contains(result, "category=cleanup-failure") || strings.Contains(result, "category=environment") {
-						break
-					}
-				}
+					return result
+				})
 			})
 		})
 	}

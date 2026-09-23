@@ -108,6 +108,26 @@ git diff --check
 
 Result: PASS. Existing cancellation edits and the untracked plan remain unstaged.
 
+## Review follow-up: fail-closed experiment control flow
+
+Added `TestDomainContractExperimentSequenceStopsAfterBaselineFailure`, covering both baseline cleanup failure and variant cleanup failure. The sequence runner now stops immediately for `accepted`, `cleanup-failure`, or `environment` results, so a baseline 2xx response without an ID cannot allow any later variant attempt; the same applies after any variant. Existing sanitized cleanup reporting and stop-marker creation remain responsible for cleanup/health failures.
+
+TDD RED:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainContractExperimentSequenceStopsAfterBaselineFailure$' -count=1 -v
+```
+
+Result: expected build failure because `runDomainContractExperimentSequence` was undefined.
+
+GREEN covering commands:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'DomainContractExperiment|DomainComparisonEvidence|SanitizeDomainValidationReason' -count=1 -v
+```
+
+Result: PASS. No live runs were performed. Existing incident markers, cancellation edits, and the untracked plan were preserved.
+
 ## Luna medium finding: reason interpolation hardening
 
 Added `TestDomainComparisonEvidenceRejectsMaliciousReasons` before changing `formatDomainComparisonEvidence`. RED demonstrated that a malicious `provider.reason` was interpolated into evidence. The formatter now validates both reasons against the fixed `field=<allowlisted Domain field>;category=<allowlisted category>` shape (or a fixed category-only shape), normalizes only the validated tokens, and returns fixed `invalid-evidence` for any other input.
