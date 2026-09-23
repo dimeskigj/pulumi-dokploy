@@ -13,6 +13,7 @@ import (
 	"time"
 
 	dokploy "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"
+	"github.com/google/uuid"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/apitype"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -42,7 +43,7 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 	stackName := acceptanceStackName(cfg.NameSuffix)
 	stack, err := auto.NewStackInlineSource(ctx, stackName, acceptanceProjectName(cfg.NameSuffix), lifecycleRevisionOne(cfg),
 		auto.PulumiHome(filepath.Join(backend, "pulumi")),
-		auto.EnvVars(map[string]string{"PULUMI_BACKEND_URL": "file://" + backend}),
+		auto.EnvVars(acceptanceAutomationEnv(backend, uuid.NewString())),
 	)
 	if err != nil {
 		t.Fatal(acceptanceStageError("stack-create", err))
@@ -122,6 +123,13 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 		t.Fatal(acceptanceStageError("refresh-2", err))
 	}
 	assertRefreshedLifecycleOutputs(t, ctx, stack, "refresh-2", lifecycleRevisionTwoValues(), cfg, &revisionOne)
+}
+
+func acceptanceAutomationEnv(backend, passphrase string) map[string]string {
+	return map[string]string{
+		"PULUMI_BACKEND_URL":       "file://" + backend,
+		"PULUMI_CONFIG_PASSPHRASE": passphrase,
+	}
 }
 
 func lifecycleSmokeProgram(cfg liveConfig, description, environmentName, tagColor string) pulumi.RunFunc {
