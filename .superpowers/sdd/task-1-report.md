@@ -30,6 +30,26 @@ env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provi
 
 Result: PASS.
 
+## Luna medium finding: reason interpolation hardening
+
+Added `TestDomainComparisonEvidenceRejectsMaliciousReasons` before changing `formatDomainComparisonEvidence`. RED demonstrated that a malicious `provider.reason` was interpolated into evidence. The formatter now validates both reasons against the fixed `field=<allowlisted Domain field>;category=<allowlisted category>` shape (or a fixed category-only shape), normalizes only the validated tokens, and returns fixed `invalid-evidence` for any other input.
+
+RED command:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainComparisonEvidenceRejectsMaliciousReasons$' -count=1 -v
+```
+
+Result: expected failure showing the unsafe message would have been emitted.
+
+GREEN focused command:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'DomainComparisonEvidence|SanitizeDomainValidationReason' -count=1 -v
+```
+
+Result: PASS, including existing sanitized evidence tests and the malicious-reason regression. No live retry or production payload change was made.
+
 Final focused verification:
 
 ```text
