@@ -128,6 +128,26 @@ env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provi
 
 Result: PASS. No live runs were performed. Existing incident markers, cancellation edits, and the untracked plan were preserved.
 
+## Review follow-up: stop subsequent targets after marker
+
+Added `TestDomainContractExperimentTargetsStopWhenMarkerIsSet` before implementing target-level control flow. The target runner now checks `heavyLiveTierStopped()` before every target setup and exits before starting Compose when Application cleanup/health handling sets the global stop state. Experiment outcomes are now a structured `domainExperimentResult`; sequence stopping uses the allowlisted category field rather than substring matching. The existing sequence-level baseline/variant stop test remains covered.
+
+RED command:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainContractExperimentTargetsStopWhenMarkerIsSet$' -count=1 -v
+```
+
+Result: expected build failure because `runDomainContractExperimentTargets` and the structured result type were undefined.
+
+GREEN commands:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'DomainContractExperimentTargetsStopWhenMarkerIsSet|DomainContractExperimentSequenceStopsAfterBaselineFailure' -count=1 -v
+```
+
+Result: all PASS. No live tests were run and no marker was deleted; existing cancellation edits and the plan file remain untouched.
+
 ## Luna medium finding: reason interpolation hardening
 
 Added `TestDomainComparisonEvidenceRejectsMaliciousReasons` before changing `formatDomainComparisonEvidence`. RED demonstrated that a malicious `provider.reason` was interpolated into evidence. The formatter now validates both reasons against the fixed `field=<allowlisted Domain field>;category=<allowlisted category>` shape (or a fixed category-only shape), normalizes only the validated tokens, and returns fixed `invalid-evidence` for any other input.

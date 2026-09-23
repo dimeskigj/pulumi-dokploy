@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -22,6 +21,14 @@ import (
 type domainContractExperiment struct {
 	field string
 	body  generated.DomainCreateJSONRequestBody
+}
+
+type domainExperimentResult struct {
+	field, status, code, category string
+}
+
+func (r domainExperimentResult) String() string {
+	return fmt.Sprintf("field=%s;status=%s;code=%s;category=%s", r.field, r.status, r.code, r.category)
 }
 
 var errDomainExperimentMissingID = errors.New("domain experiment returned no resource id")
@@ -69,11 +76,16 @@ func classifyDomainExperimentResult(statusClass string, hasID bool) (string, boo
 	}
 }
 
-func domainExperimentMustStop(result string) bool {
-	return strings.Contains(result, "category=accepted") || strings.Contains(result, "category=cleanup-failure") || strings.Contains(result, "category=environment")
+func domainExperimentMustStop(result domainExperimentResult) bool {
+	switch result.category {
+	case "accepted", "cleanup-failure", "environment":
+		return true
+	default:
+		return false
+	}
 }
 
-func runDomainContractExperimentSequence(t *testing.T, baseline generated.DomainCreateJSONRequestBody, experiments []domainContractExperiment, run func(string, generated.DomainCreateJSONRequestBody) string) {
+func runDomainContractExperimentSequence(t *testing.T, baseline generated.DomainCreateJSONRequestBody, experiments []domainContractExperiment, run func(string, generated.DomainCreateJSONRequestBody) domainExperimentResult) {
 	t.Helper()
 	result := run("baseline", baseline)
 	if domainExperimentMustStop(result) {
@@ -83,6 +95,17 @@ func runDomainContractExperimentSequence(t *testing.T, baseline generated.Domain
 		if domainExperimentMustStop(run(experiment.field, experiment.body)) {
 			return
 		}
+	}
+}
+
+func runDomainContractExperimentTargets(t *testing.T, names []string, run func(string)) {
+	t.Helper()
+	for _, name := range names {
+		if heavyLiveTierStopped() {
+			return
+		}
+		name := name
+		t.Run(name, func(t *testing.T) { run(name) })
 	}
 }
 
@@ -1342,34 +1365,28 @@ func TestLiveDomainContractExperiments(t *testing.T) {
 	ctx := liveContext(t, 30*time.Minute)
 	_, environmentID, releaseProject := liveProject(t, ctx, api)
 	t.Cleanup(releaseProject)
-	for _, compose := range []bool{false, true} {
-		compose := compose
-		name := "application"
-		if compose {
-			name = "compose"
-		}
-		t.Run(name, func(t *testing.T) {
-			runFocusedDomainTarget(t, func() (focusedDomainTarget, func()) {
-				return createFocusedDomainTarget(t, ctx, api, environmentID, compose)
-			}, func(target focusedDomainTarget) {
-				args := DomainArgs{Host: liveRunName("experiment-domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
-				if target.compose {
-					args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
-				} else {
-					args.ApplicationID = &target.id
-				}
-				baseline := domainCreateBody(args)
-				runDomainContractExperimentSequence(t, baseline, domainContractExperimentCases(args, target.compose), func(field string, body generated.DomainCreateJSONRequestBody) string {
-					result := runDomainContractExperiment(t, ctx, api, target.name, field, body)
-					t.Logf("%s", result)
-					return result
-				})
+	runDomainContractExperimentTargets(t, []string{"application", "compose"}, func(name string) {
+		compose := name == "compose"
+		runFocusedDomainTarget(t, func() (focusedDomainTarget, func()) {
+			return createFocusedDomainTarget(t, ctx, api, environmentID, compose)
+		}, func(target focusedDomainTarget) {
+			args := DomainArgs{Host: liveRunName("experiment-domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
+			if target.compose {
+				args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
+			} else {
+				args.ApplicationID = &target.id
+			}
+			baseline := domainCreateBody(args)
+			runDomainContractExperimentSequence(t, baseline, domainContractExperimentCases(args, target.compose), func(field string, body generated.DomainCreateJSONRequestBody) domainExperimentResult {
+				result := runDomainContractExperiment(t, ctx, api, target.name, field, body)
+				t.Logf("%s", result)
+				return result
 			})
 		})
-	}
+	})
 }
 
-func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.Client, target, field string, body generated.DomainCreateJSONRequestBody) string {
+func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.Client, target, field string, body generated.DomainCreateJSONRequestBody) domainExperimentResult {
 	t.Helper()
 	keys, err := domainCreateRequestKeysFromBody(body)
 	requireNoError(t, err)
@@ -1396,7 +1413,7 @@ func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.
 	}
 	if category == "cleanup-failure" {
 		recordCleanupResult("domain", errDomainExperimentMissingID)
-		return fmt.Sprintf("field=%s;status=%s;code=%s;category=%s", field, statusClass, safeCode, category)
+		return domainExperimentResult{field: field, status: statusClass, code: safeCode, category: category}
 	}
 	if hasID {
 		id := *response.JSON200.DomainId
@@ -1417,7 +1434,7 @@ func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.
 			category = "cleanup-failure"
 		}
 	}
-	return fmt.Sprintf("field=%s;status=%s;code=%s;category=%s", field, statusClass, safeCode, category)
+	return domainExperimentResult{field: field, status: statusClass, code: safeCode, category: category}
 }
 
 func TestLiveDomainFocused(t *testing.T) {
