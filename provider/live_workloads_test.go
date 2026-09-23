@@ -564,6 +564,8 @@ func TestLiveTier2Workloads(t *testing.T) {
 			if fixture != nil {
 				readiness = fixture.readiness
 			}
+			healthProbe := mountDispatchHealthProbe(api)
+			targetReadLease := beginLiveHeavyOperation(t, "mount-dispatch-target-read", healthProbe)
 			readyErr := readReadyMountTarget(func() (string, error) {
 				present, ready, readErr := readiness(ctx)
 				if readErr != nil {
@@ -576,33 +578,50 @@ func TestLiveTier2Workloads(t *testing.T) {
 					return statusDone, nil
 				}
 				return "running", nil
-			}, func() {
-				created, err = r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: mount})
-			})
+			}, func() {})
+			releaseMountDispatchLease(t, targetReadLease)
+			requireMountDispatchPhaseNoError(t, "target-read", readyErr)
 			requireLiveLifecycleNoError(t, "Mount", "read ready target", readyErr)
-			cleanupAfterCreateError(t, "mount", created.ID, err, func(c context.Context) error {
-				_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
-				return e
-			}, func(c context.Context) (string, error) {
-				v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
-				return v.ID, e
-			})
-			release := func() {}
-			if err == nil {
-				release = registerLiveCleanup(t, "mount", created.ID, func(c context.Context) error {
+			createLease := beginLiveHeavyOperation(t, "mount-dispatch-mount-create", healthProbe)
+			created, err = r.Create(ctx, infer.CreateRequest[MountArgs]{Inputs: mount})
+			createErr := processLiveHeavyOperationError(t, createLease, err, func() {
+				cleanupAfterCreateError(t, "mount", created.ID, err, func(c context.Context) error {
 					_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
 					return e
 				}, func(c context.Context) (string, error) {
 					v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 					return v.ID, e
 				})
+			}, healthProbe)
+			releaseMountDispatchLease(t, createLease)
+			requireMountDispatchPhaseNoError(t, "mount-create", createErr)
+			err = createErr
+			release := func() {}
+			if err == nil {
+				// The fallback owner must retain the mount until cleanup succeeds;
+				// its callback is itself serialized and independently health-gated.
+				owner := registerDispatchMountCleanupOwner(t, api, created.ID, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[MountState]{ID: created.ID, State: created.Output})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
+					return v.ID, e
+				})
+				release = owner.release
 			}
 			requireWorkloadCreateNoError(t, "mount", err, mountCreateRequestKeys(mount), targetID != "", targetID != "", "MountDispatch/"+target)
+			readLease := beginLiveHeavyOperation(t, "mount-dispatch-mount-read", healthProbe)
 			read, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: created.Output})
+			releaseMountDispatchLease(t, readLease)
+			requireMountDispatchPhaseNoError(t, "mount-read", err)
 			requireWorkloadLifecycleNoError(t, "mount", err)
+			importLease := beginLiveHeavyOperation(t, "mount-dispatch-mount-read", healthProbe)
 			imported, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID, State: read.State})
+			releaseMountDispatchLease(t, importLease)
+			requireMountDispatchPhaseNoError(t, "mount-read", err)
 			requireWorkloadLifecycleNoError(t, "mount", err)
 			requireLiveEqual(t, "mount."+serviceType+"Id", targetID, mountTargetID(imported.Inputs, serviceType))
+			deleteLease := beginLiveHeavyOperation(t, "mount-dispatch-mount-delete", healthProbe)
 			err = deleteAndVerifyLiveOwned(ctx, func() error {
 				_, e := r.Delete(ctx, infer.DeleteRequest[MountState]{ID: created.ID, State: imported.State})
 				return e
@@ -610,8 +629,13 @@ func TestLiveTier2Workloads(t *testing.T) {
 				gone, e := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
 				return gone.ID, e
 			}, release)
+			releaseMountDispatchLease(t, deleteLease)
+			requireMountDispatchPhaseNoError(t, "mount-delete", err)
 			requireWorkloadLifecycleNoError(t, "mount", err)
+			goneLease := beginLiveHeavyOperation(t, "mount-dispatch-mount-read", healthProbe)
 			gone, err := r.Read(ctx, infer.ReadRequest[MountArgs, MountState]{ID: created.ID})
+			releaseMountDispatchLease(t, goneLease)
+			requireMountDispatchPhaseNoError(t, "mount-read", err)
 			requireWorkloadLifecycleNoError(t, "mount", err)
 			requireLiveEqual(t, "mount.id after delete", "", gone.ID)
 			if target != "compose" {
@@ -1277,9 +1301,23 @@ func (fixture *liveDispatchFixture) cleanup(t *testing.T) {
 		fixture.cleaned = true
 		return
 	}
-	if fixture.lease.released {
-		fixture.lease = beginLiveHeavyOperation(t, "mount-dispatch-cleanup", mountDispatchHealthProbe(fixture.api))
+	ctx, cancel := cleanupContext()
+	defer cancel()
+	if liveAcceptanceEnabled() {
+		if err := verifyLiveServerHealth(ctx, liveServerHealthProbe(fixture.api)); err != nil {
+			recordMountDispatchHealthFailure(err)
+		}
 	}
+	if fixture.lease.released {
+		lease, err := acquireCleanupHeavyOperation(ctx, "mount-dispatch-cleanup")
+		if err != nil {
+			reportLiveCleanup(t, "mount-dispatch", fixture.id, errLiveCleanup)
+			t.Errorf("%s", classifyMountDispatchPhase("fixture-delete", errLiveCleanup))
+			return
+		}
+		fixture.lease = lease
+	}
+	defer fixture.lease.releaseIfNeeded(t)
 	if finishDatabaseCleanup(t, fixture.lease, "mount-dispatch", fixture.id, fixture.remove, fixture.readID) {
 		fixture.cleaned = true
 	} else {
@@ -1449,7 +1487,7 @@ func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.
 	hasID := response != nil && response.JSON200 != nil && response.JSON200.DomainId != nil && *response.JSON200.DomainId != ""
 	category, _ := classifyDomainExperimentResult(statusClass, hasID)
 	if category == "environment" {
-		recordServerHealthFailure("domain-experiment", errLiveServerHealthProbe)
+		recordDomainExperimentHealthFailure(ctx, liveServerHealthProbe(api))
 	}
 	if category == "cleanup-failure" {
 		recordCleanupResult("domain", errDomainExperimentMissingID)
@@ -1475,6 +1513,73 @@ func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.
 		}
 	}
 	return domainExperimentResult{field: field, status: statusClass, code: safeCode, category: category}
+}
+
+func recordDomainExperimentHealthFailure(ctx context.Context, probe func(context.Context) error) bool {
+	if probe == nil {
+		return false
+	}
+	// The failed workload request may have consumed or canceled its operation
+	// context. Probe independently with a fresh bounded context before stopping
+	// later acceptance work.
+	if err := verifyLiveServerHealth(context.WithoutCancel(ctx), probe); err == nil {
+		return false
+	}
+	recordServerHealthFailure("domain-experiment", errLiveServerHealthProbe)
+	return true
+}
+
+func cleanupDispatchMount(t *testing.T, api *client.Client, id string, remove func(context.Context) error, read func(context.Context) (string, error)) error {
+	t.Helper()
+	ctx, cancel := cleanupContext()
+	defer cancel()
+	if liveAcceptanceEnabled() {
+		if err := verifyLiveServerHealth(ctx, liveServerHealthProbe(api)); err != nil {
+			recordMountDispatchHealthFailure(err)
+		}
+	}
+	lease, err := acquireCleanupHeavyOperation(ctx, "mount-dispatch-fallback-cleanup")
+	if err != nil {
+		return errLiveCleanup
+	}
+	defer lease.releaseIfNeeded(t)
+	return verifyLiveCleanup(ctx, remove, read)
+}
+
+func acquireCleanupHeavyOperation(ctx context.Context, kind string) (*liveHeavyOperationLease, error) {
+	for {
+		lease, err := acquireLiveHeavyOperation(ctx, kind, nil)
+		if err == nil {
+			return lease, nil
+		}
+		liveHeavyOperation.Lock()
+		busy := liveHeavyOperation.kind != ""
+		liveHeavyOperation.Unlock()
+		if !busy {
+			return nil, err
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(10 * time.Millisecond):
+		}
+	}
+}
+
+func releaseMountDispatchLease(t *testing.T, lease *liveHeavyOperationLease) {
+	t.Helper()
+	lease.releaseIfNeeded(t)
+}
+
+func registerDispatchMountCleanupOwner(t *testing.T, api *client.Client, id string, remove func(context.Context) error, read func(context.Context) (string, error)) *liveCleanupOwner {
+	t.Helper()
+	owner := newLiveCleanupOwner(func() {
+		if err := cleanupDispatchMount(t, api, id, remove, read); err != nil {
+			reportLiveCleanup(t, "mount", id, err)
+		}
+	})
+	t.Cleanup(owner.cleanupOnce)
+	return owner
 }
 
 func TestLiveDomainFocused(t *testing.T) {
