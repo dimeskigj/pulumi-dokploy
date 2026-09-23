@@ -829,6 +829,7 @@ var mountDispatchPhases = map[string]struct{}{
 	"fixture-create": {},
 	"target-read":    {},
 	"mount-create":   {},
+	"mount-read":     {},
 	"mount-update":   {},
 	"mount-delete":   {},
 	"fixture-delete": {},

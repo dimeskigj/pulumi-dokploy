@@ -307,6 +307,59 @@ func TestDomainContractExperimentTargetsStopWhenMarkerIsSet(t *testing.T) {
 	require.Equal(t, []string{"application"}, calls)
 }
 
+func TestDomainExperimentTransportDoesNotCreateHealthStopMarker(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	marker := filepath.Join(t.TempDir(), "domain.stop")
+	t.Setenv(liveStopMarkerEnvironment, marker)
+
+	recorded := recordDomainExperimentHealthFailure(t.Context(), func(context.Context) error {
+		return nil
+	})
+
+	require.False(t, recorded)
+	require.False(t, heavyLiveTierStopped())
+	_, err := os.Stat(marker)
+	require.ErrorIs(t, err, os.ErrNotExist)
+}
+
+func TestDomainExperimentUsesIndependentHealthContext(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	marker := filepath.Join(t.TempDir(), "domain.stop")
+	t.Setenv(liveStopMarkerEnvironment, marker)
+	operationCtx, cancel := context.WithCancel(t.Context())
+	cancel()
+	probeCalled := false
+
+	recorded := recordDomainExperimentHealthFailure(operationCtx, func(ctx context.Context) error {
+		probeCalled = true
+		require.NoError(t, ctx.Err())
+		return nil
+	})
+
+	require.True(t, probeCalled)
+	require.False(t, recorded)
+	require.False(t, heavyLiveTierStopped())
+}
+
+func TestDomainExperimentFailedHealthProbeCreatesStopMarker(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	marker := filepath.Join(t.TempDir(), "domain.stop")
+	t.Setenv(liveStopMarkerEnvironment, marker)
+
+	recorded := recordDomainExperimentHealthFailure(t.Context(), func(context.Context) error {
+		return &client.APIError{StatusCode: http.StatusServiceUnavailable, Code: "SERVICE_UNAVAILABLE"}
+	})
+
+	require.True(t, recorded)
+	require.True(t, heavyLiveTierStopped())
+	contents, err := os.ReadFile(marker)
+	require.NoError(t, err)
+	require.Equal(t, "stop\n", string(contents))
+}
+
 func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
 	reason := sanitizeDomainValidationReason(&client.APIError{Message: "domainType has an invalid value secret-sentinel"})
 	require.Equal(t, "field=domainType;category=invalid-value", reason)
@@ -512,6 +565,7 @@ func TestMountDispatchPhaseAllowlistIsExact(t *testing.T) {
 		"fixture-create": {},
 		"target-read":    {},
 		"mount-create":   {},
+		"mount-read":     {},
 		"mount-update":   {},
 		"mount-delete":   {},
 		"fixture-delete": {},
@@ -550,6 +604,190 @@ func TestDispatchFixtureLeaseTransitionsAroundDependentMount(t *testing.T) {
 	mountOwner.cleanupOnce()
 	fixtureOwner.cleanupOnce()
 	require.Equal(t, []string{"mount-delete", "fixture-delete"}, order)
+}
+
+func TestDispatchMountFallbackCleanupHoldsLeaseThroughVerifiedAbsence(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "")
+	var events []string
+	owner := registerDispatchMountCleanupOwner(t, nil, "mount-id", func(context.Context) error {
+		liveHeavyOperation.Lock()
+		kind := liveHeavyOperation.kind
+		liveHeavyOperation.Unlock()
+		require.Equal(t, "mount-dispatch-fallback-cleanup", kind)
+		events = append(events, "delete")
+		return nil
+	}, func(context.Context) (string, error) {
+		liveHeavyOperation.Lock()
+		kind := liveHeavyOperation.kind
+		liveHeavyOperation.Unlock()
+		require.Equal(t, "mount-dispatch-fallback-cleanup", kind)
+		events = append(events, "verify-absent")
+		return "", nil
+	})
+	owner.cleanupOnce()
+	require.Equal(t, []string{"delete", "verify-absent"}, events)
+	lease := beginLiveHeavyOperation(t, "fixture-cleanup-after-mount")
+	lease.releaseIfNeeded(t)
+}
+
+func TestDispatchMountFallbackCleanupRunsDespiteExistingStopMarker(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "")
+	marker := filepath.Join(t.TempDir(), "incident.stop")
+	require.NoError(t, os.WriteFile(marker, []byte("stop\n"), 0600))
+	t.Setenv(liveStopMarkerEnvironment, marker)
+	liveHeavyStop.Store(true)
+	deleted, verified := false, false
+	t.Run("cleanup owner runs", func(t *testing.T) {
+		owner := registerDispatchMountCleanupOwner(t, nil, "mount-id", func(ctx context.Context) error {
+			_, hasDeadline := ctx.Deadline()
+			require.True(t, hasDeadline)
+			require.NoError(t, ctx.Err())
+			deleted = true
+			return nil
+		}, func(ctx context.Context) (string, error) {
+			require.NoError(t, ctx.Err())
+			verified = true
+			return "", nil
+		})
+		owner.cleanupOnce()
+	})
+	require.True(t, deleted)
+	require.True(t, verified)
+	contents, err := os.ReadFile(marker)
+	require.NoError(t, err)
+	require.Equal(t, "stop\n", string(contents))
+}
+
+func TestDispatchMountFallbackCleanupRunsAfterHealthProbeFailure(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "1")
+	t.Setenv("DOKPLOY_ENDPOINT", "https://example.invalid")
+	t.Setenv("DOKPLOY_API_KEY", "test-key")
+	marker := filepath.Join(t.TempDir(), "incident.stop")
+	t.Setenv(liveStopMarkerEnvironment, marker)
+	requests := make([]scriptedRequest, 5)
+	for i := range requests {
+		requests[i] = scriptedRequest{Method: http.MethodGet, Path: "/api/project.one", Query: map[string][]string{"projectId": {""}}, Status: http.StatusServiceUnavailable, Response: []byte(`{"code":"SERVICE_UNAVAILABLE"}`)}
+	}
+	server := newScriptedServer(t, requests...)
+	deleted, verified := false, false
+	t.Run("cleanup owner runs", func(t *testing.T) {
+		owner := registerDispatchMountCleanupOwner(t, server.API(), "mount-id", func(ctx context.Context) error {
+			_, hasDeadline := ctx.Deadline()
+			require.True(t, hasDeadline)
+			require.NoError(t, ctx.Err())
+			deleted = true
+			return nil
+		}, func(ctx context.Context) (string, error) {
+			require.NoError(t, ctx.Err())
+			verified = true
+			return "", nil
+		})
+		owner.cleanupOnce()
+	})
+	require.True(t, deleted)
+	require.True(t, verified)
+	require.True(t, heavyLiveTierStopped())
+	contents, err := os.ReadFile(marker)
+	require.NoError(t, err)
+	require.Equal(t, "stop\n", string(contents))
+}
+
+func TestMountDispatchPhaseFailureReleasesLeaseBeforeClassification(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "")
+	lease := beginLiveHeavyOperation(t, "mount-dispatch-read")
+	releaseMountDispatchLease(t, lease)
+	diagnostic := classifyMountDispatchPhase("mount-read", errors.New("phase failure"))
+	require.Contains(t, diagnostic, "phase=mount-read")
+	lease = beginLiveHeavyOperation(t, "cleanup-after-phase-failure")
+	lease.releaseIfNeeded(t)
+}
+
+func TestDispatchFixtureCleanupRunsDespiteExistingStopMarker(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "")
+	marker := filepath.Join(t.TempDir(), "incident.stop")
+	require.NoError(t, os.WriteFile(marker, []byte("stop\n"), 0600))
+	t.Setenv(liveStopMarkerEnvironment, marker)
+	liveHeavyStop.Store(true)
+	deleted, verified := false, false
+	fixture := &liveDispatchFixture{
+		id: "fixture-id", lease: &liveHeavyOperationLease{kind: "fixture-create", released: true},
+		remove: func(ctx context.Context) error {
+			_, hasDeadline := ctx.Deadline()
+			require.True(t, hasDeadline)
+			deleted = true
+			return nil
+		},
+		readID: func(ctx context.Context) (string, error) {
+			require.NoError(t, ctx.Err())
+			verified = true
+			return "", nil
+		},
+	}
+
+	t.Run("cleanup", func(t *testing.T) { fixture.cleanup(t) })
+
+	require.True(t, deleted)
+	require.True(t, verified)
+	require.True(t, fixture.cleaned)
+	contents, err := os.ReadFile(marker)
+	require.NoError(t, err)
+	require.Equal(t, "stop\n", string(contents))
+	lease, err := acquireLiveHeavyOperation(t.Context(), "after-fixture-cleanup", nil)
+	require.NoError(t, err)
+	require.True(t, lease.release(t))
+}
+
+func TestDispatchFixtureCleanupContinuesAfterHealthProbeFailure(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	t.Setenv("DOKPLOY_ACCEPTANCE", "1")
+	t.Setenv("DOKPLOY_ENDPOINT", "https://example.invalid")
+	t.Setenv("DOKPLOY_API_KEY", "test-key")
+	marker := filepath.Join(t.TempDir(), "incident.stop")
+	t.Setenv(liveStopMarkerEnvironment, marker)
+	requests := make([]scriptedRequest, 5)
+	for i := range requests {
+		requests[i] = scriptedRequest{Method: http.MethodGet, Path: "/api/project.one", Query: map[string][]string{"projectId": {""}}, Status: http.StatusServiceUnavailable, Response: []byte(`{"code":"SERVICE_UNAVAILABLE"}`)}
+	}
+	server := newScriptedServer(t, requests...)
+	deleted, verified := false, false
+	fixture := &liveDispatchFixture{
+		id: "fixture-id", api: server.API(), lease: &liveHeavyOperationLease{kind: "fixture-create", released: true},
+		remove: func(ctx context.Context) error {
+			_, hasDeadline := ctx.Deadline()
+			require.True(t, hasDeadline)
+			deleted = true
+			return nil
+		},
+		readID: func(ctx context.Context) (string, error) {
+			require.NoError(t, ctx.Err())
+			verified = true
+			return "", nil
+		},
+	}
+
+	t.Run("cleanup", func(t *testing.T) { fixture.cleanup(t) })
+
+	require.True(t, deleted)
+	require.True(t, verified)
+	require.True(t, fixture.cleaned)
+	require.True(t, heavyLiveTierStopped())
+	contents, err := os.ReadFile(marker)
+	require.NoError(t, err)
+	require.Equal(t, "stop\n", string(contents))
+	lease, err := acquireLiveHeavyOperation(t.Context(), "after-fixture-cleanup", nil)
+	require.NoError(t, err)
+	require.True(t, lease.release(t))
 }
 
 func TestClassifyWorkloadCreateErrorNeverIncludesRawServerDetails(t *testing.T) {
