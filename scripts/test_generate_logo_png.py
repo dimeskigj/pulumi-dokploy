@@ -34,8 +34,11 @@ class LogoPngComparisonTests(unittest.TestCase):
             "IDAT before IHDR": b"\x89PNG\r\n\x1a\n" + logo.png_chunk(b"IDAT", b"") + valid[8:],
             "junk after compressed IDAT": make_png(2, 1, [b"\x00\x01\x02\x03\x04\x05\x06\x07\x08"], b"junk"),
             "unknown critical chunk": valid[:33] + logo.png_chunk(b"ABCD", b"") + valid[33:],
+            "invalid chunk name": valid[:33] + logo.png_chunk(b"ab1d", b"") + valid[33:],
+            "lowercase reserved byte": valid[:33] + logo.png_chunk(b"abcD", b"") + valid[33:],
             "wrong dimensions": make_png(3, 1, [b"\x00\x01\x02\x03\x04\x05\x06\x07\x08"]),
             "wrong scanline length": make_png(2, 1, [b"\x00\x01"]),
+            "decompression exceeds scanline bound": make_png(1, 1, [b"\x00" + b"\x00" * 4 + b"x" * 1_000_000]),
         }
         for name, data in cases.items():
             with self.subTest(name=name), self.assertRaises(ValueError):
