@@ -224,6 +224,16 @@ func TestDomainComparisonEvidenceRejectsMaliciousReasons(t *testing.T) {
 	require.NotContains(t, got, "secret-sentinel")
 }
 
+func TestDomainContractExperimentsChangeOneNamedField(t *testing.T) {
+	applicationID := "application"
+	cases := domainContractExperimentCases(DomainArgs{ApplicationID: &applicationID, Host: "example.invalid", Port: intPtr(80), CertificateType: CertificateNone}, false)
+	got := make([]string, 0, len(cases))
+	for _, experiment := range cases {
+		got = append(got, experiment.field)
+	}
+	require.Equal(t, []string{"domainType", "port", "certificateType", "https", "stripPath"}, got)
+}
+
 func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
 	reason := sanitizeDomainValidationReason(&client.APIError{Message: "domainType has an invalid value secret-sentinel"})
 	require.Equal(t, "field=domainType;category=invalid-value", reason)

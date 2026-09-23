@@ -3,18 +3,55 @@ package dokploy
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
+	"github.com/oapi-codegen/nullable"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/stretchr/testify/require"
 )
+
+type domainContractExperiment struct {
+	field string
+	body  generated.DomainCreateJSONRequestBody
+}
+
+func domainContractExperimentCases(args DomainArgs, compose bool) []domainContractExperiment {
+	base := domainCreateBody(args)
+	domainTypeOmitted := base
+	domainTypeOmitted.DomainType = nullable.NewNullNullable[generated.DomainCreateJSONBodyDomainType]()
+	portOmitted := base
+	portOmitted.Port = nullable.NewNullNullable[float32]()
+	certificateChanged := base
+	certificateChanged.CertificateType = ptr(generated.DomainCreateJSONBodyCertificateType(CertificateLetsencrypt))
+	httpsChanged := base
+	https := true
+	httpsChanged.Https = &https
+	stripPathChanged := base
+	stripPath := true
+	stripPathChanged.StripPath = &stripPath
+	cases := []domainContractExperiment{
+		{field: "domainType", body: domainTypeOmitted},
+		{field: "port", body: portOmitted},
+		{field: "certificateType", body: certificateChanged},
+		{field: "https", body: httpsChanged},
+		{field: "stripPath", body: stripPathChanged},
+	}
+	if compose {
+		serviceNameOmitted := base
+		serviceNameOmitted.ServiceName = nullable.NewNullNullable[string]()
+		cases = append(cases, domainContractExperiment{field: "serviceName", body: serviceNameOmitted})
+	}
+	return cases
+}
 
 // TestLiveTier2Workloads is intentionally one serial test. Workload creates
 // deploy containers and mounts cause another deploy, so parallel subtests
@@ -1267,6 +1304,88 @@ func deleteAndReadCompose(t *testing.T, ctx context.Context, r Compose, ownedID 
 	requireNoError(t, err)
 }
 
+func TestLiveDomainContractExperiments(t *testing.T) {
+	api := liveClient(t)
+	ctx := liveContext(t, 30*time.Minute)
+	_, environmentID, releaseProject := liveProject(t, ctx, api)
+	t.Cleanup(releaseProject)
+	for _, compose := range []bool{false, true} {
+		compose := compose
+		name := "application"
+		if compose {
+			name = "compose"
+		}
+		t.Run(name, func(t *testing.T) {
+			runFocusedDomainTarget(t, func() (focusedDomainTarget, func()) {
+				return createFocusedDomainTarget(t, ctx, api, environmentID, compose)
+			}, func(target focusedDomainTarget) {
+				args := DomainArgs{Host: liveRunName("experiment-domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
+				if target.compose {
+					args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
+				} else {
+					args.ApplicationID = &target.id
+				}
+				baseline := domainCreateBody(args)
+				result := runDomainContractExperiment(t, ctx, api, target.name, "baseline", baseline)
+				t.Logf("%s", result)
+				for _, experiment := range domainContractExperimentCases(args, target.compose) {
+					result := runDomainContractExperiment(t, ctx, api, target.name, experiment.field, experiment.body)
+					t.Logf("%s", result)
+					if strings.Contains(result, "category=accepted") {
+						break
+					}
+				}
+			})
+		})
+	}
+}
+
+func runDomainContractExperiment(t *testing.T, ctx context.Context, api *client.Client, target, field string, body generated.DomainCreateJSONRequestBody) string {
+	t.Helper()
+	keys, err := domainCreateRequestKeysFromBody(body)
+	requireNoError(t, err)
+	response, requestErr := api.DomainCreateWithResponse(ctx, body)
+	status := 0
+	if response != nil && response.HTTPResponse != nil {
+		status = response.HTTPResponse.StatusCode
+	}
+	code := ""
+	var apiErr *client.APIError
+	if errors.As(requestErr, &apiErr) {
+		code = apiErr.Code
+		if status == 0 {
+			status = apiErr.StatusCode
+		}
+	}
+	classification, classificationErr := classifyWorkloadCreateAttempt("domain", status, code, keys, true, true)
+	requireNoError(t, classificationErr)
+	statusClass, safeCode := domainResultStatus(classification)
+	category := "rejected"
+	if statusClass == "2xx" {
+		category = "accepted"
+	}
+	if statusClass == "transport" || statusClass == "5xx" {
+		category = "environment"
+	}
+	if response != nil && response.JSON200 != nil && response.JSON200.DomainId != nil && *response.JSON200.DomainId != "" {
+		id := *response.JSON200.DomainId
+		cleanupCtx, cancel := cleanupContext()
+		cleanupErr := verifyLiveCleanup(cleanupCtx, func(c context.Context) error {
+			_, e := api.DomainDeleteWithResponse(c, generated.DomainDeleteJSONRequestBody{DomainId: id})
+			return e
+		}, func(c context.Context) (string, error) {
+			read, e := api.DomainOneWithResponse(c, &generated.DomainOneParams{DomainId: id})
+			if e != nil || read == nil || read.JSON200 == nil || read.JSON200.DomainId == nil {
+				return "", e
+			}
+			return *read.JSON200.DomainId, nil
+		})
+		cancel()
+		requireNoError(t, cleanupErr)
+	}
+	return fmt.Sprintf("field=%s;status=%s;code=%s;category=%s", field, statusClass, safeCode, category)
+}
+
 func TestLiveDomainFocused(t *testing.T) {
 	api := liveClient(t)
 	ctx := liveContext(t, 30*time.Minute)
@@ -1280,6 +1399,62 @@ func TestLiveDomainFocused(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			runFocusedLiveDomainTarget(t, ctx, api, environmentID, compose)
+		})
+	}
+}
+
+func createFocusedDomainTarget(t *testing.T, ctx context.Context, api *client.Client, environmentID string, compose bool) (focusedDomainTarget, func()) {
+	t.Helper()
+	if compose {
+		r := Compose{client: fixedClient(api)}
+		inputs := ComposeArgs{Name: liveRunName("experiment-compose"), EnvironmentID: environmentID, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services:\n  web:\n    image: nginx:1.27\n"}}}
+		lease := beginLiveHeavyOperation(t, "experiment-compose-create", liveServerHealthProbe(api))
+		created, err := r.Create(ctx, infer.CreateRequest[ComposeArgs]{Inputs: inputs})
+		processErr := processLiveHeavyOperationError(t, lease, err, func() {
+			cleanupAfterCreateError(t, "compose", created.ID, err, func(c context.Context) error {
+				_, e := r.Delete(c, infer.DeleteRequest[ComposeState]{ID: created.ID})
+				return e
+			}, func(c context.Context) (string, error) {
+				v, e := r.Read(c, infer.ReadRequest[ComposeArgs, ComposeState]{ID: created.ID})
+				return v.ID, e
+			})
+		}, liveServerHealthProbe(api))
+		requireNoError(t, processErr)
+		lease.releaseIfNeeded(t)
+		requireLiveEqual(t, "compose.status", statusDone, created.Output.Status)
+		return focusedDomainTarget{id: created.ID, name: "compose", compose: true}, func() {
+			liveCleanupVerified(t, "compose", created.ID, func(c context.Context) error {
+				_, e := r.Delete(c, infer.DeleteRequest[ComposeState]{ID: created.ID})
+				return e
+			}, func(c context.Context) (string, error) {
+				v, e := r.Read(c, infer.ReadRequest[ComposeArgs, ComposeState]{ID: created.ID})
+				return v.ID, e
+			})
+		}
+	}
+	r := Application{client: fixedClient(api)}
+	inputs := ApplicationArgs{Name: liveRunName("experiment-application"), EnvironmentID: environmentID, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx:1.27"}}}
+	lease := beginLiveHeavyOperation(t, "experiment-application-create", liveServerHealthProbe(api))
+	created, err := r.Create(ctx, infer.CreateRequest[ApplicationArgs]{Inputs: inputs})
+	processErr := processLiveHeavyOperationError(t, lease, err, func() {
+		cleanupAfterCreateError(t, "application", created.ID, err, func(c context.Context) error {
+			_, e := r.Delete(c, infer.DeleteRequest[ApplicationState]{ID: created.ID})
+			return e
+		}, func(c context.Context) (string, error) {
+			v, e := r.Read(c, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: created.ID})
+			return v.ID, e
+		})
+	}, liveServerHealthProbe(api))
+	requireNoError(t, processErr)
+	lease.releaseIfNeeded(t)
+	requireLiveEqual(t, "application.status", statusDone, created.Output.Status)
+	return focusedDomainTarget{id: created.ID, name: "application"}, func() {
+		liveCleanupVerified(t, "application", created.ID, func(c context.Context) error {
+			_, e := r.Delete(c, infer.DeleteRequest[ApplicationState]{ID: created.ID})
+			return e
+		}, func(c context.Context) (string, error) {
+			v, e := r.Read(c, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: created.ID})
+			return v.ID, e
 		})
 	}
 }
