@@ -213,6 +213,12 @@ func TestDomainComparisonEvidenceReportsSafeKeyShapeMismatch(t *testing.T) {
 	require.NotContains(t, got, "https://")
 }
 
+func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
+	reason := sanitizeDomainValidationReason(&client.APIError{Message: "domainType has an invalid value secret-sentinel"})
+	require.Equal(t, "field=domainType;category=invalid-value", reason)
+	require.NotContains(t, reason, "secret-sentinel")
+}
+
 func TestRunFocusedDomainTargetOwnsAndCleansTarget(t *testing.T) {
 	var events []string
 	t.Run("focused target", func(t *testing.T) {

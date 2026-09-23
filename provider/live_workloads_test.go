@@ -813,7 +813,7 @@ func finalizeGeneratedDomainCreateAttempt(t *testing.T, target string, keys []st
 	if classificationErr != nil {
 		t.Fatalf("domain classification unavailable")
 	}
-	return liveDomainCreateResult{path: "generated", target: target, classification: classification, keys: keys, created: created}
+	return liveDomainCreateResult{path: "generated", target: target, classification: classification, keys: keys, reason: sanitizeDomainValidationReason(requestErr), created: created}
 }
 
 func mountCreateRequestKeys(inputs MountArgs) []string {
@@ -1363,7 +1363,7 @@ func runFocusedLiveDomainTarget(t *testing.T, ctx context.Context, api *client.C
 			requireNoError(t, keysErr)
 			providerClassification, classificationErr := classifyWorkloadCreateError("domain", err, providerKeys, present, ready)
 			requireNoError(t, classificationErr)
-			providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys}
+			providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys, reason: sanitizeDomainValidationReason(err)}
 			directArgs := args
 			directArgs.Host = liveRunName("focused-domain-direct") + ".example.invalid"
 			generatedResult := runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)

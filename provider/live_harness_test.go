@@ -288,6 +288,7 @@ type liveDomainCreateResult struct {
 	target         string
 	classification string
 	keys           []string
+	reason         string
 	created        bool
 }
 
@@ -318,6 +319,38 @@ func classifyDomainComparison(provider, generated liveDomainCreateResult) string
 		return "server-contract-rejection"
 	}
 	return "provider-serialization-mismatch"
+}
+
+func sanitizeDomainValidationReason(err error) string {
+	var apiErr *client.APIError
+	if !errors.As(err, &apiErr) || apiErr.Message == "" {
+		return "category=unknown"
+	}
+	fields := []string{"host", "path", "port", "customEntrypoint", "https", "applicationId", "certificateType", "customCertResolver", "composeId", "serviceName", "domainType", "previewDeploymentId", "internalPath", "stripPath", "middlewares", "forwardAuthEnabled"}
+	field := ""
+	message := strings.ToLower(apiErr.Message)
+	for _, candidate := range fields {
+		if strings.Contains(message, strings.ToLower(candidate)) {
+			field = candidate
+			break
+		}
+	}
+	category := "validation"
+	switch {
+	case strings.Contains(message, "missing") || strings.Contains(message, "required"):
+		category = "missing-field"
+	case strings.Contains(message, "invalid"):
+		category = "invalid-value"
+	case strings.Contains(message, "unsupported") || strings.Contains(message, "unknown"):
+		category = "unsupported"
+	}
+	if field == "" && category == "validation" {
+		return "category=unknown"
+	}
+	if field == "" {
+		return "category=" + category
+	}
+	return "field=" + field + ";category=" + category
 }
 
 func domainResultStatus(classification string) (string, string) {
@@ -373,10 +406,17 @@ func formatDomainComparisonEvidence(provider, generated liveDomainCreateResult) 
 			strings.Join(keys, ","), strings.Join(generatedKeys, ","),
 		)
 	}
+	if provider.reason != generated.reason {
+		return fmt.Sprintf(
+			"target=%s;provider=%s/%s;generated=%s/%s;keys=%s;providerReason=%s;generatedReason=%s",
+			provider.target, providerStatus, providerCode,
+			generatedStatus, generatedCode, strings.Join(keys, ","), provider.reason, generated.reason,
+		)
+	}
 	return fmt.Sprintf(
-		"target=%s;provider=%s/%s;generated=%s/%s;keys=%s",
+		"target=%s;provider=%s/%s;generated=%s/%s;keys=%s;providerReason=%s;generatedReason=%s",
 		provider.target, providerStatus, providerCode,
-		generatedStatus, generatedCode, strings.Join(keys, ","),
+		generatedStatus, generatedCode, strings.Join(keys, ","), provider.reason, generated.reason,
 	)
 }
 
