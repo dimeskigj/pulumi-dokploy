@@ -55,6 +55,18 @@ class ApplicationBuildArgsDict(TypedDict):
     """
     The Dockerfile path.
     """
+    is_static_spa: NotRequired[pulumi.Input[Optional[_builtins.bool]]]
+    """
+    Whether the Railpack build produces a static single-page application.
+    """
+    publish_directory: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The directory published by a Railpack static build.
+    """
+    railpack_version: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The Railpack version to build with.
+    """
 
 @pulumi.input_type
 class ApplicationBuildArgs:
@@ -62,7 +74,10 @@ class ApplicationBuildArgs:
                  type: pulumi.Input[_builtins.str],
                  docker_build_stage: pulumi.Input[Optional[_builtins.str]] = None,
                  docker_context_path: pulumi.Input[Optional[_builtins.str]] = None,
-                 dockerfile: pulumi.Input[Optional[_builtins.str]] = None):
+                 dockerfile: pulumi.Input[Optional[_builtins.str]] = None,
+                 is_static_spa: pulumi.Input[Optional[_builtins.bool]] = None,
+                 publish_directory: pulumi.Input[Optional[_builtins.str]] = None,
+                 railpack_version: pulumi.Input[Optional[_builtins.str]] = None):
         """
         Application build configuration.
 
@@ -70,6 +85,9 @@ class ApplicationBuildArgs:
         :param pulumi.Input[_builtins.str] docker_build_stage: The Docker build stage.
         :param pulumi.Input[_builtins.str] docker_context_path: The Docker build context.
         :param pulumi.Input[_builtins.str] dockerfile: The Dockerfile path.
+        :param pulumi.Input[_builtins.bool] is_static_spa: Whether the Railpack build produces a static single-page application.
+        :param pulumi.Input[_builtins.str] publish_directory: The directory published by a Railpack static build.
+        :param pulumi.Input[_builtins.str] railpack_version: The Railpack version to build with.
         """
         pulumi.set(__self__, "type", type)
         if docker_build_stage is not None:
@@ -78,6 +96,12 @@ class ApplicationBuildArgs:
             pulumi.set(__self__, "docker_context_path", docker_context_path)
         if dockerfile is not None:
             pulumi.set(__self__, "dockerfile", dockerfile)
+        if is_static_spa is not None:
+            pulumi.set(__self__, "is_static_spa", is_static_spa)
+        if publish_directory is not None:
+            pulumi.set(__self__, "publish_directory", publish_directory)
+        if railpack_version is not None:
+            pulumi.set(__self__, "railpack_version", railpack_version)
 
     @_builtins.property
     @pulumi.getter
@@ -126,6 +150,42 @@ class ApplicationBuildArgs:
     @dockerfile.setter
     def dockerfile(self, value: pulumi.Input[Optional[_builtins.str]]):
         pulumi.set(self, "dockerfile", value)
+
+    @_builtins.property
+    @pulumi.getter(name="isStaticSpa")
+    def is_static_spa(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Whether the Railpack build produces a static single-page application.
+        """
+        return pulumi.get(self, "is_static_spa")
+
+    @is_static_spa.setter
+    def is_static_spa(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "is_static_spa", value)
+
+    @_builtins.property
+    @pulumi.getter(name="publishDirectory")
+    def publish_directory(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The directory published by a Railpack static build.
+        """
+        return pulumi.get(self, "publish_directory")
+
+    @publish_directory.setter
+    def publish_directory(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "publish_directory", value)
+
+    @_builtins.property
+    @pulumi.getter(name="railpackVersion")
+    def railpack_version(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The Railpack version to build with.
+        """
+        return pulumi.get(self, "railpack_version")
+
+    @railpack_version.setter
+    def railpack_version(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "railpack_version", value)
 
 
 class ApplicationSourceArgsDict(TypedDict):

@@ -35,6 +35,24 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
         public Input<string>? Dockerfile { get; set; }
 
         /// <summary>
+        /// Whether the Railpack build produces a static single-page application.
+        /// </summary>
+        [Input("isStaticSpa")]
+        public Input<bool>? IsStaticSpa { get; set; }
+
+        /// <summary>
+        /// The directory published by a Railpack static build.
+        /// </summary>
+        [Input("publishDirectory")]
+        public Input<string>? PublishDirectory { get; set; }
+
+        /// <summary>
+        /// The Railpack version to build with.
+        /// </summary>
+        [Input("railpackVersion")]
+        public Input<string>? RailpackVersion { get; set; }
+
+        /// <summary>
         /// The build type.
         /// </summary>
         [Input("type", required: true)]

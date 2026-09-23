@@ -81,6 +81,18 @@
           "type": "string",
           "description": "The Dockerfile path."
         },
+        "isStaticSpa": {
+          "type": "boolean",
+          "description": "Whether the Railpack build produces a static single-page application."
+        },
+        "publishDirectory": {
+          "type": "string",
+          "description": "The directory published by a Railpack static build."
+        },
+        "railpackVersion": {
+          "type": "string",
+          "description": "The Railpack version to build with."
+        },
         "type": {
           "type": "string",
           "description": "The build type."

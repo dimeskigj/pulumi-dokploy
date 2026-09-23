@@ -22,6 +22,18 @@ export interface ApplicationBuild {
      */
     dockerfile?: string;
     /**
+     * Whether the Railpack build produces a static single-page application.
+     */
+    isStaticSpa?: boolean;
+    /**
+     * The directory published by a Railpack static build.
+     */
+    publishDirectory?: string;
+    /**
+     * The Railpack version to build with.
+     */
+    railpackVersion?: string;
+    /**
      * The build type.
      */
     type: string;

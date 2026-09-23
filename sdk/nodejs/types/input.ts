@@ -22,6 +22,18 @@ export interface ApplicationBuildArgs {
      */
     dockerfile?: pulumi.Input<string | undefined>;
     /**
+     * Whether the Railpack build produces a static single-page application.
+     */
+    isStaticSpa?: pulumi.Input<boolean | undefined>;
+    /**
+     * The directory published by a Railpack static build.
+     */
+    publishDirectory?: pulumi.Input<string | undefined>;
+    /**
+     * The Railpack version to build with.
+     */
+    railpackVersion?: pulumi.Input<string | undefined>;
+    /**
      * The build type.
      */
     type: pulumi.Input<string>;

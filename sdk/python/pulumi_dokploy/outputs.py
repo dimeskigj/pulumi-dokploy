@@ -39,6 +39,12 @@ class ApplicationBuild(dict):
             suggest = "docker_build_stage"
         elif key == "dockerContextPath":
             suggest = "docker_context_path"
+        elif key == "isStaticSpa":
+            suggest = "is_static_spa"
+        elif key == "publishDirectory":
+            suggest = "publish_directory"
+        elif key == "railpackVersion":
+            suggest = "railpack_version"
 
         if suggest:
             pulumi.log.warn(f"Key '{key}' not found in ApplicationBuild. Access the value via the '{suggest}' property getter instead.")
@@ -55,7 +61,10 @@ class ApplicationBuild(dict):
                  type: _builtins.str,
                  docker_build_stage: Optional[_builtins.str] = None,
                  docker_context_path: Optional[_builtins.str] = None,
-                 dockerfile: Optional[_builtins.str] = None):
+                 dockerfile: Optional[_builtins.str] = None,
+                 is_static_spa: Optional[_builtins.bool] = None,
+                 publish_directory: Optional[_builtins.str] = None,
+                 railpack_version: Optional[_builtins.str] = None):
         """
         Application build configuration.
 
@@ -63,6 +72,9 @@ class ApplicationBuild(dict):
         :param _builtins.str docker_build_stage: The Docker build stage.
         :param _builtins.str docker_context_path: The Docker build context.
         :param _builtins.str dockerfile: The Dockerfile path.
+        :param _builtins.bool is_static_spa: Whether the Railpack build produces a static single-page application.
+        :param _builtins.str publish_directory: The directory published by a Railpack static build.
+        :param _builtins.str railpack_version: The Railpack version to build with.
         """
         pulumi.set(__self__, "type", type)
         if docker_build_stage is not None:
@@ -71,6 +83,12 @@ class ApplicationBuild(dict):
             pulumi.set(__self__, "docker_context_path", docker_context_path)
         if dockerfile is not None:
             pulumi.set(__self__, "dockerfile", dockerfile)
+        if is_static_spa is not None:
+            pulumi.set(__self__, "is_static_spa", is_static_spa)
+        if publish_directory is not None:
+            pulumi.set(__self__, "publish_directory", publish_directory)
+        if railpack_version is not None:
+            pulumi.set(__self__, "railpack_version", railpack_version)
 
     @_builtins.property
     @pulumi.getter
@@ -103,6 +121,30 @@ class ApplicationBuild(dict):
         The Dockerfile path.
         """
         return pulumi.get(self, "dockerfile")
+
+    @_builtins.property
+    @pulumi.getter(name="isStaticSpa")
+    def is_static_spa(self) -> Optional[_builtins.bool]:
+        """
+        Whether the Railpack build produces a static single-page application.
+        """
+        return pulumi.get(self, "is_static_spa")
+
+    @_builtins.property
+    @pulumi.getter(name="publishDirectory")
+    def publish_directory(self) -> Optional[_builtins.str]:
+        """
+        The directory published by a Railpack static build.
+        """
+        return pulumi.get(self, "publish_directory")
+
+    @_builtins.property
+    @pulumi.getter(name="railpackVersion")
+    def railpack_version(self) -> Optional[_builtins.str]:
+        """
+        The Railpack version to build with.
+        """
+        return pulumi.get(self, "railpack_version")
 
 
 @pulumi.output_type

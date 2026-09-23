@@ -298,7 +298,11 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 			return ApplicationSource{}, fmt.Errorf("application source data omits required git url or branch")
 		}
 		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: stringPointer(m, "buildPath", "customGitBuildPath"), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
-		result.Git.Build = decodeBuild(m)
+		build, err := decodeBuild(m)
+		if err != nil {
+			return ApplicationSource{}, err
+		}
+		result.Git.Build = build
 	case SourceGitLab:
 		integration := stringValue(m, "integrationId", "gitlabId")
 		owner, namespace, repo, branch := stringValue(m, "owner", "gitlabOwner"), stringValue(m, "namespace", "gitlabPathNamespace"), stringValue(m, "repository", "gitlabRepository"), stringValue(m, "branch", "gitlabBranch")
@@ -309,19 +313,43 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		if result.GitLab.ProjectID == 0 {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab projectId")
 		}
-		result.GitLab.Build = decodeBuild(m)
+		build, err := decodeBuild(m)
+		if err != nil {
+			return ApplicationSource{}, err
+		}
+		result.GitLab.Build = build
 	default:
 		return ApplicationSource{}, fmt.Errorf("application source data has unsupported source.type %q", kind)
 	}
 	return result, nil
 }
 
-func decodeBuild(m map[string]interface{}) ApplicationBuild {
-	b := ApplicationBuild{Type: BuildType(stringValue(m, "buildType")), Dockerfile: stringPointer(m, "dockerfile"), DockerContextPath: stringPointer(m, "dockerContextPath"), DockerBuildStage: stringPointer(m, "dockerBuildStage")}
-	if b.Type == "" {
-		b.Type = BuildNixpacks
+// decodeBuild reconstructs the build configuration from an application.one payload.
+// An empty buildType means Dokploy has not recorded one yet and defaults to nixpacks.
+// A non-empty build type the provider does not model — static, heroku_buildpacks and
+// paketo_buildpacks today, plus whatever a later Dokploy release adds — is reported as
+// it is rather than rewritten to nixpacks. Read must not fail on it: an error here
+// aborts the whole refresh or import, not just the one resource, so an application
+// nobody is managing could block reading every application that is. Declaring one of
+// these as an input is still refused by validateBuild.
+func decodeBuild(m map[string]interface{}) (ApplicationBuild, error) {
+	kind := BuildType(stringValue(m, "buildType"))
+	if kind == "" {
+		kind = BuildNixpacks
 	}
-	return b
+	b := ApplicationBuild{Type: kind, Dockerfile: stringPointer(m, "dockerfile"), DockerContextPath: stringPointer(m, "dockerContextPath"), DockerBuildStage: stringPointer(m, "dockerBuildStage")}
+	switch kind {
+	case BuildNixpacks, BuildDockerfile:
+	case BuildRailpack:
+		b.RailpackVersion = stringPointer(m, "railpackVersion")
+		b.IsStaticSpa = boolValue(m, "isStaticSpa")
+		b.PublishDirectory = stringPointer(m, "publishDirectory")
+	default:
+		// A build type the provider does not model: keep it verbatim and leave the
+		// modeled extras unset, so the value round-trips and the user sees the
+		// truth in their diff.
+	}
+	return b, nil
 }
 func stringValue(m map[string]interface{}, keys ...string) string {
 	for _, k := range keys {

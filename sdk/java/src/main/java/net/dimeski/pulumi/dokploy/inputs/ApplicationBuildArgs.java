@@ -6,6 +6,7 @@ package net.dimeski.pulumi.dokploy.inputs;
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
+import java.lang.Boolean;
 import java.lang.String;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,6 +67,51 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
     }
 
     /**
+     * Whether the Railpack build produces a static single-page application.
+     * 
+     */
+    @Import(name="isStaticSpa")
+    private @Nullable Output<Boolean> isStaticSpa;
+
+    /**
+     * @return Whether the Railpack build produces a static single-page application.
+     * 
+     */
+    public Optional<Output<Boolean>> isStaticSpa() {
+        return Optional.ofNullable(this.isStaticSpa);
+    }
+
+    /**
+     * The directory published by a Railpack static build.
+     * 
+     */
+    @Import(name="publishDirectory")
+    private @Nullable Output<String> publishDirectory;
+
+    /**
+     * @return The directory published by a Railpack static build.
+     * 
+     */
+    public Optional<Output<String>> publishDirectory() {
+        return Optional.ofNullable(this.publishDirectory);
+    }
+
+    /**
+     * The Railpack version to build with.
+     * 
+     */
+    @Import(name="railpackVersion")
+    private @Nullable Output<String> railpackVersion;
+
+    /**
+     * @return The Railpack version to build with.
+     * 
+     */
+    public Optional<Output<String>> railpackVersion() {
+        return Optional.ofNullable(this.railpackVersion);
+    }
+
+    /**
      * The build type.
      * 
      */
@@ -86,6 +132,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         this.dockerBuildStage = $.dockerBuildStage;
         this.dockerContextPath = $.dockerContextPath;
         this.dockerfile = $.dockerfile;
+        this.isStaticSpa = $.isStaticSpa;
+        this.publishDirectory = $.publishDirectory;
+        this.railpackVersion = $.railpackVersion;
         this.type = $.type;
     }
 
@@ -168,6 +217,69 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
          */
         public Builder dockerfile(String dockerfile) {
             return dockerfile(Output.of(dockerfile));
+        }
+
+        /**
+         * @param isStaticSpa Whether the Railpack build produces a static single-page application.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder isStaticSpa(@Nullable Output<Boolean> isStaticSpa) {
+            $.isStaticSpa = isStaticSpa;
+            return this;
+        }
+
+        /**
+         * @param isStaticSpa Whether the Railpack build produces a static single-page application.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder isStaticSpa(Boolean isStaticSpa) {
+            return isStaticSpa(Output.of(isStaticSpa));
+        }
+
+        /**
+         * @param publishDirectory The directory published by a Railpack static build.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder publishDirectory(@Nullable Output<String> publishDirectory) {
+            $.publishDirectory = publishDirectory;
+            return this;
+        }
+
+        /**
+         * @param publishDirectory The directory published by a Railpack static build.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder publishDirectory(String publishDirectory) {
+            return publishDirectory(Output.of(publishDirectory));
+        }
+
+        /**
+         * @param railpackVersion The Railpack version to build with.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder railpackVersion(@Nullable Output<String> railpackVersion) {
+            $.railpackVersion = railpackVersion;
+            return this;
+        }
+
+        /**
+         * @param railpackVersion The Railpack version to build with.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder railpackVersion(String railpackVersion) {
+            return railpackVersion(Output.of(railpackVersion));
         }
 
         /**

@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy.outputs;
 
 import com.pulumi.core.annotations.CustomType;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
+import java.lang.Boolean;
 import java.lang.String;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,6 +28,21 @@ public final class ApplicationBuild {
      * 
      */
     private @Nullable String dockerfile;
+    /**
+     * @return Whether the Railpack build produces a static single-page application.
+     * 
+     */
+    private @Nullable Boolean isStaticSpa;
+    /**
+     * @return The directory published by a Railpack static build.
+     * 
+     */
+    private @Nullable String publishDirectory;
+    /**
+     * @return The Railpack version to build with.
+     * 
+     */
+    private @Nullable String railpackVersion;
     /**
      * @return The build type.
      * 
@@ -56,6 +72,27 @@ public final class ApplicationBuild {
         return Optional.ofNullable(this.dockerfile);
     }
     /**
+     * @return Whether the Railpack build produces a static single-page application.
+     * 
+     */
+    public Optional<Boolean> isStaticSpa() {
+        return Optional.ofNullable(this.isStaticSpa);
+    }
+    /**
+     * @return The directory published by a Railpack static build.
+     * 
+     */
+    public Optional<String> publishDirectory() {
+        return Optional.ofNullable(this.publishDirectory);
+    }
+    /**
+     * @return The Railpack version to build with.
+     * 
+     */
+    public Optional<String> railpackVersion() {
+        return Optional.ofNullable(this.railpackVersion);
+    }
+    /**
      * @return The build type.
      * 
      */
@@ -75,6 +112,9 @@ public final class ApplicationBuild {
         private @Nullable String dockerBuildStage;
         private @Nullable String dockerContextPath;
         private @Nullable String dockerfile;
+        private @Nullable Boolean isStaticSpa;
+        private @Nullable String publishDirectory;
+        private @Nullable String railpackVersion;
         private String type;
         public Builder() {}
         public Builder(ApplicationBuild defaults) {
@@ -82,6 +122,9 @@ public final class ApplicationBuild {
     	      this.dockerBuildStage = defaults.dockerBuildStage;
     	      this.dockerContextPath = defaults.dockerContextPath;
     	      this.dockerfile = defaults.dockerfile;
+    	      this.isStaticSpa = defaults.isStaticSpa;
+    	      this.publishDirectory = defaults.publishDirectory;
+    	      this.railpackVersion = defaults.railpackVersion;
     	      this.type = defaults.type;
         }
 
@@ -104,6 +147,24 @@ public final class ApplicationBuild {
             return this;
         }
         @CustomType.Setter
+        public Builder isStaticSpa(@Nullable Boolean isStaticSpa) {
+
+            this.isStaticSpa = isStaticSpa;
+            return this;
+        }
+        @CustomType.Setter
+        public Builder publishDirectory(@Nullable String publishDirectory) {
+
+            this.publishDirectory = publishDirectory;
+            return this;
+        }
+        @CustomType.Setter
+        public Builder railpackVersion(@Nullable String railpackVersion) {
+
+            this.railpackVersion = railpackVersion;
+            return this;
+        }
+        @CustomType.Setter
         public Builder type(String type) {
             if (type == null) {
               throw new MissingRequiredPropertyException("ApplicationBuild", "type");
@@ -116,6 +177,9 @@ public final class ApplicationBuild {
             _resultValue.dockerBuildStage = dockerBuildStage;
             _resultValue.dockerContextPath = dockerContextPath;
             _resultValue.dockerfile = dockerfile;
+            _resultValue.isStaticSpa = isStaticSpa;
+            _resultValue.publishDirectory = publishDirectory;
+            _resultValue.railpackVersion = railpackVersion;
             _resultValue.type = type;
             return _resultValue;
         }

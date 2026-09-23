@@ -21,6 +21,12 @@ type ApplicationBuild struct {
 	DockerContextPath *string `pulumi:"dockerContextPath"`
 	// The Dockerfile path.
 	Dockerfile *string `pulumi:"dockerfile"`
+	// Whether the Railpack build produces a static single-page application.
+	IsStaticSpa *bool `pulumi:"isStaticSpa"`
+	// The directory published by a Railpack static build.
+	PublishDirectory *string `pulumi:"publishDirectory"`
+	// The Railpack version to build with.
+	RailpackVersion *string `pulumi:"railpackVersion"`
 	// The build type.
 	Type string `pulumi:"type"`
 }
@@ -44,6 +50,12 @@ type ApplicationBuildArgs struct {
 	DockerContextPath pulumi.StringPtrInput `pulumi:"dockerContextPath"`
 	// The Dockerfile path.
 	Dockerfile pulumi.StringPtrInput `pulumi:"dockerfile"`
+	// Whether the Railpack build produces a static single-page application.
+	IsStaticSpa pulumi.BoolPtrInput `pulumi:"isStaticSpa"`
+	// The directory published by a Railpack static build.
+	PublishDirectory pulumi.StringPtrInput `pulumi:"publishDirectory"`
+	// The Railpack version to build with.
+	RailpackVersion pulumi.StringPtrInput `pulumi:"railpackVersion"`
 	// The build type.
 	Type pulumi.StringInput `pulumi:"type"`
 }
@@ -141,6 +153,21 @@ func (o ApplicationBuildOutput) Dockerfile() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ApplicationBuild) *string { return v.Dockerfile }).(pulumi.StringPtrOutput)
 }
 
+// Whether the Railpack build produces a static single-page application.
+func (o ApplicationBuildOutput) IsStaticSpa() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v ApplicationBuild) *bool { return v.IsStaticSpa }).(pulumi.BoolPtrOutput)
+}
+
+// The directory published by a Railpack static build.
+func (o ApplicationBuildOutput) PublishDirectory() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ApplicationBuild) *string { return v.PublishDirectory }).(pulumi.StringPtrOutput)
+}
+
+// The Railpack version to build with.
+func (o ApplicationBuildOutput) RailpackVersion() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ApplicationBuild) *string { return v.RailpackVersion }).(pulumi.StringPtrOutput)
+}
+
 // The build type.
 func (o ApplicationBuildOutput) Type() pulumi.StringOutput {
 	return o.ApplyT(func(v ApplicationBuild) string { return v.Type }).(pulumi.StringOutput)
@@ -197,6 +224,36 @@ func (o ApplicationBuildPtrOutput) Dockerfile() pulumi.StringPtrOutput {
 			return nil
 		}
 		return v.Dockerfile
+	}).(pulumi.StringPtrOutput)
+}
+
+// Whether the Railpack build produces a static single-page application.
+func (o ApplicationBuildPtrOutput) IsStaticSpa() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *ApplicationBuild) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.IsStaticSpa
+	}).(pulumi.BoolPtrOutput)
+}
+
+// The directory published by a Railpack static build.
+func (o ApplicationBuildPtrOutput) PublishDirectory() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *ApplicationBuild) *string {
+		if v == nil {
+			return nil
+		}
+		return v.PublishDirectory
+	}).(pulumi.StringPtrOutput)
+}
+
+// The Railpack version to build with.
+func (o ApplicationBuildPtrOutput) RailpackVersion() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *ApplicationBuild) *string {
+		if v == nil {
+			return nil
+		}
+		return v.RailpackVersion
 	}).(pulumi.StringPtrOutput)
 }
 

@@ -2,11 +2,14 @@ package dokploy
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,6 +42,202 @@ func TestApplicationGitLabSourceRequestShape(t *testing.T) {
 	s := newScriptedServer(t, expectPOST("/api/application.saveGitlabProvider", `{"applicationId":"application-sentinel","enableSubmodules":true,"gitlabBranch":"release","gitlabBuildPath":"services/api","gitlabId":"integration-sentinel","gitlabOwner":"owner-sentinel","gitlabPathNamespace":"platform/api","gitlabProjectId":42,"gitlabRepository":"service-sentinel","watchPaths":["services/**"]}`, `true`))
 	err := configureApplicationSource(context.Background(), fixedClient(s.API())(context.Background()), "application-sentinel", ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: "integration-sentinel", ProjectID: 42, Owner: "owner-sentinel", Namespace: "platform/api", Repository: "service-sentinel", Branch: "release", BuildPath: stringPtr("services/api"), WatchPaths: []string{"services/**"}, EnableSubmodules: true}})
 	require.NoError(t, err)
+}
+
+// TestApplicationRailpackBuildDecodeToEncodeRoundTrip decodes a Railpack build as
+// application.one reports it and re-encodes it through the same saveBuildType call
+// Create and Update use, so a read followed by a write preserves railpackVersion,
+// isStaticSpa, and publishDirectory instead of dropping them.
+func TestApplicationRailpackBuildDecodeToEncodeRoundTrip(t *testing.T) {
+	const response = `{"type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","buildType":"railpack","railpackVersion":"0.4.2","isStaticSpa":true,"publishDirectory":"dist"}`
+	var raw map[string]interface{}
+	require.NoError(t, json.Unmarshal([]byte(response), &raw))
+
+	decoded, err := decodeApplicationSource(raw, ApplicationSource{})
+	require.NoError(t, err)
+	require.Equal(t, ApplicationBuild{Type: BuildRailpack, RailpackVersion: stringPtr("0.4.2"), IsStaticSpa: true, PublishDirectory: stringPtr("dist")}, decoded.Git.Build)
+
+	s := newScriptedServer(t, expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"railpack","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":true,"publishDirectory":"dist","railpackVersion":"0.4.2"}`, `true`))
+	require.NoError(t, configureApplicationBuild(context.Background(), fixedClient(s.API())(context.Background()), "a1", decoded))
+}
+
+// TestApplicationRailpackBuildSendsUnsetOptionalFieldsAsNull pins the clearing
+// path: publishDirectory is written on every railpack save, null when unset, so
+// removing it from a program actually clears it server-side.
+func TestApplicationRailpackBuildSendsUnsetOptionalFieldsAsNull(t *testing.T) {
+	s := newScriptedServer(t, expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"railpack","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":false,"publishDirectory":null,"railpackVersion":null}`, `true`))
+	source := ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: ApplicationBuild{Type: BuildRailpack}}}
+	require.NoError(t, configureApplicationBuild(context.Background(), fixedClient(s.API())(context.Background()), "a1", source))
+}
+
+// TestApplicationBuildDecodeKeepsUnmodeledBuildTypes covers the defaulting
+// correction without trading it for a worse failure: a build type Dokploy reports
+// but the provider does not model is kept verbatim instead of being rewritten to
+// nixpacks, and it must not error — Read runs during refresh and import, where one
+// failing application would abort the whole operation.
+func TestApplicationBuildDecodeKeepsUnmodeledBuildTypes(t *testing.T) {
+	for _, buildType := range []string{"static", "heroku_buildpacks", "paketo_buildpacks", "a-build-type-from-a-later-dokploy"} {
+		t.Run(buildType, func(t *testing.T) {
+			got, err := decodeBuild(map[string]interface{}{"buildType": buildType, "railpackVersion": "0.4.2", "isStaticSpa": true, "publishDirectory": "dist"})
+			require.NoError(t, err)
+			require.Equal(t, BuildType(buildType), got.Type)
+			require.Nil(t, got.RailpackVersion)
+			require.False(t, got.IsStaticSpa)
+			require.Nil(t, got.PublishDirectory)
+		})
+	}
+}
+
+func TestApplicationSourceDecodeKeepsUnmodeledBuildType(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		raw   map[string]interface{}
+		build func(ApplicationSource) ApplicationBuild
+	}{
+		{"git", map[string]interface{}{"type": "git", "customGitUrl": "u", "customGitBranch": "main", "buildType": "static"}, func(s ApplicationSource) ApplicationBuild { return s.Git.Build }},
+		{"gitlab", map[string]interface{}{"type": "gitlab", "gitlabId": "i", "gitlabProjectId": float64(1), "gitlabOwner": "o", "gitlabPathNamespace": "n", "gitlabRepository": "r", "gitlabBranch": "main", "buildType": "static"}, func(s ApplicationSource) ApplicationBuild { return s.GitLab.Build }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			decoded, err := decodeApplicationSource(tc.raw, ApplicationSource{})
+			require.NoError(t, err)
+			require.Equal(t, BuildType("static"), tc.build(decoded).Type)
+		})
+	}
+}
+
+// TestApplicationUnmodeledBuildTypeIsStillRejectedAsInput keeps Check strict: a
+// program may only declare a build type the provider actually writes.
+func TestApplicationUnmodeledBuildTypeIsStillRejectedAsInput(t *testing.T) {
+	for _, buildType := range []string{"static", "heroku_buildpacks", "paketo_buildpacks"} {
+		t.Run(buildType, func(t *testing.T) {
+			err := ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: ApplicationBuild{Type: BuildType(buildType)}}}.validate()
+			require.EqualError(t, err, "source.git.build.type must be one of nixpacks, dockerfile, or railpack")
+		})
+	}
+}
+
+// TestApplicationBuildDecodeDefaultsEmptyBuildTypeToNixpacks pins the existing
+// compatibility behavior: an absent or empty buildType still means nixpacks.
+func TestApplicationBuildDecodeDefaultsEmptyBuildTypeToNixpacks(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		raw  map[string]interface{}
+	}{
+		{"absent", map[string]interface{}{}},
+		{"empty", map[string]interface{}{"buildType": ""}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := decodeBuild(tc.raw)
+			require.NoError(t, err)
+			require.Equal(t, BuildNixpacks, got.Type)
+		})
+	}
+}
+
+func TestApplicationRailpackBuildDoesNotLeakFieldsIntoOtherBuildTypes(t *testing.T) {
+	for _, buildType := range []string{"nixpacks", "dockerfile"} {
+		t.Run(buildType, func(t *testing.T) {
+			got, err := decodeBuild(map[string]interface{}{"buildType": buildType, "dockerfile": "Dockerfile", "railpackVersion": "0.4.2", "isStaticSpa": true, "publishDirectory": "dist"})
+			require.NoError(t, err)
+			require.Nil(t, got.RailpackVersion)
+			require.False(t, got.IsStaticSpa)
+			require.Nil(t, got.PublishDirectory)
+		})
+	}
+}
+
+// TestApplicationRailpackImportedStateMatchesProgramInputs walks the import path
+// as it is really walked: a program through Check on one side, application.one
+// through Read on the other. Diffing a read against itself compares a value with
+// itself and would pass even if the decoder dropped every railpack field.
+func TestApplicationRailpackImportedStateMatchesProgramInputs(t *testing.T) {
+	const response = `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","watchPaths":["apps/web/**"],"buildType":"railpack","railpackVersion":"0.4.2","isStaticSpa":true,"publishDirectory":"dist"}`
+	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, response))
+	read, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1"})
+	require.NoError(t, err)
+	require.Equal(t, BuildRailpack, read.Inputs.Source.Git.Build.Type)
+
+	checked, err := (Application{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+		"name": property.New("demo"), "environmentId": property.New("e1"),
+		"source": property.New(map[string]property.Value{
+			"type": property.New("git"),
+			"git": property.New(map[string]property.Value{
+				"url": property.New("https://git.test/repo"), "branch": property.New("main"),
+				"watchPaths": property.New([]property.Value{property.New("apps/web/**")}),
+				"build": property.New(map[string]property.Value{
+					"type": property.New("railpack"), "railpackVersion": property.New("0.4.2"),
+					"isStaticSpa": property.New(true), "publishDirectory": property.New("dist"),
+				}),
+			}),
+		}),
+	})})
+	require.NoError(t, err)
+	require.Empty(t, checked.Failures)
+
+	diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{Inputs: checked.Inputs, State: read.State})
+	require.NoError(t, err)
+	require.False(t, diff.HasChanges, "imported state must match the program that declared it")
+	require.Empty(t, diff.DetailedDiff)
+}
+
+func TestApplicationRailpackBuildValidate(t *testing.T) {
+	railpack := func(mutate func(*ApplicationBuild)) ApplicationSource {
+		b := ApplicationBuild{Type: BuildRailpack}
+		mutate(&b)
+		return ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: b}}
+	}
+	for _, tc := range []struct {
+		name   string
+		source ApplicationSource
+		want   string
+	}{
+		{"bare", railpack(func(*ApplicationBuild) {}), ""},
+		{"all fields", railpack(func(b *ApplicationBuild) {
+			b.RailpackVersion, b.IsStaticSpa, b.PublishDirectory = appStringPtr("0.4.2"), true, appStringPtr("dist")
+		}), ""},
+		{"rejects dockerfile", railpack(func(b *ApplicationBuild) { b.Dockerfile = appStringPtr("Dockerfile") }), "source.git.build.dockerfile must be omitted for railpack builds"},
+		{"rejects dockerContextPath", railpack(func(b *ApplicationBuild) { b.DockerContextPath = appStringPtr(".") }), "source.git.build.dockerContextPath must be omitted for railpack builds"},
+		{"rejects dockerBuildStage", railpack(func(b *ApplicationBuild) { b.DockerBuildStage = appStringPtr("prod") }), "source.git.build.dockerBuildStage must be omitted for railpack builds"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.source.validate()
+			if tc.want == "" {
+				require.NoError(t, err)
+			} else {
+				require.EqualError(t, err, tc.want)
+			}
+		})
+	}
+}
+
+func TestApplicationNonRailpackBuildsRejectRailpackFields(t *testing.T) {
+	build := func(kind BuildType, mutate func(*ApplicationBuild)) ApplicationSource {
+		b := ApplicationBuild{Type: kind}
+		if kind == BuildDockerfile {
+			b.Dockerfile = appStringPtr("Dockerfile")
+		}
+		mutate(&b)
+		return ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "u", Branch: "main", Build: b}}
+	}
+	for _, kind := range []BuildType{BuildNixpacks, BuildDockerfile} {
+		t.Run(string(kind), func(t *testing.T) {
+			require.EqualError(t, build(kind, func(b *ApplicationBuild) { b.RailpackVersion = appStringPtr("0.4.2") }).validate(),
+				fmt.Sprintf("source.git.build.railpackVersion must be omitted for %s builds", kind))
+			require.EqualError(t, build(kind, func(b *ApplicationBuild) { b.IsStaticSpa = true }).validate(),
+				fmt.Sprintf("source.git.build.isStaticSpa must be omitted for %s builds", kind))
+			require.EqualError(t, build(kind, func(b *ApplicationBuild) { b.PublishDirectory = appStringPtr("dist") }).validate(),
+				fmt.Sprintf("source.git.build.publishDirectory must be omitted for %s builds", kind))
+		})
+	}
+}
+
+func TestApplicationRailpackBuildSchemaExposesFields(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	build := spec.Types["dokploy:index:ApplicationBuild"]
+	require.Equal(t, "string", build.Properties["railpackVersion"].Type)
+	require.Equal(t, "boolean", build.Properties["isStaticSpa"].Type)
+	require.Equal(t, "string", build.Properties["publishDirectory"].Type)
 }
 
 func TestApplicationSourceIDOnlyReadReconstructsAllFields(t *testing.T) {
@@ -149,6 +348,9 @@ func assertApplicationBuildFields(t *testing.T, field string, want, got Applicat
 	requireLiveEqual(t, field+".dockerfile", want.Dockerfile, got.Dockerfile)
 	requireLiveEqual(t, field+".dockerContextPath", want.DockerContextPath, got.DockerContextPath)
 	requireLiveEqual(t, field+".dockerBuildStage", want.DockerBuildStage, got.DockerBuildStage)
+	requireLiveEqual(t, field+".railpackVersion", want.RailpackVersion, got.RailpackVersion)
+	requireLiveEqual(t, field+".isStaticSpa", want.IsStaticSpa, got.IsStaticSpa)
+	requireLiveEqual(t, field+".publishDirectory", want.PublishDirectory, got.PublishDirectory)
 }
 
 func assertLiveApplicationSource(t *testing.T, label string, want, got ApplicationSource) {

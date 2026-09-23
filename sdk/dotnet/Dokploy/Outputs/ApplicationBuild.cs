@@ -30,6 +30,18 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         /// </summary>
         public readonly string? Dockerfile;
         /// <summary>
+        /// Whether the Railpack build produces a static single-page application.
+        /// </summary>
+        public readonly bool? IsStaticSpa;
+        /// <summary>
+        /// The directory published by a Railpack static build.
+        /// </summary>
+        public readonly string? PublishDirectory;
+        /// <summary>
+        /// The Railpack version to build with.
+        /// </summary>
+        public readonly string? RailpackVersion;
+        /// <summary>
         /// The build type.
         /// </summary>
         public readonly string Type;
@@ -42,11 +54,20 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
 
             string? dockerfile,
 
+            bool? isStaticSpa,
+
+            string? publishDirectory,
+
+            string? railpackVersion,
+
             string type)
         {
             DockerBuildStage = dockerBuildStage;
             DockerContextPath = dockerContextPath;
             Dockerfile = dockerfile;
+            IsStaticSpa = isStaticSpa;
+            PublishDirectory = publishDirectory;
+            RailpackVersion = railpackVersion;
             Type = type;
         }
     }

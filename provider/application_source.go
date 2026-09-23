@@ -20,6 +20,7 @@ const (
 	SourceGitLab    ApplicationSourceType = "gitlab"
 	BuildNixpacks   BuildType             = "nixpacks"
 	BuildDockerfile BuildType             = "dockerfile"
+	BuildRailpack   BuildType             = "railpack"
 )
 
 type ApplicationSource struct {
@@ -105,6 +106,9 @@ type ApplicationBuild struct {
 	Dockerfile        *string   `pulumi:"dockerfile,optional"`
 	DockerContextPath *string   `pulumi:"dockerContextPath,optional"`
 	DockerBuildStage  *string   `pulumi:"dockerBuildStage,optional"`
+	RailpackVersion   *string   `pulumi:"railpackVersion,optional"`
+	IsStaticSpa       bool      `pulumi:"isStaticSpa,optional"`
+	PublishDirectory  *string   `pulumi:"publishDirectory,optional"`
 }
 
 func (b *ApplicationBuild) Annotate(a infer.Annotator) {
@@ -113,6 +117,9 @@ func (b *ApplicationBuild) Annotate(a infer.Annotator) {
 	a.Describe(&b.Dockerfile, "The Dockerfile path.")
 	a.Describe(&b.DockerContextPath, "The Docker build context.")
 	a.Describe(&b.DockerBuildStage, "The Docker build stage.")
+	a.Describe(&b.RailpackVersion, "The Railpack version to build with.")
+	a.Describe(&b.IsStaticSpa, "Whether the Railpack build produces a static single-page application.")
+	a.Describe(&b.PublishDirectory, "The directory published by a Railpack static build.")
 }
 
 func (s ApplicationSource) validate() error {
@@ -200,23 +207,40 @@ func validateGit(prefix, url, branch string, build ApplicationBuild) error {
 }
 
 func validateBuild(prefix string, build ApplicationBuild) error {
+	dockerOnly := map[string]bool{"dockerfile": build.Dockerfile != nil, "dockerContextPath": build.DockerContextPath != nil, "dockerBuildStage": build.DockerBuildStage != nil}
+	railpackOnly := map[string]bool{"railpackVersion": build.RailpackVersion != nil, "isStaticSpa": build.IsStaticSpa, "publishDirectory": build.PublishDirectory != nil}
+	// Iterated in a fixed order so the reported field is deterministic.
+	dockerFields := []string{"dockerfile", "dockerContextPath", "dockerBuildStage"}
+	railpackFields := []string{"railpackVersion", "isStaticSpa", "publishDirectory"}
 	switch build.Type {
 	case BuildNixpacks:
-		if build.Dockerfile != nil {
-			return fmt.Errorf("%s.build.dockerfile must be omitted for nixpacks builds", prefix)
+		for _, field := range dockerFields {
+			if dockerOnly[field] {
+				return fmt.Errorf("%s.build.%s must be omitted for nixpacks builds", prefix, field)
+			}
 		}
-		if build.DockerContextPath != nil {
-			return fmt.Errorf("%s.build.dockerContextPath must be omitted for nixpacks builds", prefix)
-		}
-		if build.DockerBuildStage != nil {
-			return fmt.Errorf("%s.build.dockerBuildStage must be omitted for nixpacks builds", prefix)
+		for _, field := range railpackFields {
+			if railpackOnly[field] {
+				return fmt.Errorf("%s.build.%s must be omitted for nixpacks builds", prefix, field)
+			}
 		}
 	case BuildDockerfile:
 		if build.Dockerfile == nil || *build.Dockerfile == "" {
 			return fmt.Errorf("%s.build.dockerfile is required for dockerfile builds", prefix)
 		}
+		for _, field := range railpackFields {
+			if railpackOnly[field] {
+				return fmt.Errorf("%s.build.%s must be omitted for dockerfile builds", prefix, field)
+			}
+		}
+	case BuildRailpack:
+		for _, field := range dockerFields {
+			if dockerOnly[field] {
+				return fmt.Errorf("%s.build.%s must be omitted for railpack builds", prefix, field)
+			}
+		}
 	default:
-		return fmt.Errorf("%s.build.type must be one of nixpacks or dockerfile", prefix)
+		return fmt.Errorf("%s.build.type must be one of nixpacks, dockerfile, or railpack", prefix)
 	}
 	return nil
 }
@@ -280,6 +304,22 @@ func configureApplicationBuild(ctx context.Context, api *client.Client, id strin
 	}
 	if b.DockerBuildStage != nil {
 		body.DockerBuildStage = nullable.NewNullableWithValue(*b.DockerBuildStage)
+	}
+	// Railpack-only fields are left unset for other build types so their request
+	// bodies stay byte-identical to before Railpack support existed.
+	if b.Type == BuildRailpack {
+		body.IsStaticSpa = nullable.NewNullableWithValue(b.IsStaticSpa)
+		// publishDirectory is sent on every railpack save, null when unset, the way
+		// railpackVersion already is. Omitting the key would leave whatever Dokploy
+		// holds in place, so removing it from a program could never clear it and
+		// every later preview would show the same diff.
+		body.PublishDirectory = nullable.NewNullNullable[string]()
+		if b.RailpackVersion != nil {
+			body.RailpackVersion = nullable.NewNullableWithValue(*b.RailpackVersion)
+		}
+		if b.PublishDirectory != nil {
+			body.PublishDirectory = nullable.NewNullableWithValue(*b.PublishDirectory)
+		}
 	}
 	_, err := api.ApplicationSaveBuildTypeWithResponse(ctx, body)
 	return err
