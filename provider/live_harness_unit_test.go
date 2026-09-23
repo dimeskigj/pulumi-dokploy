@@ -234,6 +234,32 @@ func TestDomainContractExperimentsChangeOneNamedField(t *testing.T) {
 	require.Equal(t, []string{"domainType", "port", "certificateType", "https", "stripPath"}, got)
 }
 
+func TestDomainContractExperimentsSerializeExactlyOneFieldDifference(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		args    DomainArgs
+		compose bool
+	}{
+		{name: "application", args: DomainArgs{ApplicationID: stringPtr("application"), Host: "example.invalid", Port: intPtr(80), CertificateType: CertificateNone}},
+		{name: "compose", args: DomainArgs{ComposeID: stringPtr("compose"), ServiceName: stringPtr("web"), Host: "example.invalid", Port: intPtr(80), CertificateType: CertificateNone}, compose: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			baseline := jsonObject(t, domainCreateBody(tc.args))
+			for _, experiment := range domainContractExperimentCases(tc.args, tc.compose) {
+				variant := jsonObject(t, experiment.body)
+				changed := serializedDomainFieldDiff(baseline, variant)
+				require.Equal(t, []string{experiment.field}, changed)
+			}
+		})
+	}
+}
+
+func TestDomainContractExperimentFailsClosedWithoutID(t *testing.T) {
+	category, continueExperiments := classifyDomainExperimentResult("2xx", false)
+	require.Equal(t, "cleanup-failure", category)
+	require.False(t, continueExperiments)
+}
+
 func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
 	reason := sanitizeDomainValidationReason(&client.APIError{Message: "domainType has an invalid value secret-sentinel"})
 	require.Equal(t, "field=domainType;category=invalid-value", reason)

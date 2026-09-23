@@ -78,6 +78,36 @@ git diff --check
 
 Result: both checks PASS. The evidence indicates an external deployed-server defect or an untested mandatory contract requirement; guessing a provider correction remains disallowed.
 
+## Review fixes for 88fa54d
+
+Added `TestDomainContractExperimentFailsClosedWithoutID` before implementing the response classification. A 2xx response without a resource ID now produces `cleanup-failure`, records the existing structural cleanup failure/stop marker, and cannot be reported as accepted or allow subsequent experiments. Cleanup errors now use `reportLiveCleanup`, which applies existing sanitized diagnostics and marker handling; raw cleanup errors are not passed to `requireNoError`.
+
+Added `TestDomainContractExperimentsSerializeExactlyOneFieldDifference` before adding `serializedDomainFieldDiff`. It marshals baseline and every Application/Compose variant and asserts exactly the named field differs, including presence/absence changes.
+
+RED commands:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'DomainContractExperimentsSerializeExactlyOneFieldDifference|DomainContractExperimentFailsClosedWithoutID' -count=1 -v
+```
+
+The first run failed at the expected missing helper; the initial syntax correction was local test authoring only. The final RED run for the missing response-classification helper failed as expected.
+
+GREEN covering command:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'DomainContractExperiment|DomainComparisonEvidence|SanitizeDomainValidationReason' -count=1 -v
+```
+
+Result: PASS, including serialized one-field checks, fail-closed 2xx-without-ID behavior, existing sanitization tests, and the live test’s opt-out skip. No live tests were run for this review fix, as instructed.
+
+Final verification:
+
+```text
+git diff --check
+```
+
+Result: PASS. Existing cancellation edits and the untracked plan remain unstaged.
+
 ## Luna medium finding: reason interpolation hardening
 
 Added `TestDomainComparisonEvidenceRejectsMaliciousReasons` before changing `formatDomainComparisonEvidence`. RED demonstrated that a malicious `provider.reason` was interpolated into evidence. The formatter now validates both reasons against the fixed `field=<allowlisted Domain field>;category=<allowlisted category>` shape (or a fixed category-only shape), normalizes only the validated tokens, and returns fixed `invalid-evidence` for any other input.
