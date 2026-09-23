@@ -23,6 +23,7 @@ type scriptedRequest struct {
 	Body     any
 	Status   int
 	Response []byte
+	Received chan<- struct{}
 	// WaitForContextDone holds the response until the request context is done.
 	// This lets timing-sensitive tests synchronize on cancellation or deadline
 	// expiry without guessing how many requests fit in a time window.
@@ -116,6 +117,9 @@ func (s *scriptedServer) handle(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if len(bytes.TrimSpace(body)) != 0 {
 		s.t.Errorf("request body mismatch: got %s, want empty", body)
+	}
+	if expectation.Received != nil {
+		close(expectation.Received)
 	}
 	if expectation.WaitForContextDone {
 		<-r.Context().Done()
