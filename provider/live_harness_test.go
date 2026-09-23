@@ -734,6 +734,10 @@ func liveRunName(kind string) string {
 	return "pulumi-acceptance-" + kind + "-" + uuid.NewString()
 }
 
+func liveDomainHost(_ string) string {
+	return "d-" + uuid.NewString() + ".example.invalid"
+}
+
 func cleanupContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), liveCleanupTimeout)
 }

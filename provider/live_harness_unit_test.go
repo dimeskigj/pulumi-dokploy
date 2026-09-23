@@ -199,6 +199,24 @@ func TestDomainComparisonEvidenceIsStructuralAndSanitized(t *testing.T) {
 	require.NotContains(t, got, "https://")
 }
 
+func TestLiveDomainHostFixturesUseValidRFC1123Labels(t *testing.T) {
+	for _, kind := range []string{"domain", "domain-direct", "updated-domain", "custom-domain", "focused-domain", "focused-domain-direct", "focused-domain-updated", "experiment-domain", "experiment-domain-direct", "experiment-domain-updated"} {
+		host := liveDomainHost(kind)
+		for _, label := range strings.Split(host, ".") {
+			require.NotEmpty(t, label)
+			require.LessOrEqual(t, len(label), 63)
+			require.Regexp(t, `^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$`, label)
+		}
+	}
+}
+
+func TestLiveDomainHostReplacesOverlongLegacyRunName(t *testing.T) {
+	legacyLabel := strings.Split(liveRunName("focused-domain"), ".")[0]
+	newLabel := strings.Split(liveDomainHost("focused-domain"), ".")[0]
+	require.Greater(t, len(legacyLabel), 63)
+	require.LessOrEqual(t, len(newLabel), 63)
+}
+
 func TestDomainComparisonEvidenceReportsSafeKeyShapeMismatch(t *testing.T) {
 	providerKeys := []string{"applicationId", "domainType", "host"}
 	generatedKeys := []string{"applicationId", "host"}
