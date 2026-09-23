@@ -324,6 +324,22 @@ func TestAcceptanceRefreshOutputErrorIsStageSanitized(t *testing.T) {
 	}
 }
 
+func TestAcceptanceLocalStackCreationUsesEphemeralPassphrase(t *testing.T) {
+	backend := t.TempDir()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	stack, err := auto.NewStackInlineSource(ctx, "local-passphrase-stack", "local-passphrase-project", func(*pulumi.Context) error { return nil },
+		auto.PulumiHome(filepath.Join(backend, "pulumi")),
+		auto.EnvVars(acceptanceAutomationEnv(backend, uuid.NewString())),
+	)
+	if err != nil {
+		t.Fatal("local-only stack creation failed")
+	}
+	if err := stack.Workspace().RemoveStack(ctx, "local-passphrase-stack"); err != nil {
+		t.Fatal("local-only stack cleanup failed")
+	}
+}
+
 func TestAccLifecycleSmoke(t *testing.T) {
 	if os.Getenv("DOKPLOY_ACCEPTANCE") != "1" {
 		t.Skip("set DOKPLOY_ACCEPTANCE=1 to run live acceptance tests")
