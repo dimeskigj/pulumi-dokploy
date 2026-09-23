@@ -7,11 +7,57 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v3"
 )
+
+func loadCanonicalYAML(t *testing.T) map[string]any {
+	t.Helper()
+	data, err := os.ReadFile("yaml/Pulumi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var document map[string]any
+	if err := yaml.Unmarshal(data, &document); err != nil {
+		t.Fatalf("canonical YAML is invalid: %v", err)
+	}
+	return document
+}
+
+func validateYAMLResourceProperties(document map[string]any, resources map[string]any) error {
+	rawResources, ok := document["resources"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	resourceNames := make([]string, 0, len(rawResources))
+	for name := range rawResources {
+		resourceNames = append(resourceNames, name)
+	}
+	sort.Strings(resourceNames)
+	for _, name := range resourceNames {
+		resource, ok := rawResources[name].(map[string]any)
+		if !ok {
+			continue
+		}
+		token, _ := resource["type"].(string)
+		inputProperties := schemaResourceInputProperties(resources, token)
+		properties, _ := resource["properties"].(map[string]any)
+		propertyNames := make([]string, 0, len(properties))
+		for property := range properties {
+			propertyNames = append(propertyNames, property)
+		}
+		sort.Strings(propertyNames)
+		for _, property := range propertyNames {
+			if _, ok := inputProperties[property]; !ok {
+				return fmt.Errorf("resource %q (%q) has unknown property %q", name, token, property)
+			}
+		}
+	}
+	return nil
+}
 
 func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	data, err := os.ReadFile("yaml/Pulumi.yaml")
@@ -85,6 +131,26 @@ func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
 	}
 }
 
+func TestValidateYAMLResourcePropertiesRejectsUnknownProperty(t *testing.T) {
+	document := map[string]any{"resources": map[string]any{
+		"project": map[string]any{
+			"type":       "dokploy:index:Project",
+			"properties": map[string]any{"name": "ok", "invalidProperty": true},
+		},
+	}}
+	err := validateYAMLResourceProperties(document, schemaResources(t))
+	if err == nil || !strings.Contains(err.Error(), "invalidProperty") {
+		t.Fatalf("validation error = %v, want invalidProperty", err)
+	}
+}
+
+func TestValidateYAMLResourcePropertiesAcceptsCanonicalYAML(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	if err := validateYAMLResourceProperties(document, schemaResources(t)); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestGeneratedProjectRuntimes(t *testing.T) {
 	for language, wantRuntime := range map[string]string{
 		"nodejs": "nodejs",
@@ -108,27 +174,6 @@ func TestGeneratedProjectRuntimes(t *testing.T) {
 				t.Errorf("generated %s manifest runtime = %q, want %q", language, manifest.Runtime, wantRuntime)
 			}
 		})
-	}
-}
-
-func TestCanonicalYAMLRejectsUnknownProperty(t *testing.T) {
-	canonical, err := os.ReadFile("yaml/Pulumi.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	variant := strings.Replace(string(canonical), "      name: dokploy-mvp\n", "      invalidProperty: true\n      name: dokploy-mvp\n", 1)
-	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "Pulumi.yaml"), []byte(variant), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	out := filepath.Join(root, "out")
-	cmd := exec.Command("mise", "exec", "pulumi@3.259.0", "--", "pulumi", "convert", "--from", "yaml", "--language", "yaml", "--strict", "--cwd", root, "--out", out, "--generate-only")
-	output, err := cmd.CombinedOutput()
-	if err == nil {
-		t.Fatal("Pulumi YAML binding unexpectedly accepted invalidProperty")
-	}
-	if !strings.Contains(string(output), "invalidProperty") {
-		t.Fatalf("binding error omitted invalid property: %v\n%s", err, output)
 	}
 }
 
