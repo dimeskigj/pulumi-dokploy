@@ -402,6 +402,8 @@ func validateSchemaCompatibilityStep(workflow map[string]any) error {
 		comparisonCount += strings.Count(run, "schema-tools compare")
 		for _, required := range []string{
 			"schema-tools compare",
+			"--repository \"github://api.github.com/${{ github.repository }}\"",
+			"--new-path=\"provider/cmd/pulumi-resource-$PROVIDER/schema.json\"",
 			"cat \"$RUNNER_TEMP/schema-check-report.md\"",
 			"Looking good! No breaking changes found.",
 			"exit 1",
@@ -409,6 +411,9 @@ func validateSchemaCompatibilityStep(workflow map[string]any) error {
 			if !strings.Contains(run, required) {
 				return fmt.Errorf("schema compatibility check is missing %q", required)
 			}
+		}
+		if strings.Contains(run, "--local-path") || strings.Contains(run, "--new-commit") {
+			return fmt.Errorf("schema compatibility check must use the local new-path form, not deprecated new-commit flags")
 		}
 		if env, ok := step["env"].(map[string]any); !ok || env["GITHUB_TOKEN"] != "${{ secrets.GITHUB_TOKEN }}" {
 			return fmt.Errorf("schema compatibility check must receive GITHUB_TOKEN")
@@ -446,6 +451,7 @@ func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output s
 	t.Setenv("DEFAULT_BRANCH", "main")
 	t.Setenv("SCHEMA_TOOLS_OUTPUT", output)
 	t.Setenv("SCHEMA_TOOLS_STATUS", status)
+	run = strings.ReplaceAll(run, "${{ github.repository }}", "dimeskigj/pulumi-dokploy")
 	command := exec.Command("bash", "-euo", "pipefail", "-c", run)
 	err := command.Run()
 	result := 0
