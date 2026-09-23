@@ -427,6 +427,11 @@ func validateSchemaCompatibilityStep(workflow map[string]any) error {
 }
 
 func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output string, status string) (int, string) {
+	result, report, _ := runSchemaCompatibilityCheckWithArgs(t, workflow, output, status)
+	return result, report
+}
+
+func runSchemaCompatibilityCheckWithArgs(t *testing.T, workflow map[string]any, output string, status string) (int, string, []string) {
 	t.Helper()
 	j := workflow["jobs"].(map[string]any)
 	steps := j["prerequisites"].(map[string]any)["steps"].([]any)
@@ -442,15 +447,17 @@ func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output s
 	bin := filepath.Join(tmp, "bin")
 	require.NoError(t, os.Mkdir(bin, 0o755))
 	schemaTools := filepath.Join(bin, "schema-tools")
-	require.NoError(t, os.WriteFile(schemaTools, []byte("#!/bin/sh\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o600))
+	require.NoError(t, os.WriteFile(schemaTools, []byte("#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$SCHEMA_TOOLS_ARGS\"\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o600))
 	require.NoError(t, os.Chmod(schemaTools, 0o700))
 	require.NoError(t, os.WriteFile(filepath.Join(tmp, "provider.json"), []byte("{}"), 0o600))
+	argsPath := filepath.Join(tmp, "schema-tools-args")
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("RUNNER_TEMP", tmp)
 	t.Setenv("PROVIDER", "dokploy")
 	t.Setenv("DEFAULT_BRANCH", "main")
 	t.Setenv("SCHEMA_TOOLS_OUTPUT", output)
 	t.Setenv("SCHEMA_TOOLS_STATUS", status)
+	t.Setenv("SCHEMA_TOOLS_ARGS", argsPath)
 	run = strings.ReplaceAll(run, "${{ github.repository }}", "dimeskigj/pulumi-dokploy")
 	command := exec.Command("bash", "-euo", "pipefail", "-c", run)
 	err := command.Run()
@@ -460,7 +467,9 @@ func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output s
 	}
 	report, readErr := os.ReadFile(filepath.Join(tmp, "schema-check-report.md"))
 	require.NoError(t, readErr)
-	return result, string(report)
+	args, readErr := os.ReadFile(argsPath)
+	require.NoError(t, readErr)
+	return result, string(report), strings.Fields(string(args))
 }
 
 func TestSchemaCompatibilityCheckExecutesItsResult(t *testing.T) {
@@ -475,6 +484,26 @@ func TestSchemaCompatibilityCheckExecutesItsResult(t *testing.T) {
 		require.NotEqual(t, 0, status)
 		require.Contains(t, report, "Breaking change detected")
 	})
+}
+
+func TestSchemaCompatibilityCheckPassesSafeCompareArguments(t *testing.T) {
+	workflow, _ := readWorkflow(t, "build.yml")
+	status, _, args := runSchemaCompatibilityCheckWithArgs(t, workflow, "Looking good! No breaking changes found.", "0")
+	require.Equal(t, 0, status)
+	require.Equal(t, []string{
+		"compare",
+		"-p", "dokploy",
+		"-o", "main",
+		"--repository", "github://api.github.com/dimeskigj/pulumi-dokploy",
+		"--new-path=provider/cmd/pulumi-resource-dokploy/schema.json",
+	}, args)
+}
+
+func TestSchemaCompatibilityCheckRejectsMissingSuccessMarker(t *testing.T) {
+	workflow, _ := readWorkflow(t, "build.yml")
+	status, report := runSchemaCompatibilityCheck(t, workflow, "schema comparison completed", "0")
+	require.NotEqual(t, 0, status)
+	require.Contains(t, report, "schema comparison completed")
 }
 
 func TestSchemaCompatibilityValidationRejectsDuplicateChecks(t *testing.T) {
