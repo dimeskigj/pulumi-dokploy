@@ -11,6 +11,7 @@ from xml.etree import ElementTree
 WIDTH = HEIGHT = 175
 VIEWBOX = (0.0, 0.0, 457.0, 472.0)
 SAMPLES = 4
+MAX_IMAGE_PIXELS = 16_777_216
 NUMBER = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?"
 
 
@@ -110,6 +111,10 @@ def png_pixel_data(data: bytes) -> tuple[int, int, bytes]:
         actual_crc = struct.unpack(">I", data[cursor + 8 + length : end])[0]
         if actual_crc != zlib.crc32(kind + chunk) & 0xFFFFFFFF:
             raise ValueError("PNG chunk CRC mismatch")
+        if len(kind) != 4 or any(not (65 <= value <= 90 or 97 <= value <= 122) for value in kind):
+            raise ValueError("PNG chunk type must contain only ASCII letters")
+        if not 65 <= kind[2] <= 90:
+            raise ValueError("PNG chunk type has a lowercase reserved byte")
         cursor = end
         if dimensions is None and kind != b"IHDR":
             raise ValueError("PNG must start with IHDR")
@@ -123,6 +128,8 @@ def png_pixel_data(data: bytes) -> tuple[int, int, bytes]:
             )
             if width == 0 or height == 0:
                 raise ValueError("PNG dimensions must be positive")
+            if width * height > MAX_IMAGE_PIXELS:
+                raise ValueError("PNG image is too large")
             if (bit_depth, color_type, compression, filtering, interlace) != (8, 6, 0, 0, 0):
                 raise ValueError("logo PNG must be an 8-bit RGBA image without interlacing")
             dimensions = (width, height)
@@ -140,16 +147,17 @@ def png_pixel_data(data: bytes) -> tuple[int, int, bytes]:
             idat_ended = True
     if dimensions is None or not seen_iend or cursor != len(data):
         raise ValueError("PNG must end with IEND")
-    try:
-        decompressor = zlib.decompressobj()
-        filtered = decompressor.decompress(compressed)
-        if not decompressor.eof or decompressor.unused_data or decompressor.unconsumed_tail:
-            raise ValueError("PNG image data has trailing or incomplete compressed data")
-    except zlib.error as error:
-        raise ValueError("invalid PNG image data") from error
     width, height = dimensions
     stride = width * 4
     row_size = stride + 1
+    expected_length = height * row_size
+    try:
+        decompressor = zlib.decompressobj()
+        filtered = decompressor.decompress(compressed, expected_length + 1)
+        if len(filtered) > expected_length or not decompressor.eof or decompressor.unused_data or decompressor.unconsumed_tail:
+            raise ValueError("PNG image data has trailing or incomplete compressed data")
+    except zlib.error as error:
+        raise ValueError("invalid PNG image data") from error
     if len(filtered) != height * row_size:
         raise ValueError("PNG scanline data has the wrong length")
     pixels = bytearray()
