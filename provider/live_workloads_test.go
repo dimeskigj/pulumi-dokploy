@@ -314,7 +314,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 				t.Fatalf("workload target unavailable: %s", classification)
 			}
 			r := Domain{client: fixedClient(api)}
-			args := DomainArgs{Host: liveRunName("domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
+			args := DomainArgs{Host: liveDomainHost("domain"), Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
 			if target.compose {
 				args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
 			} else {
@@ -335,7 +335,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 				requireNoError(t, classificationErr)
 				providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys}
 				directArgs := args
-				directArgs.Host = liveRunName("domain-direct") + ".example.invalid"
+				directArgs.Host = liveDomainHost("domain-direct")
 				var generatedResult liveDomainCreateResult
 				comparison := compareDomainAttempts(func() liveDomainCreateResult {
 					return providerResult
@@ -360,7 +360,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 			read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID, State: created.Output})
 			requireWorkloadLifecycleNoError(t, "domain", err)
 			updated := read.Inputs
-			updated.Host = liveRunName("updated-domain") + ".example.invalid"
+			updated.Host = liveDomainHost("updated-domain")
 			updated.Path, updated.InternalPath, updated.Port = stringPtr("/public"), stringPtr("/internal"), intPtr(8080)
 			updated.HTTPS = true
 			updated.Enabled = false
@@ -428,7 +428,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 			if !targetPresent || !targetReady {
 				t.Skip("workload target is not ready for custom certificate coverage")
 			}
-			args := DomainArgs{Host: liveRunName("custom-domain") + ".example.invalid", HTTPS: true, CertificateType: CertificateCustom, CustomCertResolver: &resolver, StripPath: true, Enabled: true}
+			args := DomainArgs{Host: liveDomainHost("custom-domain"), HTTPS: true, CertificateType: CertificateCustom, CustomCertResolver: &resolver, StripPath: true, Enabled: true}
 			if target.compose {
 				args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
 			} else {
@@ -1410,7 +1410,7 @@ func TestLiveDomainContractExperiments(t *testing.T) {
 		runFocusedDomainTarget(t, func() (focusedDomainTarget, func()) {
 			return createFocusedDomainTarget(t, ctx, api, environmentID, compose)
 		}, func(target focusedDomainTarget) {
-			args := DomainArgs{Host: liveRunName("experiment-domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
+			args := DomainArgs{Host: liveDomainHost("experiment-domain"), Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
 			if target.compose {
 				args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
 			} else {
@@ -1616,7 +1616,7 @@ func runFocusedLiveDomainTarget(t *testing.T, ctx context.Context, api *client.C
 		requireLiveEqual(t, "domain.target.present", true, present)
 		requireLiveEqual(t, "domain.target.ready", true, ready)
 
-		args := DomainArgs{Host: liveRunName("focused-domain") + ".example.invalid", Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
+		args := DomainArgs{Host: liveDomainHost("focused-domain"), Port: intPtr(80), CertificateType: CertificateNone, Enabled: true}
 		if target.compose {
 			args.ComposeID, args.ServiceName = &target.id, stringPtr("web")
 		} else {
@@ -1631,7 +1631,7 @@ func runFocusedLiveDomainTarget(t *testing.T, ctx context.Context, api *client.C
 			requireNoError(t, classificationErr)
 			providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys, reason: sanitizeDomainValidationReason(err)}
 			directArgs := args
-			directArgs.Host = liveRunName("focused-domain-direct") + ".example.invalid"
+			directArgs.Host = liveDomainHost("focused-domain-direct")
 			generatedResult := runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)
 			evidence := formatDomainComparisonEvidence(providerResult, generatedResult)
 			t.Logf("domain comparison evidence: %s", evidence)
@@ -1656,7 +1656,7 @@ func runFocusedLiveDomainTarget(t *testing.T, ctx context.Context, api *client.C
 		read, err := r.Read(ctx, infer.ReadRequest[DomainArgs, DomainState]{ID: domainID, State: created.Output})
 		requireWorkloadLifecycleNoError(t, "domain", err)
 		updated := read.Inputs
-		updated.Host = liveRunName("focused-domain-updated") + ".example.invalid"
+		updated.Host = liveDomainHost("focused-domain-updated")
 		updated.HTTPS = true
 		changed, err := r.Update(ctx, infer.UpdateRequest[DomainArgs, DomainState]{ID: domainID, Inputs: updated, State: read.State})
 		requireWorkloadLifecycleNoError(t, "domain", err)

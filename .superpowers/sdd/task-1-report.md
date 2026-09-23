@@ -128,6 +128,42 @@ env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provi
 
 Result: PASS. No live runs were performed. Existing incident markers, cancellation edits, and the untracked plan were preserved.
 
+## Corrected root cause: live Domain host labels exceeded RFC1123 limits
+
+The prior Domain experiment evidence is invalidated as a payload-contract signal. The pinned Dokploy hostname validator requires each RFC1123 label to be at most 63 characters. The old `liveRunName` Domain host construction produced first-label lengths of 61 for `domain`, 68 for `domain-direct`, 69 for `updated-domain`, 68 for `custom-domain`, 72 for `experiment-domain`, 69 for `focused-domain`, 76 for `focused-domain-direct`, and 77 for `focused-domain-updated`. Thus the focused and experiment requests were independently rejected by hostname validation before field contract behavior could be observed.
+
+TDD RED:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestLiveDomainHostFixturesUseValidRFC1123Labels$' -count=1 -v
+```
+
+Result: expected failure because `liveDomainHost` was undefined. After the initial short-prefix implementation, the same deterministic test also correctly failed on a 64-character label, proving the helper needed a shorter stable form.
+
+GREEN:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'LiveDomainHostFixturesUseValidRFC1123Labels|DomainComparisonEvidence|DomainContractExperiment|SanitizeDomainValidationReason' -count=1 -v
+mise exec -- golangci-lint run ./provider
+```
+
+Result: all PASS; lint reported zero issues. The new `liveDomainHost` uses a short fixed ASCII prefix plus a UUID and the non-sensitive test asserts every original, updated, custom, focused, direct, and experiment Domain fixture has valid RFC1123 labels. No provider payload or production Domain mapping changed.
+
+Live confirmation was intentionally not run because existing mount/incident markers remain unresolved. No marker was removed or modified. The corrected host fixtures require a fresh authorized Application/Compose live run after the marker gate is cleared; prior Domain experiment results must not be used to infer the deployed request contract.
+
+## Domain host reviewer P2 follow-up
+
+Added `TestLiveDomainHostReplacesOverlongLegacyRunName`, which compares only first-label lengths: the legacy `liveRunName("focused-domain")` label is over 63 characters, while `liveDomainHost("focused-domain")` remains within the RFC1123 limit. The existing fixture table continues to enumerate original, updated, custom, focused, direct, and experiment Domain host kinds. No UUID or host value is printed.
+
+Verification:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run 'LiveDomainHost' -count=1 -v
+mise exec -- golangci-lint run ./provider
+```
+
+Result: focused host tests PASS, `git diff --check` PASS, and provider lint reports zero issues. No live tests, marker changes, staging, or commit were performed.
+
 ## Review follow-up: stop subsequent targets after marker
 
 Added `TestDomainContractExperimentTargetsStopWhenMarkerIsSet` before implementing target-level control flow. The target runner now checks `heavyLiveTierStopped()` before every target setup and exits before starting Compose when Application cleanup/health handling sets the global stop state. Experiment outcomes are now a structured `domainExperimentResult`; sequence stopping uses the allowlisted category field rather than substring matching. The existing sequence-level baseline/variant stop test remains covered.
