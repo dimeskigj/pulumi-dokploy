@@ -45,7 +45,7 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 		auto.EnvVars(map[string]string{"PULUMI_BACKEND_URL": "file://" + backend}),
 	)
 	if err != nil {
-		t.Fatal(acceptanceFailure("stack creation"))
+		t.Fatal(acceptanceStageError("stack-create", err))
 	}
 	// Register cleanup immediately, including for failures during configuration or
 	// the first preview. Cleanup is deliberately bounded and uses no state edits.
@@ -72,56 +72,56 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 				return validateStackRemoved(stacks, stackName)
 			})
 		if destroyErr != nil {
-			t.Error(acceptanceFailure("destroy lifecycle smoke stack"))
+			t.Error(acceptanceStageError("destroy", destroyErr))
 		}
 		if exportErr != nil {
-			t.Error(acceptanceFailure("export lifecycle smoke state"))
+			t.Error(acceptanceStageError("export", exportErr))
 		}
 		if removeErr != nil {
-			t.Error(acceptanceFailure("remove lifecycle smoke workspace"))
+			t.Error(acceptanceStageError("remove-stack", removeErr))
 		}
 		if listErr != nil {
-			t.Error(acceptanceFailure("list lifecycle smoke workspace"))
+			t.Error(acceptanceStageError("list-stacks", listErr))
 		}
 	})
 	if err := stack.SetConfig(ctx, "dokploy:endpoint", auto.ConfigValue{Value: cfg.Endpoint}); err != nil {
-		t.Fatal(acceptanceFailure("configure endpoint"))
+		t.Fatal(acceptanceStageError("configure-endpoint", err))
 	}
 	if err := stack.SetConfig(ctx, "dokploy:apiKey", auto.ConfigValue{Value: cfg.APIKey, Secret: true}); err != nil {
-		t.Fatal(acceptanceFailure("configure API key"))
+		t.Fatal(acceptanceStageError("configure-api-key", err))
 	}
 	revisionOnePreview, err := stack.Preview(ctx)
 	if err != nil {
-		t.Fatal(acceptanceFailure("preview revision one"))
+		t.Fatal(acceptanceStageError("preview-1", err))
 	}
 	assertPreviewAggregate(t, revisionOnePreview, "revision one")
 	revisionOneUp, err := stack.Up(ctx)
 	if err != nil {
-		t.Fatal(acceptanceFailure("up revision one"))
+		t.Fatal(acceptanceStageError("up-1", err))
 	}
 	assertUpdateAggregate(t, revisionOneUp, "revision one")
 	revisionOne := assertLifecycleOutputs(t, revisionOneUp.Outputs, lifecycleRevisionOneValues(), cfg, nil)
 	if _, err := stack.Refresh(ctx); err != nil {
-		t.Fatal(acceptanceFailure("refresh revision one"))
+		t.Fatal(acceptanceStageError("refresh-1", err))
 	}
-	assertRefreshedLifecycleOutputs(t, ctx, stack, lifecycleRevisionOneValues(), cfg, &revisionOne)
+	assertRefreshedLifecycleOutputs(t, ctx, stack, "refresh-1", lifecycleRevisionOneValues(), cfg, &revisionOne)
 
 	stack.Workspace().SetProgram(lifecycleRevisionTwo(cfg))
 	revisionTwoPreview, err := stack.Preview(ctx)
 	if err != nil {
-		t.Fatal(acceptanceFailure("preview revision two"))
+		t.Fatal(acceptanceStageError("preview-2", err))
 	}
 	assertPreviewAggregate(t, revisionTwoPreview, "revision two")
 	revisionTwoUp, err := stack.Up(ctx)
 	if err != nil {
-		t.Fatal(acceptanceFailure("up revision two"))
+		t.Fatal(acceptanceStageError("up-2", err))
 	}
 	assertUpdateAggregate(t, revisionTwoUp, "revision two")
 	assertLifecycleOutputs(t, revisionTwoUp.Outputs, lifecycleRevisionTwoValues(), cfg, &revisionOne)
 	if _, err := stack.Refresh(ctx); err != nil {
-		t.Fatal(acceptanceFailure("refresh revision two"))
+		t.Fatal(acceptanceStageError("refresh-2", err))
 	}
-	assertRefreshedLifecycleOutputs(t, ctx, stack, lifecycleRevisionTwoValues(), cfg, &revisionOne)
+	assertRefreshedLifecycleOutputs(t, ctx, stack, "refresh-2", lifecycleRevisionTwoValues(), cfg, &revisionOne)
 }
 
 func lifecycleSmokeProgram(cfg liveConfig, description, environmentName, tagColor string) pulumi.RunFunc {
@@ -215,6 +215,44 @@ func acceptanceFailure(phase string, field ...string) string {
 		return "Pulumi acceptance " + phase + " failed"
 	}
 	return "Pulumi acceptance " + phase + " failed for field " + field[0]
+}
+
+var acceptanceStages = map[string]struct{}{
+	"workspace":          {},
+	"plugin-discovery":   {},
+	"stack-create":       {},
+	"configure-endpoint": {},
+	"configure-api-key":  {},
+	"preview-1":          {},
+	"up-1":               {},
+	"refresh-1":          {},
+	"preview-2":          {},
+	"up-2":               {},
+	"refresh-2":          {},
+	"destroy":            {},
+	"export":             {},
+	"remove-stack":       {},
+	"list-stacks":        {},
+}
+
+func acceptanceStageError(stage string, err error) error {
+	if _, ok := acceptanceStages[stage]; !ok {
+		stage = "unknown"
+	}
+	category := "unknown"
+	switch {
+	case errors.Is(err, context.DeadlineExceeded):
+		category = "timeout"
+	case errors.Is(err, context.Canceled):
+		category = "canceled"
+	case err != nil:
+		category = "process"
+	}
+	return fmt.Errorf("Pulumi acceptance failed at stage %s: category=%s", stage, category)
+}
+
+func acceptanceRefreshOutputError(stage string, err error) error {
+	return acceptanceStageError(stage, err)
 }
 
 func sanitizeAcceptanceDiagnostic(diagnostic string, cfg liveConfig) string {
@@ -401,11 +439,11 @@ func assertLifecycleOutputs(t *testing.T, outputs auto.OutputMap, expected lifec
 	return ids
 }
 
-func assertRefreshedLifecycleOutputs(t *testing.T, ctx context.Context, stack auto.Stack, expected lifecycleRevisionValues, cfg liveConfig, previous *lifecycleIDs) lifecycleIDs {
+func assertRefreshedLifecycleOutputs(t *testing.T, ctx context.Context, stack auto.Stack, stage string, expected lifecycleRevisionValues, cfg liveConfig, previous *lifecycleIDs) lifecycleIDs {
 	t.Helper()
 	outputs, err := stack.Outputs(ctx)
 	if err != nil {
-		t.Fatal(acceptanceFailure("refresh outputs"))
+		t.Fatal(acceptanceRefreshOutputError(stage, err))
 	}
 	return assertLifecycleOutputs(t, outputs, expected, cfg, previous)
 }
