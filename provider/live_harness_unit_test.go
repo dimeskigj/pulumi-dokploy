@@ -467,6 +467,40 @@ func TestMountDispatchHealthProbeEvidence(t *testing.T) {
 		classifyMountDispatchHealthProbe(context.DeadlineExceeded))
 }
 
+func TestRecordMountDispatchHealthFailureStoresSanitizedMarker(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	marker := filepath.Join(t.TempDir(), "mount-dispatch.stop")
+	t.Setenv(liveStopMarkerEnvironment, marker)
+	raw := "https://private.example/secret-id?token=secret-sentinel"
+	err := &mountDispatchHealthProbeError{err: &client.APIError{StatusCode: 503, Code: "SERVER_UNHEALTHY", Message: raw}}
+
+	diagnostic := recordMountDispatchHealthFailure(err)
+	state := snapshotLiveHarnessState()
+	require.True(t, state.stopped)
+	require.Len(t, state.results, 1)
+	require.Equal(t, "mount-dispatch", state.results[0].kind)
+	require.Equal(t, diagnostic, state.results[0].diagnostic)
+	require.Equal(t, "operation=mount-dispatch;phase=health-probe;status=5xx;code=SERVER_UNHEALTHY", diagnostic)
+	require.NotContains(t, diagnostic, raw)
+	require.NotContains(t, diagnostic, "secret-sentinel")
+	contents, readErr := os.ReadFile(marker)
+	require.NoError(t, readErr)
+	require.Equal(t, "stop\n", string(contents))
+}
+
+func TestMountDispatchPhaseAllowlistIsExact(t *testing.T) {
+	require.Equal(t, map[string]struct{}{
+		"fixture-create": {},
+		"target-read":    {},
+		"mount-create":   {},
+		"mount-update":   {},
+		"mount-delete":   {},
+		"fixture-delete": {},
+		"health-probe":   {},
+	}, mountDispatchPhases)
+}
+
 func TestMountDispatchPhaseEvidenceIsSanitized(t *testing.T) {
 	secret := "mount-dispatch-secret-sentinel"
 	got := classifyMountDispatchPhase("mount-create", &client.APIError{StatusCode: 500, Code: "INTERNAL_ERROR", Message: secret})
