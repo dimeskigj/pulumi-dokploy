@@ -4,6 +4,11 @@ PROJECT := github.com/dimeskigj/pulumi-dokploy
 PROVIDER := pulumi-resource-$(PACK)
 PROVIDER_PATH := provider
 VERSION_GENERIC ?= $(or $(PROVIDER_VERSION),0.0.1-alpha.0+dev)
+# Maven Central currently fails TLS 1.3 session resumption on the CI Java/Maven
+# combination. Keep certificate validation enabled while using TLS 1.2.
+MAVEN_TLS_OPTS := -Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2
+JAVA11_EXEC := mise exec java@temurin-11.0.32+101 gradle@8.14.3 --
+JAVA17_MAVEN_EXEC := mise exec java@temurin-17.0.20+8 maven@3.9.11 --
 
 .PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_go_sdk install_python_sdk install_nodejs_sdk install_dotnet_sdk install_java_sdk install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi build prepare_local_workspace local_generate docs_generate docs_check docs_build
 
@@ -76,8 +81,8 @@ install_dotnet_sdk:
 
 install_java_sdk:
 	$(eval JAVA_EXAMPLE_VERSION := $(shell grep -A1 '<artifactId>dokploy</artifactId>' examples/java/pom.xml | grep -oE '<version>[^<]*</version>' | sed -E 's/<\/?version>//g'))
-	cd sdk/java && PACKAGE_VERSION=$(JAVA_EXAMPLE_VERSION) gradle publishToMavenLocal --no-daemon
-	cd examples/java && mvn package -DskipTests
+	cd sdk/java && PACKAGE_VERSION=$(JAVA_EXAMPLE_VERSION) $(JAVA11_EXEC) gradle publishToMavenLocal --no-daemon
+	cd examples/java && $(JAVA17_MAVEN_EXEC) mvn $(MAVEN_TLS_OPTS) package -DskipTests
 
 build_sdks: build_go build_python build_nodejs build_dotnet build_java
 
@@ -116,8 +121,8 @@ test_examples: install_plugin
 	cd sdk/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 	cd examples/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund && npx tsc --noEmit
 	cd examples/dotnet && dotnet build --nologo
-	cd sdk/java && gradle publishToMavenLocal --no-daemon
-	cd examples/java && mvn package -DskipTests
+	cd sdk/java && $(JAVA11_EXEC) gradle publishToMavenLocal --no-daemon
+	cd examples/java && $(JAVA17_MAVEN_EXEC) mvn $(MAVEN_TLS_OPTS) package -DskipTests
 
 test_provider:
 	go test -short -v -count=1 ./provider/... ./internal/...
