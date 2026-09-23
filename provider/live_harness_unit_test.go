@@ -260,6 +260,24 @@ func TestDomainContractExperimentFailsClosedWithoutID(t *testing.T) {
 	require.False(t, continueExperiments)
 }
 
+func TestDomainContractExperimentSequenceStopsAfterBaselineFailure(t *testing.T) {
+	calls := []string{}
+	runDomainContractExperimentSequence(t, generated.DomainCreateJSONRequestBody{}, []domainContractExperiment{{field: "domainType"}}, func(field string, _ generated.DomainCreateJSONRequestBody) string {
+		calls = append(calls, field)
+		return "field=" + field + ";category=cleanup-failure"
+	})
+	require.Equal(t, []string{"baseline"}, calls)
+	calls = nil
+	runDomainContractExperimentSequence(t, generated.DomainCreateJSONRequestBody{}, []domainContractExperiment{{field: "domainType"}, {field: "port"}}, func(field string, _ generated.DomainCreateJSONRequestBody) string {
+		calls = append(calls, field)
+		if field == "domainType" {
+			return "field=domainType;category=cleanup-failure"
+		}
+		return "field=" + field + ";category=rejected"
+	})
+	require.Equal(t, []string{"baseline", "domainType"}, calls)
+}
+
 func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
 	reason := sanitizeDomainValidationReason(&client.APIError{Message: "domainType has an invalid value secret-sentinel"})
 	require.Equal(t, "field=domainType;category=invalid-value", reason)
