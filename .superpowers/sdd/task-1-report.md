@@ -30,6 +30,54 @@ env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provi
 
 Result: PASS.
 
+## Controlled one-field Domain experiments
+
+Added a serial, self-contained `TestLiveDomainContractExperiments`. Each target is created and owned by its selected subtest; each Domain attempt changes exactly one request field from the baseline, emits only `field`, structural status/code, and fixed category, and immediately verifies deletion if a response contains a resource. Target cleanup is verified by the harness owner. The experiment matrix covers DomainType omission, Port omission, certificate enum change, HTTPS change, StripPath change, and Compose ServiceName omission.
+
+TDD RED:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainContractExperimentsChangeOneNamedField$' -count=1 -v
+```
+
+Result: expected build failure because `domainContractExperimentCases` was undefined.
+
+TDD GREEN:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainContractExperimentsChangeOneNamedField$' -count=1 -v
+```
+
+Result: PASS; the matrix names and orders one-field changes deterministically.
+
+Live command with a fresh absent marker:
+
+```text
+DOKPLOY_ACCEPTANCE_STOP_FILE=/tmp/opencode/domain-field-experiments.stop mise exec -- go test ./provider -run '^TestLiveDomainContractExperiments$' -parallel=1 -count=1 -v
+```
+
+Sanitized results for both disposable ready targets:
+
+```text
+field=baseline;status=4xx;code=BAD_REQUEST;category=rejected
+field=domainType;status=4xx;code=BAD_REQUEST;category=rejected
+field=port;status=4xx;code=BAD_REQUEST;category=rejected
+field=certificateType;status=4xx;code=BAD_REQUEST;category=rejected
+field=https;status=4xx;code=BAD_REQUEST;category=rejected
+field=stripPath;status=4xx;code=BAD_REQUEST;category=rejected
+field=serviceName;status=4xx;code=BAD_REQUEST;category=rejected
+```
+
+The Application and Compose runs completed all authorized serial experiments; every variant was rejected identically. No causal field contract was identified, so no provider payload or generated schema change was made. No raw values, payloads, IDs, hosts, response bodies, or errors were emitted. Partial/successful Domain cleanup was verified per attempt, target/project cleanup completed without a recorded failure, and `/tmp/opencode/domain-field-experiments.stop` remained absent.
+
+Focused verification after the experiments:
+
+```text
+git diff --check
+```
+
+Result: both checks PASS. The evidence indicates an external deployed-server defect or an untested mandatory contract requirement; guessing a provider correction remains disallowed.
+
 ## Luna medium finding: reason interpolation hardening
 
 Added `TestDomainComparisonEvidenceRejectsMaliciousReasons` before changing `formatDomainComparisonEvidence`. RED demonstrated that a malicious `provider.reason` was interpolated into evidence. The formatter now validates both reasons against the fixed `field=<allowlisted Domain field>;category=<allowlisted category>` shape (or a fixed category-only shape), normalizes only the validated tokens, and returns fixed `invalid-evidence` for any other input.
