@@ -184,14 +184,16 @@ func TestBackupCreateErrorsWhenNoNewBackupFound(t *testing.T) {
 	backupCreatePollInterval = 10 * time.Millisecond
 	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
 	unchanged := `{"backups":[{"backupId":"existing","schedule":"0 0 1 * *","enabled":true,"prefix":"old-","destinationId":"d1","database":"old","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}]}`
+	waitForDeadline := expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged)
+	waitForDeadline.WaitForContextDone = true
 	s := newScriptedServer(t,
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
 		expectPOST("/api/backup.create", `{"schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}`, ``),
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
+		waitForDeadline,
 	)
-	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
 	defer cancel()
 	_, err := (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
 		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr("pg1"),
@@ -228,6 +230,30 @@ func backupCreateRequest(t *testing.T, ctx context.Context, s *scriptedServer) (
 	return (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
 		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr("pg1"),
 	}})
+}
+
+func TestCancelOnRequestOrContextDoneExitsWhenRequestIsNotReceived(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	done := cancelOnRequestOrContextDone(ctx, make(chan struct{}), func() {})
+	cancel()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("cancellation goroutine did not exit after context cancellation")
+	}
+}
+
+func cancelOnRequestOrContextDone(ctx context.Context, received <-chan struct{}, cancel context.CancelFunc) <-chan struct{} {
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		select {
+		case <-received:
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
+	return done
 }
 
 func TestBackupCreateWaitsForDelayedVisibility(t *testing.T) {
@@ -364,14 +390,17 @@ func TestBackupCreate_Cancellation(t *testing.T) {
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged),
 		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
 	}
-	for i := 0; i < 3; i++ {
-		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged))
-	}
+	received := make(chan struct{})
+	waitForCancellation := expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, unchanged)
+	waitForCancellation.Received = received
+	waitForCancellation.WaitForContextDone = true
+	expectations = append(expectations, waitForCancellation)
 	s := newScriptedServer(t, expectations...)
-	ctx, cancel := context.WithCancel(t.Context())
-	go func() {
-		time.Sleep(25 * time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+	done := cancelOnRequestOrContextDone(ctx, received, cancel)
+	defer func() {
 		cancel()
+		<-done
 	}()
 	_, err := backupCreateRequest(t, ctx, s)
 	require.ErrorIs(t, err, context.Canceled)
@@ -389,14 +418,17 @@ func TestBackupCreateCancellationErrorOmitsTargetID(t *testing.T) {
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged),
 		expectPOST("/api/backup.create", strings.ReplaceAll(backupCreateArgsJSON, "pg1", sentinel), ``),
 	}
-	for i := 0; i < 3; i++ {
-		expectations = append(expectations, expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged))
-	}
+	received := make(chan struct{})
+	waitForCancellation := expectGET("/api/postgres.one", map[string][]string{"postgresId": {sentinel}}, http.StatusOK, unchanged)
+	waitForCancellation.Received = received
+	waitForCancellation.WaitForContextDone = true
+	expectations = append(expectations, waitForCancellation)
 	s := newScriptedServer(t, expectations...)
-	ctx, cancel := context.WithCancel(t.Context())
-	go func() {
-		time.Sleep(25 * time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+	done := cancelOnRequestOrContextDone(ctx, received, cancel)
+	defer func() {
 		cancel()
+		<-done
 	}()
 	_, err := (Backup{client: fixedClient(s.API())}).Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: BackupArgs{
 		Schedule: "0 0 * * *", Enabled: true, Prefix: "p-", DestinationID: "d1", Database: "app", PostgresID: stringPtr(sentinel),
@@ -411,12 +443,14 @@ func TestBackupCreateDoesNotAdoptMalformedPreExistingBackup(t *testing.T) {
 	t.Cleanup(func() { backupCreatePollInterval = oldPoll })
 	malformed := backupCreateTarget + `[{"backupId":"existing"}]}`
 	completed := backupCreateTarget + `[{"backupId":"existing","schedule":"0 0 * * *","enabled":true,"prefix":"p-","destinationId":"d1","database":"app","databaseType":"postgres","postgresId":"pg1","keepLatestCount":null}]}`
+	waitForDeadline := expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, completed)
+	waitForDeadline.WaitForContextDone = true
 	s := newScriptedServer(t,
 		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, malformed),
 		expectPOST("/api/backup.create", backupCreateArgsJSON, ``),
-		expectGET("/api/postgres.one", map[string][]string{"postgresId": {"pg1"}}, http.StatusOK, completed),
+		waitForDeadline,
 	)
-	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
 	defer cancel()
 	_, err := backupCreateRequest(t, ctx, s)
 	require.ErrorIs(t, err, context.DeadlineExceeded)
