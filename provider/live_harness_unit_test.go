@@ -213,6 +213,17 @@ func TestDomainComparisonEvidenceReportsSafeKeyShapeMismatch(t *testing.T) {
 	require.NotContains(t, got, "https://")
 }
 
+func TestDomainComparisonEvidenceRejectsMaliciousReasons(t *testing.T) {
+	keys := []string{"applicationId", "certificateType", "domainType", "host", "https", "stripPath"}
+	got := formatDomainComparisonEvidence(
+		liveDomainCreateResult{path: "provider", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys, reason: "field=domainType;category=invalid-value;message=https://private.example secret-sentinel"},
+		liveDomainCreateResult{path: "generated", target: "application", classification: "operation=domain;status=4xx;code=BAD_REQUEST", keys: keys, reason: "field=domainType;category=invalid-value"},
+	)
+	require.Equal(t, "invalid-evidence", got)
+	require.NotContains(t, got, "private.example")
+	require.NotContains(t, got, "secret-sentinel")
+}
+
 func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
 	reason := sanitizeDomainValidationReason(&client.APIError{Message: "domainType has an invalid value secret-sentinel"})
 	require.Equal(t, "field=domainType;category=invalid-value", reason)

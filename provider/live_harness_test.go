@@ -353,6 +353,44 @@ func sanitizeDomainValidationReason(err error) string {
 	return "field=" + field + ";category=" + category
 }
 
+func allowlistedDomainReason(reason string) (string, bool) {
+	if reason == "" {
+		return "", true
+	}
+	parts := strings.Split(reason, ";")
+	if len(parts) == 1 && strings.HasPrefix(parts[0], "category=") {
+		if isSafeDomainReasonCategory(strings.TrimPrefix(parts[0], "category=")) {
+			return parts[0], true
+		}
+		return "", false
+	}
+	if len(parts) != 2 || !strings.HasPrefix(parts[0], "field=") || !strings.HasPrefix(parts[1], "category=") {
+		return "", false
+	}
+	if !isSafeDomainReasonField(strings.TrimPrefix(parts[0], "field=")) || !isSafeDomainReasonCategory(strings.TrimPrefix(parts[1], "category=")) {
+		return "", false
+	}
+	return parts[0] + ";" + parts[1], true
+}
+
+func isSafeDomainReasonField(field string) bool {
+	switch field {
+	case "host", "path", "port", "customEntrypoint", "https", "applicationId", "certificateType", "customCertResolver", "composeId", "serviceName", "domainType", "previewDeploymentId", "internalPath", "stripPath", "middlewares", "forwardAuthEnabled":
+		return true
+	default:
+		return false
+	}
+}
+
+func isSafeDomainReasonCategory(category string) bool {
+	switch category {
+	case "unknown", "missing-field", "invalid-value", "unsupported", "validation":
+		return true
+	default:
+		return false
+	}
+}
+
 func domainResultStatus(classification string) (string, string) {
 	parts := strings.Split(classification, ";")
 	if (len(parts) != 3 && len(parts) != 5) || parts[0] != "operation=domain" || !strings.HasPrefix(parts[1], "status=") || !strings.HasPrefix(parts[2], "code=") {
@@ -406,17 +444,22 @@ func formatDomainComparisonEvidence(provider, generated liveDomainCreateResult) 
 			strings.Join(keys, ","), strings.Join(generatedKeys, ","),
 		)
 	}
-	if provider.reason != generated.reason {
+	providerReason, providerReasonOK := allowlistedDomainReason(provider.reason)
+	generatedReason, generatedReasonOK := allowlistedDomainReason(generated.reason)
+	if !providerReasonOK || !generatedReasonOK {
+		return "invalid-evidence"
+	}
+	if providerReason != generatedReason {
 		return fmt.Sprintf(
 			"target=%s;provider=%s/%s;generated=%s/%s;keys=%s;providerReason=%s;generatedReason=%s",
 			provider.target, providerStatus, providerCode,
-			generatedStatus, generatedCode, strings.Join(keys, ","), provider.reason, generated.reason,
+			generatedStatus, generatedCode, strings.Join(keys, ","), providerReason, generatedReason,
 		)
 	}
 	return fmt.Sprintf(
 		"target=%s;provider=%s/%s;generated=%s/%s;keys=%s;providerReason=%s;generatedReason=%s",
 		provider.target, providerStatus, providerCode,
-		generatedStatus, generatedCode, strings.Join(keys, ","), provider.reason, generated.reason,
+		generatedStatus, generatedCode, strings.Join(keys, ","), providerReason, generatedReason,
 	)
 }
 
