@@ -809,6 +809,56 @@ func recordServerHealthFailure(kind string, diagnostic interface{}) string {
 
 var errLiveServerHealthProbe = errors.New("live server health probe failed")
 
+var errLiveCleanup = errors.New("live cleanup failed")
+
+var mountDispatchPhases = map[string]struct{}{
+	"fixture-create": {},
+	"target-read":    {},
+	"mount-create":   {},
+	"mount-update":   {},
+	"mount-delete":   {},
+	"fixture-delete": {},
+	"health-probe":   {},
+	"cleanup":        {},
+}
+
+func classifyMountDispatchPhase(phase string, err error) string {
+	if _, ok := mountDispatchPhases[phase]; !ok {
+		phase = "unknown"
+	}
+	status, code := "transport", "unknown"
+	if errors.Is(err, errLiveCleanup) || errors.Is(err, errLiveServerHealthProbe) {
+		status = "failed"
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		status = "timeout"
+	}
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) {
+		switch {
+		case apiErr.StatusCode >= 200 && apiErr.StatusCode < 300:
+			status = "2xx"
+		case apiErr.StatusCode >= 400 && apiErr.StatusCode < 500:
+			status = "4xx"
+		case apiErr.StatusCode >= 500 && apiErr.StatusCode < 600:
+			status = "5xx"
+		default:
+			status = "transport"
+		}
+		if isSafeWorkloadAPICode(apiErr.Code) || isSafeHealthCode(apiErr.Code) {
+			code = apiErr.Code
+		}
+	}
+	return fmt.Sprintf("operation=mount-dispatch;phase=%s;status=%s;code=%s", phase, status, code)
+}
+
+func requireMountDispatchPhaseNoError(t *testing.T, phase string, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("%s", classifyMountDispatchPhase(phase, err))
+	}
+}
+
 func classifyLiveServerHealthFailure(err error) bool {
 	if err == nil {
 		return false

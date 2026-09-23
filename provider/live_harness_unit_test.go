@@ -440,6 +440,48 @@ func TestClassifyWorkloadCreateErrorPropagatesUnknownOperation(t *testing.T) {
 	require.Empty(t, classification)
 }
 
+func TestClassifyMountDispatchPhase(t *testing.T) {
+	secret := "mount-dispatch-secret-sentinel"
+	for _, test := range []struct {
+		name  string
+		phase string
+		err   error
+		want  string
+	}{
+		{name: "transport", phase: "target-read", err: errors.New("transport"), want: "operation=mount-dispatch;phase=target-read;status=transport;code=unknown"},
+		{name: "cleanup", phase: "cleanup", err: errLiveCleanup, want: "operation=mount-dispatch;phase=cleanup;status=failed;code=unknown"},
+		{name: "api", phase: "mount-create", err: &client.APIError{StatusCode: 400, Code: "BAD_REQUEST", Message: secret}, want: "operation=mount-dispatch;phase=mount-create;status=4xx;code=BAD_REQUEST"},
+		{name: "timeout", phase: "health-probe", err: context.DeadlineExceeded, want: "operation=mount-dispatch;phase=health-probe;status=timeout;code=unknown"},
+		{name: "unknown-phase", phase: "unexpected", err: errors.New(secret), want: "operation=mount-dispatch;phase=unknown;status=transport;code=unknown"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got := classifyMountDispatchPhase(test.phase, test.err)
+			require.Equal(t, test.want, got)
+			require.NotContains(t, got, secret)
+		})
+	}
+}
+
+func TestMountDispatchPhaseEvidenceIsSanitized(t *testing.T) {
+	secret := "mount-dispatch-secret-sentinel"
+	got := classifyMountDispatchPhase("mount-create", &client.APIError{StatusCode: 500, Code: "INTERNAL_ERROR", Message: secret})
+	require.Equal(t, "operation=mount-dispatch;phase=mount-create;status=5xx;code=unknown", got)
+	require.NotContains(t, got, secret)
+}
+
+func TestDispatchFixtureLeaseTransitionsAroundDependentMount(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	fixtureLease := beginLiveHeavyOperation(t, "mount-dispatch-fixture")
+	fixture := &liveDispatchFixture{lease: fixtureLease}
+	fixture.releaseForDependentMount(t)
+
+	mountLease := beginLiveHeavyOperation(t, "mount-create")
+	require.True(t, mountLease.release(t))
+	cleanupLease := beginLiveHeavyOperation(t, "mount-dispatch-cleanup")
+	require.True(t, cleanupLease.release(t))
+}
+
 func TestClassifyWorkloadCreateErrorNeverIncludesRawServerDetails(t *testing.T) {
 	err := &client.APIError{StatusCode: 400, Code: "BAD_REQUEST", Message: `insert into mount values ('mount-id-sentinel', 'target-id-sentinel')`}
 	for _, test := range []struct {
