@@ -39,3 +39,12 @@ func schemaResources(t *testing.T) map[string]any {
 	}
 	return resources
 }
+
+func schemaResourceInputProperties(resources map[string]any, token string) map[string]any {
+	schemaResource, ok := resources[token].(map[string]any)
+	if !ok {
+		return nil
+	}
+	inputProperties, _ := schemaResource["inputProperties"].(map[string]any)
+	return inputProperties
+}
