@@ -1,6 +1,7 @@
 package dokploy
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -431,6 +432,18 @@ func runSchemaCompatibilityCheck(t *testing.T, workflow map[string]any, output s
 	return result, report
 }
 
+func parseSchemaToolsArgs(captured []byte) []string {
+	parts := bytes.Split(captured, []byte{0})
+	if len(parts) > 0 && len(parts[len(parts)-1]) == 0 {
+		parts = parts[:len(parts)-1]
+	}
+	args := make([]string, 0, len(parts))
+	for _, part := range parts {
+		args = append(args, string(part))
+	}
+	return args
+}
+
 func runSchemaCompatibilityCheckWithArgs(t *testing.T, workflow map[string]any, output string, status string) (int, string, []string) {
 	t.Helper()
 	j := workflow["jobs"].(map[string]any)
@@ -447,7 +460,7 @@ func runSchemaCompatibilityCheckWithArgs(t *testing.T, workflow map[string]any, 
 	bin := filepath.Join(tmp, "bin")
 	require.NoError(t, os.Mkdir(bin, 0o755))
 	schemaTools := filepath.Join(bin, "schema-tools")
-	require.NoError(t, os.WriteFile(schemaTools, []byte("#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$SCHEMA_TOOLS_ARGS\"\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o600))
+	require.NoError(t, os.WriteFile(schemaTools, []byte("#!/bin/sh\nprintf '%s\\0' \"$@\" > \"$SCHEMA_TOOLS_ARGS\"\nprintf '%s\\n' \"$SCHEMA_TOOLS_OUTPUT\"\nexit \"$SCHEMA_TOOLS_STATUS\"\n"), 0o600))
 	require.NoError(t, os.Chmod(schemaTools, 0o700))
 	require.NoError(t, os.WriteFile(filepath.Join(tmp, "provider.json"), []byte("{}"), 0o600))
 	argsPath := filepath.Join(tmp, "schema-tools-args")
@@ -469,7 +482,7 @@ func runSchemaCompatibilityCheckWithArgs(t *testing.T, workflow map[string]any, 
 	require.NoError(t, readErr)
 	args, readErr := os.ReadFile(argsPath)
 	require.NoError(t, readErr)
-	return result, string(report), strings.Fields(string(args))
+	return result, string(report), parseSchemaToolsArgs(args)
 }
 
 func TestSchemaCompatibilityCheckExecutesItsResult(t *testing.T) {
@@ -497,6 +510,10 @@ func TestSchemaCompatibilityCheckPassesSafeCompareArguments(t *testing.T) {
 		"--repository", "github://api.github.com/dimeskigj/pulumi-dokploy",
 		"--new-path=provider/cmd/pulumi-resource-dokploy/schema.json",
 	}, args)
+}
+
+func TestParseSchemaToolsArgsPreservesWhitespaceBoundaries(t *testing.T) {
+	require.Equal(t, []string{"--repository", "repo with spaces", "--new-path=path"}, parseSchemaToolsArgs([]byte("--repository\x00repo with spaces\x00--new-path=path\x00")))
 }
 
 func TestSchemaCompatibilityCheckRejectsMissingSuccessMarker(t *testing.T) {
