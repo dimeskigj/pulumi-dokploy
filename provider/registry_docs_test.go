@@ -373,7 +373,7 @@ func TestCodegenRemovesGeneratedDotnetPackageIcon(t *testing.T) {
 	require.NoError(t, os.WriteFile(generated, []byte(`<Project><PackageIcon>unexpected.png</PackageIcon></Project>`), 0o600))
 	command = exec.Command("python3", "scripts/remove-dotnet-package-icon.py", generated)
 	command.Dir = ".."
-	output, err = command.CombinedOutput()
+	_, err = command.CombinedOutput()
 	require.Error(t, err, "unexpected generated icon references must fail closed")
 }
 
