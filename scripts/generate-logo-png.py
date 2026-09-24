@@ -2,8 +2,10 @@
 """Render the repository's small, static logo SVG without external tools."""
 
 import re
+import os
 import struct
 import sys
+import tempfile
 import zlib
 from pathlib import Path
 from xml.etree import ElementTree
@@ -194,6 +196,25 @@ def png_pixels_equal(left: bytes, right: bytes) -> bool:
     return png_pixel_data(left) == png_pixel_data(right)
 
 
+def canonicalize_png(reference: bytes, generated_path: Path) -> None:
+    generated = generated_path.read_bytes()
+    if not png_pixels_equal(reference, generated):
+        raise ValueError("logo pixels differ")
+    temporary_path = None
+    try:
+        descriptor, temporary_path = tempfile.mkstemp(prefix=f".{generated_path.name}.", dir=generated_path.parent)
+        with os.fdopen(descriptor, "wb") as temporary:
+            temporary.write(reference)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        os.chmod(temporary_path, generated_path.stat().st_mode)
+        os.replace(temporary_path, generated_path)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            os.unlink(temporary_path)
+
+
 def render(points: list[tuple[float, float]], color: tuple[int, int, int]) -> bytes:
     scale_x = WIDTH / VIEWBOX[2]
     scale_y = HEIGHT / VIEWBOX[3]
@@ -215,6 +236,10 @@ def render(points: list[tuple[float, float]], color: tuple[int, int, int]) -> by
 
 
 def main() -> int:
+    if len(sys.argv) == 4 and sys.argv[1] == "--canonicalize-pixels":
+        reference = sys.stdin.buffer.read() if sys.argv[2] == "-" else Path(sys.argv[2]).read_bytes()
+        canonicalize_png(reference, Path(sys.argv[3]))
+        return 0
     if len(sys.argv) == 4 and sys.argv[1] == "--check-pixels":
         reference = sys.stdin.buffer.read() if sys.argv[2] == "-" else Path(sys.argv[2]).read_bytes()
         generated = Path(sys.argv[3]).read_bytes()
@@ -222,7 +247,7 @@ def main() -> int:
             raise SystemExit("logo pixels differ")
         return 0
     if len(sys.argv) != 3:
-        raise SystemExit("usage: generate-logo-png.py SVG OUTPUT | --check-pixels REFERENCE OUTPUT")
+        raise SystemExit("usage: generate-logo-png.py SVG OUTPUT | --check-pixels REFERENCE OUTPUT | --canonicalize-pixels REFERENCE OUTPUT")
     points, color = parse_logo(Path(sys.argv[1]))
     output = Path(sys.argv[2])
     output.parent.mkdir(parents=True, exist_ok=True)
