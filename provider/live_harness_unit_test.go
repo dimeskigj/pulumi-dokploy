@@ -360,6 +360,27 @@ func TestDomainExperimentFailedHealthProbeCreatesStopMarker(t *testing.T) {
 	require.Equal(t, "stop\n", string(contents))
 }
 
+func TestDomainCreateComparisonRunsOnlyAfterPartialCleanup(t *testing.T) {
+	resetLiveHarnessState()
+	t.Cleanup(resetLiveHarnessState)
+	var events []string
+	runDomainComparisonAfterCleanup(func() {
+		events = append(events, "cleanup")
+	}, func() bool { return heavyLiveTierStopped() }, func() {
+		events = append(events, "generated-create")
+	})
+	require.Equal(t, []string{"cleanup", "generated-create"}, events)
+
+	events = nil
+	runDomainComparisonAfterCleanup(func() {
+		events = append(events, "cleanup")
+		liveHeavyStop.Store(true)
+	}, func() bool { return heavyLiveTierStopped() }, func() {
+		events = append(events, "generated-create")
+	})
+	require.Equal(t, []string{"cleanup"}, events)
+}
+
 func TestSanitizeDomainValidationReasonAllowListsFieldAndCategory(t *testing.T) {
 	reason := sanitizeDomainValidationReason(&client.APIError{Message: "domainType has an invalid value secret-sentinel"})
 	require.Equal(t, "field=domainType;category=invalid-value", reason)

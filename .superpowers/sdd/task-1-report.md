@@ -164,6 +164,18 @@ mise exec -- golangci-lint run ./provider
 
 Result: focused host tests PASS, `git diff --check` PASS, and provider lint reports zero issues. No live tests, marker changes, staging, or commit were performed.
 
+## Luna P2 follow-up: cleanup before generated comparison
+
+Added `TestDomainCreateComparisonRunsOnlyAfterPartialCleanup` before introducing `runDomainComparisonAfterCleanup`. RED failed because the orchestration helper was undefined. The focused live Domain path now invokes the verified partial-create cleanup before the generated comparison; if cleanup sets the existing global stop state/marker, the generated create is skipped. Sanitized provider classification remains prepared before cleanup and comparison output is otherwise unchanged.
+
+Verification commands:
+
+```text
+env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test ./provider -run '^TestDomainCreateComparisonRunsOnlyAfterPartialCleanup$' -count=1 -v
+```
+
+Result: all PASS. No live tests were run, and no marker or unrelated concurrent edit was changed.
+
 ## Review follow-up: stop subsequent targets after marker
 
 Added `TestDomainContractExperimentTargetsStopWhenMarkerIsSet` before implementing target-level control flow. The target runner now checks `heavyLiveTierStopped()` before every target setup and exits before starting Compose when Application cleanup/health handling sets the global stop state. Experiment outcomes are now a structured `domainExperimentResult`; sequence stopping uses the allowlisted category field rather than substring matching. The existing sequence-level baseline/variant stop test remains covered.
