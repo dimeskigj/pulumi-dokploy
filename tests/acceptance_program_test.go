@@ -15,6 +15,8 @@ import (
 	dokploy "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy"
 	"github.com/google/uuid"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
+	"github.com/pulumi/pulumi/sdk/v3/go/auto/events"
+	"github.com/pulumi/pulumi/sdk/v3/go/auto/optpreview"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/apitype"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -108,11 +110,21 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 	assertRefreshedLifecycleOutputs(t, ctx, stack, "refresh-1", lifecycleRevisionOneValues(), cfg, &revisionOne)
 
 	stack.Workspace().SetProgram(lifecycleRevisionTwo(cfg))
-	revisionTwoPreview, err := stack.Preview(ctx)
+	eventChannel := make(chan events.EngineEvent)
+	eventSummary := make(chan string, 1)
+	stopEventCollector := make(chan struct{})
+	go func() {
+		eventSummary <- drainPreviewEvents(eventChannel, stopEventCollector)
+	}()
+	revisionTwoPreview, err := stack.Preview(ctx, optpreview.EventStreams(eventChannel))
+	close(stopEventCollector)
+	previewEventsSummary := <-eventSummary
 	if err != nil {
 		t.Fatal(acceptanceStageError("preview-2", err))
 	}
-	assertPreviewAggregate(t, revisionTwoPreview, "revision two")
+	if aggregateErr := validatePreviewAggregate(revisionTwoPreview, "revision two"); aggregateErr != nil {
+		t.Fatalf("Pulumi acceptance failed at stage preview-2: category=process; eventCounts=%s", previewEventsSummary)
+	}
 	revisionTwoUp, err := stack.Up(ctx)
 	if err != nil {
 		t.Fatal(acceptanceStageError("up-2", err))
@@ -123,6 +135,76 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 		t.Fatal(acceptanceStageError("refresh-2", err))
 	}
 	assertRefreshedLifecycleOutputs(t, ctx, stack, "refresh-2", lifecycleRevisionTwoValues(), cfg, &revisionOne)
+}
+
+func drainPreviewEvents(eventChannel <-chan events.EngineEvent, stop <-chan struct{}) string {
+	counts := map[string]int{}
+	for {
+		select {
+		case event, ok := <-eventChannel:
+			if !ok {
+				return formatPreviewEventCounts(counts)
+			}
+			countPreviewEvent(counts, event)
+		case <-stop:
+			for {
+				select {
+				case event, ok := <-eventChannel:
+					if !ok {
+						return formatPreviewEventCounts(counts)
+					}
+					countPreviewEvent(counts, event)
+				default:
+					return formatPreviewEventCounts(counts)
+				}
+			}
+		}
+	}
+}
+
+func countPreviewEvent(counts map[string]int, event events.EngineEvent) {
+	if event.ResourcePreEvent == nil {
+		return
+	}
+	metadata := event.ResourcePreEvent.Metadata
+	key := previewEventType(metadata.Type) + "/" + previewEventOperation(string(metadata.Op))
+	counts[key]++
+}
+
+func summarizePreviewEvents(eventChannel <-chan events.EngineEvent) string {
+	return drainPreviewEvents(eventChannel, nil)
+}
+
+func previewEventType(resourceType string) string {
+	for _, allowed := range []string{"Project", "Environment", "Tag", "ProjectTag", "GetProject", "GetEnvironment", "GetTag"} {
+		if resourceType == "dokploy:index:"+allowed || resourceType == allowed {
+			return allowed
+		}
+	}
+	return "other"
+}
+
+func previewEventOperation(operation string) string {
+	switch operation {
+	case "replace", "update", "read", "discard":
+		return operation
+	default:
+		return "other"
+	}
+}
+
+func formatPreviewEventCounts(counts map[string]int) string {
+	keys := make([]string, 0, len(counts))
+	for key := range counts {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	parts := make([]string, 0, len(keys))
+	for _, key := range keys {
+		resourceType, operation, _ := strings.Cut(key, "/")
+		parts = append(parts, fmt.Sprintf("type=%s operation=%s count=%d", resourceType, operation, counts[key]))
+	}
+	return strings.Join(parts, "; ")
 }
 
 func acceptanceAutomationEnv(backend, passphrase string) map[string]string {
@@ -330,8 +412,9 @@ func validateLifecycleAggregate(phase string, changes map[string]int) error {
 			return fmt.Errorf("%s has negative %s count: %d", phase, operation, count)
 		}
 		switch operation {
-		case "read", "same", "noop":
-			// These operations do not claim a custom-resource mutation.
+		case "read", "same", "noop", "discard":
+			// Pulumi's discard operation removes a read resource from state; it is
+			// not a delete of a managed custom resource.
 		case "create", "update":
 			if operation != expectedOperation {
 				return fmt.Errorf("%s contains unexpected %s operations: %d", phase, operation, count)
