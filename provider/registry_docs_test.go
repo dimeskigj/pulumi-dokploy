@@ -333,32 +333,48 @@ func TestRegistryLogoAssetAndAttribution(t *testing.T) {
 	require.Regexp(t, regexp.MustCompile(`SPDX-License-Identifier: (MIT|Apache-2\.0|BSD-2-Clause|BSD-3-Clause|CC0-1\.0)`), attribution)
 }
 
-func TestCodegenUsesCheckedInLogoSource(t *testing.T) {
+func TestCodegenRemovesGeneratedDotnetPackageIcon(t *testing.T) {
 	makefile := readProjectFile(t, "../Makefile")
-	mise := readProjectFile(t, "../.mise.toml")
-	setupTools := readProjectFile(t, "../.github/actions/setup-tools/action.yml")
-	var action map[string]any
-	require.NoError(t, yaml.Unmarshal([]byte(setupTools), &action))
-	require.NotContains(t, makefile, "rsvg-convert")
-	require.NotContains(t, mise, "apt-get")
-	require.NotContains(t, mise, "RSVG_CONVERT_PACKAGE")
-	require.Contains(t, makefile, "python3 scripts/generate-logo-png.py website/public/logo.svg sdk/dotnet/logo.png")
-	script := readProjectFile(t, "../scripts/generate-logo-png.py")
-	require.Contains(t, script, "ElementTree")
-	require.Contains(t, script, "VIEWBOX")
-	require.NotContains(t, script, ".git")
-	require.NotContains(t, script, "HEAD")
-	require.NotContains(t, setupTools, "setup-svg-renderer")
-	runs, ok := action["runs"].(map[string]any)
-	require.True(t, ok)
-	steps, ok := runs["steps"].([]any)
-	require.True(t, ok)
-	for _, rawStep := range steps {
-		step, ok := rawStep.(map[string]any)
-		if ok {
-			require.NotEqual(t, "Setup SVG renderer", step["name"])
-		}
-	}
+	project := readProjectFile(t, "../sdk/dotnet/Dimeskigj.Pulumi.Dokploy.csproj")
+	codegen := makefile[strings.Index(makefile, "codegen: provider"):strings.Index(makefile, "build_go:")]
+	require.Contains(t, codegen, "remove-dotnet-package-icon.py sdk/dotnet/Dimeskigj.Pulumi.Dokploy.csproj")
+	require.Contains(t, codegen, "rm -f sdk/dotnet/logo.png")
+	require.NotContains(t, codegen, "generate-logo-png.py")
+	require.NotContains(t, project, "PackageIcon")
+	require.NotContains(t, project, "logo.png")
+
+	directory := t.TempDir()
+	generated := filepath.Join(directory, "generated.csproj")
+	generatedProject := `<Project>
+  <PropertyGroup>
+    <PackageIcon>logo.png</PackageIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+</Project>
+`
+	require.NoError(t, os.WriteFile(generated, []byte(generatedProject), 0o600))
+	command := exec.Command("python3", "scripts/remove-dotnet-package-icon.py", generated)
+	command.Dir = ".."
+	output, err := command.CombinedOutput()
+	require.NoError(t, err, string(output))
+	cleanProject, err := os.ReadFile(generated)
+	require.NoError(t, err)
+	require.NotContains(t, string(cleanProject), "logo.png")
+
+	command = exec.Command("python3", "scripts/remove-dotnet-package-icon.py", generated)
+	command.Dir = ".."
+	output, err = command.CombinedOutput()
+	require.NoError(t, err, string(output), "icon removal must be idempotent")
+	require.NoError(t, os.WriteFile(generated, []byte(`<Project><PackageIcon>unexpected.png</PackageIcon></Project>`), 0o600))
+	command = exec.Command("python3", "scripts/remove-dotnet-package-icon.py", generated)
+	command.Dir = ".."
+	output, err = command.CombinedOutput()
+	require.Error(t, err, "unexpected generated icon references must fail closed")
 }
 
 func TestRepositorySetupDeclaresPortableJavaBuildTools(t *testing.T) {
@@ -378,33 +394,4 @@ func TestRepositorySetupDeclaresPortableJavaBuildTools(t *testing.T) {
 		require.Contains(t, makefile, selection)
 	}
 	require.Contains(t, makefile, "-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2")
-}
-
-func TestLogoRendererDerivesOutputFromSVG(t *testing.T) {
-	directory := t.TempDir()
-	svg := filepath.Join(directory, "logo.svg")
-	output := filepath.Join(directory, "logo.png")
-	canonical := readProjectFile(t, "../website/public/logo.svg")
-	require.NoError(t, os.WriteFile(svg, []byte(canonical), 0o600))
-	render := func() []byte {
-		command := exec.Command("python3", "scripts/generate-logo-png.py", svg, output)
-		command.Dir = ".."
-		result, err := command.CombinedOutput()
-		require.NoError(t, err, string(result))
-		content, err := os.ReadFile(output)
-		require.NoError(t, err)
-		return content
-	}
-	first := render()
-	require.Equal(t, first, render())
-	changed := strings.Replace(canonical, `fill="#126782"`, `fill="#c0392b"`, 1)
-	require.NoError(t, os.WriteFile(svg, []byte(changed), 0o600))
-	require.NotEqual(t, first, render(), "changing SVG color must change PNG output")
-	changed = strings.Replace(changed, "397.65", "396.65", 1)
-	require.NoError(t, os.WriteFile(svg, []byte(changed), 0o600))
-	second := render()
-	require.NotEqual(t, first, second, "changing SVG geometry must change PNG output")
-	script := readProjectFile(t, "../scripts/generate-logo-png.py")
-	require.NotContains(t, script, ".git")
-	require.NotContains(t, script, "HEAD")
 }
