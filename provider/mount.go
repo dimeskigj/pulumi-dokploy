@@ -9,6 +9,7 @@ import (
 	"github.com/oapi-codegen/nullable"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"net"
 	"strings"
 )
 
@@ -28,9 +29,11 @@ type MountArgs struct {
 }
 
 const (
-	mountTypeBind   = "bind"
-	mountTypeVolume = "volume"
-	mountTypeFile   = "file"
+	mountTypeBind            = "bind"
+	mountTypeVolume          = "volume"
+	mountTypeFile            = "file"
+	mountUpdateStatusFailed  = "failed"
+	mountUpdateStatusTimeout = "timeout"
 )
 
 type MountState struct {
@@ -291,9 +294,12 @@ func (r Mount) Update(ctx context.Context, req infer.UpdateRequest[MountArgs, Mo
 		return infer.UpdateResponse[MountState]{Output: s}, nil
 	}
 	t, err := mountTargetFor(req.Inputs)
+	phase := "target"
 	if err == nil {
+		phase = "update"
 		_, err = r.client(ctx).MountsUpdateWithResponse(ctx, mountUpdateBody(req.ID, req.Inputs, t))
 		if err == nil {
+			phase = "readback"
 			readState, readErr := r.read(ctx, req.ID, req.Inputs)
 			if readErr != nil {
 				err = readErr
@@ -302,13 +308,36 @@ func (r Mount) Update(ctx context.Context, req infer.UpdateRequest[MountArgs, Mo
 			}
 		}
 		if err == nil {
+			phase = "redeploy"
 			_, err = deployMountTarget(ctx, r.client(ctx), t)
 		}
 	}
 	if err != nil {
-		return infer.UpdateResponse[MountState]{Output: s}, sanitizeMountError(err, req.Inputs, req.State.MountArgs)
+		return infer.UpdateResponse[MountState]{Output: s}, classifyMountUpdateFailure(phase, sanitizeMountError(err, req.Inputs, req.State.MountArgs))
 	}
 	return infer.UpdateResponse[MountState]{Output: s}, nil
+}
+
+type mountUpdateFailure struct {
+	phase, status string
+	cause         error
+}
+
+func (e *mountUpdateFailure) Error() string {
+	return fmt.Sprintf("mount update failed: phase=%s;status=%s", e.phase, e.status)
+}
+func (e *mountUpdateFailure) Unwrap() error { return e.cause }
+
+func classifyMountUpdateFailure(phase string, err error) error {
+	if err == nil {
+		return nil
+	}
+	status := mountUpdateStatusFailed
+	var timeout net.Error
+	if errors.As(err, &timeout) && timeout.Timeout() || errors.Is(err, context.DeadlineExceeded) {
+		status = mountUpdateStatusTimeout
+	}
+	return &mountUpdateFailure{phase: phase, status: status, cause: err}
 }
 func (r Mount) Delete(ctx context.Context, req infer.DeleteRequest[MountState]) (infer.DeleteResponse, error) {
 	api := r.client(ctx)
