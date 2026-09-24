@@ -30,7 +30,7 @@ func loadCanonicalYAML(t *testing.T) map[string]any {
 func validateYAMLResourceProperties(document map[string]any, resources map[string]any) error {
 	rawResources, ok := document["resources"].(map[string]any)
 	if !ok {
-		return nil
+		return fmt.Errorf("resources must be an object")
 	}
 	resourceNames := make([]string, 0, len(rawResources))
 	for name := range rawResources {
@@ -40,11 +40,24 @@ func validateYAMLResourceProperties(document map[string]any, resources map[strin
 	for _, name := range resourceNames {
 		resource, ok := rawResources[name].(map[string]any)
 		if !ok {
-			continue
+			return fmt.Errorf("resource %q must be an object", name)
 		}
-		token, _ := resource["type"].(string)
-		inputProperties := schemaResourceInputProperties(resources, token)
-		properties, _ := resource["properties"].(map[string]any)
+		token, ok := resource["type"].(string)
+		if !ok || token == "" {
+			return fmt.Errorf("resource %q must have a type token", name)
+		}
+		schemaResource, ok := resources[token].(map[string]any)
+		if !ok {
+			return fmt.Errorf("resource %q has unknown type token %q", name, token)
+		}
+		inputProperties, ok := schemaResource["inputProperties"].(map[string]any)
+		if !ok {
+			return fmt.Errorf("resource %q (%q) has malformed schema input properties", name, token)
+		}
+		properties, ok := resource["properties"].(map[string]any)
+		if !ok {
+			return fmt.Errorf("resource %q (%q) properties must be an object", name, token)
+		}
 		propertyNames := make([]string, 0, len(properties))
 		for property := range properties {
 			propertyNames = append(propertyNames, property)
@@ -141,6 +154,33 @@ func TestValidateYAMLResourcePropertiesRejectsUnknownProperty(t *testing.T) {
 	err := validateYAMLResourceProperties(document, schemaResources(t))
 	if err == nil || !strings.Contains(err.Error(), "invalidProperty") {
 		t.Fatalf("validation error = %v, want invalidProperty", err)
+	}
+}
+
+func TestValidateYAMLResourcePropertiesRejectsMalformedResources(t *testing.T) {
+	tests := []struct {
+		name     string
+		document map[string]any
+		want     string
+	}{
+		{name: "missing resources", document: map[string]any{}, want: `resources`},
+		{name: "non-object resources", document: map[string]any{"resources": "private-payload"}, want: `resources`},
+		{name: "unknown token with empty properties", document: map[string]any{"resources": map[string]any{"safe-name": map[string]any{"type": "safe:unknown:Token", "properties": map[string]any{}}}}, want: `safe:unknown:Token`},
+		{name: "unknown token with missing properties", document: map[string]any{"resources": map[string]any{"safe-name": map[string]any{"type": "safe:unknown:Token"}}}, want: `safe:unknown:Token`},
+		{name: "non-object resource", document: map[string]any{"resources": map[string]any{"safe-name": "private-payload"}}, want: `safe-name`},
+		{name: "non-object properties", document: map[string]any{"resources": map[string]any{"safe-name": map[string]any{"type": "dokploy:index:Project", "properties": "private-payload"}}}, want: `properties`},
+		{name: "missing token", document: map[string]any{"resources": map[string]any{"safe-name": map[string]any{"properties": map[string]any{}}}}, want: `safe-name`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateYAMLResourceProperties(tt.document, schemaResources(t))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("validation error = %v, want an error containing %q", err, tt.want)
+			}
+			if strings.Contains(err.Error(), "private-payload") {
+				t.Fatalf("validation error exposes payload: %v", err)
+			}
+		})
 	}
 }
 
