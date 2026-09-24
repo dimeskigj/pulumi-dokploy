@@ -109,6 +109,14 @@ func runDomainContractExperimentTargets(t *testing.T, names []string, run func(s
 	}
 }
 
+func runDomainComparisonAfterCleanup(cleanup func(), stopped func() bool, compare func()) {
+	cleanup()
+	if stopped() {
+		return
+	}
+	compare()
+}
+
 // TestLiveTier2Workloads is intentionally one serial test. Workload creates
 // deploy containers and mounts cause another deploy, so parallel subtests
 // would needlessly increase load on the acceptance server.
@@ -1737,16 +1745,19 @@ func runFocusedLiveDomainTarget(t *testing.T, ctx context.Context, api *client.C
 			providerResult := liveDomainCreateResult{path: "provider", target: target.name, classification: providerClassification, keys: providerKeys, reason: sanitizeDomainValidationReason(err)}
 			directArgs := args
 			directArgs.Host = liveDomainHost("focused-domain-direct")
-			generatedResult := runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)
-			evidence := formatDomainComparisonEvidence(providerResult, generatedResult)
-			t.Logf("domain comparison evidence: %s", evidence)
-			recordLiveOutcome("domain-comparison", evidence)
-			cleanupAfterCreateError(t, "domain", created.ID, err, func(c context.Context) error {
-				_, e := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
-				return e
-			}, func(c context.Context) (string, error) {
-				v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
-				return v.ID, e
+			runDomainComparisonAfterCleanup(func() {
+				cleanupAfterCreateError(t, "domain", created.ID, err, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[DomainState]{ID: created.ID})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[DomainArgs, DomainState]{ID: created.ID})
+					return v.ID, e
+				})
+			}, heavyLiveTierStopped, func() {
+				generatedResult := runGeneratedDomainCreateAttempt(t, ctx, api, target.name, directArgs)
+				evidence := formatDomainComparisonEvidence(providerResult, generatedResult)
+				t.Logf("domain comparison evidence: %s", evidence)
+				recordLiveOutcome("domain-comparison", evidence)
 			})
 		}
 		requireWorkloadCreateNoError(t, "domain", err, domainCreateRequestKeys(target.compose), present, ready, "Domain/"+target.name)
