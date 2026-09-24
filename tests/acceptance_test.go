@@ -18,6 +18,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
+	"github.com/pulumi/pulumi/sdk/v3/go/auto/events"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/apitype"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -576,6 +577,77 @@ func TestLifecycleAggregateAllowsReadOperations(t *testing.T) {
 func TestLifecycleAggregateAllowsExpectedUpdatesAndReads(t *testing.T) {
 	if err := validateLifecycleAggregate("revision two", map[string]int{"update": 1, "read": 3, "noop": 1}); err != nil {
 		t.Fatalf("validateLifecycleAggregate() = %v, want nil", err)
+	}
+}
+
+func TestLifecycleAggregateAllowsReadDiscardAlongsideUpdate(t *testing.T) {
+	if err := validateLifecycleAggregate("revision two", map[string]int{"update": 3, "read": 3, "discard": 3}); err != nil {
+		t.Fatalf("validateLifecycleAggregate() = %v, want read discards and updates accepted", err)
+	}
+}
+
+func TestPreviewEventDiagnosticsSanitizeAndCountResourceOperations(t *testing.T) {
+	eventsCh := make(chan events.EngineEvent, 3)
+	eventsCh <- events.EngineEvent{EngineEvent: apitype.EngineEvent{ResourcePreEvent: &apitype.ResourcePreEvent{Metadata: apitype.StepEventMetadata{
+		Type: "dokploy:index:Project", Op: apitype.OpReplace, URN: "urn-secret-sentinel", DetailedDiff: map[string]apitype.PropertyDiff{"payload-secret": {}},
+	}}}}
+	eventsCh <- events.EngineEvent{EngineEvent: apitype.EngineEvent{ResourcePreEvent: &apitype.ResourcePreEvent{Metadata: apitype.StepEventMetadata{
+		Type: "dokploy:index:Environment", Op: apitype.OpUpdate, URN: "urn-secret-sentinel", Old: &apitype.StepEventStateMetadata{Inputs: map[string]any{"secret": "input-secret-sentinel"}},
+	}}}}
+	eventsCh <- events.EngineEvent{EngineEvent: apitype.EngineEvent{ResourcePreEvent: &apitype.ResourcePreEvent{Metadata: apitype.StepEventMetadata{
+		Type: "unknown:token", Op: apitype.OpType("delete"), URN: "urn-secret-sentinel",
+	}}}}
+	close(eventsCh)
+
+	got := summarizePreviewEvents(eventsCh)
+	want := "type=Environment operation=update count=1; type=Project operation=replace count=1; type=other operation=other count=1"
+	if got != want {
+		t.Fatalf("preview event summary = %q, want %q", got, want)
+	}
+	for _, secret := range []string{"urn-secret-sentinel", "payload-secret", "input-secret-sentinel", "delete"} {
+		if strings.Contains(got, secret) {
+			t.Fatalf("preview event summary leaked sensitive/unallowlisted value %q", secret)
+		}
+	}
+}
+
+func TestPreviewEventCollectorStopsAndJoins(t *testing.T) {
+	eventsCh := make(chan events.EngineEvent)
+	stop := make(chan struct{})
+	result := make(chan string, 1)
+	go func() { result <- drainPreviewEvents(eventsCh, stop) }()
+	close(stop)
+	select {
+	case got := <-result:
+		if got != "" {
+			t.Fatalf("empty event summary = %q, want empty", got)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("event collector did not stop and join")
+	}
+}
+
+func TestPreviewEventCollectorDrainsBufferedEventsWhenStopped(t *testing.T) {
+	eventsCh := make(chan events.EngineEvent, 200)
+	for i := 0; i < 100; i++ {
+		eventsCh <- events.EngineEvent{EngineEvent: apitype.EngineEvent{ResourcePreEvent: &apitype.ResourcePreEvent{Metadata: apitype.StepEventMetadata{
+			Type: "dokploy:index:Project", Op: apitype.OpReplace, URN: "urn-secret-sentinel", Old: &apitype.StepEventStateMetadata{Inputs: map[string]any{"credential": "input-secret-sentinel"}},
+		}}}}
+		eventsCh <- events.EngineEvent{EngineEvent: apitype.EngineEvent{ResourcePreEvent: &apitype.ResourcePreEvent{Metadata: apitype.StepEventMetadata{
+			Type: "dokploy:index:Environment", Op: apitype.OpUpdate, URN: "urn-secret-sentinel", DetailedDiff: map[string]apitype.PropertyDiff{"payload-secret": {}},
+		}}}}
+	}
+	stop := make(chan struct{})
+	close(stop)
+	got := drainPreviewEvents(eventsCh, stop)
+	want := "type=Environment operation=update count=100; type=Project operation=replace count=100"
+	if got != want {
+		t.Fatalf("stopped collector summary = %q, want all buffered events: %q", got, want)
+	}
+	for _, secret := range []string{"urn-secret-sentinel", "credential", "input-secret-sentinel", "payload-secret"} {
+		if strings.Contains(got, secret) {
+			t.Fatalf("stopped collector summary leaked event data %q", secret)
+		}
 	}
 }
 
