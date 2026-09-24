@@ -695,6 +695,15 @@ func TestLiveTier2Workloads(t *testing.T) {
 				createLease.releaseIfNeeded(t)
 				read, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id, State: ApplicationState{ApplicationArgs: ApplicationArgs{Source: variant.source}}})
 				requireNoError(t, err)
+				if variant.source.Type == SourceGit {
+					var actualPath *string
+					if read.Inputs.Source.Git != nil {
+						actualPath = read.Inputs.Source.Git.BuildPath
+					}
+					if diagnostic := applicationBuildPathShapeMismatch(variant.source.Git.BuildPath, actualPath); diagnostic != "" {
+						t.Logf("live application source initial read buildPath shape mismatch: %s", diagnostic)
+					}
+				}
 				assertLiveApplicationSource(t, variant.name, variant.source, read.Inputs.Source)
 				if variant.source.Type == SourceDocker {
 					requireLiveEqual(t, "application.source.docker.password", variant.source.Docker.Password, read.Inputs.Source.Docker.Password)
@@ -707,9 +716,27 @@ func TestLiveTier2Workloads(t *testing.T) {
 				updateLease.releaseIfNeeded(t)
 				postUpdate, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id, State: read.State})
 				requireNoError(t, err)
+				if variant.source.Type == SourceGit {
+					var actualPath *string
+					if postUpdate.Inputs.Source.Git != nil {
+						actualPath = postUpdate.Inputs.Source.Git.BuildPath
+					}
+					if diagnostic := applicationBuildPathShapeMismatch(variant.source.Git.BuildPath, actualPath); diagnostic != "" {
+						t.Logf("live application source update readback buildPath shape mismatch: %s", diagnostic)
+					}
+				}
 				assertLiveApplicationSource(t, variant.name, variant.source, postUpdate.Inputs.Source)
 				imported, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
 				requireNoError(t, err)
+				if variant.source.Type == SourceGit {
+					var actualPath *string
+					if imported.Inputs.Source.Git != nil {
+						actualPath = imported.Inputs.Source.Git.BuildPath
+					}
+					if diagnostic := applicationBuildPathShapeMismatch(variant.source.Git.BuildPath, actualPath); diagnostic != "" {
+						t.Logf("live application source import readback buildPath shape mismatch: %s", diagnostic)
+					}
+				}
 				assertLiveApplicationSource(t, variant.name, variant.source, imported.Inputs.Source)
 				cleanupCtx, cancelCleanup := cleanupContext()
 				defer cancelCleanup()
