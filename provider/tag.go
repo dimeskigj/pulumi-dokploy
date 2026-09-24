@@ -132,5 +132,6 @@ func (r Tag) Delete(ctx context.Context, req infer.DeleteRequest[TagState]) (inf
 }
 
 func (r Tag) WireDependencies(f infer.FieldSelector, args *TagArgs, state *TagState) {
-	f.OutputField(&state.TagID).DependsOn(f.InputField(&args.Name), f.InputField(&args.Color))
+	f.OutputField(&state.Name).DependsOn(f.InputField(&args.Name).Computed())
+	f.OutputField(&state.TagID).DependsOn(f.InputField(&args.Name).Secret(), f.InputField(&args.Color).Secret())
 }

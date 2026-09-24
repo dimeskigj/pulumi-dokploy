@@ -139,8 +139,9 @@ func (r Project) Delete(ctx context.Context, req infer.DeleteRequest[ProjectStat
 }
 
 func (r Project) WireDependencies(f infer.FieldSelector, args *ProjectArgs, state *ProjectState) {
-	f.OutputField(&state.ProjectID).DependsOn(f.InputField(&args.Name), f.InputField(&args.Description))
-	f.OutputField(&state.DefaultEnvironmentID).DependsOn(f.InputField(&args.Name), f.InputField(&args.Description))
+	f.OutputField(&state.Name).DependsOn(f.InputField(&args.Name).Computed())
+	f.OutputField(&state.ProjectID).DependsOn(f.InputField(&args.Name).Secret(), f.InputField(&args.Description).Secret())
+	f.OutputField(&state.DefaultEnvironmentID).DependsOn(f.InputField(&args.Name).Secret(), f.InputField(&args.Description).Secret())
 }
 
 func value(v *string) string {
