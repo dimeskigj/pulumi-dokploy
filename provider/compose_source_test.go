@@ -63,6 +63,27 @@ func TestComposeSourceIDOnlyReadReconstructsAllFields(t *testing.T) {
 	}
 }
 
+func TestComposeGitReadPreservesOptionalWatchPathsPresence(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		field string
+		watch []string
+	}{
+		{"omitted", ``, nil},
+		{"null", `,"watchPaths":null`, nil},
+		{"empty", `,"watchPaths":[]`, []string{}},
+		{"populated", `,"watchPaths":["deploy/**"]`, []string{"deploy/**"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			response := `{"composeId":"c1","composeStatus":"done","sourceType":"git","customGitUrl":"repo","customGitBranch":"main"` + tc.field + `}`
+			s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, response))
+			got, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1"})
+			require.NoError(t, err)
+			require.Equal(t, tc.watch, got.Inputs.Source.Git.WatchPaths)
+		})
+	}
+}
+
 func assertComposeSourceFields(t *testing.T, want, got ComposeSource) {
 	t.Helper()
 	require.Equal(t, want.Type, got.Type)

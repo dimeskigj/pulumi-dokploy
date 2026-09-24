@@ -92,6 +92,62 @@ func TestApplicationSourceIDOnlyReadReconstructsAllFields(t *testing.T) {
 	}
 }
 
+func TestApplicationGitReadPreservesOptionalFieldPresence(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		fields string
+		build  *string
+		watch  []string
+	}{
+		{"omitted", ``, nil, nil},
+		{"null", `,"customGitBuildPath":null,"watchPaths":null`, nil, nil},
+		{"empty", `,"customGitBuildPath":"","watchPaths":[]`, appStringPtr(""), []string{}},
+		{"populated", `,"customGitBuildPath":"services","watchPaths":["services/**"]`, appStringPtr("services"), []string{"services/**"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			response := `{"applicationId":"a1","type":"git","customGitUrl":"repo","customGitBranch":"main"` + tc.fields + `}`
+			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, response))
+			got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1"})
+			require.NoError(t, err)
+			require.Equal(t, tc.build, got.Inputs.Source.Git.BuildPath)
+			require.Equal(t, tc.watch, got.Inputs.Source.Git.WatchPaths)
+		})
+	}
+}
+
+func TestApplicationGitBuildPathReadNormalization(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		field string
+		prior *string
+		want  *string
+	}{
+		{"omitted import", ``, nil, nil},
+		{"null import", `,"customGitBuildPath":null`, nil, nil},
+		{"slash root import", `,"customGitBuildPath":"/"`, nil, nil},
+		{"dot root import", `,"customGitBuildPath":"."`, nil, nil},
+		{"dot slash root import", `,"customGitBuildPath":"./"`, nil, nil},
+		{"explicit root prior", `,"customGitBuildPath":"/"`, appStringPtr("."), appStringPtr(".")},
+		{"observed non-root wins", `,"customGitBuildPath":"services/api"`, appStringPtr("old/path"), appStringPtr("services/api")},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			response := `{"applicationId":"a1","type":"git","customGitUrl":"repo","customGitBranch":"main"` + tc.field + `}`
+			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, response))
+			prior := ApplicationState{ApplicationArgs: ApplicationArgs{Source: ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{BuildPath: tc.prior}}}}
+			got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1", State: prior})
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got.Inputs.Source.Git.BuildPath)
+		})
+	}
+}
+
+func TestApplicationGitLabBuildPathIsNotNormalizedAsGitDefault(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","type":"gitlab","gitlabId":"i1","gitlabProjectId":1,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","gitlabBuildPath":"/"}`))
+	got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1"})
+	require.NoError(t, err)
+	require.Equal(t, appStringPtr("/"), got.Inputs.Source.GitLab.BuildPath)
+}
+
 func TestApplicationSourceWriteOnlySecretsArePreserved(t *testing.T) {
 	password := "write-only-password"
 	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","type":"docker","dockerImage":"nginx:1.27","registryUrl":"https://registry.test","username":"alice"}`))
@@ -157,6 +213,50 @@ func assertLiveApplicationSource(t *testing.T, label string, want, got Applicati
 		t.Fatalf("live Application %s source type did not match", label)
 	}
 	assertApplicationSourceFields(t, want, got)
+}
+
+func buildPathShape(path *string) string {
+	if path == nil {
+		return "nil"
+	}
+	if *path == "" {
+		return "empty"
+	}
+	switch *path {
+	case "/", ".", "./":
+		return "root-default"
+	default:
+		return "other-nonempty"
+	}
+}
+
+func applicationBuildPathShapeMismatch(want, got *string) string {
+	wantShape, gotShape := buildPathShape(want), buildPathShape(got)
+	if wantShape == gotShape {
+		return ""
+	}
+	return "expected=" + wantShape + " actual=" + gotShape
+}
+
+func TestBuildPathShapeDiagnosticsDoNotExposeValues(t *testing.T) {
+	want, got := "expected-private-sentinel", "actual-private-sentinel"
+	diagnostic := applicationBuildPathShapeMismatch(&want, nil)
+	require.Equal(t, "expected=other-nonempty actual=nil", diagnostic)
+	require.NotContains(t, diagnostic, want)
+	require.NotContains(t, diagnostic, got)
+	empty := ""
+	require.Equal(t, "expected=nil actual=empty", applicationBuildPathShapeMismatch(nil, &empty))
+	root := "/"
+	require.Equal(t, "expected=nil actual=root-default", applicationBuildPathShapeMismatch(nil, &root))
+	require.Empty(t, applicationBuildPathShapeMismatch(&want, &got))
+}
+
+func TestBuildPathShapeClassifiesKnownRepositoryRoots(t *testing.T) {
+	for _, path := range []string{"/", ".", "./"} {
+		require.Equal(t, "root-default", buildPathShape(&path))
+	}
+	other := "services/api"
+	require.Equal(t, "other-nonempty", buildPathShape(&other))
 }
 
 func TestApplicationGitSourceSchemaIncludesSSHKeyID(t *testing.T) {

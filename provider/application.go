@@ -297,7 +297,14 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		if url == "" || branch == "" {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required git url or branch")
 		}
-		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: stringPointer(m, "buildPath", "customGitBuildPath"), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: optionalStringPointer(m, "buildPath", "customGitBuildPath"), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		if isRepositoryRootBuildPath(result.Git.BuildPath) {
+			if prior.Type != SourceGit || prior.Git == nil || prior.Git.BuildPath == nil {
+				result.Git.BuildPath = nil
+			} else if isRepositoryRootBuildPath(prior.Git.BuildPath) {
+				result.Git.BuildPath = prior.Git.BuildPath
+			}
+		}
 		result.Git.Build = decodeBuild(m)
 	case SourceGitLab:
 		integration := stringValue(m, "integrationId", "gitlabId")
@@ -314,6 +321,18 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		return ApplicationSource{}, fmt.Errorf("application source data has unsupported source.type %q", kind)
 	}
 	return result, nil
+}
+
+func isRepositoryRootBuildPath(path *string) bool {
+	if path == nil {
+		return false
+	}
+	switch *path {
+	case "/", ".", "./":
+		return true
+	default:
+		return false
+	}
 }
 
 func decodeBuild(m map[string]interface{}) ApplicationBuild {
@@ -355,7 +374,10 @@ type jsonNumber string
 
 func boolValue(m map[string]interface{}, key string) bool { v, _ := m[key].(bool); return v }
 func stringSlice(m map[string]interface{}, key string) []string {
-	values, _ := m[key].([]interface{})
+	values, ok := m[key].([]interface{})
+	if !ok {
+		return nil
+	}
 	result := make([]string, 0, len(values))
 	for _, v := range values {
 		if s, ok := v.(string); ok {
@@ -363,6 +385,15 @@ func stringSlice(m map[string]interface{}, key string) []string {
 		}
 	}
 	return result
+}
+
+func optionalStringPointer(m map[string]interface{}, keys ...string) *string {
+	for _, key := range keys {
+		if value, ok := m[key].(string); ok {
+			return &value
+		}
+	}
+	return nil
 }
 
 func (r Application) Update(ctx context.Context, req infer.UpdateRequest[ApplicationArgs, ApplicationState]) (infer.UpdateResponse[ApplicationState], error) {
