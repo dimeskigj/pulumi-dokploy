@@ -817,6 +817,26 @@ func TestRegistryMetadata(t *testing.T) {
 	}
 }
 
+func TestBuildAndTestJobsRestoreGoModuleCache(t *testing.T) {
+	workflow, _ := readWorkflow(t, "build.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	for _, jobName := range []string{"build_sdks", "test"} {
+		job := jobs[jobName].(map[string]any)
+		steps := job["steps"].([]any)
+		found := false
+		for _, rawStep := range steps {
+			step := rawStep.(map[string]any)
+			if step["name"] != "Setup Tools" {
+				continue
+			}
+			with := step["with"].(map[string]any)
+			require.Equal(t, "true", with["cache"], "%s must restore the Go module cache", jobName)
+			found = true
+		}
+		require.True(t, found, "%s must set up tools and restore Go module cache", jobName)
+	}
+}
+
 func TestOwnedWorkflow(t *testing.T) {
 	workflow, _ := readWorkflow(t, "run-acceptance-tests.yml")
 

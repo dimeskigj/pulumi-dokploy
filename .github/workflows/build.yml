@@ -139,6 +139,7 @@ jobs:
     - name: Setup Tools
       uses: ./.github/actions/setup-tools
       with:
+        cache: 'true'
         github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Download Provider Binary
       uses: ./.github/actions/download-provider
@@ -192,6 +193,7 @@ jobs:
     - name: Setup Tools
       uses: ./.github/actions/setup-tools
       with:
+        cache: 'true'
         github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Download Provider Binary
       uses: ./.github/actions/download-provider
