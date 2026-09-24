@@ -32,8 +32,8 @@ codegen: provider
 	mise exec pulumi@3.259.0 -- pulumi package get-schema $(CURDIR)/bin/$(PROVIDER) > provider/cmd/$(PROVIDER)/schema.json
 	rm -rf sdk/nodejs sdk/python sdk/go sdk/dotnet sdk/java
 	mise exec pulumi@3.259.0 -- pulumi package gen-sdk provider/cmd/$(PROVIDER)/schema.json --language all -o sdk
-	python3 scripts/generate-logo-png.py website/public/logo.svg sdk/dotnet/logo.png
-	test -s sdk/dotnet/logo.png
+	python3 scripts/remove-dotnet-package-icon.py sdk/dotnet/Dimeskigj.Pulumi.Dokploy.csproj
+	rm -f sdk/dotnet/logo.png
 	printf '%s' '$(VERSION_GENERIC)' > sdk/dotnet/version.txt
 	cp go.mod sdk/go/$(PACK)/go.mod
 	cd sdk/go/$(PACK) && mise exec -- go mod edit -module=$(PROJECT)/sdk/go/$(PACK) -dropreplace=$(PROJECT)/sdk/go/$(PACK)
@@ -145,8 +145,7 @@ check_openapi: generate_openapi
 
 check_codegen:
 	$(MAKE) VERSION_GENERIC=0.0.1-alpha.0+dev codegen
-	git show HEAD:sdk/dotnet/logo.png | python3 scripts/generate-logo-png.py --canonicalize-pixels - sdk/dotnet/logo.png
-	git diff --exit-code -- provider/cmd/$(PROVIDER)/schema.json sdk ':(exclude)sdk/dotnet/logo.png'
+	git diff --exit-code -- provider/cmd/$(PROVIDER)/schema.json sdk
 
 govulncheck:
 	mise exec -- go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
