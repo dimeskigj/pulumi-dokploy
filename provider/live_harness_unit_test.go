@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
@@ -553,6 +554,34 @@ func TestClassifyMountDispatchPhase(t *testing.T) {
 		})
 	}
 }
+
+func TestClassifyMountDispatchPhaseIncludesSafeMountUpdateStep(t *testing.T) {
+	secret := "private-host-payload-response-sentinel"
+	for _, tc := range []struct {
+		name          string
+		phase, status string
+		cause         error
+		want          string
+	}{
+		{"transport", "update", mountUpdateStatusFailed, errors.New(secret), "operation=mount-dispatch;phase=mount-update;status=transport;code=unknown;step=update;stepStatus=failed"},
+		{"HTTP status preserved", "readback", mountUpdateStatusFailed, &client.APIError{StatusCode: http.StatusBadRequest, Code: "BAD_REQUEST", Message: secret}, "operation=mount-dispatch;phase=mount-update;status=4xx;code=BAD_REQUEST;step=readback;stepStatus=failed"},
+		{"timeout preserved", "redeploy", mountUpdateStatusTimeout, fmt.Errorf("wrapped: %w", syntheticDispatchTimeout{}), "operation=mount-dispatch;phase=mount-update;status=timeout;code=unknown;step=redeploy;stepStatus=timeout"},
+		{"unallowlisted step omitted", secret, mountUpdateStatusFailed, errors.New(secret), "operation=mount-dispatch;phase=mount-update;status=transport;code=unknown"},
+		{"unallowlisted status omitted", "target", secret, errors.New(secret), "operation=mount-dispatch;phase=mount-update;status=transport;code=unknown"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got := classifyMountDispatchPhase("mount-update", &mountUpdateFailure{phase: tc.phase, status: tc.status, cause: tc.cause})
+			require.Equal(t, tc.want, got)
+			require.NotContains(t, got, secret)
+		})
+	}
+}
+
+type syntheticDispatchTimeout struct{}
+
+func (syntheticDispatchTimeout) Error() string   { return "timeout host sentinel" }
+func (syntheticDispatchTimeout) Timeout() bool   { return true }
+func (syntheticDispatchTimeout) Temporary() bool { return true }
 
 func TestMountDispatchHealthProbeEvidence(t *testing.T) {
 	require.Equal(t, "operation=mount-dispatch;phase=health-probe;status=timeout;code=unknown",
@@ -1317,36 +1346,78 @@ func TestHeavyOperationProbeRunsInsideSerializationBoundary(t *testing.T) {
 	started := make(chan struct{})
 	releaseProbe := make(chan struct{})
 	firstDone := make(chan struct{})
+	firstResult := make(chan error, 1)
 	go func() {
+		defer close(firstDone)
 		lease, err := acquireLiveHeavyOperation(t.Context(), "first", func(context.Context) error {
 			close(started)
 			<-releaseProbe
 			return nil
 		})
-		require.NoError(t, err)
-		require.True(t, lease.release(t))
-		close(firstDone)
+		if err == nil && !lease.release(t) {
+			err = errors.New("first lease release failed")
+		}
+		firstResult <- err
 	}()
-	<-started
-	secondStarted := make(chan struct{})
+	select {
+	case <-started:
+	case <-time.After(time.Second):
+		close(releaseProbe)
+		t.Fatal("first health probe did not start")
+	}
+	secondAttempting := make(chan struct{})
+	secondProbeStarted := make(chan struct{})
 	secondDone := make(chan struct{})
+	secondResult := make(chan error, 1)
 	go func() {
+		defer close(secondDone)
+		close(secondAttempting)
 		lease, err := acquireLiveHeavyOperation(t.Context(), "second", func(context.Context) error {
-			close(secondStarted)
+			close(secondProbeStarted)
+			return nil
+		})
+		if err == nil {
+			if !lease.release(t) {
+				err = errors.New("second lease release failed")
+			}
+		}
+		secondResult <- err
+	}()
+	<-secondAttempting
+	var overlapped bool
+	select {
+	case <-secondProbeStarted:
+		overlapped = true
+	case <-time.After(10 * time.Millisecond):
+	}
+	close(releaseProbe)
+	select {
+	case <-firstDone:
+	case <-time.After(time.Second):
+		t.Fatal("first operation did not finish after releasing its probe")
+	}
+	require.NoError(t, <-firstResult)
+	select {
+	case <-secondDone:
+	case <-time.After(time.Second):
+		t.Fatal("second acquisition did not finish after first operation released")
+	}
+	secondErr := <-secondResult
+	if secondErr != nil {
+		require.ErrorContains(t, secondErr, `heavy live operation "first" is already active`)
+		lease, err := acquireLiveHeavyOperation(t.Context(), "after-first-release", func(context.Context) error {
+			close(secondProbeStarted)
 			return nil
 		})
 		require.NoError(t, err)
 		require.True(t, lease.release(t))
-		close(secondDone)
-	}()
-	select {
-	case <-secondStarted:
-		t.Fatal("second health probe overlapped the first probe")
-	case <-time.After(10 * time.Millisecond):
 	}
-	close(releaseProbe)
-	<-firstDone
-	<-secondDone
+	require.False(t, overlapped, "second health probe overlapped the first probe")
+	select {
+	case <-secondProbeStarted:
+	default:
+		t.Fatal("second health probe did not run after the first lease was released")
+	}
 }
 
 func TestFailedHeavyOperationProbeReleasesOwnership(t *testing.T) {

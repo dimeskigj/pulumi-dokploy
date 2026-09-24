@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"reflect"
 	"slices"
@@ -847,6 +848,10 @@ func classifyMountDispatchPhase(phase string, err error) string {
 	if errors.Is(err, context.DeadlineExceeded) {
 		status = "timeout"
 	}
+	var networkErr net.Error
+	if errors.As(err, &networkErr) && networkErr.Timeout() {
+		status = "timeout"
+	}
 	var apiErr *client.APIError
 	if errors.As(err, &apiErr) {
 		switch {
@@ -863,7 +868,20 @@ func classifyMountDispatchPhase(phase string, err error) string {
 			code = apiErr.Code
 		}
 	}
-	return fmt.Sprintf("operation=mount-dispatch;phase=%s;status=%s;code=%s", phase, status, code)
+	diagnostic := fmt.Sprintf("operation=mount-dispatch;phase=%s;status=%s;code=%s", phase, status, code)
+	if phase == "mount-update" {
+		var updateFailure *mountUpdateFailure
+		if errors.As(err, &updateFailure) {
+			steps := map[string]struct{}{"target": {}, "update": {}, "readback": {}, "redeploy": {}}
+			statuses := map[string]struct{}{mountUpdateStatusFailed: {}, mountUpdateStatusTimeout: {}}
+			_, safeStep := steps[updateFailure.phase]
+			_, safeStatus := statuses[updateFailure.status]
+			if safeStep && safeStatus {
+				diagnostic += fmt.Sprintf(";step=%s;stepStatus=%s", updateFailure.phase, updateFailure.status)
+			}
+		}
+	}
+	return diagnostic
 }
 
 type mountDispatchHealthProbeError struct{ err error }
