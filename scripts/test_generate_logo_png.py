@@ -1,6 +1,7 @@
 import importlib.util
-import unittest
+import tempfile
 import struct
+import unittest
 import zlib
 from pathlib import Path
 
@@ -61,6 +62,33 @@ class LogoPngComparisonTests(unittest.TestCase):
 
         self.assertTrue(logo.png_pixels_equal(unfiltered, filtered))
 
+    def test_canonicalizes_equivalent_png_and_preserves_file_on_mismatch_or_invalid_input(self):
+        reference = make_png(2, 1, [b"\x00\x01\x02\x03\x04\x05\x06\x07\x08"])
+        equivalent = make_png(2, 1, [b"\x00\x01\x02\x03\x04\x05\x06\x07\x08"], compression_level=1)
+        changed = make_png(2, 1, [b"\x00\x01\x02\x03\x04\x05\x06\x07\x09"])
+        malformed = equivalent[:-1]
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "logo.png"
+            output.write_bytes(equivalent)
+
+            logo.canonicalize_png(reference, output)
+            self.assertEqual(output.read_bytes(), reference)
+
+            output.write_bytes(changed)
+            with self.assertRaises(ValueError):
+                logo.canonicalize_png(reference, output)
+            self.assertEqual(output.read_bytes(), changed)
+
+            output.write_bytes(malformed)
+            with self.assertRaises(ValueError):
+                logo.canonicalize_png(reference, output)
+            self.assertEqual(output.read_bytes(), malformed)
+
+            output.write_bytes(equivalent)
+            with self.assertRaises(ValueError):
+                logo.canonicalize_png(malformed, output)
+            self.assertEqual(output.read_bytes(), equivalent)
+
 
 def recompress_idat(data, raw, level):
     cursor = 8
@@ -92,10 +120,10 @@ def filtered_data(data):
     return zlib.decompress(compressed)
 
 
-def make_png(width, height, rows, idat_suffix=b""):
+def make_png(width, height, rows, idat_suffix=b"", compression_level=9):
     header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
     return b"\x89PNG\r\n\x1a\n" + logo.png_chunk(b"IHDR", header) + logo.png_chunk(
-        b"IDAT", zlib.compress(b"".join(rows)) + idat_suffix
+        b"IDAT", zlib.compress(b"".join(rows), compression_level) + idat_suffix
     ) + logo.png_chunk(b"IEND", b"")
 
 
