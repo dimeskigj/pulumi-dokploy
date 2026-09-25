@@ -3,23 +3,26 @@ title: Installation
 description: Install the Pulumi Dokploy package for your language.
 ---
 
-Install the provider plugin from GitHub Releases before running `pulumi up`:
-
-```bash
-VERSION=0.1.0
-pulumi plugin install resource dokploy "$VERSION" \
-  --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION"
-```
-
-Repeat this installation whenever the provider version changes. Then install the SDK package for your Pulumi program:
+Install the SDK package for your Pulumi program. Pulumi normally downloads the matching provider plugin from GitHub Releases automatically when you use the package; a separate plugin install is not required.
 
 ```bash
 npm install @dimeskigj/pulumi-dokploy
 pip install pulumi_dokploy
 go get github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy
 dotnet add package Dimeskigj.Pulumi.Dokploy
-mvn dependency:get -Dartifact=net.dimeski.pulumi.dokploy
 pulumi package add github.com/dimeskigj/pulumi-dokploy dokploy
 ```
+
+For Java, add this dependency to your Maven project's `pom.xml`, replacing the version with the one you use:
+
+```xml
+<dependency>
+  <groupId>net.dimeski.pulumi</groupId>
+  <artifactId>dokploy</artifactId>
+  <version>${DOKPLOY_VERSION}</version>
+</dependency>
+```
+
+The last shell command adds the provider to a YAML program; the other commands install the TypeScript, Python, Go, and .NET SDKs respectively.
 
 The six supported authoring languages are TypeScript, Python, Go, C#, Java, and YAML. Continue with [your first deployment](../first-deployment/), then consult the [generated resource reference](../../reference/project/).

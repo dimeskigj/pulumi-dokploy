@@ -46,13 +46,19 @@ users must replace them with secret configuration before deployment.
 Sensitive values are supplied through Pulumi configuration and remain secret:
 
 ```yaml
-configuration:
-  dokploy:registryPassword:
+config:
+  registryPassword:
     type: string
     secret: true
-  dokploy:sshPrivateKey:
+    default: ""
+  sshPrivateKey:
     type: string
     secret: true
+    default: ""
+  fileMountContent:
+    type: string
+    secret: true
+    default: ""
 ```
 
 The complete example provisions an `SSHKey` and passes its `sshKeyId` to a

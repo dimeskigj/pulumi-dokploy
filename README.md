@@ -11,19 +11,9 @@ The Dokploy provider manages self-hosted Dokploy projects and deployments with P
 The provider is built and tested with Go 1.26.6, including the security-fixed
 toolchain used by the release workflows.
 
-### Provider plugin
-
-Install the provider plugin from GitHub Releases before running `pulumi up`:
-
-```bash
-VERSION=0.1.0
-pulumi plugin install resource dokploy "$VERSION" \
-  --server "https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION"
-```
-
-Repeat this installation whenever the provider version changes.
-
-Install the package for your Pulumi language:
+Install the SDK package for your Pulumi language. Pulumi normally downloads the
+matching provider plugin from GitHub Releases automatically when you use the package;
+you do not need to install the plugin separately.
 
 | Language | Package |
 | --- | --- |
@@ -33,6 +23,10 @@ Install the package for your Pulumi language:
 | .NET | `Dimeskigj.Pulumi.Dokploy` |
 | Java | `net.dimeski.pulumi.dokploy` |
 | YAML | `pulumi package add github.com/dimeskigj/pulumi-dokploy dokploy` |
+
+For Java, add the `net.dimeski.pulumi:dokploy` dependency at your chosen version
+to `pom.xml`. See the [installation guide](https://dimeskigj.github.io/pulumi-dokploy/getting-started/installation/)
+for language-specific commands.
 
 ## Configuration
 
@@ -66,7 +60,7 @@ Project owns the default environment. Create explicit `Environment` resources fo
 environments and use their IDs from dependent resources. Applications and Compose stacks can
 use Git, Docker, raw Compose, or private GitLab sources. A private GitLab reference records the
 integration/project/owner/namespace/repository/branch details. The referenced GitLab integration is not managed
-by this provider. SSH key references are likewise passed through and not managed.
+by this provider; SSH keys can be managed using the `SSHKey` resource.
 
 Source type changes replace that resource rather than attempting an
 in-place conversion. Create and update operations wait for Dokploy deployment completion;
@@ -88,7 +82,7 @@ the canonical example has only empty non-credential placeholders required by Pul
 MongoDB and LibSQL are documented exclusions for mounts.
 
 See the [Get Started](https://dimeskigj.github.io/pulumi-dokploy/getting-started/installation/),
-[Resources](https://dimeskigj.github.io/pulumi-dokploy/reference/), and
+[Resources](https://dimeskigj.github.io/pulumi-dokploy/reference/project/), and
 [Guides](https://dimeskigj.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
 
 ## Import

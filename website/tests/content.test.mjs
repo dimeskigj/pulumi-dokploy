@@ -59,7 +59,7 @@ test("sidebar keeps the canonical resource order and base-safe links", async () 
   assert.doesNotMatch(landing, /link: \/(getting-started|reference)\//);
 });
 
-test("landing page contains the required hierarchy and release-safe Registry wording", async () => {
+test("landing page contains the required hierarchy and publication-safe Registry wording", async () => {
   const landing = await readFile(new URL("../src/content/docs/index.mdx", import.meta.url), "utf8");
   assert.match(landing, /template: splash/);
   assert.match(landing, /pagefind: false/);
@@ -72,10 +72,11 @@ test("landing page contains the required hierarchy and release-safe Registry wor
   }
   const capabilities = landing.slice(landing.indexOf("## From intent to deployment"), landing.indexOf("## Write in the language"));
   assert.equal((capabilities.match(/<Card title="/g) ?? []).length, 8, "landing must define eight capability cards");
-  assert.match(landing, /first release is published/i);
+  assert.match(landing, /Registry listing.*pending/i);
+  assert.doesNotMatch(landing, /first release is published/i);
   assert.match(landing, /https:\/\/github\.com\/dimeskigj\/pulumi-dokploy/);
-  assert.match(landing, /https:\/\/www\.pulumi\.com\/registry\/packages\/dokploy\//);
-  const hierarchy = ["hero:", "<CardGrid", "## Write in the language", "## Provider guarantees", "github.com/dimeskigj", "www.pulumi.com/registry"].map((marker) => landing.indexOf(marker));
+  assert.doesNotMatch(landing, /https:\/\/www\.pulumi\.com\/registry\/packages\/dokploy\//);
+  const hierarchy = ["hero:", "<CardGrid", "## Write in the language", "## Provider guarantees", "github.com/dimeskigj", "Registry listing"].map((marker) => landing.indexOf(marker));
   assert.ok(hierarchy.every((position, index) => position >= 0 && (index === 0 || position > hierarchy[index - 1])), "landing sections must remain in canonical order");
 });
 
