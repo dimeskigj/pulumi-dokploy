@@ -572,7 +572,8 @@ func TestRegistryMetadata(t *testing.T) {
 		"pulumi config set dokploy:endpoint https://dokploy.example.com",
 		"pulumi config set --secret dokploy:apiKey \"$DOKPLOY_API_KEY\"",
 		"Project owns the default environment", "Source type changes replace",
-		"referenced GitLab integration is not managed", "SSH key references are likewise passed through",
+		"referenced GitLab integration is not managed", "SSH keys can be managed using the `SSHKey` resource",
+		"Use an `SSHKey` output as the `sshKeyId`",
 		"deployment errors preserve partial state", "Compose volumes are preserved",
 		"SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "registryPassword", "sshPrivateKey",
 		"pulumi import dokploy:index:SSHKey", "pulumi import dokploy:index:Registry", "pulumi import dokploy:index:Tag",
@@ -801,14 +802,11 @@ func TestRegistryMetadata(t *testing.T) {
 	require.Contains(t, contributingText, "`dokploy-acceptance` environment")
 	require.NotContains(t, contributingText, "AZURE_SIGNING_")
 	require.NotContains(t, contributingText, "JAVA_SIGNING_KEY_ID")
-	for _, section := range []string{
-		"pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"",
-	} {
-		require.Contains(t, docs, section, "README missing %q", section)
-	}
+	require.Contains(t, docs, "Pulumi normally downloads the")
+	require.Contains(t, docs, "matching provider plugin from GitHub Releases automatically")
 	installation, err := os.ReadFile("../website/src/content/docs/getting-started/installation.mdx")
 	require.NoError(t, err)
-	require.Contains(t, string(installation), "pulumi plugin install resource dokploy \"$VERSION\" \\\n  --server \"https://github.com/dimeskigj/pulumi-dokploy/releases/download/v$VERSION\"")
+	require.Contains(t, string(installation), "Pulumi normally downloads the matching provider plugin from GitHub Releases automatically")
 	for _, file := range []string{".mise.toml", "go.mod", "examples/go/go.mod"} {
 		content, err := os.ReadFile("../" + file)
 		require.NoError(t, err)
