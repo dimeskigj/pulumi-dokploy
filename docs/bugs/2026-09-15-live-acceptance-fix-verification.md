@@ -121,3 +121,21 @@ handler correlation for the earlier failing PostgreSQL deploy POST. They do
 not establish whether that 5xx was caused by a missing service, unrelated
 cleanup activity, or another server/proxy error. Do not retry or change the
 state-changing POST on that evidence alone.
+
+## Post-update server check (2026-09-25)
+
+The operator updated the disposable Dokploy server. Authenticated health
+returned 2xx before a serial Tier 2 run at 07:44:52-07:48:03 UTC. The run
+still failed only at PostgreSQL mount redeploy; a focused repeat at
+07:50:22-07:51:21 UTC returned the same result. The structural diagnostic
+confirmed HTTP **500** from the deploy POST, after mount update and readback
+succeeded. Neither run created a fresh stop marker. Application and Compose
+domains, Git source readback, and other mount routes passed in the full run.
+
+Server logs around the full run contained an early Docker service-not-found
+404 for a PostgreSQL service. No request or handler correlation links that
+event to the later deploy 500. Tagged Dokploy v0.30.7 source indicates that
+`mounts.update` updates the mount record without redeploying a bind mount, so
+the provider's subsequent deploy call is not a demonstrated duplicate.
+Do not retry the deploy POST or remove it based on these observations. The
+server-side deploy handler category and resource/worker state remain unknown.

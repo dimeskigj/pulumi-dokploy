@@ -870,6 +870,9 @@ func classifyMountDispatchPhase(phase string, err error) string {
 	}
 	diagnostic := fmt.Sprintf("operation=mount-dispatch;phase=%s;status=%s;code=%s", phase, status, code)
 	if phase == "mount-update" {
+		if apiErr != nil && apiErr.StatusCode >= 500 && apiErr.StatusCode < 600 {
+			diagnostic += fmt.Sprintf(";httpStatus=%d", apiErr.StatusCode)
+		}
 		var updateFailure *mountUpdateFailure
 		if errors.As(err, &updateFailure) {
 			steps := map[string]struct{}{"target": {}, "update": {}, "readback": {}, "redeploy": {}}
