@@ -217,6 +217,8 @@ jobs:
       uses: ./.github/actions/setup-tools
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Trust mise configuration for GoReleaser tools
+      run: mise trust .mise.toml
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
       env:
