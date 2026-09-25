@@ -61,3 +61,48 @@ Per the safety gate, Domain application and compose diagnostics were **not run**
 - `git diff --check`: PASS.
 - The live stop marker was preserved; no live tests or marker operations were
   performed during this follow-up.
+
+## Follow-up verification (2026-09-25)
+
+The results above are historical. Revision `154ed6e` includes deterministic
+backup polling tests, safe live diagnostics and cleanup gates, Git readback
+normalization, stable Pulumi preview IDs, the gRPC security update, and a
+PostgreSQL-deploy-only 90-second HTTP deadline. It does not retry deploy POSTs.
+
+| Check | Result |
+| --- | --- |
+| `env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test -count=1 -timeout=240s ./...` | PASS |
+| `env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY go test -race -count=1 -timeout=300s ./provider/... ./internal/... ./tests/...` | PASS |
+| `env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY mise exec -- go test ./examples -tags=all -count=1` | PASS |
+| `make check_openapi && make check_codegen` | PASS; SDK tree clean; no generated .NET PNG |
+| `mise exec -- golangci-lint run` | PASS; 0 issues |
+| `env -u DOKPLOY_ACCEPTANCE -u DOKPLOY_ENDPOINT -u DOKPLOY_API_KEY make govulncheck` | PASS; no reachable vulnerabilities |
+
+`make test_examples` and `make docs_check` also passed after the .NET icon
+removal and before the final PostgreSQL client change. The Java example built
+with pinned JDK/Maven and TLS certificate validation enabled.
+
+Live tests were run serially with fresh absent stop-marker paths. Both focused
+Domain paths passed. Tier 1, Tier 3, Tier 4, and the Pulumi Automation smoke
+passed; only documented optional cases without dedicated prerequisites skipped.
+Tier 2 passed in full on multiple runs, including Domain, Git source, and
+PostgreSQL mount dispatch. A later Tier 2 repeat still failed intermittently:
+the PostgreSQL mount update and readback succeeded, but the synchronous deploy
+POST returned this classification after the former 30-second client deadline:
+
+```text
+operation=mount-dispatch;phase=mount-update;status=5xx;code=unknown;step=redeploy;stepStatus=failed;redeployStep=deploy
+```
+
+No fresh stop marker was created in these follow-up runs. Two older incident
+markers were preserved. Their historical resource ownership cannot be
+independently verified because their IDs were not retained; the operator
+explicitly authorized fresh-marker testing on this disposable server despite
+that uncertainty.
+
+The HTTP 5xx is a server or intermediary response, not evidence that retrying
+the state-changing POST is safe. Resolving that last intermittent failure
+requires a sanitized server/proxy status classification and deploy-handler or
+capacity evidence. Go-module caching is enabled for CI SDK/test matrix jobs,
+but a hosted workflow run is still needed to confirm whether it eliminates
+the intermittent `proxy.golang.org` download failure.
