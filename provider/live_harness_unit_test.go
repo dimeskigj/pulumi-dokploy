@@ -595,7 +595,7 @@ func TestClassifyMountDispatchPhaseIncludesSafeRedeploySubstep(t *testing.T) {
 		cause             error
 	}{
 		{name: "transport failure", stage: "deploy", cause: errors.New(secret), want: "operation=mount-dispatch;phase=mount-update;status=transport;code=unknown;step=redeploy;stepStatus=failed;redeployStep=deploy"},
-		{name: "API status preserved", stage: "preflight", cause: &client.APIError{StatusCode: http.StatusServiceUnavailable, Message: secret}, want: "operation=mount-dispatch;phase=mount-update;status=5xx;code=unknown;step=redeploy;stepStatus=failed;redeployStep=preflight"},
+		{name: "API status preserved", stage: "preflight", cause: &client.APIError{StatusCode: http.StatusServiceUnavailable, Message: secret}, want: "operation=mount-dispatch;phase=mount-update;status=5xx;code=unknown;httpStatus=503;step=redeploy;stepStatus=failed;redeployStep=preflight"},
 		{name: "timeout preserved", stage: "readiness", cause: fmt.Errorf("wrapped: %w", syntheticDispatchTimeout{}), want: "operation=mount-dispatch;phase=mount-update;status=timeout;code=unknown;step=redeploy;stepStatus=timeout;redeployStep=readiness"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
