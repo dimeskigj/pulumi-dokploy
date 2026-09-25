@@ -577,6 +577,17 @@ func TestClassifyMountDispatchPhaseIncludesSafeMountUpdateStep(t *testing.T) {
 	}
 }
 
+func TestClassifyMountDispatchPhaseReportsSafeServerStatus(t *testing.T) {
+	err := &mountUpdateFailure{
+		phase:  "redeploy",
+		status: mountUpdateStatusFailed,
+		cause:  &client.APIError{StatusCode: http.StatusGatewayTimeout, Message: "secret-sentinel"},
+	}
+	got := classifyMountDispatchPhase("mount-update", err)
+	require.Contains(t, got, "httpStatus=504")
+	require.NotContains(t, got, "secret-sentinel")
+}
+
 func TestClassifyMountDispatchPhaseIncludesSafeRedeploySubstep(t *testing.T) {
 	secret := "redeploy-private-error"
 	for _, tc := range []struct {
