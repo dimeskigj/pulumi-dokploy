@@ -61,6 +61,46 @@ func TestNewSendsProviderUserAgent(t *testing.T) {
 	require.Equal(t, "pulumi-dokploy/1.2.3", server.LastRequest().Header.Get("User-Agent"))
 }
 
+func TestPostgresDeployUsesExtendedTimeoutWithoutRetry(t *testing.T) {
+	var calls int
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(25 * time.Millisecond)
+		if r.URL.Path == "/api/postgres.deploy" {
+			calls++
+			if r.Header.Get("x-api-key") != "deploy-key" || r.Header.Get("User-Agent") != "pulumi-dokploy/test" {
+				t.Errorf("deploy headers not preserved: %#v", r.Header)
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"message":"ok"}`))
+	}))
+	defer server.Close()
+
+	c, err := New(server.URL, "deploy-key", WithHTTPClient(&http.Client{Timeout: 10 * time.Millisecond}), WithUserAgentVersion("test"))
+	require.NoError(t, err)
+	_, err = c.ProjectOneWithResponse(t.Context(), &generated.ProjectOneParams{ProjectId: "p1"})
+	require.Error(t, err, "ordinary request retains short timeout")
+
+	_, err = c.PostgresDeployWithResponse(t.Context(), generated.PostgresDeployJSONRequestBody{})
+	require.NoError(t, err)
+	require.Equal(t, 1, calls, "POST must not be retried")
+}
+
+func TestPostgresDeployHonorsCanceledContext(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		<-r.Context().Done()
+	}))
+	defer server.Close()
+	c, err := New(server.URL, "key", WithHTTPClient(&http.Client{Timeout: 10 * time.Millisecond}))
+	require.NoError(t, err)
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	started := time.Now()
+	_, err = c.PostgresDeployWithResponse(ctx, generated.PostgresDeployJSONRequestBody{})
+	require.ErrorIs(t, err, context.Canceled)
+	require.Less(t, time.Since(started), time.Second)
+}
+
 func TestNewUsesDevelopmentUserAgentFallback(t *testing.T) {
 	for _, version := range []string{"", "   "} {
 		server := newHeaderServer(t)

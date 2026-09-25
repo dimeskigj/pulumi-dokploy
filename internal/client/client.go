@@ -38,7 +38,8 @@ func WithUserAgentVersion(version string) Option {
 // Client is the authenticated Dokploy API client.
 type Client struct {
 	*generated.ClientWithResponses
-	endpoint string
+	endpoint             string
+	postgresDeployClient *generated.ClientWithResponses
 }
 
 // New creates an authenticated Dokploy API client.
@@ -78,7 +79,19 @@ func New(endpoint, apiKey string, options ...Option) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{ClientWithResponses: generatedClient, endpoint: normalized}, nil
+	deployHTTPClient := *httpClient
+	deployHTTPClient.Timeout = 90 * time.Second
+	postgresDeployClient, err := generated.NewClientWithResponses(normalized,
+		generated.WithHTTPClient(&deployHTTPClient), generated.WithRequestEditorFn(apiKeyEditor(apiKey, providerUserAgent(opts.userAgentVersion))))
+	if err != nil {
+		return nil, err
+	}
+	return &Client{ClientWithResponses: generatedClient, endpoint: normalized, postgresDeployClient: postgresDeployClient}, nil
+}
+
+// PostgresDeployWithResponse allows the synchronous deployment request more time to complete.
+func (c *Client) PostgresDeployWithResponse(ctx context.Context, body generated.PostgresDeployJSONRequestBody, reqEditors ...generated.RequestEditorFn) (*generated.PostgresDeployResponse, error) {
+	return c.postgresDeployClient.PostgresDeployWithResponse(ctx, body, reqEditors...)
 }
 
 func normalizeEndpoint(endpoint string) (string, error) {
