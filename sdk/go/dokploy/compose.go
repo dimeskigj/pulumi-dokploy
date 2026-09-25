@@ -61,6 +61,7 @@ func NewCompose(ctx *pulumi.Context,
 	if args.ComposeType == nil {
 		args.ComposeType = pulumi.StringPtr("docker-compose")
 	}
+	args.Source = args.Source.ToComposeSourceOutput().ApplyT(func(v ComposeSource) ComposeSource { return *v.Defaults() }).(ComposeSourceOutput)
 	if args.Environment != nil {
 		args.Environment = pulumi.ToSecret(args.Environment).(pulumi.StringPtrInput)
 	}

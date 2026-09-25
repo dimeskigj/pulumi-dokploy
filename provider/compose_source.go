@@ -3,6 +3,7 @@ package dokploy
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
@@ -12,13 +13,17 @@ import (
 
 type ComposeSourceType string
 type ComposeType string
+type ComposeTriggerType string
 
 const (
-	ComposeSourceRaw    ComposeSourceType = "raw"
-	ComposeSourceGit    ComposeSourceType = "git"
-	ComposeSourceGitLab ComposeSourceType = "gitlab"
-	ComposeDocker       ComposeType       = "docker-compose"
-	ComposeStack        ComposeType       = "stack"
+	ComposeSourceRaw    ComposeSourceType  = "raw"
+	ComposeSourceGit    ComposeSourceType  = "git"
+	ComposeSourceGitLab ComposeSourceType  = "gitlab"
+	ComposeSourceGitHub ComposeSourceType  = "github"
+	ComposeDocker       ComposeType        = "docker-compose"
+	ComposeStack        ComposeType        = "stack"
+	ComposeTriggerPush  ComposeTriggerType = "push"
+	ComposeTriggerTag   ComposeTriggerType = "tag"
 )
 
 type ComposeSource struct {
@@ -26,6 +31,7 @@ type ComposeSource struct {
 	Raw    *RawComposeSource    `pulumi:"raw,optional"`
 	Git    *GitComposeSource    `pulumi:"git,optional"`
 	GitLab *GitLabComposeSource `pulumi:"gitlab,optional"`
+	GitHub *GitHubComposeSource `pulumi:"github,optional"`
 }
 
 func (s *ComposeSource) Annotate(a infer.Annotator) {
@@ -34,6 +40,7 @@ func (s *ComposeSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.Raw, "Raw Compose source.")
 	a.Describe(&s.Git, "Git Compose source.")
 	a.Describe(&s.GitLab, "GitLab Compose source.")
+	a.Describe(&s.GitHub, "GitHub Compose source.")
 }
 
 type RawComposeSource struct {
@@ -89,6 +96,30 @@ func (s *GitLabComposeSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
 }
 
+type GitHubComposeSource struct {
+	IntegrationID    string             `pulumi:"integrationId"`
+	Owner            string             `pulumi:"owner"`
+	Repository       string             `pulumi:"repository"`
+	Branch           string             `pulumi:"branch"`
+	ComposePath      string             `pulumi:"composePath,optional"`
+	WatchPaths       []string           `pulumi:"watchPaths,optional"`
+	TriggerType      ComposeTriggerType `pulumi:"triggerType,optional"`
+	EnableSubmodules bool               `pulumi:"enableSubmodules,optional"`
+}
+
+func (s *GitHubComposeSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "GitHub Compose source configuration.")
+	a.Describe(&s.IntegrationID, "The GitHub integration ID.")
+	a.Describe(&s.Owner, "The GitHub owner.")
+	a.Describe(&s.Repository, "The GitHub repository.")
+	a.Describe(&s.Branch, "The GitHub branch.")
+	a.Describe(&s.ComposePath, "The Compose file path.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.TriggerType, "The deployment trigger type, either push or tag.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
+	a.SetDefault(&s.TriggerType, string(ComposeTriggerPush))
+}
+
 func (s ComposeSource) validate() error {
 	switch s.Type {
 	case ComposeSourceRaw:
@@ -100,6 +131,9 @@ func (s ComposeSource) validate() error {
 		}
 		if s.GitLab != nil {
 			return fmt.Errorf("source.gitlab must be omitted when source.type is raw")
+		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is raw")
 		}
 		if s.Raw.ComposeFile == "" {
 			return fmt.Errorf("source.raw.composeFile must not be empty")
@@ -113,6 +147,9 @@ func (s ComposeSource) validate() error {
 		}
 		if s.GitLab != nil {
 			return fmt.Errorf("source.gitlab must be omitted when source.type is git")
+		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is git")
 		}
 		if s.Git.URL == "" {
 			return fmt.Errorf("source.git.url must not be empty")
@@ -130,6 +167,9 @@ func (s ComposeSource) validate() error {
 		if s.Git != nil {
 			return fmt.Errorf("source.git must be omitted when source.type is gitlab")
 		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is gitlab")
+		}
 		if s.GitLab.IntegrationID == "" {
 			return fmt.Errorf("source.gitlab.integrationId must not be empty")
 		}
@@ -141,8 +181,34 @@ func (s ComposeSource) validate() error {
 				return fmt.Errorf("source.gitlab.%s must not be empty", n)
 			}
 		}
+	case ComposeSourceGitHub:
+		if s.GitHub == nil {
+			return fmt.Errorf("source.github is required when source.type is github")
+		}
+		if s.Raw != nil {
+			return fmt.Errorf("source.raw must be omitted when source.type is github")
+		}
+		if s.Git != nil {
+			return fmt.Errorf("source.git must be omitted when source.type is github")
+		}
+		if s.GitLab != nil {
+			return fmt.Errorf("source.gitlab must be omitted when source.type is github")
+		}
+		if s.GitHub.IntegrationID == "" {
+			return fmt.Errorf("source.github.integrationId must not be empty")
+		}
+		for _, field := range []struct{ name, value string }{{"owner", s.GitHub.Owner}, {"repository", s.GitHub.Repository}, {"branch", s.GitHub.Branch}} {
+			if field.value == "" {
+				return fmt.Errorf("source.github.%s must not be empty", field.name)
+			}
+		}
+		switch s.GitHub.TriggerType {
+		case ComposeTriggerPush, ComposeTriggerTag:
+		default:
+			return fmt.Errorf("source.github.triggerType must be one of push or tag")
+		}
 	default:
-		return fmt.Errorf("source.type must be one of raw, git, or gitlab")
+		return fmt.Errorf("source.type must be one of raw, git, gitlab, or github")
 	}
 	return nil
 }
@@ -182,6 +248,15 @@ func configureComposeSource(ctx context.Context, api *client.Client, id string, 
 		b.GitlabBranch = nullable.NewNullableWithValue(s.Branch)
 		b.WatchPaths = nullable.NewNullableWithValue(s.WatchPaths)
 		b.EnableSubmodules = &s.EnableSubmodules
+	case ComposeSourceGitHub:
+		s := source.GitHub
+		b.GithubId = nullable.NewNullableWithValue(s.IntegrationID)
+		b.Owner = nullable.NewNullableWithValue(s.Owner)
+		b.Repository = nullable.NewNullableWithValue(s.Repository)
+		b.Branch = nullable.NewNullableWithValue(s.Branch)
+		b.TriggerType = nullable.NewNullableWithValue(generated.ComposeUpdateJSONBodyTriggerType(s.TriggerType))
+		b.WatchPaths = nullable.NewNullableWithValue(s.WatchPaths)
+		b.EnableSubmodules = &s.EnableSubmodules
 	}
 	_, err := api.ComposeUpdateWithResponse(ctx, b)
 	return err
@@ -202,7 +277,43 @@ func composeSourcePath(s ComposeSource) string {
 	if s.Type == ComposeSourceGitLab {
 		return composePath(s.GitLab.ComposePath)
 	}
+	if s.Type == ComposeSourceGitHub {
+		return composePath(s.GitHub.ComposePath)
+	}
 	return ""
 }
 
 func ptr[T any](v T) *T { return &v }
+
+// sameComposeSource compares a compose source the way a user's program and a
+// Read-derived state must be compared. A program that omits watchPaths yields
+// nil while compose.one reports the same stack with an empty list, and
+// reflect.DeepEqual would call those different — a diff, and in Update a
+// redeploy, for a stack nobody changed.
+func sameComposeSource(a, b ComposeSource) bool {
+	return reflect.DeepEqual(normalizeComposeSource(a), normalizeComposeSource(b))
+}
+
+func normalizeComposeSource(source ComposeSource) ComposeSource {
+	switch source.Type {
+	case ComposeSourceGit:
+		if source.Git != nil {
+			git := *source.Git
+			git.WatchPaths = normalizeWatchPaths(git.WatchPaths)
+			source.Git = &git
+		}
+	case ComposeSourceGitLab:
+		if source.GitLab != nil {
+			gitlab := *source.GitLab
+			gitlab.WatchPaths = normalizeWatchPaths(gitlab.WatchPaths)
+			source.GitLab = &gitlab
+		}
+	case ComposeSourceGitHub:
+		if source.GitHub != nil {
+			github := *source.GitHub
+			github.WatchPaths = normalizeWatchPaths(github.WatchPaths)
+			source.GitHub = &github
+		}
+	}
+	return source
+}

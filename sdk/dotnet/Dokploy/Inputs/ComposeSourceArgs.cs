@@ -23,6 +23,12 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
         public Input<Inputs.GitComposeSourceArgs>? Git { get; set; }
 
         /// <summary>
+        /// GitHub Compose source.
+        /// </summary>
+        [Input("github")]
+        public Input<Inputs.GitHubComposeSourceArgs>? Github { get; set; }
+
+        /// <summary>
         /// GitLab Compose source.
         /// </summary>
         [Input("gitlab")]

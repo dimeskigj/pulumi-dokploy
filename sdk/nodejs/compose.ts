@@ -114,7 +114,7 @@ export class Compose extends pulumi.CustomResource {
             resourceInputs["environmentId"] = args?.environmentId;
             resourceInputs["name"] = args?.name;
             resourceInputs["serverId"] = args?.serverId;
-            resourceInputs["source"] = args?.source;
+            resourceInputs["source"] = args ? pulumi.output(args.source).apply(inputs.composeSourceArgsProvideDefaults) : undefined;
             resourceInputs["composeId"] = undefined /*out*/;
             resourceInputs["status"] = undefined /*out*/;
         } else {

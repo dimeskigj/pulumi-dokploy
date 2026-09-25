@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.dimeski.pulumi.dokploy.outputs.GitComposeSource;
+import net.dimeski.pulumi.dokploy.outputs.GitHubComposeSource;
 import net.dimeski.pulumi.dokploy.outputs.GitLabComposeSource;
 import net.dimeski.pulumi.dokploy.outputs.RawComposeSource;
 
@@ -20,6 +21,11 @@ public final class ComposeSource {
      * 
      */
     private @Nullable GitComposeSource git;
+    /**
+     * @return GitHub Compose source.
+     * 
+     */
+    private @Nullable GitHubComposeSource github;
     /**
      * @return GitLab Compose source.
      * 
@@ -43,6 +49,13 @@ public final class ComposeSource {
      */
     public Optional<GitComposeSource> git() {
         return Optional.ofNullable(this.git);
+    }
+    /**
+     * @return GitHub Compose source.
+     * 
+     */
+    public Optional<GitHubComposeSource> github() {
+        return Optional.ofNullable(this.github);
     }
     /**
      * @return GitLab Compose source.
@@ -76,6 +89,7 @@ public final class ComposeSource {
     @CustomType.Builder
     public static final class Builder {
         private @Nullable GitComposeSource git;
+        private @Nullable GitHubComposeSource github;
         private @Nullable GitLabComposeSource gitlab;
         private @Nullable RawComposeSource raw;
         private String type;
@@ -83,6 +97,7 @@ public final class ComposeSource {
         public Builder(ComposeSource defaults) {
     	      Objects.requireNonNull(defaults);
     	      this.git = defaults.git;
+    	      this.github = defaults.github;
     	      this.gitlab = defaults.gitlab;
     	      this.raw = defaults.raw;
     	      this.type = defaults.type;
@@ -92,6 +107,12 @@ public final class ComposeSource {
         public Builder git(@Nullable GitComposeSource git) {
 
             this.git = git;
+            return this;
+        }
+        @CustomType.Setter
+        public Builder github(@Nullable GitHubComposeSource github) {
+
+            this.github = github;
             return this;
         }
         @CustomType.Setter
@@ -117,6 +138,7 @@ public final class ComposeSource {
         public ComposeSource build() {
             final var _resultValue = new ComposeSource();
             _resultValue.git = git;
+            _resultValue.github = github;
             _resultValue.gitlab = gitlab;
             _resultValue.raw = raw;
             _resultValue.type = type;
