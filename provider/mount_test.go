@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
@@ -192,4 +193,27 @@ func TestMountUpdateTimeoutClassificationPreservesCause(t *testing.T) {
 	require.ErrorIs(t, got, cause)
 	var timeout net.Error
 	require.ErrorAs(t, got, &timeout)
+}
+
+func TestMountUpdateRedeployErrorChainIsSanitizedAndClassified(t *testing.T) {
+	const secret = "api-host-payload-private-sentinel"
+	s := newScriptedServer(t,
+		expectPOST("/api/mounts.update", `{"applicationId":"a1","composeId":null,"content":null,"filePath":null,"hostPath":"/host","mariadbId":null,"mountId":"m1","mountPath":"/data","mysqlId":null,"postgresId":null,"redisId":null,"serviceType":"application","type":"bind","volumeName":null}`, `{}`),
+		expectGET("/api/mounts.one", map[string][]string{"mountId": {"m1"}}, http.StatusOK, `{"mountId":"m1","mountPath":"/data","hostPath":"/host","type":"bind","serviceType":"application","applicationId":"a1"}`),
+		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
+		scriptedRequest{Method: http.MethodPost, Path: "/api/application.redeploy", Body: json.RawMessage(`{"applicationId":"a1"}`), Status: http.StatusServiceUnavailable, Response: []byte(`{"code":"BAD_REQUEST","message":"` + secret + `"}`)},
+	)
+	_, err := (Mount{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[MountArgs, MountState]{ID: "m1", Inputs: MountArgs{Type: mountTypeBind, MountPath: "/data", HostPath: stringPtr("/host"), ApplicationID: stringPtr("a1")}})
+	require.Error(t, err)
+	assertSafeMountRedeployErrorChain(t, err, secret, "a1", "/host")
+	var updateFailure *mountUpdateFailure
+	require.ErrorAs(t, err, &updateFailure)
+	require.Equal(t, "redeploy", updateFailure.phase)
+	var redeployFailure *mountRedeployFailure
+	require.ErrorAs(t, err, &redeployFailure)
+	require.Equal(t, mountRedeployDeploy, redeployFailure.stage)
+	var apiErr *client.APIError
+	require.ErrorAs(t, err, &apiErr)
+	require.Equal(t, http.StatusServiceUnavailable, apiErr.StatusCode)
+	require.Equal(t, "BAD_REQUEST", apiErr.Code)
 }

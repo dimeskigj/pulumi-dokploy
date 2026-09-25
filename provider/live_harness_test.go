@@ -879,6 +879,15 @@ func classifyMountDispatchPhase(phase string, err error) string {
 			if safeStep && safeStatus {
 				diagnostic += fmt.Sprintf(";step=%s;stepStatus=%s", updateFailure.phase, updateFailure.status)
 			}
+			if updateFailure.phase == "redeploy" {
+				var redeployFailure *mountRedeployFailure
+				if errors.As(updateFailure, &redeployFailure) {
+					stages := map[mountRedeployStage]struct{}{mountRedeployPreflight: {}, mountRedeployDeploy: {}, mountRedeployReadiness: {}}
+					if _, safeStage := stages[redeployFailure.stage]; safeStage && safeStatus {
+						diagnostic += fmt.Sprintf(";redeployStep=%s", redeployFailure.stage)
+					}
+				}
+			}
 		}
 	}
 	return diagnostic

@@ -577,6 +577,25 @@ func TestClassifyMountDispatchPhaseIncludesSafeMountUpdateStep(t *testing.T) {
 	}
 }
 
+func TestClassifyMountDispatchPhaseIncludesSafeRedeploySubstep(t *testing.T) {
+	secret := "redeploy-private-error"
+	for _, tc := range []struct {
+		name, stage, want string
+		cause             error
+	}{
+		{name: "transport failure", stage: "deploy", cause: errors.New(secret), want: "operation=mount-dispatch;phase=mount-update;status=transport;code=unknown;step=redeploy;stepStatus=failed;redeployStep=deploy"},
+		{name: "API status preserved", stage: "preflight", cause: &client.APIError{StatusCode: http.StatusServiceUnavailable, Message: secret}, want: "operation=mount-dispatch;phase=mount-update;status=5xx;code=unknown;step=redeploy;stepStatus=failed;redeployStep=preflight"},
+		{name: "timeout preserved", stage: "readiness", cause: fmt.Errorf("wrapped: %w", syntheticDispatchTimeout{}), want: "operation=mount-dispatch;phase=mount-update;status=timeout;code=unknown;step=redeploy;stepStatus=timeout;redeployStep=readiness"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			redeploy := newMountRedeployFailure(mountRedeployStage(tc.stage), tc.cause)
+			got := classifyMountDispatchPhase("mount-update", classifyMountUpdateFailure("redeploy", redeploy))
+			require.Equal(t, tc.want, got)
+			require.NotContains(t, got, secret)
+		})
+	}
+}
+
 type syntheticDispatchTimeout struct{}
 
 func (syntheticDispatchTimeout) Error() string   { return "timeout host sentinel" }

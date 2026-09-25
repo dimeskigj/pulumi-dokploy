@@ -313,7 +313,11 @@ func (r Mount) Update(ctx context.Context, req infer.UpdateRequest[MountArgs, Mo
 		}
 	}
 	if err != nil {
-		return infer.UpdateResponse[MountState]{Output: s}, classifyMountUpdateFailure(phase, sanitizeMountError(err, req.Inputs, req.State.MountArgs))
+		var redeployFailure *mountRedeployFailure
+		if !errors.As(err, &redeployFailure) {
+			err = sanitizeMountError(err, req.Inputs, req.State.MountArgs)
+		}
+		return infer.UpdateResponse[MountState]{Output: s}, classifyMountUpdateFailure(phase, err)
 	}
 	return infer.UpdateResponse[MountState]{Output: s}, nil
 }
