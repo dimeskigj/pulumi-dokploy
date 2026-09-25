@@ -1,5 +1,0 @@
-{
-  "resource": true,
-  "name": "dokploy",
-  "server": "github://api.github.com/dimeskigj/pulumi-dokploy"
-}
