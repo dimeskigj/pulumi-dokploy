@@ -3,6 +3,7 @@ package dokploy
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
@@ -13,13 +14,17 @@ import (
 
 type ApplicationSourceType string
 type BuildType string
+type ApplicationTriggerType string
 
 const (
-	SourceDocker    ApplicationSourceType = "docker"
-	SourceGit       ApplicationSourceType = "git"
-	SourceGitLab    ApplicationSourceType = "gitlab"
-	BuildNixpacks   BuildType             = "nixpacks"
-	BuildDockerfile BuildType             = "dockerfile"
+	SourceDocker           ApplicationSourceType  = "docker"
+	SourceGit              ApplicationSourceType  = "git"
+	SourceGitLab           ApplicationSourceType  = "gitlab"
+	SourceGitHub           ApplicationSourceType  = "github"
+	BuildNixpacks          BuildType              = "nixpacks"
+	BuildDockerfile        BuildType              = "dockerfile"
+	ApplicationTriggerPush ApplicationTriggerType = "push"
+	ApplicationTriggerTag  ApplicationTriggerType = "tag"
 )
 
 type ApplicationSource struct {
@@ -27,6 +32,7 @@ type ApplicationSource struct {
 	Docker *DockerSource         `pulumi:"docker,optional"`
 	Git    *GitApplicationSource `pulumi:"git,optional"`
 	GitLab *GitLabAppSource      `pulumi:"gitlab,optional"`
+	GitHub *GitHubAppSource      `pulumi:"github,optional"`
 }
 
 func (s *ApplicationSource) Annotate(a infer.Annotator) {
@@ -35,6 +41,7 @@ func (s *ApplicationSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.Docker, "Docker source configuration.")
 	a.Describe(&s.Git, "Git source configuration.")
 	a.Describe(&s.GitLab, "GitLab source configuration.")
+	a.Describe(&s.GitHub, "GitHub source configuration.")
 }
 
 type DockerSource struct {
@@ -100,6 +107,32 @@ func (s *GitLabAppSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.Build, "The build configuration.")
 }
 
+type GitHubAppSource struct {
+	IntegrationID    string                 `pulumi:"integrationId"`
+	Owner            string                 `pulumi:"owner"`
+	Repository       string                 `pulumi:"repository"`
+	Branch           string                 `pulumi:"branch"`
+	BuildPath        *string                `pulumi:"buildPath,optional"`
+	WatchPaths       []string               `pulumi:"watchPaths,optional"`
+	TriggerType      ApplicationTriggerType `pulumi:"triggerType,optional"`
+	EnableSubmodules bool                   `pulumi:"enableSubmodules,optional"`
+	Build            ApplicationBuild       `pulumi:"build"`
+}
+
+func (s *GitHubAppSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "GitHub source configuration.")
+	a.Describe(&s.IntegrationID, "The GitHub integration ID.")
+	a.Describe(&s.Owner, "The GitHub owner.")
+	a.Describe(&s.Repository, "The GitHub repository.")
+	a.Describe(&s.Branch, "The GitHub branch.")
+	a.Describe(&s.BuildPath, "The build path.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.TriggerType, "The deployment trigger type, either push or tag.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
+	a.Describe(&s.Build, "The build configuration.")
+	a.SetDefault(&s.TriggerType, string(ApplicationTriggerPush))
+}
+
 type ApplicationBuild struct {
 	Type              BuildType `pulumi:"type"`
 	Dockerfile        *string   `pulumi:"dockerfile,optional"`
@@ -124,6 +157,9 @@ func (s ApplicationSource) validate() error {
 		count++
 	}
 	if s.GitLab != nil {
+		count++
+	}
+	if s.GitHub != nil {
 		count++
 	}
 	switch s.Type {
@@ -177,6 +213,35 @@ func (s ApplicationSource) validate() error {
 		if err := validateBuild("source.gitlab", s.GitLab.Build); err != nil {
 			return err
 		}
+	case SourceGitHub:
+		if s.GitHub == nil {
+			return fmt.Errorf("source.github is required when source.type is github")
+		}
+		if s.Docker != nil {
+			return fmt.Errorf("source.docker must be omitted when source.type is github")
+		}
+		if s.Git != nil {
+			return fmt.Errorf("source.git must be omitted when source.type is github")
+		}
+		if s.GitLab != nil {
+			return fmt.Errorf("source.gitlab must be omitted when source.type is github")
+		}
+		if s.GitHub.IntegrationID == "" {
+			return fmt.Errorf("source.github.integrationId must not be empty")
+		}
+		for _, field := range []struct{ name, value string }{{"owner", s.GitHub.Owner}, {"repository", s.GitHub.Repository}, {"branch", s.GitHub.Branch}} {
+			if field.value == "" {
+				return fmt.Errorf("source.github.%s must not be empty", field.name)
+			}
+		}
+		switch s.GitHub.TriggerType {
+		case ApplicationTriggerPush, ApplicationTriggerTag:
+		default:
+			return fmt.Errorf("source.github.triggerType must be one of push or tag")
+		}
+		if err := validateBuild("source.github", s.GitHub.Build); err != nil {
+			return err
+		}
 	default:
 		if count == 0 {
 			return fmt.Errorf("source variant is required")
@@ -184,7 +249,7 @@ func (s ApplicationSource) validate() error {
 		if count > 1 {
 			return fmt.Errorf("exactly one source variant must be set")
 		}
-		return fmt.Errorf("source.type must be one of docker, git, or gitlab")
+		return fmt.Errorf("source.type must be one of docker, git, gitlab, or github")
 	}
 	return nil
 }
@@ -254,6 +319,13 @@ func configureApplicationSource(ctx context.Context, api *client.Client, id stri
 			body.GitlabBuildPath = nullable.NewNullableWithValue(*s.BuildPath)
 		}
 		_, err = api.ApplicationSaveGitlabProviderWithResponse(ctx, body)
+	case SourceGitHub:
+		s := source.GitHub
+		body := generated.ApplicationSaveGithubProviderJSONRequestBody{ApplicationId: id, Branch: s.Branch, TriggerType: generated.ApplicationSaveGithubProviderJSONBodyTriggerType(s.TriggerType), EnableSubmodules: &s.EnableSubmodules, GithubId: nullable.NewNullableWithValue(s.IntegrationID), Owner: nullable.NewNullableWithValue(s.Owner), Repository: nullable.NewNullableWithValue(s.Repository), WatchPaths: nullable.NewNullableWithValue(s.WatchPaths)}
+		if s.BuildPath != nil {
+			body.BuildPath = nullable.NewNullableWithValue(*s.BuildPath)
+		}
+		_, err = api.ApplicationSaveGithubProviderWithResponse(ctx, body)
 	}
 	if source.Docker != nil && source.Docker.Password != nil {
 		return sanitizeError(err, *source.Docker.Password)
@@ -266,10 +338,13 @@ func configureApplicationBuild(ctx context.Context, api *client.Client, id strin
 		return nil
 	}
 	var b ApplicationBuild
-	if source.Type == SourceGit {
+	switch source.Type {
+	case SourceGit:
 		b = source.Git.Build
-	} else {
+	case SourceGitLab:
 		b = source.GitLab.Build
+	case SourceGitHub:
+		b = source.GitHub.Build
 	}
 	body := generated.ApplicationSaveBuildTypeJSONRequestBody{ApplicationId: id, BuildType: generated.ApplicationSaveBuildTypeJSONBodyBuildType(b.Type), Dockerfile: nullable.NewNullNullable[string](), DockerContextPath: nullable.NewNullNullable[string](), DockerBuildStage: nullable.NewNullNullable[string](), HerokuVersion: nullable.NewNullNullable[string](), RailpackVersion: nullable.NewNullNullable[string]()}
 	if b.Dockerfile != nil {
@@ -296,4 +371,37 @@ func sanitizeError(err error, secrets ...string) error {
 		}
 	}
 	return fmt.Errorf("%s", message)
+}
+
+// sameApplicationSource compares an application source the way a user's program
+// and a Read-derived state must be compared. A program that omits watchPaths
+// yields nil, while application.one reports the same application with an empty
+// list, and reflect.DeepEqual would call those two different — a diff (and a
+// redeploy) for a configuration nobody changed.
+func sameApplicationSource(a, b ApplicationSource) bool {
+	return reflect.DeepEqual(normalizeApplicationSource(a), normalizeApplicationSource(b))
+}
+
+func normalizeApplicationSource(source ApplicationSource) ApplicationSource {
+	switch source.Type {
+	case SourceGit:
+		if source.Git != nil {
+			git := *source.Git
+			git.WatchPaths = normalizeWatchPaths(git.WatchPaths)
+			source.Git = &git
+		}
+	case SourceGitLab:
+		if source.GitLab != nil {
+			gitlab := *source.GitLab
+			gitlab.WatchPaths = normalizeWatchPaths(gitlab.WatchPaths)
+			source.GitLab = &gitlab
+		}
+	case SourceGitHub:
+		if source.GitHub != nil {
+			github := *source.GitHub
+			github.WatchPaths = normalizeWatchPaths(github.WatchPaths)
+			source.GitHub = &github
+		}
+	}
+	return source
 }

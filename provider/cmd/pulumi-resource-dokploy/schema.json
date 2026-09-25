@@ -102,6 +102,10 @@
           "$ref": "#/types/dokploy:index:GitApplicationSource",
           "description": "Git source configuration."
         },
+        "github": {
+          "$ref": "#/types/dokploy:index:GitHubAppSource",
+          "description": "GitHub source configuration."
+        },
         "gitlab": {
           "$ref": "#/types/dokploy:index:GitLabAppSource",
           "description": "GitLab source configuration."
@@ -244,6 +248,59 @@
       "required": [
         "url",
         "branch"
+      ]
+    },
+    "dokploy:index:GitHubAppSource": {
+      "description": "GitHub source configuration.",
+      "properties": {
+        "branch": {
+          "type": "string",
+          "description": "The GitHub branch."
+        },
+        "build": {
+          "$ref": "#/types/dokploy:index:ApplicationBuild",
+          "description": "The build configuration."
+        },
+        "buildPath": {
+          "type": "string",
+          "description": "The build path."
+        },
+        "enableSubmodules": {
+          "type": "boolean",
+          "description": "Whether to enable submodules."
+        },
+        "integrationId": {
+          "type": "string",
+          "description": "The GitHub integration ID."
+        },
+        "owner": {
+          "type": "string",
+          "description": "The GitHub owner."
+        },
+        "repository": {
+          "type": "string",
+          "description": "The GitHub repository."
+        },
+        "triggerType": {
+          "type": "string",
+          "description": "The deployment trigger type, either push or tag.",
+          "default": "push"
+        },
+        "watchPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Paths to watch."
+        }
+      },
+      "type": "object",
+      "required": [
+        "integrationId",
+        "owner",
+        "repository",
+        "branch",
+        "build"
       ]
     },
     "dokploy:index:GitLabAppSource": {

@@ -216,10 +216,23 @@ type ApplicationSource struct {
 	Docker *DockerSource `pulumi:"docker"`
 	// Git source configuration.
 	Git *GitApplicationSource `pulumi:"git"`
+	// GitHub source configuration.
+	Github *GitHubAppSource `pulumi:"github"`
 	// GitLab source configuration.
 	Gitlab *GitLabAppSource `pulumi:"gitlab"`
 	// The application source type.
 	Type string `pulumi:"type"`
+}
+
+// Defaults sets the appropriate defaults for ApplicationSource
+func (val *ApplicationSource) Defaults() *ApplicationSource {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	tmp.Github = tmp.Github.Defaults()
+
+	return &tmp
 }
 
 // ApplicationSourceInput is an input type that accepts ApplicationSourceArgs and ApplicationSourceOutput values.
@@ -239,12 +252,23 @@ type ApplicationSourceArgs struct {
 	Docker DockerSourcePtrInput `pulumi:"docker"`
 	// Git source configuration.
 	Git GitApplicationSourcePtrInput `pulumi:"git"`
+	// GitHub source configuration.
+	Github GitHubAppSourcePtrInput `pulumi:"github"`
 	// GitLab source configuration.
 	Gitlab GitLabAppSourcePtrInput `pulumi:"gitlab"`
 	// The application source type.
 	Type pulumi.StringInput `pulumi:"type"`
 }
 
+// Defaults sets the appropriate defaults for ApplicationSourceArgs
+func (val *ApplicationSourceArgs) Defaults() *ApplicationSourceArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+
+	return &tmp
+}
 func (ApplicationSourceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*ApplicationSource)(nil)).Elem()
 }
@@ -280,6 +304,11 @@ func (o ApplicationSourceOutput) Docker() DockerSourcePtrOutput {
 // Git source configuration.
 func (o ApplicationSourceOutput) Git() GitApplicationSourcePtrOutput {
 	return o.ApplyT(func(v ApplicationSource) *GitApplicationSource { return v.Git }).(GitApplicationSourcePtrOutput)
+}
+
+// GitHub source configuration.
+func (o ApplicationSourceOutput) Github() GitHubAppSourcePtrOutput {
+	return o.ApplyT(func(v ApplicationSource) *GitHubAppSource { return v.Github }).(GitHubAppSourcePtrOutput)
 }
 
 // GitLab source configuration.
@@ -1060,6 +1089,322 @@ func (o GitComposeSourcePtrOutput) WatchPaths() pulumi.StringArrayOutput {
 	}).(pulumi.StringArrayOutput)
 }
 
+// GitHub source configuration.
+type GitHubAppSource struct {
+	// The GitHub branch.
+	Branch string `pulumi:"branch"`
+	// The build configuration.
+	Build ApplicationBuild `pulumi:"build"`
+	// The build path.
+	BuildPath *string `pulumi:"buildPath"`
+	// Whether to enable submodules.
+	EnableSubmodules *bool `pulumi:"enableSubmodules"`
+	// The GitHub integration ID.
+	IntegrationId string `pulumi:"integrationId"`
+	// The GitHub owner.
+	Owner string `pulumi:"owner"`
+	// The GitHub repository.
+	Repository string `pulumi:"repository"`
+	// The deployment trigger type, either push or tag.
+	TriggerType *string `pulumi:"triggerType"`
+	// Paths to watch.
+	WatchPaths []string `pulumi:"watchPaths"`
+}
+
+// Defaults sets the appropriate defaults for GitHubAppSource
+func (val *GitHubAppSource) Defaults() *GitHubAppSource {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.TriggerType == nil {
+		triggerType_ := "push"
+		tmp.TriggerType = &triggerType_
+	}
+	return &tmp
+}
+
+// GitHubAppSourceInput is an input type that accepts GitHubAppSourceArgs and GitHubAppSourceOutput values.
+// You can construct a concrete instance of `GitHubAppSourceInput` via:
+//
+//	GitHubAppSourceArgs{...}
+type GitHubAppSourceInput interface {
+	pulumi.Input
+
+	ToGitHubAppSourceOutput() GitHubAppSourceOutput
+	ToGitHubAppSourceOutputWithContext(context.Context) GitHubAppSourceOutput
+}
+
+// GitHub source configuration.
+type GitHubAppSourceArgs struct {
+	// The GitHub branch.
+	Branch pulumi.StringInput `pulumi:"branch"`
+	// The build configuration.
+	Build ApplicationBuildInput `pulumi:"build"`
+	// The build path.
+	BuildPath pulumi.StringPtrInput `pulumi:"buildPath"`
+	// Whether to enable submodules.
+	EnableSubmodules pulumi.BoolPtrInput `pulumi:"enableSubmodules"`
+	// The GitHub integration ID.
+	IntegrationId pulumi.StringInput `pulumi:"integrationId"`
+	// The GitHub owner.
+	Owner pulumi.StringInput `pulumi:"owner"`
+	// The GitHub repository.
+	Repository pulumi.StringInput `pulumi:"repository"`
+	// The deployment trigger type, either push or tag.
+	TriggerType pulumi.StringPtrInput `pulumi:"triggerType"`
+	// Paths to watch.
+	WatchPaths pulumi.StringArrayInput `pulumi:"watchPaths"`
+}
+
+// Defaults sets the appropriate defaults for GitHubAppSourceArgs
+func (val *GitHubAppSourceArgs) Defaults() *GitHubAppSourceArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.TriggerType == nil {
+		tmp.TriggerType = pulumi.StringPtr("push")
+	}
+	return &tmp
+}
+func (GitHubAppSourceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GitHubAppSource)(nil)).Elem()
+}
+
+func (i GitHubAppSourceArgs) ToGitHubAppSourceOutput() GitHubAppSourceOutput {
+	return i.ToGitHubAppSourceOutputWithContext(context.Background())
+}
+
+func (i GitHubAppSourceArgs) ToGitHubAppSourceOutputWithContext(ctx context.Context) GitHubAppSourceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GitHubAppSourceOutput)
+}
+
+func (i GitHubAppSourceArgs) ToGitHubAppSourcePtrOutput() GitHubAppSourcePtrOutput {
+	return i.ToGitHubAppSourcePtrOutputWithContext(context.Background())
+}
+
+func (i GitHubAppSourceArgs) ToGitHubAppSourcePtrOutputWithContext(ctx context.Context) GitHubAppSourcePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GitHubAppSourceOutput).ToGitHubAppSourcePtrOutputWithContext(ctx)
+}
+
+// GitHubAppSourcePtrInput is an input type that accepts GitHubAppSourceArgs, GitHubAppSourcePtr and GitHubAppSourcePtrOutput values.
+// You can construct a concrete instance of `GitHubAppSourcePtrInput` via:
+//
+//	        GitHubAppSourceArgs{...}
+//
+//	or:
+//
+//	        nil
+type GitHubAppSourcePtrInput interface {
+	pulumi.Input
+
+	ToGitHubAppSourcePtrOutput() GitHubAppSourcePtrOutput
+	ToGitHubAppSourcePtrOutputWithContext(context.Context) GitHubAppSourcePtrOutput
+}
+
+type gitHubAppSourcePtrType GitHubAppSourceArgs
+
+func GitHubAppSourcePtr(v *GitHubAppSourceArgs) GitHubAppSourcePtrInput {
+	return (*gitHubAppSourcePtrType)(v)
+}
+
+func (*gitHubAppSourcePtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**GitHubAppSource)(nil)).Elem()
+}
+
+func (i *gitHubAppSourcePtrType) ToGitHubAppSourcePtrOutput() GitHubAppSourcePtrOutput {
+	return i.ToGitHubAppSourcePtrOutputWithContext(context.Background())
+}
+
+func (i *gitHubAppSourcePtrType) ToGitHubAppSourcePtrOutputWithContext(ctx context.Context) GitHubAppSourcePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GitHubAppSourcePtrOutput)
+}
+
+// GitHub source configuration.
+type GitHubAppSourceOutput struct{ *pulumi.OutputState }
+
+func (GitHubAppSourceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GitHubAppSource)(nil)).Elem()
+}
+
+func (o GitHubAppSourceOutput) ToGitHubAppSourceOutput() GitHubAppSourceOutput {
+	return o
+}
+
+func (o GitHubAppSourceOutput) ToGitHubAppSourceOutputWithContext(ctx context.Context) GitHubAppSourceOutput {
+	return o
+}
+
+func (o GitHubAppSourceOutput) ToGitHubAppSourcePtrOutput() GitHubAppSourcePtrOutput {
+	return o.ToGitHubAppSourcePtrOutputWithContext(context.Background())
+}
+
+func (o GitHubAppSourceOutput) ToGitHubAppSourcePtrOutputWithContext(ctx context.Context) GitHubAppSourcePtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v GitHubAppSource) *GitHubAppSource {
+		return &v
+	}).(GitHubAppSourcePtrOutput)
+}
+
+// The GitHub branch.
+func (o GitHubAppSourceOutput) Branch() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubAppSource) string { return v.Branch }).(pulumi.StringOutput)
+}
+
+// The build configuration.
+func (o GitHubAppSourceOutput) Build() ApplicationBuildOutput {
+	return o.ApplyT(func(v GitHubAppSource) ApplicationBuild { return v.Build }).(ApplicationBuildOutput)
+}
+
+// The build path.
+func (o GitHubAppSourceOutput) BuildPath() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GitHubAppSource) *string { return v.BuildPath }).(pulumi.StringPtrOutput)
+}
+
+// Whether to enable submodules.
+func (o GitHubAppSourceOutput) EnableSubmodules() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v GitHubAppSource) *bool { return v.EnableSubmodules }).(pulumi.BoolPtrOutput)
+}
+
+// The GitHub integration ID.
+func (o GitHubAppSourceOutput) IntegrationId() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubAppSource) string { return v.IntegrationId }).(pulumi.StringOutput)
+}
+
+// The GitHub owner.
+func (o GitHubAppSourceOutput) Owner() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubAppSource) string { return v.Owner }).(pulumi.StringOutput)
+}
+
+// The GitHub repository.
+func (o GitHubAppSourceOutput) Repository() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubAppSource) string { return v.Repository }).(pulumi.StringOutput)
+}
+
+// The deployment trigger type, either push or tag.
+func (o GitHubAppSourceOutput) TriggerType() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GitHubAppSource) *string { return v.TriggerType }).(pulumi.StringPtrOutput)
+}
+
+// Paths to watch.
+func (o GitHubAppSourceOutput) WatchPaths() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v GitHubAppSource) []string { return v.WatchPaths }).(pulumi.StringArrayOutput)
+}
+
+type GitHubAppSourcePtrOutput struct{ *pulumi.OutputState }
+
+func (GitHubAppSourcePtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**GitHubAppSource)(nil)).Elem()
+}
+
+func (o GitHubAppSourcePtrOutput) ToGitHubAppSourcePtrOutput() GitHubAppSourcePtrOutput {
+	return o
+}
+
+func (o GitHubAppSourcePtrOutput) ToGitHubAppSourcePtrOutputWithContext(ctx context.Context) GitHubAppSourcePtrOutput {
+	return o
+}
+
+func (o GitHubAppSourcePtrOutput) Elem() GitHubAppSourceOutput {
+	return o.ApplyT(func(v *GitHubAppSource) GitHubAppSource {
+		if v != nil {
+			return *v
+		}
+		var ret GitHubAppSource
+		return ret
+	}).(GitHubAppSourceOutput)
+}
+
+// The GitHub branch.
+func (o GitHubAppSourcePtrOutput) Branch() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Branch
+	}).(pulumi.StringPtrOutput)
+}
+
+// The build configuration.
+func (o GitHubAppSourcePtrOutput) Build() ApplicationBuildPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *ApplicationBuild {
+		if v == nil {
+			return nil
+		}
+		return &v.Build
+	}).(ApplicationBuildPtrOutput)
+}
+
+// The build path.
+func (o GitHubAppSourcePtrOutput) BuildPath() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *string {
+		if v == nil {
+			return nil
+		}
+		return v.BuildPath
+	}).(pulumi.StringPtrOutput)
+}
+
+// Whether to enable submodules.
+func (o GitHubAppSourcePtrOutput) EnableSubmodules() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.EnableSubmodules
+	}).(pulumi.BoolPtrOutput)
+}
+
+// The GitHub integration ID.
+func (o GitHubAppSourcePtrOutput) IntegrationId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.IntegrationId
+	}).(pulumi.StringPtrOutput)
+}
+
+// The GitHub owner.
+func (o GitHubAppSourcePtrOutput) Owner() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Owner
+	}).(pulumi.StringPtrOutput)
+}
+
+// The GitHub repository.
+func (o GitHubAppSourcePtrOutput) Repository() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Repository
+	}).(pulumi.StringPtrOutput)
+}
+
+// The deployment trigger type, either push or tag.
+func (o GitHubAppSourcePtrOutput) TriggerType() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubAppSource) *string {
+		if v == nil {
+			return nil
+		}
+		return v.TriggerType
+	}).(pulumi.StringPtrOutput)
+}
+
+// Paths to watch.
+func (o GitHubAppSourcePtrOutput) WatchPaths() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *GitHubAppSource) []string {
+		if v == nil {
+			return nil
+		}
+		return v.WatchPaths
+	}).(pulumi.StringArrayOutput)
+}
+
 // GitLab source configuration.
 type GitLabAppSource struct {
 	// The GitLab branch.
@@ -1814,6 +2159,8 @@ func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*GitApplicationSourcePtrInput)(nil)).Elem(), GitApplicationSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitComposeSourceInput)(nil)).Elem(), GitComposeSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitComposeSourcePtrInput)(nil)).Elem(), GitComposeSourceArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*GitHubAppSourceInput)(nil)).Elem(), GitHubAppSourceArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*GitHubAppSourcePtrInput)(nil)).Elem(), GitHubAppSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabAppSourceInput)(nil)).Elem(), GitLabAppSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabAppSourcePtrInput)(nil)).Elem(), GitLabAppSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabComposeSourceInput)(nil)).Elem(), GitLabComposeSourceArgs{})
@@ -1830,6 +2177,8 @@ func init() {
 	pulumi.RegisterOutputType(GitApplicationSourcePtrOutput{})
 	pulumi.RegisterOutputType(GitComposeSourceOutput{})
 	pulumi.RegisterOutputType(GitComposeSourcePtrOutput{})
+	pulumi.RegisterOutputType(GitHubAppSourceOutput{})
+	pulumi.RegisterOutputType(GitHubAppSourcePtrOutput{})
 	pulumi.RegisterOutputType(GitLabAppSourceOutput{})
 	pulumi.RegisterOutputType(GitLabAppSourcePtrOutput{})
 	pulumi.RegisterOutputType(GitLabComposeSourceOutput{})

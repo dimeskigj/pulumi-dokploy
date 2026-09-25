@@ -224,6 +224,11 @@ func schemaProperty(spec schema.PackageSpec, resourceToken, property string) sch
 		git := spec.Types[trimTypeRef(source.Properties["git"].Ref)]
 		return git.Properties[strings.TrimPrefix(property, "source.git.")]
 	}
+	if strings.HasPrefix(property, "source.github.") {
+		source := spec.Types[trimTypeRef(resource.InputProperties["source"].Ref)]
+		github := spec.Types[trimTypeRef(source.Properties["github"].Ref)]
+		return github.Properties[strings.TrimPrefix(property, "source.github.")]
+	}
 	return resource.InputProperties[property]
 }
 

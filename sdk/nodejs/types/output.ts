@@ -5,6 +5,8 @@ import * as pulumi from "@pulumi/pulumi";
 import * as inputs from "../types/input";
 import * as outputs from "../types/output";
 
+import * as utilities from "../utilities";
+
 /**
  * Application build configuration.
  */
@@ -40,6 +42,10 @@ export interface ApplicationSource {
      */
     git?: outputs.GitApplicationSource;
     /**
+     * GitHub source configuration.
+     */
+    github?: outputs.GitHubAppSource;
+    /**
      * GitLab source configuration.
      */
     gitlab?: outputs.GitLabAppSource;
@@ -47,6 +53,15 @@ export interface ApplicationSource {
      * The application source type.
      */
     type: string;
+}
+/**
+ * applicationSourceProvideDefaults sets the appropriate defaults for ApplicationSource
+ */
+export function applicationSourceProvideDefaults(val: ApplicationSource): ApplicationSource {
+    return {
+        ...val,
+        github: (val.github ? outputs.gitHubAppSourceProvideDefaults(val.github) : undefined),
+    };
 }
 
 /**
@@ -155,6 +170,57 @@ export interface GitComposeSource {
      * Paths to watch.
      */
     watchPaths?: string[];
+}
+
+/**
+ * GitHub source configuration.
+ */
+export interface GitHubAppSource {
+    /**
+     * The GitHub branch.
+     */
+    branch: string;
+    /**
+     * The build configuration.
+     */
+    build: outputs.ApplicationBuild;
+    /**
+     * The build path.
+     */
+    buildPath?: string;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: boolean;
+    /**
+     * The GitHub integration ID.
+     */
+    integrationId: string;
+    /**
+     * The GitHub owner.
+     */
+    owner: string;
+    /**
+     * The GitHub repository.
+     */
+    repository: string;
+    /**
+     * The deployment trigger type, either push or tag.
+     */
+    triggerType?: string;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: string[];
+}
+/**
+ * gitHubAppSourceProvideDefaults sets the appropriate defaults for GitHubAppSource
+ */
+export function gitHubAppSourceProvideDefaults(val: GitHubAppSource): GitHubAppSource {
+    return {
+        ...val,
+        triggerType: (val.triggerType) ?? "push",
+    };
 }
 
 /**

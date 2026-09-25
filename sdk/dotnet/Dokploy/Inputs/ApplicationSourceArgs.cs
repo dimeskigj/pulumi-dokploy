@@ -29,6 +29,12 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
         public Input<Inputs.GitApplicationSourceArgs>? Git { get; set; }
 
         /// <summary>
+        /// GitHub source configuration.
+        /// </summary>
+        [Input("github")]
+        public Input<Inputs.GitHubAppSourceArgs>? Github { get; set; }
+
+        /// <summary>
         /// GitLab source configuration.
         /// </summary>
         [Input("gitlab")]

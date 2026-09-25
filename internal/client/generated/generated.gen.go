@@ -51,6 +51,24 @@ func (e ApplicationSaveBuildTypeJSONBodyBuildType) Valid() bool {
 	}
 }
 
+// Defines values for ApplicationSaveGithubProviderJSONBodyTriggerType.
+const (
+	ApplicationSaveGithubProviderJSONBodyTriggerTypePush ApplicationSaveGithubProviderJSONBodyTriggerType = "push"
+	ApplicationSaveGithubProviderJSONBodyTriggerTypeTag  ApplicationSaveGithubProviderJSONBodyTriggerType = "tag"
+)
+
+// Valid indicates whether the value is a known member of the ApplicationSaveGithubProviderJSONBodyTriggerType enum.
+func (e ApplicationSaveGithubProviderJSONBodyTriggerType) Valid() bool {
+	switch e {
+	case ApplicationSaveGithubProviderJSONBodyTriggerTypePush:
+		return true
+	case ApplicationSaveGithubProviderJSONBodyTriggerTypeTag:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ApplicationUpdateJSONBodyApplicationStatus.
 const (
 	ApplicationUpdateJSONBodyApplicationStatusDone    ApplicationUpdateJSONBodyApplicationStatus = "done"
@@ -1224,6 +1242,22 @@ type ApplicationSaveGitProviderJSONBody struct {
 	EnableSubmodules   *bool                       `json:"enableSubmodules,omitempty"`
 	WatchPaths         nullable.Nullable[[]string] `json:"watchPaths"`
 }
+
+// ApplicationSaveGithubProviderJSONBody defines parameters for ApplicationSaveGithubProvider.
+type ApplicationSaveGithubProviderJSONBody struct {
+	ApplicationId    string                                           `json:"applicationId"`
+	Branch           string                                           `json:"branch"`
+	BuildPath        nullable.Nullable[string]                        `json:"buildPath"`
+	EnableSubmodules *bool                                            `json:"enableSubmodules,omitempty"`
+	GithubId         nullable.Nullable[string]                        `json:"githubId"`
+	Owner            nullable.Nullable[string]                        `json:"owner"`
+	Repository       nullable.Nullable[string]                        `json:"repository"`
+	TriggerType      ApplicationSaveGithubProviderJSONBodyTriggerType `json:"triggerType"`
+	WatchPaths       nullable.Nullable[[]string]                      `json:"watchPaths,omitempty"`
+}
+
+// ApplicationSaveGithubProviderJSONBodyTriggerType defines parameters for ApplicationSaveGithubProvider.
+type ApplicationSaveGithubProviderJSONBodyTriggerType string
 
 // ApplicationSaveGitlabProviderJSONBody defines parameters for ApplicationSaveGitlabProvider.
 type ApplicationSaveGitlabProviderJSONBody struct {
@@ -2704,6 +2738,9 @@ type ApplicationSaveEnvironmentJSONRequestBody ApplicationSaveEnvironmentJSONBod
 
 // ApplicationSaveGitProviderJSONRequestBody defines body for ApplicationSaveGitProvider for application/json ContentType.
 type ApplicationSaveGitProviderJSONRequestBody ApplicationSaveGitProviderJSONBody
+
+// ApplicationSaveGithubProviderJSONRequestBody defines body for ApplicationSaveGithubProvider for application/json ContentType.
+type ApplicationSaveGithubProviderJSONRequestBody ApplicationSaveGithubProviderJSONBody
 
 // ApplicationSaveGitlabProviderJSONRequestBody defines body for ApplicationSaveGitlabProvider for application/json ContentType.
 type ApplicationSaveGitlabProviderJSONRequestBody ApplicationSaveGitlabProviderJSONBody
@@ -6867,6 +6904,14 @@ type ClientInterface interface {
 	// Takes a body of the `application/json` content type.
 	ApplicationSaveGitProvider(ctx context.Context, body ApplicationSaveGitProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ApplicationSaveGithubProviderWithBody performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request,
+	// with any type of body and a specified content type.
+	ApplicationSaveGithubProviderWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ApplicationSaveGithubProvider performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request.
+	// Takes a body of the `application/json` content type.
+	ApplicationSaveGithubProvider(ctx context.Context, body ApplicationSaveGithubProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ApplicationSaveGitlabProviderWithBody performs a POST /application.saveGitlabProvider (the `ApplicationSaveGitlabProvider` operationId) request,
 	// with any type of body and a specified content type.
 	ApplicationSaveGitlabProviderWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7753,6 +7798,34 @@ func (c *Client) ApplicationSaveGitProviderWithBody(ctx context.Context, content
 // Takes a body of the `application/json` content type.
 func (c *Client) ApplicationSaveGitProvider(ctx context.Context, body ApplicationSaveGitProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewApplicationSaveGitProviderRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ApplicationSaveGithubProviderWithBody performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) ApplicationSaveGithubProviderWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApplicationSaveGithubProviderRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ApplicationSaveGithubProvider performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) ApplicationSaveGithubProvider(ctx context.Context, body ApplicationSaveGithubProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApplicationSaveGithubProviderRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -10404,6 +10477,46 @@ func NewApplicationSaveGitProviderRequestWithBody(server string, contentType str
 	}
 
 	operationPath := fmt.Sprintf("/application.saveGitProvider")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewApplicationSaveGithubProviderRequest calls the generic ApplicationSaveGithubProvider builder with application/json body
+func NewApplicationSaveGithubProviderRequest(server string, body ApplicationSaveGithubProviderJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewApplicationSaveGithubProviderRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewApplicationSaveGithubProviderRequestWithBody constructs an http.Request for the ApplicationSaveGithubProvider method, with any body, and a specified content type
+func NewApplicationSaveGithubProviderRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/application.saveGithubProvider")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -14296,6 +14409,16 @@ type ClientWithResponsesInterface interface {
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	ApplicationSaveGitProviderWithResponse(ctx context.Context, body ApplicationSaveGitProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplicationSaveGitProviderResponse, error)
 
+	// ApplicationSaveGithubProviderWithBodyWithResponse performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	ApplicationSaveGithubProviderWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApplicationSaveGithubProviderResponse, error)
+
+	// ApplicationSaveGithubProviderWithResponse performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	ApplicationSaveGithubProviderWithResponse(ctx context.Context, body ApplicationSaveGithubProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplicationSaveGithubProviderResponse, error)
+
 	// ApplicationSaveGitlabProviderWithBodyWithResponse performs a POST /application.saveGitlabProvider (the `ApplicationSaveGitlabProvider` operationId) request,
 	// with any type of body and a specified content type.
 	//
@@ -15777,6 +15900,75 @@ func (r ApplicationSaveGitProviderResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ApplicationSaveGitProviderResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ApplicationSaveGithubProviderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *bool
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ApplicationSaveGithubProviderResponse) GetJSON200() *bool {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ApplicationSaveGithubProviderResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ApplicationSaveGithubProviderResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ApplicationSaveGithubProviderResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ApplicationSaveGithubProviderResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ApplicationSaveGithubProviderResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ApplicationSaveGithubProviderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ApplicationSaveGithubProviderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ApplicationSaveGithubProviderResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -22125,6 +22317,28 @@ func (c *ClientWithResponses) ApplicationSaveGitProviderWithResponse(ctx context
 	return ParseApplicationSaveGitProviderResponse(rsp)
 }
 
+// ApplicationSaveGithubProviderWithBodyWithResponse performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ApplicationSaveGithubProviderWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApplicationSaveGithubProviderResponse, error) {
+	rsp, err := c.ApplicationSaveGithubProviderWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseApplicationSaveGithubProviderResponse(rsp)
+}
+
+// ApplicationSaveGithubProviderWithResponse performs a POST /application.saveGithubProvider (the `ApplicationSaveGithubProvider` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ApplicationSaveGithubProviderWithResponse(ctx context.Context, body ApplicationSaveGithubProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplicationSaveGithubProviderResponse, error) {
+	rsp, err := c.ApplicationSaveGithubProvider(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseApplicationSaveGithubProviderResponse(rsp)
+}
+
 // ApplicationSaveGitlabProviderWithBodyWithResponse performs a POST /application.saveGitlabProvider (the `ApplicationSaveGitlabProvider` operationId) request,
 // with any type of body and a specified content type.
 //
@@ -24397,6 +24611,60 @@ func ParseApplicationSaveGitProviderResponse(rsp *http.Response) (*ApplicationSa
 	}
 
 	response := &ApplicationSaveGitProviderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest bool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseApplicationSaveGithubProviderResponse parses an HTTP response from a ApplicationSaveGithubProviderWithResponse call
+func ParseApplicationSaveGithubProviderResponse(rsp *http.Response) (*ApplicationSaveGithubProviderResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ApplicationSaveGithubProviderResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -29317,143 +29585,144 @@ func ParseVolumeBackupsUpdateResponse(rsp *http.Response) (*VolumeBackupsUpdateR
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

@@ -8,6 +8,7 @@ application.saveBuildType
 application.saveDockerProvider
 application.saveEnvironment
 application.saveGitProvider
+application.saveGithubProvider
 application.saveGitlabProvider
 application.update
 backup.create
