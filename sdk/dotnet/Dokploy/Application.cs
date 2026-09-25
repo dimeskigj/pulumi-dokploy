@@ -53,6 +53,12 @@ namespace Dimeskigj.Pulumi.Dokploy
         public Output<bool?> CreateEnvFile { get; private set; } = null!;
 
         /// <summary>
+        /// Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        /// </summary>
+        [Output("deployOnUpdate")]
+        public Output<bool> DeployOnUpdate { get; private set; } = null!;
+
+        /// <summary>
         /// An optional application description.
         /// </summary>
         [Output("description")]
@@ -208,6 +214,12 @@ namespace Dimeskigj.Pulumi.Dokploy
         public Input<bool>? CreateEnvFile { get; set; }
 
         /// <summary>
+        /// Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        /// </summary>
+        [Input("deployOnUpdate")]
+        public Input<bool>? DeployOnUpdate { get; set; }
+
+        /// <summary>
         /// An optional application description.
         /// </summary>
         [Input("description")]
@@ -261,6 +273,7 @@ namespace Dimeskigj.Pulumi.Dokploy
 
         public ApplicationArgs()
         {
+            DeployOnUpdate = true;
         }
         public static new ApplicationArgs Empty => new ApplicationArgs();
     }

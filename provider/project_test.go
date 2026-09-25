@@ -107,3 +107,36 @@ func TestProjectReadAndDeleteNotFound(t *testing.T) {
 }
 
 func stringPtr(value string) *string { return &value }
+
+// TestProjectReadDerivesDefaultEnvironmentFromEnvironments covers imports on
+// Dokploy v0.30, whose project.one has no defaultEnvironmentId field: the
+// default is the entry in environments[] marked isDefault. Without this an
+// imported project reports defaultEnvironmentId as "", and every resource
+// that references it gets an empty environmentId.
+func TestProjectReadDerivesDefaultEnvironmentFromEnvironments(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK,
+		`{"projectId":"p1","name":"demo","description":"","environments":[{"environmentId":"e-staging","name":"staging","isDefault":false},{"environmentId":"e-prod","name":"production","isDefault":true}]}`))
+	read, err := (Project{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ProjectArgs, ProjectState]{ID: "p1"})
+	require.NoError(t, err)
+	require.Equal(t, "e-prod", read.State.DefaultEnvironmentID)
+}
+
+// TestProjectReadPrefersExplicitDefaultEnvironmentID keeps the field winning
+// where a Dokploy version does return it.
+func TestProjectReadPrefersExplicitDefaultEnvironmentID(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK,
+		`{"projectId":"p1","name":"demo","defaultEnvironmentId":"e-explicit","environments":[{"environmentId":"e-flagged","isDefault":true}]}`))
+	read, err := (Project{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ProjectArgs, ProjectState]{ID: "p1"})
+	require.NoError(t, err)
+	require.Equal(t, "e-explicit", read.State.DefaultEnvironmentID)
+}
+
+// TestProjectReadWithoutAnyDefaultEnvironmentLeavesItEmpty pins the fallback's
+// edge: no field and no flagged environment is not an error.
+func TestProjectReadWithoutAnyDefaultEnvironmentLeavesItEmpty(t *testing.T) {
+	s := newScriptedServer(t, expectGET("/api/project.one", map[string][]string{"projectId": {"p1"}}, http.StatusOK,
+		`{"projectId":"p1","name":"demo","environments":[{"environmentId":"e1","isDefault":false}]}`))
+	read, err := (Project{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ProjectArgs, ProjectState]{ID: "p1"})
+	require.NoError(t, err)
+	require.Empty(t, read.State.DefaultEnvironmentID)
+}

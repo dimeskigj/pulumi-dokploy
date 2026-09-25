@@ -263,3 +263,156 @@ func TestComposeReadReconstructsGitAndPreservesEnvironmentSecret(t *testing.T) {
 	require.Equal(t, "https://git.test/repo", got.Inputs.Source.Git.URL)
 	require.Equal(t, "app.yml", got.Inputs.Source.Git.ComposePath)
 }
+
+// TestComposeImportPopulatesEnvironment covers import fidelity: compose.one returns the
+// stored env, so an import with no prior state must adopt it.
+func TestComposeImportPopulatesEnvironment(t *testing.T) {
+	const response = `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"done","composeType":"docker-compose","type":"raw","composeFile":"services: {}","env":"KEY=value"}`
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, response))
+	got, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1"})
+	require.NoError(t, err)
+	require.Equal(t, "KEY=value", *got.Inputs.Environment)
+	require.Equal(t, "KEY=value", *got.State.Environment)
+}
+
+func TestComposeImportedEnvironmentProducesNoDiff(t *testing.T) {
+	for _, tc := range []struct{ name, response string }{
+		{"raw", `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"done","composeType":"docker-compose","type":"raw","composeFile":"services: {}","env":"KEY=value"}`},
+		{"git", `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"done","composeType":"docker-compose","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","composePath":"./docker-compose.yml","env":"KEY=value"}`},
+		{"gitlab", `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"done","composeType":"docker-compose","type":"gitlab","gitlabId":"i1","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","composePath":"./docker-compose.yml","env":"KEY=value"}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, tc.response))
+			read, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1"})
+			require.NoError(t, err)
+			diff, err := (Compose{}).Diff(t.Context(), infer.DiffRequest[ComposeArgs, ComposeState]{Inputs: read.Inputs, State: read.State})
+			require.NoError(t, err)
+			require.False(t, diff.HasChanges)
+			require.Empty(t, diff.DetailedDiff)
+		})
+	}
+}
+
+func TestComposeReadPrefersLiveEnvironmentOverPriorState(t *testing.T) {
+	const response = `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"done","type":"raw","composeFile":"services: {}","env":"LIVE=1"}`
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, response))
+	prior := ComposeState{ComposeArgs: ComposeArgs{Environment: stringPtr("STALE=1")}}
+	got, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1", State: prior})
+	require.NoError(t, err)
+	require.Equal(t, "LIVE=1", *got.Inputs.Environment)
+}
+
+func TestComposeReadPreservesPriorEnvironmentWhenAbsentUpstream(t *testing.T) {
+	const response = `{"composeId":"c1","name":"demo","environmentId":"e1","composeStatus":"done","type":"raw","composeFile":"services: {}"}`
+	s := newScriptedServer(t, expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, response))
+	prior := ComposeState{ComposeArgs: ComposeArgs{Environment: stringPtr("KEEP=1")}}
+	got, err := (Compose{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ComposeArgs, ComposeState]{ID: "c1", State: prior})
+	require.NoError(t, err)
+	require.Equal(t, "KEEP=1", *got.Inputs.Environment)
+}
+
+func TestComposeEnvironmentIsSecretInSchema(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	compose := spec.Resources["dokploy:index:Compose"]
+	require.True(t, compose.InputProperties["environment"].Secret)
+	require.True(t, compose.Properties["environment"].Secret)
+}
+
+// TestComposeUpdateWithDeployOnUpdateFalseSavesConfigurationWithoutRedeploy relies on the
+// scripted server failing on unexpected requests and unconsumed expectations, so
+// scripting only the save calls proves compose.redeploy and the compose.one
+// wait-for-done poll were never reached.
+func TestComposeUpdateWithDeployOnUpdateFalseSavesConfigurationWithoutRedeploy(t *testing.T) {
+	s := newScriptedServer(t,
+		expectPOST("/api/compose.update", `{"composeFile":"services: {}","composeId":"c1","sourceType":"raw"}`, `{}`),
+		expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":null}`, `true`),
+	)
+	deploy := false
+	newArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: &deploy, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {}"}}}
+	oldArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: &deploy, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {old}"}}}
+	got, err := (Compose{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ComposeArgs, ComposeState]{ID: "c1", Inputs: newArgs, State: ComposeState{ComposeArgs: oldArgs, Status: "done"}})
+	require.NoError(t, err)
+	require.Equal(t, "done", got.Output.Status)
+	require.Equal(t, &deploy, got.Output.DeployOnUpdate)
+}
+
+func TestComposeUpdateRedeploysWhenDeployOnUpdateIsOmittedOrTrue(t *testing.T) {
+	deploy := true
+	for _, tc := range []struct {
+		name  string
+		value *bool
+	}{
+		{"omitted", nil},
+		{"true", &deploy},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			oldInterval := waitPollInterval
+			waitPollInterval = 0
+			t.Cleanup(func() { waitPollInterval = oldInterval })
+			s := newScriptedServer(t,
+				expectPOST("/api/compose.update", `{"composeFile":"services: {}","composeId":"c1","sourceType":"raw"}`, `{}`),
+				expectPOST("/api/compose.saveEnvironment", `{"composeId":"c1","env":null}`, `true`),
+				expectPOST("/api/compose.redeploy", `{"composeId":"c1"}`, `"running"`),
+				expectGET("/api/compose.one", map[string][]string{"composeId": {"c1"}}, http.StatusOK, `{"composeId":"c1","composeStatus":"done"}`),
+			)
+			newArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: tc.value, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {}"}}}
+			oldArgs := ComposeArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: tc.value, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {old}"}}}
+			got, err := (Compose{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ComposeArgs, ComposeState]{ID: "c1", Inputs: newArgs, State: ComposeState{ComposeArgs: oldArgs}})
+			require.NoError(t, err)
+			require.Equal(t, statusDone, got.Output.Status)
+		})
+	}
+}
+
+func TestComposeDeployOnUpdateDefaultsToTrueAndDiffsAsUpdate(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	require.Equal(t, true, spec.Resources["dokploy:index:Compose"].InputProperties["deployOnUpdate"].Default)
+
+	deploy := false
+	diff, err := (Compose{}).Diff(t.Context(), infer.DiffRequest[ComposeArgs, ComposeState]{
+		Inputs: ComposeArgs{EnvironmentID: "e1", DeployOnUpdate: &deploy, Source: ComposeSource{Type: ComposeSourceRaw}},
+		State:  ComposeState{ComposeArgs: ComposeArgs{EnvironmentID: "e1", Source: ComposeSource{Type: ComposeSourceRaw}}},
+	})
+	require.NoError(t, err)
+	require.Equal(t, p.Update, diff.DetailedDiff["deployOnUpdate"].Kind)
+}
+
+// TestComposeDeployOnUpdateOnlyChangeMakesNoRequest pins the flag's own update
+// path for stacks: flipping deployOnUpdate changes nothing in Dokploy, so Update
+// must issue no requests at all. The scripted server expects none.
+func TestComposeDeployOnUpdateOnlyChangeMakesNoRequest(t *testing.T) {
+	s := newScriptedServer(t)
+	args := ComposeArgs{Name: "demo", EnvironmentID: "e1", ComposeType: ComposeDocker, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {}\n"}}}
+	disabled, enabled := args, args
+	disabled.DeployOnUpdate = ptr(false)
+	enabled.DeployOnUpdate = ptr(true)
+	for _, tc := range []struct {
+		name          string
+		inputs, state ComposeArgs
+	}{
+		{"enabled to disabled", disabled, enabled},
+		{"disabled to enabled", enabled, disabled},
+		{"unset to disabled", disabled, args},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := (Compose{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ComposeArgs, ComposeState]{ID: "c1", Inputs: tc.inputs, State: ComposeState{ComposeArgs: tc.state}})
+			require.NoError(t, err)
+		})
+	}
+}
+
+// TestComposeDeployOnUpdateDefaultMatchesImportedState pins the import path for
+// stacks: the default true from Check and the nil a Read-derived state holds both
+// mean "deploy", so they must not diff.
+func TestComposeDeployOnUpdateDefaultMatchesImportedState(t *testing.T) {
+	source := ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services: {}\n"}}
+	diff, err := (Compose{}).Diff(t.Context(), infer.DiffRequest[ComposeArgs, ComposeState]{
+		Inputs: ComposeArgs{Name: "demo", EnvironmentID: "e1", ComposeType: ComposeDocker, DeployOnUpdate: ptr(true), Source: source},
+		State:  ComposeState{ComposeArgs: ComposeArgs{Name: "demo", EnvironmentID: "e1", ComposeType: ComposeDocker, Source: source}},
+	})
+	require.NoError(t, err)
+	require.False(t, diff.HasChanges)
+	require.Empty(t, diff.DetailedDiff)
+}

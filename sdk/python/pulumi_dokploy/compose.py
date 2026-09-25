@@ -28,6 +28,7 @@ class ComposeArgs:
                  compose_type: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
                  delete_volumes_on_destroy: pulumi.Input[Optional[_builtins.bool]] = None,
+                 deploy_on_update: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  server_id: pulumi.Input[Optional[_builtins.str]] = None):
@@ -41,6 +42,7 @@ class ComposeArgs:
         :param pulumi.Input[_builtins.str] compose_type: The Compose deployment type.
         :param pulumi.Input[_builtins.bool] create_env_file: Whether to create an environment file.
         :param pulumi.Input[_builtins.bool] delete_volumes_on_destroy: Whether to delete volumes on destroy.
+        :param pulumi.Input[_builtins.bool] deploy_on_update: Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
         :param pulumi.Input[_builtins.str] description: An optional stack description.
         :param pulumi.Input[_builtins.str] environment: Environment variables for the stack.
         :param pulumi.Input[_builtins.str] server_id: The optional server ID.
@@ -58,6 +60,10 @@ class ComposeArgs:
             pulumi.set(__self__, "create_env_file", create_env_file)
         if delete_volumes_on_destroy is not None:
             pulumi.set(__self__, "delete_volumes_on_destroy", delete_volumes_on_destroy)
+        if deploy_on_update is None:
+            deploy_on_update = True
+        if deploy_on_update is not None:
+            pulumi.set(__self__, "deploy_on_update", deploy_on_update)
         if description is not None:
             pulumi.set(__self__, "description", description)
         if environment is not None:
@@ -150,6 +156,18 @@ class ComposeArgs:
         pulumi.set(self, "delete_volumes_on_destroy", value)
 
     @_builtins.property
+    @pulumi.getter(name="deployOnUpdate")
+    def deploy_on_update(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        """
+        return pulumi.get(self, "deploy_on_update")
+
+    @deploy_on_update.setter
+    def deploy_on_update(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "deploy_on_update", value)
+
+    @_builtins.property
     @pulumi.getter
     def description(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
@@ -196,6 +214,7 @@ class Compose(pulumi.CustomResource):
                  compose_type: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
                  delete_volumes_on_destroy: pulumi.Input[Optional[_builtins.bool]] = None,
+                 deploy_on_update: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  environment_id: pulumi.Input[Optional[_builtins.str]] = None,
@@ -212,6 +231,7 @@ class Compose(pulumi.CustomResource):
         :param pulumi.Input[_builtins.str] compose_type: The Compose deployment type.
         :param pulumi.Input[_builtins.bool] create_env_file: Whether to create an environment file.
         :param pulumi.Input[_builtins.bool] delete_volumes_on_destroy: Whether to delete volumes on destroy.
+        :param pulumi.Input[_builtins.bool] deploy_on_update: Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
         :param pulumi.Input[_builtins.str] description: An optional stack description.
         :param pulumi.Input[_builtins.str] environment: Environment variables for the stack.
         :param pulumi.Input[_builtins.str] environment_id: The target environment ID.
@@ -247,6 +267,7 @@ class Compose(pulumi.CustomResource):
                  compose_type: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
                  delete_volumes_on_destroy: pulumi.Input[Optional[_builtins.bool]] = None,
+                 deploy_on_update: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  environment_id: pulumi.Input[Optional[_builtins.str]] = None,
@@ -268,6 +289,9 @@ class Compose(pulumi.CustomResource):
             __props__.__dict__["compose_type"] = compose_type
             __props__.__dict__["create_env_file"] = create_env_file
             __props__.__dict__["delete_volumes_on_destroy"] = delete_volumes_on_destroy
+            if deploy_on_update is None:
+                deploy_on_update = True
+            __props__.__dict__["deploy_on_update"] = deploy_on_update
             __props__.__dict__["description"] = description
             __props__.__dict__["environment"] = None if environment is None else pulumi.Output.secret(environment)
             if environment_id is None and not opts.urn:
@@ -313,6 +337,7 @@ class Compose(pulumi.CustomResource):
         __props__.__dict__["compose_type"] = None
         __props__.__dict__["create_env_file"] = None
         __props__.__dict__["delete_volumes_on_destroy"] = None
+        __props__.__dict__["deploy_on_update"] = None
         __props__.__dict__["description"] = None
         __props__.__dict__["environment"] = None
         __props__.__dict__["environment_id"] = None
@@ -361,6 +386,14 @@ class Compose(pulumi.CustomResource):
         Whether to delete volumes on destroy.
         """
         return pulumi.get(self, "delete_volumes_on_destroy")
+
+    @_builtins.property
+    @pulumi.getter(name="deployOnUpdate")
+    def deploy_on_update(self) -> pulumi.Output[_builtins.bool]:
+        """
+        Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        """
+        return pulumi.get(self, "deploy_on_update")
 
     @_builtins.property
     @pulumi.getter

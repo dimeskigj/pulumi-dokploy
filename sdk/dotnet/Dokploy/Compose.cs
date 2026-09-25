@@ -47,6 +47,12 @@ namespace Dimeskigj.Pulumi.Dokploy
         public Output<bool?> DeleteVolumesOnDestroy { get; private set; } = null!;
 
         /// <summary>
+        /// Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        /// </summary>
+        [Output("deployOnUpdate")]
+        public Output<bool> DeployOnUpdate { get; private set; } = null!;
+
+        /// <summary>
         /// An optional stack description.
         /// </summary>
         [Output("description")]
@@ -168,6 +174,12 @@ namespace Dimeskigj.Pulumi.Dokploy
         public Input<bool>? DeleteVolumesOnDestroy { get; set; }
 
         /// <summary>
+        /// Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        /// </summary>
+        [Input("deployOnUpdate")]
+        public Input<bool>? DeployOnUpdate { get; set; }
+
+        /// <summary>
         /// An optional stack description.
         /// </summary>
         [Input("description")]
@@ -216,6 +228,7 @@ namespace Dimeskigj.Pulumi.Dokploy
         public ComposeArgs()
         {
             ComposeType = "docker-compose";
+            DeployOnUpdate = true;
         }
         public static new ComposeArgs Empty => new ComposeArgs();
     }

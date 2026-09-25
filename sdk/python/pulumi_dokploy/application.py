@@ -29,6 +29,7 @@ class ApplicationArgs:
                  build_registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  build_secrets: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
+                 deploy_on_update: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  registry_id: pulumi.Input[Optional[_builtins.str]] = None,
@@ -44,6 +45,7 @@ class ApplicationArgs:
         :param pulumi.Input[_builtins.str] build_registry_id: The optional build registry ID.
         :param pulumi.Input[_builtins.str] build_secrets: Build secrets for the application.
         :param pulumi.Input[_builtins.bool] create_env_file: Whether to create an environment file.
+        :param pulumi.Input[_builtins.bool] deploy_on_update: Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
         :param pulumi.Input[_builtins.str] description: An optional application description.
         :param pulumi.Input[_builtins.str] environment: Environment variables for the application.
         :param pulumi.Input[_builtins.str] registry_id: The optional deployment registry ID.
@@ -62,6 +64,10 @@ class ApplicationArgs:
             pulumi.set(__self__, "build_secrets", build_secrets)
         if create_env_file is not None:
             pulumi.set(__self__, "create_env_file", create_env_file)
+        if deploy_on_update is None:
+            deploy_on_update = True
+        if deploy_on_update is not None:
+            pulumi.set(__self__, "deploy_on_update", deploy_on_update)
         if description is not None:
             pulumi.set(__self__, "description", description)
         if environment is not None:
@@ -168,6 +174,18 @@ class ApplicationArgs:
         pulumi.set(self, "create_env_file", value)
 
     @_builtins.property
+    @pulumi.getter(name="deployOnUpdate")
+    def deploy_on_update(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        """
+        return pulumi.get(self, "deploy_on_update")
+
+    @deploy_on_update.setter
+    def deploy_on_update(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "deploy_on_update", value)
+
+    @_builtins.property
     @pulumi.getter
     def description(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
@@ -227,6 +245,7 @@ class Application(pulumi.CustomResource):
                  build_registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  build_secrets: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
+                 deploy_on_update: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  environment_id: pulumi.Input[Optional[_builtins.str]] = None,
@@ -245,6 +264,7 @@ class Application(pulumi.CustomResource):
         :param pulumi.Input[_builtins.str] build_registry_id: The optional build registry ID.
         :param pulumi.Input[_builtins.str] build_secrets: Build secrets for the application.
         :param pulumi.Input[_builtins.bool] create_env_file: Whether to create an environment file.
+        :param pulumi.Input[_builtins.bool] deploy_on_update: Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
         :param pulumi.Input[_builtins.str] description: An optional application description.
         :param pulumi.Input[_builtins.str] environment: Environment variables for the application.
         :param pulumi.Input[_builtins.str] environment_id: The target environment ID.
@@ -282,6 +302,7 @@ class Application(pulumi.CustomResource):
                  build_registry_id: pulumi.Input[Optional[_builtins.str]] = None,
                  build_secrets: pulumi.Input[Optional[_builtins.str]] = None,
                  create_env_file: pulumi.Input[Optional[_builtins.bool]] = None,
+                 deploy_on_update: pulumi.Input[Optional[_builtins.bool]] = None,
                  description: pulumi.Input[Optional[_builtins.str]] = None,
                  environment: pulumi.Input[Optional[_builtins.str]] = None,
                  environment_id: pulumi.Input[Optional[_builtins.str]] = None,
@@ -303,6 +324,9 @@ class Application(pulumi.CustomResource):
             __props__.__dict__["build_registry_id"] = build_registry_id
             __props__.__dict__["build_secrets"] = None if build_secrets is None else pulumi.Output.secret(build_secrets)
             __props__.__dict__["create_env_file"] = create_env_file
+            if deploy_on_update is None:
+                deploy_on_update = True
+            __props__.__dict__["deploy_on_update"] = deploy_on_update
             __props__.__dict__["description"] = description
             __props__.__dict__["environment"] = None if environment is None else pulumi.Output.secret(environment)
             if environment_id is None and not opts.urn:
@@ -350,6 +374,7 @@ class Application(pulumi.CustomResource):
         __props__.__dict__["build_registry_id"] = None
         __props__.__dict__["build_secrets"] = None
         __props__.__dict__["create_env_file"] = None
+        __props__.__dict__["deploy_on_update"] = None
         __props__.__dict__["description"] = None
         __props__.__dict__["environment"] = None
         __props__.__dict__["environment_id"] = None
@@ -407,6 +432,14 @@ class Application(pulumi.CustomResource):
         Whether to create an environment file.
         """
         return pulumi.get(self, "create_env_file")
+
+    @_builtins.property
+    @pulumi.getter(name="deployOnUpdate")
+    def deploy_on_update(self) -> pulumi.Output[_builtins.bool]:
+        """
+        Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+        """
+        return pulumi.get(self, "deploy_on_update")
 
     @_builtins.property
     @pulumi.getter

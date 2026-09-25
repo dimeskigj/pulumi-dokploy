@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy;
 
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
+import com.pulumi.core.internal.Codegen;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
 import java.lang.Boolean;
 import java.lang.String;
@@ -91,6 +92,21 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
      */
     public Optional<Output<Boolean>> createEnvFile() {
         return Optional.ofNullable(this.createEnvFile);
+    }
+
+    /**
+     * Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    @Import(name="deployOnUpdate")
+    private @Nullable Output<Boolean> deployOnUpdate;
+
+    /**
+     * @return Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    public Optional<Output<Boolean>> deployOnUpdate() {
+        return Optional.ofNullable(this.deployOnUpdate);
     }
 
     /**
@@ -206,6 +222,7 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
         this.buildRegistryId = $.buildRegistryId;
         this.buildSecrets = $.buildSecrets;
         this.createEnvFile = $.createEnvFile;
+        this.deployOnUpdate = $.deployOnUpdate;
         this.description = $.description;
         this.environment = $.environment;
         this.environmentId = $.environmentId;
@@ -336,6 +353,27 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder createEnvFile(Boolean createEnvFile) {
             return createEnvFile(Output.of(createEnvFile));
+        }
+
+        /**
+         * @param deployOnUpdate Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder deployOnUpdate(@Nullable Output<Boolean> deployOnUpdate) {
+            $.deployOnUpdate = deployOnUpdate;
+            return this;
+        }
+
+        /**
+         * @param deployOnUpdate Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder deployOnUpdate(Boolean deployOnUpdate) {
+            return deployOnUpdate(Output.of(deployOnUpdate));
         }
 
         /**
@@ -486,6 +524,7 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         public ApplicationArgs build() {
+            $.deployOnUpdate = Codegen.booleanProp("deployOnUpdate").output().arg($.deployOnUpdate).def(true).getNullable();
             if ($.environmentId == null) {
                 throw new MissingRequiredPropertyException("ApplicationArgs", "environmentId");
             }

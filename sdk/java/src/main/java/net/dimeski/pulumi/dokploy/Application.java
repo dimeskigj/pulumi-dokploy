@@ -107,6 +107,20 @@ public class Application extends com.pulumi.resources.CustomResource {
         return Codegen.optional(this.createEnvFile);
     }
     /**
+     * Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    @Export(name="deployOnUpdate", refs={Boolean.class}, tree="[0]")
+    private Output<Boolean> deployOnUpdate;
+
+    /**
+     * @return Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    public Output<Boolean> deployOnUpdate() {
+        return this.deployOnUpdate;
+    }
+    /**
      * An optional application description.
      * 
      */

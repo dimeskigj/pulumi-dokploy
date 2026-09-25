@@ -93,6 +93,20 @@ public class Compose extends com.pulumi.resources.CustomResource {
         return Codegen.optional(this.deleteVolumesOnDestroy);
     }
     /**
+     * Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    @Export(name="deployOnUpdate", refs={Boolean.class}, tree="[0]")
+    private Output<Boolean> deployOnUpdate;
+
+    /**
+     * @return Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    public Output<Boolean> deployOnUpdate() {
+        return this.deployOnUpdate;
+    }
+    /**
      * An optional stack description.
      * 
      */

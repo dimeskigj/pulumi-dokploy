@@ -80,6 +80,21 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
+     * Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    @Import(name="deployOnUpdate")
+    private @Nullable Output<Boolean> deployOnUpdate;
+
+    /**
+     * @return Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     * 
+     */
+    public Optional<Output<Boolean>> deployOnUpdate() {
+        return Optional.ofNullable(this.deployOnUpdate);
+    }
+
+    /**
      * An optional stack description.
      * 
      */
@@ -176,6 +191,7 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
         this.composeType = $.composeType;
         this.createEnvFile = $.createEnvFile;
         this.deleteVolumesOnDestroy = $.deleteVolumesOnDestroy;
+        this.deployOnUpdate = $.deployOnUpdate;
         this.description = $.description;
         this.environment = $.environment;
         this.environmentId = $.environmentId;
@@ -284,6 +300,27 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder deleteVolumesOnDestroy(Boolean deleteVolumesOnDestroy) {
             return deleteVolumesOnDestroy(Output.of(deleteVolumesOnDestroy));
+        }
+
+        /**
+         * @param deployOnUpdate Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder deployOnUpdate(@Nullable Output<Boolean> deployOnUpdate) {
+            $.deployOnUpdate = deployOnUpdate;
+            return this;
+        }
+
+        /**
+         * @param deployOnUpdate Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder deployOnUpdate(Boolean deployOnUpdate) {
+            return deployOnUpdate(Output.of(deployOnUpdate));
         }
 
         /**
@@ -414,6 +451,7 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         public ComposeArgs build() {
             $.composeType = Codegen.stringProp("composeType").output().arg($.composeType).def("docker-compose").getNullable();
+            $.deployOnUpdate = Codegen.booleanProp("deployOnUpdate").output().arg($.deployOnUpdate).def(true).getNullable();
             if ($.environmentId == null) {
                 throw new MissingRequiredPropertyException("ComposeArgs", "environmentId");
             }

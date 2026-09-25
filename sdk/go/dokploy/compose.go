@@ -26,6 +26,8 @@ type Compose struct {
 	CreateEnvFile pulumi.BoolPtrOutput `pulumi:"createEnvFile"`
 	// Whether to delete volumes on destroy.
 	DeleteVolumesOnDestroy pulumi.BoolPtrOutput `pulumi:"deleteVolumesOnDestroy"`
+	// Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+	DeployOnUpdate pulumi.BoolOutput `pulumi:"deployOnUpdate"`
 	// An optional stack description.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// Environment variables for the stack.
@@ -60,6 +62,9 @@ func NewCompose(ctx *pulumi.Context,
 	}
 	if args.ComposeType == nil {
 		args.ComposeType = pulumi.StringPtr("docker-compose")
+	}
+	if args.DeployOnUpdate == nil {
+		args.DeployOnUpdate = pulumi.BoolPtr(true)
 	}
 	if args.Environment != nil {
 		args.Environment = pulumi.ToSecret(args.Environment).(pulumi.StringPtrInput)
@@ -114,6 +119,8 @@ type composeArgs struct {
 	CreateEnvFile *bool `pulumi:"createEnvFile"`
 	// Whether to delete volumes on destroy.
 	DeleteVolumesOnDestroy *bool `pulumi:"deleteVolumesOnDestroy"`
+	// Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+	DeployOnUpdate *bool `pulumi:"deployOnUpdate"`
 	// An optional stack description.
 	Description *string `pulumi:"description"`
 	// Environment variables for the stack.
@@ -138,6 +145,8 @@ type ComposeArgs struct {
 	CreateEnvFile pulumi.BoolPtrInput
 	// Whether to delete volumes on destroy.
 	DeleteVolumesOnDestroy pulumi.BoolPtrInput
+	// Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+	DeployOnUpdate pulumi.BoolPtrInput
 	// An optional stack description.
 	Description pulumi.StringPtrInput
 	// Environment variables for the stack.
@@ -212,6 +221,11 @@ func (o ComposeOutput) CreateEnvFile() pulumi.BoolPtrOutput {
 // Whether to delete volumes on destroy.
 func (o ComposeOutput) DeleteVolumesOnDestroy() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v *Compose) pulumi.BoolPtrOutput { return v.DeleteVolumesOnDestroy }).(pulumi.BoolPtrOutput)
+}
+
+// Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+func (o ComposeOutput) DeployOnUpdate() pulumi.BoolOutput {
+	return o.ApplyT(func(v *Compose) pulumi.BoolOutput { return v.DeployOnUpdate }).(pulumi.BoolOutput)
 }
 
 // An optional stack description.

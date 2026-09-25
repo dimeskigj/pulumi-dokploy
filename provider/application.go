@@ -27,6 +27,7 @@ type ApplicationArgs struct {
 	BuildArgs       *string           `pulumi:"buildArgs,optional" provider:"secret"`
 	BuildSecrets    *string           `pulumi:"buildSecrets,optional" provider:"secret"`
 	CreateEnvFile   bool              `pulumi:"createEnvFile,optional"`
+	DeployOnUpdate  *bool             `pulumi:"deployOnUpdate,optional"`
 }
 
 type ApplicationState struct {
@@ -59,7 +60,14 @@ func (a *ApplicationArgs) Annotate(annotator infer.Annotator) {
 	annotator.Describe(&a.BuildArgs, "Build arguments for the application.")
 	annotator.Describe(&a.BuildSecrets, "Build secrets for the application.")
 	annotator.Describe(&a.CreateEnvFile, "Whether to create an environment file.")
+	annotator.Describe(&a.DeployOnUpdate, "Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.")
+	annotator.SetDefault(&a.DeployOnUpdate, true)
 }
+
+// deployOnUpdate reports whether an update should redeploy and wait. A nil value means
+// the input was omitted, or comes from state written before the input existed, and keeps
+// the original always-deploy behavior.
+func deployOnUpdate(value *bool) bool { return value == nil || *value }
 
 func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ApplicationArgs], error) {
 	inputs, failures, err := infer.DefaultCheck[ApplicationArgs](ctx, req.NewInputs)
@@ -118,6 +126,15 @@ func (r Application) Diff(_ context.Context, req infer.DiffRequest[ApplicationAr
 	}
 	if req.Inputs.CreateEnvFile != req.State.CreateEnvFile {
 		d["createEnvFile"] = p.PropertyDiff{Kind: p.Update}
+	}
+	// deployOnUpdate only steers the update path, so it is reported as a change to get
+	// the new value recorded in state but deliberately left out of runtimeChanged.
+	// Compare effective values, not pointers: Dokploy does not store the flag, so a
+	// Read-derived state (every import) holds nil, while Check fills the program's
+	// omitted value with the default true. Both mean "deploy", and a literal
+	// comparison would put a deployOnUpdate update on every imported resource.
+	if deployOnUpdate(req.Inputs.DeployOnUpdate) != deployOnUpdate(req.State.DeployOnUpdate) {
+		d["deployOnUpdate"] = p.PropertyDiff{Kind: p.Update}
 	}
 	return infer.DiffResponse{HasChanges: len(d) > 0, DetailedDiff: d}, nil
 }
@@ -258,6 +275,13 @@ func (r Application) Read(ctx context.Context, req infer.ReadRequest[Application
 	if a.CreateEnvFile != nil {
 		args.CreateEnvFile = *a.CreateEnvFile
 	}
+	// application.one reports the stored environment and build values. Adopting them
+	// makes an import faithful instead of leaving these unset and diffing on the next
+	// up. They stay secret via the provider:"secret" tags and WireDependencies. A value
+	// Dokploy does not report falls back to prior state, preserving write-only secrets.
+	args.Environment = preferLiveSecret(a.Env, args.Environment)
+	args.BuildArgs = preferLiveSecret(a.BuildArgs, args.BuildArgs)
+	args.BuildSecrets = preferLiveSecret(a.BuildSecrets, args.BuildSecrets)
 	decoded, err := decodeApplicationSource(readProperties, args.Source)
 	if err != nil {
 		return infer.ReadResponse[ApplicationArgs, ApplicationState]{}, err
@@ -428,6 +452,9 @@ func (r Application) Update(ctx context.Context, req infer.UpdateRequest[Applica
 		if err := configureApplicationEnvironment(ctx, api, req.ID, req.Inputs); err != nil {
 			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
+		if !deployOnUpdate(req.Inputs.DeployOnUpdate) {
+			return infer.UpdateResponse[ApplicationState]{Output: state}, nil
+		}
 		if _, err := api.ApplicationRedeployWithResponse(ctx, generated.ApplicationRedeployJSONRequestBody{ApplicationId: req.ID}); err != nil {
 			return infer.UpdateResponse[ApplicationState]{Output: state}, sanitizeApplicationError(err, req.Inputs, req.State.ApplicationArgs)
 		}
@@ -449,7 +476,7 @@ func (r Application) Delete(ctx context.Context, req infer.DeleteRequest[Applica
 
 func (r Application) WireDependencies(f infer.FieldSelector, args *ApplicationArgs, state *ApplicationState) {
 	deps := []infer.InputField{
-		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.RegistryID), f.InputField(&args.BuildRegistryID), f.InputField(&args.CreateEnvFile),
+		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.RegistryID), f.InputField(&args.BuildRegistryID), f.InputField(&args.CreateEnvFile), f.InputField(&args.DeployOnUpdate),
 	}
 	f.OutputField(&state.ApplicationID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
