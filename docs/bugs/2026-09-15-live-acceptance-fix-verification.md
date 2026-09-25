@@ -106,3 +106,18 @@ requires a sanitized server/proxy status classification and deploy-handler or
 capacity evidence. Go-module caching is enabled for CI SDK/test matrix jobs,
 but a hosted workflow run is still needed to confirm whether it eliminates
 the intermittent `proxy.golang.org` download failure.
+
+## Interrupted follow-up (2026-09-25)
+
+A later serial Tier 2 run began at 07:15:19 UTC and was externally aborted
+while the Redis dispatch subtest was running. It produced no test result, so
+the run is neither a pass nor a failure attribution. No provider test process
+or fresh stop marker remained afterward, and an authenticated
+`settings.health` check returned 2xx. Because the process was interrupted,
+test-owned resource cleanup from that run cannot be confirmed.
+
+The supplied Docker logs include service-not-found errors but no timestamps or
+handler correlation for the earlier failing PostgreSQL deploy POST. They do
+not establish whether that 5xx was caused by a missing service, unrelated
+cleanup activity, or another server/proxy error. Do not retry or change the
+state-changing POST on that evidence alone.
