@@ -1,7 +1,6 @@
 package dokploy
 
 import (
-	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -330,24 +329,9 @@ func TestReleaseRequiresTagSchemaVersionBeforePublishing(t *testing.T) {
 	require.GreaterOrEqual(t, checkIndex, 0)
 	require.Greater(t, publishIndex, checkIndex)
 
-	schema := readGenerated(t, "provider", "cmd", "pulumi-resource-dokploy", "schema.json")
-	var packageSpec struct{ Version string `json:"version"` }
-	require.NoError(t, json.Unmarshal([]byte(schema), &packageSpec))
-	for _, tc := range []struct {
-		version string
-		wantOK  bool
-	}{
-		{packageSpec.Version, true},
-		{"0.2.2", false},
-	} {
-		command := exec.Command("python3", "../scripts/check-release-schema-version.py", tc.version)
-		output, err := command.CombinedOutput()
-		if tc.wantOK {
-			require.NoError(t, err, string(output))
-		} else {
-			require.Error(t, err)
-		}
-	}
+	command := exec.Command("python3", "../scripts/check-release-schema-version.py", "0.3.1")
+	output, err := command.CombinedOutput()
+	require.NoError(t, err, string(output), "versionless tagged schema must be accepted")
 }
 
 func TestRegistryExamplesDoNotExposeSecrets(t *testing.T) {

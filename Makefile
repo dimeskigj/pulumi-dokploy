@@ -145,7 +145,8 @@ check_openapi: generate_openapi
 
 check_codegen:
 	$(MAKE) VERSION_GENERIC=0.0.1-alpha.0+dev codegen
-	git diff --exit-code -- provider/cmd/$(PROVIDER)/schema.json sdk
+	python3 scripts/check-schema-drift.py provider/cmd/$(PROVIDER)/schema.json
+	git diff --exit-code -- sdk
 
 govulncheck:
 	mise exec -- go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...

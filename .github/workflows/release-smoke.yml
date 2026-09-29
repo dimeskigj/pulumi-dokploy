@@ -60,7 +60,7 @@ jobs:
           curl --fail --location --silent --show-error "$base/checksums.txt" -o "$RUNNER_TEMP/provider-download/checksums.txt"
           (
             cd "$RUNNER_TEMP/provider-download"
-            grep -F "  $archive" checksums.txt | sha256sum --check --status
+            grep -F "  $archive" checksums.txt | grep -vF "$archive.sbom.json" | sha256sum --check --status
           )
           tar -xzf "$RUNNER_TEMP/provider-download/$archive" -C "$PROVIDER_CACHE"
           provider="$PROVIDER_CACHE/pulumi-resource-dokploy"
@@ -113,7 +113,7 @@ jobs:
           npm_config_cache: ${{ runner.temp }}/npm-cache-${{ github.job }}
         run: |
           set -euo pipefail
-          mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/node-program"
+          mkdir -p "$PULUMI_HOME" "${PULUMI_BACKEND_URL#file://}" "$RUNNER_TEMP/node-program"
           printf 'name: release-smoke\nruntime: nodejs\nmain: .\n' > "$RUNNER_TEMP/node-program/Pulumi.yaml"
           cp "$RUNNER_TEMP/node-consumer/index.js" "$RUNNER_TEMP/node-program/index.js"
           cp "$RUNNER_TEMP/node-consumer/package.json" "$RUNNER_TEMP/node-program/package.json"
@@ -162,7 +162,7 @@ jobs:
           PIP_CACHE_DIR: ${{ runner.temp }}/pip-cache-${{ github.job }}
         run: |
           set -euo pipefail
-          mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/python-program"
+          mkdir -p "$PULUMI_HOME" "${PULUMI_BACKEND_URL#file://}" "$RUNNER_TEMP/python-program"
           printf 'name: release-smoke\nruntime: python\nmain: .\n' > "$RUNNER_TEMP/python-program/Pulumi.yaml"
           cp "$RUNNER_TEMP/python-consumer/main.py" "$RUNNER_TEMP/python-program/main.py"
           source "$RUNNER_TEMP/python-consumer/venv/bin/activate"
@@ -199,7 +199,7 @@ jobs:
           cd "$RUNNER_TEMP/dotnet-consumer"
           dotnet new console --framework net8.0 --no-restore
           dotnet add package Dimeskigj.Pulumi.Dokploy --version "$VERSION"
-          dotnet add package Pulumi --version 3.259.0
+          dotnet add package Pulumi --version 3.76.1
           printf 'using Pulumi;\nusing Dimeskigj.Pulumi.Dokploy;\nreturn await Deployment.RunAsync(() => { var provider = new Provider("smoke", new ProviderArgs { Endpoint = "https://example.invalid", ApiKey = "smoke" }); return new Dictionary<string, object?> { ["providerUrn"] = provider.Urn }; });\n' > Program.cs
           dotnet build
       - name: Preview with fresh provider cache
@@ -210,7 +210,7 @@ jobs:
           NUGET_PACKAGES: ${{ runner.temp }}/nuget-cache-${{ github.job }}
         run: |
           set -euo pipefail
-          mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/dotnet-program"
+          mkdir -p "$PULUMI_HOME" "${PULUMI_BACKEND_URL#file://}" "$RUNNER_TEMP/dotnet-program"
           printf 'name: release-smoke\nruntime: dotnet\n' > "$RUNNER_TEMP/dotnet-program/Pulumi.yaml"
           cp "$RUNNER_TEMP/dotnet-consumer"/*.{csproj,cs} "$RUNNER_TEMP/dotnet-program/"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/dotnet-program"
@@ -270,7 +270,7 @@ jobs:
           MAVEN_OPTS: -Dmaven.repo.local=${{ runner.temp }}/maven-cache-${{ github.job }}
         run: |
           set -euo pipefail
-          mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/java-program"
+          mkdir -p "$PULUMI_HOME" "${PULUMI_BACKEND_URL#file://}" "$RUNNER_TEMP/java-program"
           printf 'name: release-smoke\nruntime: java\n' > "$RUNNER_TEMP/java-program/Pulumi.yaml"
           cp -R "$RUNNER_TEMP/java-consumer"/. "$RUNNER_TEMP/java-program/"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/java-program"
@@ -308,7 +308,7 @@ jobs:
           cd "$RUNNER_TEMP/go-consumer"
           go mod init smoke.example/release
           go get "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy@v$VERSION"
-          printf 'package main\nimport ("github.com/pulumi/pulumi/sdk/v3/go/pulumi"; "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy")\nfunc main() { pulumi.Run(func(ctx *pulumi.Context) error { provider, err := dokploy.NewProvider(ctx, "smoke", &dokploy.ProviderArgs{Endpoint: pulumi.String("https://example.invalid"), ApiKey: pulumi.String("smoke")}); if err != nil { return err }; ctx.Export("providerUrn", provider.URN); return nil }) }\n' > main.go
+          printf 'package main\nimport ("github.com/pulumi/pulumi/sdk/v3/go/pulumi"; "github.com/dimeskigj/pulumi-dokploy/sdk/go/dokploy")\nfunc main() { pulumi.Run(func(ctx *pulumi.Context) error { provider, err := dokploy.NewProvider(ctx, "smoke", &dokploy.ProviderArgs{Endpoint: pulumi.String("https://example.invalid"), ApiKey: pulumi.String("smoke")}); if err != nil { return err }; ctx.Export("providerUrn", provider.URN()); return nil }) }\n' > main.go
           go build ./...
       - name: Preview with fresh provider cache
         env:
@@ -319,7 +319,7 @@ jobs:
           GOMODCACHE: ${{ runner.temp }}/gomod-cache-${{ github.job }}
         run: |
           set -euo pipefail
-          mkdir -p "$PULUMI_HOME" "$RUNNER_TEMP/go-program"
+          mkdir -p "$PULUMI_HOME" "${PULUMI_BACKEND_URL#file://}" "$RUNNER_TEMP/go-program"
           printf 'name: release-smoke\nruntime: go\nmain: .\n' > "$RUNNER_TEMP/go-program/Pulumi.yaml"
           cp "$RUNNER_TEMP/go-consumer/main.go" "$RUNNER_TEMP/go-program/main.go"
           cp "$RUNNER_TEMP/go-consumer/go.mod" "$RUNNER_TEMP/go-program/go.mod"

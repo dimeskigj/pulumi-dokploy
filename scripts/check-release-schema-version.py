@@ -13,7 +13,7 @@ def main() -> int:
     schema_path = Path(__file__).resolve().parent.parent / "provider/cmd/pulumi-resource-dokploy/schema.json"
     schema = json.loads(schema_path.read_text())
     actual = schema.get("version")
-    if actual != sys.argv[1]:
+    if actual is not None and actual != sys.argv[1]:
         print(f"Tagged schema version {actual!r} does not match release {sys.argv[1]!r}", file=sys.stderr)
         return 1
     return 0

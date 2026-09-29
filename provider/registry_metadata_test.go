@@ -330,6 +330,51 @@ func TestReleaseSmokeWorkflowContracts(t *testing.T) {
 	require.NoError(t, validateReleaseSmokeWorkflow(workflow, text))
 }
 
+func TestReleaseSmokeFixesObservedRunnerFailures(t *testing.T) {
+	workflow, _ := readWorkflow(t, "release-smoke.yml")
+	jobs := workflow["jobs"].(map[string]any)
+	provider := workflowValueText(jobs["provider"])
+	require.Contains(t, provider, `grep -F "  $archive" checksums.txt | grep -vF "$archive.sbom.json"`)
+	for _, name := range []string{"node", "python", "dotnet", "java", "go"} {
+		job := workflowValueText(jobs[name])
+		require.Contains(t, job, `"${PULUMI_BACKEND_URL#file://}"`, name)
+	}
+	require.NotContains(t, workflowValueText(jobs["dotnet"]), `dotnet add package Pulumi --version 3.259.0`)
+	require.Contains(t, workflowValueText(jobs["go"]), `ctx.Export("providerUrn", provider.URN())`)
+}
+
+func TestCodegenChecksSchemaIgnoringOnlyReleaseVersion(t *testing.T) {
+	makefile := readProjectFile(t, "../Makefile")
+	start := strings.Index(makefile, "check_codegen:")
+	require.NotEqual(t, -1, start)
+	section := makefile[start : strings.Index(makefile[start:], "\ngovulncheck:")+start]
+	require.Contains(t, section, "scripts/check-schema-drift.py")
+	require.Contains(t, section, "git diff --exit-code -- sdk")
+
+	// Exercise the comparison against a tracked versionless schema and a
+	// generated release schema without running the code generator.
+	root := t.TempDir()
+	command := exec.Command("git", "init", "-q", root)
+	require.NoError(t, command.Run())
+	path := filepath.Join(root, "schema.json")
+	require.NoError(t, os.WriteFile(path, []byte(`{"name":"dokploy","description":"test"}`), 0o600))
+	command = exec.Command("git", "-C", root, "add", "schema.json")
+	require.NoError(t, command.Run())
+	check := func() error {
+		cmd := exec.Command("python3", "../scripts/check-schema-drift.py", path)
+		cmd.Dir = "../provider"
+		return cmd.Run()
+	}
+	require.NoError(t, os.WriteFile(path, []byte(`{"name":"dokploy","description":"test","version":"1.2.3"}`), 0o600))
+	require.NoError(t, check(), "generated version alone is allowed")
+	require.NoError(t, os.WriteFile(path, []byte(`{"name":"dokploy","description":"changed","version":"1.2.3"}`), 0o600))
+	require.Error(t, check(), "other generated schema changes must fail")
+	require.NoError(t, os.WriteFile(path, []byte(`{"name":"dokploy","description":"test","version":"0.0.1-alpha.0+dev"}`), 0o600))
+	command = exec.Command("git", "-C", root, "add", "schema.json")
+	require.NoError(t, command.Run())
+	require.Error(t, check(), "a staged development version must fail")
+}
+
 func TestReleaseSmokeWorkflowRejectsPolicyDrift(t *testing.T) {
 	workflow, text := readWorkflow(t, "release-smoke.yml")
 	jobs := workflow["jobs"].(map[string]any)

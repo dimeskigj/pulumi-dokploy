@@ -141,6 +141,12 @@ func TestGeneratedPublishingMetadata(t *testing.T) {
 	require.Contains(t, javaProvider, ".pluginDownloadURL(\"github://api.github.com/dimeskigj/pulumi-dokploy\")")
 }
 
+func TestCommittedSchemaDoesNotClaimDevelopmentVersion(t *testing.T) {
+	var committed map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal([]byte(readGenerated(t, "provider", "cmd", "pulumi-resource-dokploy", "schema.json")), &committed))
+	require.NotContains(t, committed, "version")
+}
+
 func TestSchemaReplacementFlags(t *testing.T) {
 	spec := providerSchema(t)
 	for _, property := range []string{"projectId", "tagId"} {
