@@ -343,6 +343,48 @@ func TestReleaseSmokeFixesObservedRunnerFailures(t *testing.T) {
 	require.Contains(t, workflowValueText(jobs["go"]), `ctx.Export("providerUrn", provider.URN())`)
 }
 
+func TestReleaseSmokeChecksInstalledPluginDirectoryAfterPreview(t *testing.T) {
+	workflow, _ := readWorkflow(t, "release-smoke.yml")
+	for _, name := range []string{"provider", "node", "python", "dotnet", "java", "go"} {
+		steps := workflowJobRunSteps(workflow, name)
+		var check string
+		for _, step := range steps {
+			if strings.Contains(step.run, `find "$PULUMI_HOME/plugins"`) {
+				check = step.run
+			}
+		}
+		require.NotEmpty(t, check, name)
+		directory := t.TempDir()
+		// Only evaluate the installed-directory assertion, not the download or preview.
+		line := regexp.MustCompile(`(?m)^test -n "\$\(find "\$PULUMI_HOME/plugins".*$`).FindString(check)
+		require.NotEmpty(t, line, name)
+		command := exec.Command("bash", "-euo", "pipefail", "-c", line)
+		require.NoError(t, os.Mkdir(filepath.Join(directory, "plugins"), 0o700))
+		require.NoError(t, os.Mkdir(filepath.Join(directory, "plugins", "resource-dokploy-v0.3.0"), 0o700))
+		command.Env = append(os.Environ(), "PULUMI_HOME="+directory, "VERSION=0.3.0")
+		output, err := command.CombinedOutput()
+		require.NoError(t, err, "%s: %s", name, output)
+	}
+}
+
+func TestReleaseSmokePythonProgramHasRunnableEntrypoint(t *testing.T) {
+	workflow, _ := readWorkflow(t, "release-smoke.yml")
+	for _, step := range workflowJobRunSteps(workflow, "python") {
+		if strings.Contains(step.run, "pulumi preview --non-interactive") {
+			require.Contains(t, step.run, `"$RUNNER_TEMP/python-program/__main__.py"`)
+			return
+		}
+	}
+	t.Fatal("missing Python preview")
+}
+
+func TestReleaseSmokeProviderDoesNotInvokeUnsupportedVersionFlag(t *testing.T) {
+	workflow, _ := readWorkflow(t, "release-smoke.yml")
+	for _, step := range workflowJobRunSteps(workflow, "provider") {
+		require.NotContains(t, step.run, `"$provider" --version`)
+	}
+}
+
 func TestCodegenChecksSchemaIgnoringOnlyReleaseVersion(t *testing.T) {
 	makefile := readProjectFile(t, "../Makefile")
 	start := strings.Index(makefile, "check_codegen:")

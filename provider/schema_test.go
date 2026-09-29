@@ -3,6 +3,7 @@ package dokploy
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -143,7 +144,11 @@ func TestGeneratedPublishingMetadata(t *testing.T) {
 
 func TestCommittedSchemaDoesNotClaimDevelopmentVersion(t *testing.T) {
 	var committed map[string]json.RawMessage
-	require.NoError(t, json.Unmarshal([]byte(readGenerated(t, "provider", "cmd", "pulumi-resource-dokploy", "schema.json")), &committed))
+	command := exec.Command("git", "show", ":provider/cmd/pulumi-resource-dokploy/schema.json")
+	command.Dir = ".."
+	data, err := command.Output()
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, &committed))
 	require.NotContains(t, committed, "version")
 }
 

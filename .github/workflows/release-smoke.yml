@@ -65,7 +65,8 @@ jobs:
           tar -xzf "$RUNNER_TEMP/provider-download/$archive" -C "$PROVIDER_CACHE"
           provider="$PROVIDER_CACHE/pulumi-resource-dokploy"
           test -x "$provider"
-          "$provider" --version
+          pulumi package get-schema "$provider" > "$RUNNER_TEMP/provider-binary-schema.json"
+          test -s "$RUNNER_TEMP/provider-binary-schema.json"
           pulumi plugin install resource dokploy "$VERSION" --file "$provider" --reinstall
       - name: Load released provider schema
         env:
@@ -75,7 +76,7 @@ jobs:
           set -euo pipefail
           pulumi package get-schema dokploy > "$RUNNER_TEMP/dokploy-schema.json"
           test -s "$RUNNER_TEMP/dokploy-schema.json"
-          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}-*" -print -quit)"
+          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}" -print -quit)"
 
   node:
     name: Node.js consumer
@@ -122,7 +123,7 @@ jobs:
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/node-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/node-schema.json"
           test -s "$RUNNER_TEMP/node-schema.json"
-          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}-*" -print -quit)"
+          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}" -print -quit)"
 
   python:
     name: Python consumer
@@ -164,13 +165,13 @@ jobs:
           set -euo pipefail
           mkdir -p "$PULUMI_HOME" "${PULUMI_BACKEND_URL#file://}" "$RUNNER_TEMP/python-program"
           printf 'name: release-smoke\nruntime: python\nmain: .\n' > "$RUNNER_TEMP/python-program/Pulumi.yaml"
-          cp "$RUNNER_TEMP/python-consumer/main.py" "$RUNNER_TEMP/python-program/main.py"
+          cp "$RUNNER_TEMP/python-consumer/main.py" "$RUNNER_TEMP/python-program/__main__.py"
           source "$RUNNER_TEMP/python-consumer/venv/bin/activate"
           pulumi stack init smoke --non-interactive --cwd "$RUNNER_TEMP/python-program"
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/python-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/python-schema.json"
           test -s "$RUNNER_TEMP/python-schema.json"
-          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}-*" -print -quit)"
+          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}" -print -quit)"
 
   dotnet:
     name: .NET consumer
@@ -217,7 +218,7 @@ jobs:
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/dotnet-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/dotnet-schema.json"
           test -s "$RUNNER_TEMP/dotnet-schema.json"
-          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}-*" -print -quit)"
+          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}" -print -quit)"
 
   java:
     name: Java consumer
@@ -277,7 +278,7 @@ jobs:
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/java-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/java-schema.json"
           test -s "$RUNNER_TEMP/java-schema.json"
-          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}-*" -print -quit)"
+          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}" -print -quit)"
 
   go:
     name: Go consumer
@@ -328,4 +329,4 @@ jobs:
           pulumi preview --non-interactive --stack smoke --cwd "$RUNNER_TEMP/go-program"
           pulumi package get-schema dokploy > "$RUNNER_TEMP/go-schema.json"
           test -s "$RUNNER_TEMP/go-schema.json"
-          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}-*" -print -quit)"
+          test -n "$(find "$PULUMI_HOME/plugins" -maxdepth 1 -type d -name "resource-dokploy-v${VERSION}" -print -quit)"
