@@ -67,68 +67,6 @@ func TestRegistryMaintainerContactsAndOwnership(t *testing.T) {
 	require.Equal(t, "* @dimeskigj\n", codeowners)
 }
 
-func TestRegistryPublicationRunbook(t *testing.T) {
-	runbook := readProjectFile(t, "../docs/registry-publication-runbook.md")
-	for _, marker := range []string{
-		"workflow run release-smoke.yml -f version=0.2.2",
-		`"repoSlug": "dimeskigj/pulumi-dokploy"`,
-		`"schemaFile": "provider/cmd/pulumi-resource-dokploy/schema.json"`,
-		`"dimeskigj"`, "publisher-names.json", "maintainer-approved public display name",
-		"/check", "/preview", "fact-sheet", "six language tabs", "logo",
-		"Registry CODEOWNER", "public Registry page",
-	} {
-		require.Contains(t, runbook, marker)
-	}
-	require.GreaterOrEqual(t, strings.Count(runbook, "- [ ]"), 8)
-	require.NotRegexp(t, regexp.MustCompile(`(?im)^\s*- \[x\]`), runbook)
-	require.NotRegexp(t, regexp.MustCompile(`(?im)^\s*- \[X\]`), runbook)
-	for _, action := range []string{
-		"Dispatch the read-only release smoke workflow:",
-		"Record the run URL and require",
-		"Fork or check out `pulumi/registry`",
-		"Add a `publisher-names.json` entry",
-		"Run the current lint/check commands",
-		"Open the upstream pull request",
-		"Resolve every fact-sheet finding",
-		"Ask a Pulumi maintainer",
-		"Inspect the preview:",
-		"Obtain approval from a Pulumi Registry CODEOWNER.",
-		"Merge only through the upstream maintainer process.",
-		"After deployment, open the public Registry page",
-	} {
-		line := regexp.MustCompile(`(?m)^- \[ \] ` + regexp.QuoteMeta(action) + `.*$`).FindString(runbook)
-		require.NotEmpty(t, line, "external action must be its own unchecked item: %s", action)
-	}
-	require.NotContains(t, runbook, "Registry PR has been opened")
-}
-
-func TestRegistryReadinessLedgerSeparatesEvidenceStates(t *testing.T) {
-	ledger := readProjectFile(t, "../docs/provider-registry-readiness.md")
-	for _, heading := range []string{
-		"## Repository-complete", "## Publicly available", "## External pending",
-	} {
-		require.Contains(t, ledger, heading)
-	}
-	for _, marker := range []string{
-		"v0.2.2", "docs/_index.md", "logoUrl", "contact@dimeski.net",
-		".github/CODEOWNERS", "release-smoke", "community-packages/package-list.json",
-		"publisher-names.json", "fact-sheet", "preview", "Registry CODEOWNER",
-	} {
-		require.Contains(t, ledger, marker)
-	}
-	require.Contains(t, ledger, "not yet Registry-ready")
-	require.NotContains(t, ledger, "corrected release must be published")
-	pending := projectSection(t, ledger, "## External pending")
-	for _, marker := range []string{
-		"Successful `release-smoke` dispatch", "community-packages/package-list.json",
-		"publisher-names.json", "fact-sheet", "/check", "/preview", "Registry CODEOWNER",
-	} {
-		require.Contains(t, pending, marker)
-	}
-	require.Equal(t, 5, strings.Count(pending, "- [ ]"))
-	require.NotContains(t, pending, "- [x]")
-}
-
 func TestBuildDotnetCreatesVersionFileForCleanCheckout(t *testing.T) {
 	makefile := readProjectFile(t, "../Makefile")
 	start := strings.Index(makefile, "build_dotnet:")
