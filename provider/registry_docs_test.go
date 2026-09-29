@@ -1,6 +1,7 @@
 package dokploy
 
 import (
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -297,6 +298,56 @@ func TestRegistryInstallationDetails(t *testing.T) {
 	require.Regexp(t, regexp.MustCompile(`(?s)<groupId>net\.dimeski\.pulumi</groupId>\s*<artifactId>dokploy</artifactId>\s*<version>\$\{DOKPLOY_VERSION\}</version>`), installation)
 	require.Contains(t, installation, "pluginDownloadURL")
 	require.Contains(t, installation, "github://api.github.com/dimeskigj/pulumi-dokploy")
+}
+
+func TestRegistryOverviewUsesPublishedGuideAndUnpinnedJavaVersion(t *testing.T) {
+	index := readProjectFile(t, "../docs/_index.md")
+	require.Contains(t, index, "](https://www.pulumi.com/registry/packages/dokploy/installation-configuration/)")
+	require.NotContains(t, index, "](./installation-configuration/)")
+	java := chooserTab(t, projectSection(t, index, "## Installation"), "java")
+	require.Contains(t, java, "<version>${DOKPLOY_VERSION}</version>")
+	require.Contains(t, java, "net.dimeski.pulumi:dokploy:${DOKPLOY_VERSION}")
+	require.NotContains(t, java, "0.2.2")
+}
+
+func TestReleaseRequiresTagSchemaVersionBeforePublishing(t *testing.T) {
+	workflow := readProjectFile(t, "../.github/workflows/release.yml")
+	var release map[string]any
+	require.NoError(t, yaml.Unmarshal([]byte(workflow), &release))
+	jobs := release["jobs"].(map[string]any)
+	publish := jobs["publish"].(map[string]any)
+	steps := publish["steps"].([]any)
+	checkIndex, publishIndex := -1, -1
+	for i, item := range steps {
+		step := item.(map[string]any)
+		if run, ok := step["run"].(string); ok && strings.Contains(run, "check-release-schema-version.py") {
+			checkIndex = i
+		}
+		if uses, ok := step["uses"].(string); ok && strings.Contains(uses, "goreleaser/goreleaser-action@") {
+			publishIndex = i
+		}
+	}
+	require.GreaterOrEqual(t, checkIndex, 0)
+	require.Greater(t, publishIndex, checkIndex)
+
+	schema := readGenerated(t, "provider", "cmd", "pulumi-resource-dokploy", "schema.json")
+	var packageSpec struct{ Version string `json:"version"` }
+	require.NoError(t, json.Unmarshal([]byte(schema), &packageSpec))
+	for _, tc := range []struct {
+		version string
+		wantOK  bool
+	}{
+		{packageSpec.Version, true},
+		{"0.2.2", false},
+	} {
+		command := exec.Command("python3", "../scripts/check-release-schema-version.py", tc.version)
+		output, err := command.CombinedOutput()
+		if tc.wantOK {
+			require.NoError(t, err, string(output))
+		} else {
+			require.Error(t, err)
+		}
+	}
 }
 
 func TestRegistryExamplesDoNotExposeSecrets(t *testing.T) {

@@ -219,6 +219,8 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Trust mise configuration for GoReleaser tools
       run: mise trust .mise.toml
+    - name: Check tagged schema version
+      run: python3 scripts/check-release-schema-version.py "${{ steps.version.outputs.version }}"
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
       env:

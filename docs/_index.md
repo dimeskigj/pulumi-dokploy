@@ -45,18 +45,20 @@ dotnet add package Dimeskigj.Pulumi.Dokploy
 
 Maven:
 
+Use the provider version you are installing in place of `${DOKPLOY_VERSION}`.
+
 ```xml
 <dependency>
   <groupId>net.dimeski.pulumi</groupId>
   <artifactId>dokploy</artifactId>
-  <version>0.2.2</version>
+  <version>${DOKPLOY_VERSION}</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'net.dimeski.pulumi:dokploy:0.2.2'
+implementation 'net.dimeski.pulumi:dokploy:${DOKPLOY_VERSION}'
 ```
 
 {{% /choosable %}}
@@ -205,7 +207,7 @@ pulumi config set --secret dokploy:apiKey your-api-key
 - `apiKey` (Required, Secret) - The API key used to authenticate to Dokploy. Set it with `pulumi config set --secret`; it may also be supplied with `DOKPLOY_API_KEY`.
 
 Pulumi can acquire the matching provider plugin automatically from the GitHub
-release metadata. See the [installation and configuration guide](./installation-configuration/)
+release metadata. See the [installation and configuration guide](https://www.pulumi.com/registry/packages/dokploy/installation-configuration/)
 for additional secret-handling guidance.
 
 Support and source code are available in the [repository](https://github.com/dimeskigj/pulumi-dokploy).
