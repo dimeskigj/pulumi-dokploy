@@ -20,8 +20,6 @@ func TestLookupControlPlaneInvoke(t *testing.T) {
 	}{
 		{"getProject", "projectId", "project.one", `{"projectId":"id","name":"","description":"","defaultEnvironmentId":null,"password":"mock-secret"}`, []string{"projectId", "name", "description"}},
 		{"getEnvironment", "environmentId", "environment.one", `{"environmentId":"id","name":"","isDefault":false,"description":null,"password":"mock-secret"}`, []string{"environmentId", "name", "isDefault"}},
-		{"getApplication", "applicationId", "application.one", `{"applicationId":"id","name":"","applicationStatus":"","registryId":null,"buildRegistryId":null,"env":"mock-secret","source":{"token":"mock-secret"}}`, []string{"applicationId", "name", "status"}},
-		{"getCompose", "composeId", "compose.one", `{"composeId":"id","name":"","composeStatus":"","composeType":"future","composeFile":"mock-secret","command":"mock-secret"}`, []string{"composeId", "name", "status", "composeType"}},
 		{"getServer", "serverId", "server.one", `{"serverId":"id","name":"","port":0,"username":"","password":"mock-secret"}`, []string{"serverId", "name", "port", "username"}},
 		{"getRegistry", "registryId", "registry.one", `{"registryId":"id","registryName":"","registryUrl":"https://user:secret@registry.example","imagePrefix":"","password":"mock-secret"}`, []string{"registryId", "name", "imagePrefix"}},
 		{"getSSHKey", "sshKeyId", "sshKey.one", `{"sshKeyId":"id","name":"","publicKey":"","privateKey":"mock-secret"}`, []string{"sshKeyId", "name", "publicKey"}},
@@ -57,6 +55,47 @@ func TestLookupControlPlaneInvoke(t *testing.T) {
 			}
 			_, err = provider.Invoke(p.InvokeRequest{Token: tokens.Type("dokploy:index:unknownLookup"), Args: property.NewMap(map[string]property.Value{tc.field: property.New("id")})})
 			require.Error(t, err)
+		})
+	}
+}
+
+func TestLookupWorkloadInvoke(t *testing.T) {
+	for _, tc := range []struct {
+		name, field, operation, payload string
+		want                            map[string]string
+	}{
+		{"getApplication", "applicationId", "application.one", `{"applicationId":"id","name":"","description":"desc","appName":"app","environmentId":"env","serverId":"server","applicationStatus":"future","registryId":"registry","buildRegistryId":"build","env":"mock-secret","source":{"token":"mock-secret"}}`, map[string]string{"applicationId": "id", "name": "", "description": "desc", "appName": "app", "environmentId": "env", "serverId": "server", "status": "future", "registryId": "registry", "buildRegistryId": "build"}},
+		{"getApplication/empty", "applicationId", "application.one", `{"applicationId":"id","name":"","applicationStatus":"","registryId":"","buildRegistryId":null,"env":"mock-secret"}`, map[string]string{"applicationId": "id", "name": "", "status": "", "registryId": ""}},
+		{"getApplication/minimal", "applicationId", "application.one", `{"applicationId":"id","name":"","applicationStatus":null}`, map[string]string{"applicationId": "id", "name": ""}},
+		{"getCompose", "composeId", "compose.one", `{"composeId":"id","name":"","description":"desc","appName":"app","environmentId":"env","serverId":"server","composeStatus":"future","composeType":"future-type","composeFile":"mock-secret","command":"mock-secret","source":{"password":"mock-secret"}}`, map[string]string{"composeId": "id", "name": "", "description": "desc", "appName": "app", "environmentId": "env", "serverId": "server", "status": "future", "composeType": "future-type"}},
+		{"getCompose/empty", "composeId", "compose.one", `{"composeId":"id","name":"","composeStatus":"","composeType":"","composeFile":"mock-secret"}`, map[string]string{"composeId": "id", "name": "", "status": "", "composeType": ""}},
+		{"getCompose/minimal", "composeId", "compose.one", `{"composeId":"id","name":"","composeStatus":null,"composeType":null}`, map[string]string{"composeId": "id", "name": ""}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, scriptedRequest{Method: http.MethodGet, Path: "/api/" + tc.operation, Query: url.Values{tc.field: {"id"}}, Status: 200, Response: []byte(tc.payload)})
+			provider, err := integration.NewServer(t.Context(), Name, semver.Version{}, integration.WithProvider(Provider()))
+			require.NoError(t, err)
+			require.NoError(t, provider.Configure(p.ConfigureRequest{Args: property.NewMap(map[string]property.Value{"endpoint": property.New(s.server.URL), "apiKey": property.New("mock-api-key")})}))
+			token := "getCompose"
+			if tc.field == "applicationId" {
+				token = "getApplication"
+			}
+			response, err := provider.Invoke(p.InvokeRequest{Token: tokens.Type("dokploy:index:" + token), Args: property.NewMap(map[string]property.Value{tc.field: property.New("id")})})
+			require.NoError(t, err)
+			require.Empty(t, response.Failures)
+			require.Equal(t, len(tc.want), response.Return.Len())
+			for key, value := range tc.want {
+				got, ok := response.Return.GetOk(key)
+				require.True(t, ok, key)
+				require.True(t, got.IsString(), key)
+				require.Equal(t, value, got.AsString(), key)
+			}
+			for _, key := range []string{"environment", "env", "source", "composeFile", "command", "password", "buildArgs", "token", "buildRegistryId", "status", "composeType"} {
+				if _, expected := tc.want[key]; !expected {
+					_, present := response.Return.GetOk(key)
+					require.False(t, present, key)
+				}
+			}
 		})
 	}
 }
