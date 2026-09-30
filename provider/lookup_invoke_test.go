@@ -58,3 +58,44 @@ func TestLookupControlPlaneInvoke(t *testing.T) {
 		})
 	}
 }
+
+func TestLookupControlPlaneHTTPErrorCategories(t *testing.T) {
+	for _, lookup := range []struct{ token, field, operation string }{
+		{"getProject", "projectId", "project.one"},
+		{"getEnvironment", "environmentId", "environment.one"},
+		{"getServer", "serverId", "server.one"},
+		{"getRegistry", "registryId", "registry.one"},
+		{"getSSHKey", "sshKeyId", "sshKey.one"},
+	} {
+		for _, failure := range []struct {
+			name, category, code string
+			status               int
+		}{
+			{"unauthorized", "authentication", "UNAUTHORIZED", http.StatusUnauthorized},
+			{"forbidden", "authorization", "FORBIDDEN", http.StatusForbidden},
+			{"not found", "not found", "NOT_FOUND", http.StatusNotFound},
+			{"API not found", "not found", "NOT_FOUND", http.StatusBadRequest},
+		} {
+			t.Run(lookup.token+"/"+failure.name, func(t *testing.T) {
+				const requestedID = "mock-resource-id"
+				const responseSecret = "mock-private-key-and-token"
+				body := mustJSON(map[string]string{"code": failure.code, "message": responseSecret + " https://private.example/hidden"})
+				s := newScriptedServer(t, scriptedRequest{Method: http.MethodGet, Path: "/api/" + lookup.operation,
+					Query: url.Values{lookup.field: {requestedID}}, Status: failure.status, Response: body})
+				provider, err := integration.NewServer(t.Context(), Name, semver.Version{}, integration.WithProvider(Provider()))
+				require.NoError(t, err)
+				require.NoError(t, provider.Configure(p.ConfigureRequest{Args: property.NewMap(map[string]property.Value{
+					"endpoint": property.New(s.server.URL), "apiKey": property.New("mock-api-key"),
+				})}))
+				_, err = provider.Invoke(p.InvokeRequest{Token: tokens.Type("dokploy:index:" + lookup.token),
+					Args: property.NewMap(map[string]property.Value{lookup.field: property.New(requestedID)})})
+				require.Error(t, err)
+				require.Contains(t, err.Error(), lookup.operation)
+				require.Contains(t, err.Error(), failure.category)
+				for _, unsafe := range []string{requestedID, responseSecret, "private.example", "mock-api-key", s.server.URL} {
+					require.NotContains(t, err.Error(), unsafe)
+				}
+			})
+		}
+	}
+}
