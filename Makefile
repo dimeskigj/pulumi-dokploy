@@ -22,6 +22,7 @@ prepare_local_workspace:
 
 generate_schema: provider
 	mise exec pulumi@3.259.0 -- pulumi package get-schema $(CURDIR)/bin/$(PROVIDER) > provider/cmd/$(PROVIDER)/schema.json
+	python3 scripts/normalize-generated.py schema provider/cmd/$(PROVIDER)/schema.json
 
 generate_go generate_nodejs generate_python generate_dotnet generate_java: codegen
 
@@ -38,6 +39,8 @@ codegen: provider
 	cp go.mod sdk/go/$(PACK)/go.mod
 	cd sdk/go/$(PACK) && mise exec -- go mod edit -module=$(PROJECT)/sdk/go/$(PACK) -dropreplace=$(PROJECT)/sdk/go/$(PACK)
 	cd sdk/go/$(PACK) && mise exec -- go mod tidy
+	python3 scripts/normalize-generated.py sdk sdk
+	python3 scripts/normalize-generated.py schema provider/cmd/$(PROVIDER)/schema.json
 
 build_go:
 	cd sdk/go/$(PACK) && mise exec -- go test ./...
@@ -144,6 +147,7 @@ check_openapi: generate_openapi
 	git diff --exit-code -- openapi/dokploy.json internal/client/generated/generated.gen.go
 
 check_codegen:
+	python3 -m unittest discover -s scripts -p 'test_normalize_generated.py'
 	$(MAKE) VERSION_GENERIC=0.0.1-alpha.0+dev codegen
 	python3 scripts/check-schema-drift.py provider/cmd/$(PROVIDER)/schema.json
 	git diff --exit-code -- sdk

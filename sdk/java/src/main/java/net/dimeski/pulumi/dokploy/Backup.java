@@ -18,160 +18,160 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A scheduled Dokploy database backup. Exactly one of postgresId, mysqlId, mariadbId, or mongoId must be set.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Backup")
 public class Backup extends com.pulumi.resources.CustomResource {
     /**
      * The stable Dokploy backup ID.
-     * 
+     *
      */
     @Export(name="backupId", refs={String.class}, tree="[0]")
     private Output<String> backupId;
 
     /**
      * @return The stable Dokploy backup ID.
-     * 
+     *
      */
     public Output<String> backupId() {
         return this.backupId;
     }
     /**
      * The database name inside the target instance to back up.
-     * 
+     *
      */
     @Export(name="database", refs={String.class}, tree="[0]")
     private Output<String> database;
 
     /**
      * @return The database name inside the target instance to back up.
-     * 
+     *
      */
     public Output<String> database() {
         return this.database;
     }
     /**
      * The destination ID backups are stored to.
-     * 
+     *
      */
     @Export(name="destinationId", refs={String.class}, tree="[0]")
     private Output<String> destinationId;
 
     /**
      * @return The destination ID backups are stored to.
-     * 
+     *
      */
     public Output<String> destinationId() {
         return this.destinationId;
     }
     /**
      * Whether the backup schedule is enabled.
-     * 
+     *
      */
     @Export(name="enabled", refs={Boolean.class}, tree="[0]")
     private Output<Boolean> enabled;
 
     /**
      * @return Whether the backup schedule is enabled.
-     * 
+     *
      */
     public Output<Boolean> enabled() {
         return this.enabled;
     }
     /**
      * The optional number of most recent backups to retain.
-     * 
+     *
      */
     @Export(name="keepLatestCount", refs={Integer.class}, tree="[0]")
     private Output</* @Nullable */ Integer> keepLatestCount;
 
     /**
      * @return The optional number of most recent backups to retain.
-     * 
+     *
      */
     public Output<Optional<Integer>> keepLatestCount() {
         return Codegen.optional(this.keepLatestCount);
     }
     /**
      * The target MariaDB ID.
-     * 
+     *
      */
     @Export(name="mariadbId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> mariadbId;
 
     /**
      * @return The target MariaDB ID.
-     * 
+     *
      */
     public Output<Optional<String>> mariadbId() {
         return Codegen.optional(this.mariadbId);
     }
     /**
      * The target MongoDB ID.
-     * 
+     *
      */
     @Export(name="mongoId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> mongoId;
 
     /**
      * @return The target MongoDB ID.
-     * 
+     *
      */
     public Output<Optional<String>> mongoId() {
         return Codegen.optional(this.mongoId);
     }
     /**
      * The target MySQL ID.
-     * 
+     *
      */
     @Export(name="mysqlId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> mysqlId;
 
     /**
      * @return The target MySQL ID.
-     * 
+     *
      */
     public Output<Optional<String>> mysqlId() {
         return Codegen.optional(this.mysqlId);
     }
     /**
      * The target Postgres ID.
-     * 
+     *
      */
     @Export(name="postgresId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> postgresId;
 
     /**
      * @return The target Postgres ID.
-     * 
+     *
      */
     public Output<Optional<String>> postgresId() {
         return Codegen.optional(this.postgresId);
     }
     /**
      * The backup file prefix.
-     * 
+     *
      */
     @Export(name="prefix", refs={String.class}, tree="[0]")
     private Output<String> prefix;
 
     /**
      * @return The backup file prefix.
-     * 
+     *
      */
     public Output<String> prefix() {
         return this.prefix;
     }
     /**
      * The backup cron schedule.
-     * 
+     *
      */
     @Export(name="schedule", refs={String.class}, tree="[0]")
     private Output<String> schedule;
 
     /**
      * @return The backup cron schedule.
-     * 
+     *
      */
     public Output<String> schedule() {
         return this.schedule;

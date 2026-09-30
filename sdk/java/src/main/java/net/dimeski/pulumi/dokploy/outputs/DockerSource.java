@@ -14,50 +14,50 @@ import javax.annotation.Nullable;
 public final class DockerSource {
     /**
      * @return The Docker image.
-     * 
+     *
      */
     private String image;
     /**
      * @return The registry password.
-     * 
+     *
      */
     private @Nullable String password;
     /**
      * @return The registry URL.
-     * 
+     *
      */
     private @Nullable String registryUrl;
     /**
      * @return The registry username.
-     * 
+     *
      */
     private @Nullable String username;
 
     private DockerSource() {}
     /**
      * @return The Docker image.
-     * 
+     *
      */
     public String image() {
         return this.image;
     }
     /**
      * @return The registry password.
-     * 
+     *
      */
     public Optional<String> password() {
         return Optional.ofNullable(this.password);
     }
     /**
      * @return The registry URL.
-     * 
+     *
      */
     public Optional<String> registryUrl() {
         return Optional.ofNullable(this.registryUrl);
     }
     /**
      * @return The registry username.
-     * 
+     *
      */
     public Optional<String> username() {
         return Optional.ofNullable(this.username);

@@ -377,4 +377,3 @@ class Destination(pulumi.CustomResource):
         The optional server ID this destination is scoped to.
         """
         return pulumi.get(self, "server_id")
-

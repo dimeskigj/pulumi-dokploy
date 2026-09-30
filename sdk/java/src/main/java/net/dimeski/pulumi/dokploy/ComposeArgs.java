@@ -21,14 +21,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional deployed stack name.
-     * 
+     *
      */
     @Import(name="appName")
     private @Nullable Output<String> appName;
 
     /**
      * @return The optional deployed stack name.
-     * 
+     *
      */
     public Optional<Output<String>> appName() {
         return Optional.ofNullable(this.appName);
@@ -36,14 +36,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Compose deployment type.
-     * 
+     *
      */
     @Import(name="composeType")
     private @Nullable Output<String> composeType;
 
     /**
      * @return The Compose deployment type.
-     * 
+     *
      */
     public Optional<Output<String>> composeType() {
         return Optional.ofNullable(this.composeType);
@@ -51,14 +51,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether to create an environment file.
-     * 
+     *
      */
     @Import(name="createEnvFile")
     private @Nullable Output<Boolean> createEnvFile;
 
     /**
      * @return Whether to create an environment file.
-     * 
+     *
      */
     public Optional<Output<Boolean>> createEnvFile() {
         return Optional.ofNullable(this.createEnvFile);
@@ -66,14 +66,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether to delete volumes on destroy.
-     * 
+     *
      */
     @Import(name="deleteVolumesOnDestroy")
     private @Nullable Output<Boolean> deleteVolumesOnDestroy;
 
     /**
      * @return Whether to delete volumes on destroy.
-     * 
+     *
      */
     public Optional<Output<Boolean>> deleteVolumesOnDestroy() {
         return Optional.ofNullable(this.deleteVolumesOnDestroy);
@@ -81,14 +81,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * An optional stack description.
-     * 
+     *
      */
     @Import(name="description")
     private @Nullable Output<String> description;
 
     /**
      * @return An optional stack description.
-     * 
+     *
      */
     public Optional<Output<String>> description() {
         return Optional.ofNullable(this.description);
@@ -96,14 +96,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Environment variables for the stack.
-     * 
+     *
      */
     @Import(name="environment")
     private @Nullable Output<String> environment;
 
     /**
      * @return Environment variables for the stack.
-     * 
+     *
      */
     public Optional<Output<String>> environment() {
         return Optional.ofNullable(this.environment);
@@ -111,14 +111,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Import(name="environmentId", required=true)
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
@@ -126,14 +126,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Compose stack name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The Compose stack name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -141,14 +141,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Import(name="serverId")
     private @Nullable Output<String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Optional<Output<String>> serverId() {
         return Optional.ofNullable(this.serverId);
@@ -156,14 +156,14 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Compose source configuration.
-     * 
+     *
      */
     @Import(name="source", required=true)
     private Output<ComposeSourceArgs> source;
 
     /**
      * @return The Compose source configuration.
-     * 
+     *
      */
     public Output<ComposeSourceArgs> source() {
         return this.source;
@@ -204,9 +204,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed stack name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(@Nullable Output<String> appName) {
             $.appName = appName;
@@ -215,9 +215,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed stack name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(String appName) {
             return appName(Output.of(appName));
@@ -225,9 +225,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeType The Compose deployment type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeType(@Nullable Output<String> composeType) {
             $.composeType = composeType;
@@ -236,9 +236,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeType The Compose deployment type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeType(String composeType) {
             return composeType(Output.of(composeType));
@@ -246,9 +246,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param createEnvFile Whether to create an environment file.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder createEnvFile(@Nullable Output<Boolean> createEnvFile) {
             $.createEnvFile = createEnvFile;
@@ -257,9 +257,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param createEnvFile Whether to create an environment file.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder createEnvFile(Boolean createEnvFile) {
             return createEnvFile(Output.of(createEnvFile));
@@ -267,9 +267,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param deleteVolumesOnDestroy Whether to delete volumes on destroy.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder deleteVolumesOnDestroy(@Nullable Output<Boolean> deleteVolumesOnDestroy) {
             $.deleteVolumesOnDestroy = deleteVolumesOnDestroy;
@@ -278,9 +278,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param deleteVolumesOnDestroy Whether to delete volumes on destroy.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder deleteVolumesOnDestroy(Boolean deleteVolumesOnDestroy) {
             return deleteVolumesOnDestroy(Output.of(deleteVolumesOnDestroy));
@@ -288,9 +288,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional stack description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(@Nullable Output<String> description) {
             $.description = description;
@@ -299,9 +299,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional stack description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(String description) {
             return description(Output.of(description));
@@ -309,9 +309,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for the stack.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(@Nullable Output<String> environment) {
             $.environment = environment;
@@ -320,9 +320,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for the stack.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(String environment) {
             return environment(Output.of(environment));
@@ -330,9 +330,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(Output<String> environmentId) {
             $.environmentId = environmentId;
@@ -341,9 +341,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(String environmentId) {
             return environmentId(Output.of(environmentId));
@@ -351,9 +351,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The Compose stack name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -362,9 +362,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The Compose stack name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -372,9 +372,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(@Nullable Output<String> serverId) {
             $.serverId = serverId;
@@ -383,9 +383,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(String serverId) {
             return serverId(Output.of(serverId));
@@ -393,9 +393,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param source The Compose source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder source(Output<ComposeSourceArgs> source) {
             $.source = source;
@@ -404,9 +404,9 @@ public final class ComposeArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param source The Compose source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder source(ComposeSourceArgs source) {
             return source(Output.of(source));

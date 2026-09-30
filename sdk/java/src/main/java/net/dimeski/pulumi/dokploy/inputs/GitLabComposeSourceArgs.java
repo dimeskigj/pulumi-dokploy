@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 /**
  * GitLab Compose source configuration.
- * 
+ *
  */
 public final class GitLabComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
@@ -25,14 +25,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * The GitLab branch.
-     * 
+     *
      */
     @Import(name="branch", required=true)
     private Output<String> branch;
 
     /**
      * @return The GitLab branch.
-     * 
+     *
      */
     public Output<String> branch() {
         return this.branch;
@@ -40,14 +40,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * The Compose file path.
-     * 
+     *
      */
     @Import(name="composePath")
     private @Nullable Output<String> composePath;
 
     /**
      * @return The Compose file path.
-     * 
+     *
      */
     public Optional<Output<String>> composePath() {
         return Optional.ofNullable(this.composePath);
@@ -55,14 +55,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * Whether to enable submodules.
-     * 
+     *
      */
     @Import(name="enableSubmodules")
     private @Nullable Output<Boolean> enableSubmodules;
 
     /**
      * @return Whether to enable submodules.
-     * 
+     *
      */
     public Optional<Output<Boolean>> enableSubmodules() {
         return Optional.ofNullable(this.enableSubmodules);
@@ -70,14 +70,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * The GitLab integration ID.
-     * 
+     *
      */
     @Import(name="integrationId", required=true)
     private Output<String> integrationId;
 
     /**
      * @return The GitLab integration ID.
-     * 
+     *
      */
     public Output<String> integrationId() {
         return this.integrationId;
@@ -85,14 +85,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * The GitLab namespace.
-     * 
+     *
      */
     @Import(name="namespace", required=true)
     private Output<String> namespace;
 
     /**
      * @return The GitLab namespace.
-     * 
+     *
      */
     public Output<String> namespace() {
         return this.namespace;
@@ -100,14 +100,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * The GitLab owner.
-     * 
+     *
      */
     @Import(name="owner", required=true)
     private Output<String> owner;
 
     /**
      * @return The GitLab owner.
-     * 
+     *
      */
     public Output<String> owner() {
         return this.owner;
@@ -115,14 +115,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * The GitLab project ID.
-     * 
+     *
      */
     @Import(name="projectId", required=true)
     private Output<Integer> projectId;
 
     /**
      * @return The GitLab project ID.
-     * 
+     *
      */
     public Output<Integer> projectId() {
         return this.projectId;
@@ -130,14 +130,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * The GitLab repository.
-     * 
+     *
      */
     @Import(name="repository", required=true)
     private Output<String> repository;
 
     /**
      * @return The GitLab repository.
-     * 
+     *
      */
     public Output<String> repository() {
         return this.repository;
@@ -145,14 +145,14 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
     /**
      * Paths to watch.
-     * 
+     *
      */
     @Import(name="watchPaths")
     private @Nullable Output<List<String>> watchPaths;
 
     /**
      * @return Paths to watch.
-     * 
+     *
      */
     public Optional<Output<List<String>>> watchPaths() {
         return Optional.ofNullable(this.watchPaths);
@@ -192,9 +192,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param branch The GitLab branch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder branch(Output<String> branch) {
             $.branch = branch;
@@ -203,9 +203,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param branch The GitLab branch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder branch(String branch) {
             return branch(Output.of(branch));
@@ -213,9 +213,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param composePath The Compose file path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composePath(@Nullable Output<String> composePath) {
             $.composePath = composePath;
@@ -224,9 +224,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param composePath The Compose file path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composePath(String composePath) {
             return composePath(Output.of(composePath));
@@ -234,9 +234,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param enableSubmodules Whether to enable submodules.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enableSubmodules(@Nullable Output<Boolean> enableSubmodules) {
             $.enableSubmodules = enableSubmodules;
@@ -245,9 +245,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param enableSubmodules Whether to enable submodules.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enableSubmodules(Boolean enableSubmodules) {
             return enableSubmodules(Output.of(enableSubmodules));
@@ -255,9 +255,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param integrationId The GitLab integration ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder integrationId(Output<String> integrationId) {
             $.integrationId = integrationId;
@@ -266,9 +266,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param integrationId The GitLab integration ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder integrationId(String integrationId) {
             return integrationId(Output.of(integrationId));
@@ -276,9 +276,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param namespace The GitLab namespace.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder namespace(Output<String> namespace) {
             $.namespace = namespace;
@@ -287,9 +287,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param namespace The GitLab namespace.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder namespace(String namespace) {
             return namespace(Output.of(namespace));
@@ -297,9 +297,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param owner The GitLab owner.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder owner(Output<String> owner) {
             $.owner = owner;
@@ -308,9 +308,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param owner The GitLab owner.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder owner(String owner) {
             return owner(Output.of(owner));
@@ -318,9 +318,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param projectId The GitLab project ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder projectId(Output<Integer> projectId) {
             $.projectId = projectId;
@@ -329,9 +329,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param projectId The GitLab project ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder projectId(Integer projectId) {
             return projectId(Output.of(projectId));
@@ -339,9 +339,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param repository The GitLab repository.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder repository(Output<String> repository) {
             $.repository = repository;
@@ -350,9 +350,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param repository The GitLab repository.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder repository(String repository) {
             return repository(Output.of(repository));
@@ -360,9 +360,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param watchPaths Paths to watch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder watchPaths(@Nullable Output<List<String>> watchPaths) {
             $.watchPaths = watchPaths;
@@ -371,9 +371,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param watchPaths Paths to watch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder watchPaths(List<String> watchPaths) {
             return watchPaths(Output.of(watchPaths));
@@ -381,9 +381,9 @@ public final class GitLabComposeSourceArgs extends com.pulumi.resources.Resource
 
         /**
          * @param watchPaths Paths to watch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder watchPaths(String... watchPaths) {
             return watchPaths(List.of(watchPaths));

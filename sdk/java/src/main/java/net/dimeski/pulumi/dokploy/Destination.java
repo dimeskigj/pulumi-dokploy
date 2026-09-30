@@ -16,146 +16,146 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy S3-compatible backup storage destination.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Destination")
 public class Destination extends com.pulumi.resources.CustomResource {
     /**
      * The storage access key ID.
-     * 
+     *
      */
     @Export(name="accessKey", refs={String.class}, tree="[0]")
     private Output<String> accessKey;
 
     /**
      * @return The storage access key ID.
-     * 
+     *
      */
     public Output<String> accessKey() {
         return this.accessKey;
     }
     /**
      * Additional rclone flags for backup and restore operations.
-     * 
+     *
      */
     @Export(name="additionalFlags", refs={List.class,String.class}, tree="[0,1]")
     private Output</* @Nullable */ List<String>> additionalFlags;
 
     /**
      * @return Additional rclone flags for backup and restore operations.
-     * 
+     *
      */
     public Output<Optional<List<String>>> additionalFlags() {
         return Codegen.optional(this.additionalFlags);
     }
     /**
      * The storage bucket name.
-     * 
+     *
      */
     @Export(name="bucket", refs={String.class}, tree="[0]")
     private Output<String> bucket;
 
     /**
      * @return The storage bucket name.
-     * 
+     *
      */
     public Output<String> bucket() {
         return this.bucket;
     }
     /**
      * The stable Dokploy destination ID.
-     * 
+     *
      */
     @Export(name="destinationId", refs={String.class}, tree="[0]")
     private Output<String> destinationId;
 
     /**
      * @return The stable Dokploy destination ID.
-     * 
+     *
      */
     public Output<String> destinationId() {
         return this.destinationId;
     }
     /**
      * The storage endpoint URL.
-     * 
+     *
      */
     @Export(name="endpoint", refs={String.class}, tree="[0]")
     private Output<String> endpoint;
 
     /**
      * @return The storage endpoint URL.
-     * 
+     *
      */
     public Output<String> endpoint() {
         return this.endpoint;
     }
     /**
      * The destination name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The destination name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The storage provider.
-     * 
+     *
      */
     @Export(name="provider", refs={String.class}, tree="[0]")
     private Output<String> provider;
 
     /**
      * @return The storage provider.
-     * 
+     *
      */
     public Output<String> provider() {
         return this.provider;
     }
     /**
      * The storage region.
-     * 
+     *
      */
     @Export(name="region", refs={String.class}, tree="[0]")
     private Output<String> region;
 
     /**
      * @return The storage region.
-     * 
+     *
      */
     public Output<String> region() {
         return this.region;
     }
     /**
      * The storage secret access key.
-     * 
+     *
      */
     @Export(name="secretAccessKey", refs={String.class}, tree="[0]")
     private Output<String> secretAccessKey;
 
     /**
      * @return The storage secret access key.
-     * 
+     *
      */
     public Output<String> secretAccessKey() {
         return this.secretAccessKey;
     }
     /**
      * The optional server ID this destination is scoped to.
-     * 
+     *
      */
     @Export(name="serverId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serverId;
 
     /**
      * @return The optional server ID this destination is scoped to.
-     * 
+     *
      */
     public Output<Optional<String>> serverId() {
         return Codegen.optional(this.serverId);

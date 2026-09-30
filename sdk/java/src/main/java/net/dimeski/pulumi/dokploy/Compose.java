@@ -18,174 +18,174 @@ import net.dimeski.pulumi.dokploy.outputs.ComposeSource;
 
 /**
  * A Dokploy Compose stack.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Compose")
 public class Compose extends com.pulumi.resources.CustomResource {
     /**
      * The optional deployed stack name.
-     * 
+     *
      */
     @Export(name="appName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> appName;
 
     /**
      * @return The optional deployed stack name.
-     * 
+     *
      */
     public Output<Optional<String>> appName() {
         return Codegen.optional(this.appName);
     }
     /**
      * The stable Dokploy Compose ID.
-     * 
+     *
      */
     @Export(name="composeId", refs={String.class}, tree="[0]")
     private Output<String> composeId;
 
     /**
      * @return The stable Dokploy Compose ID.
-     * 
+     *
      */
     public Output<String> composeId() {
         return this.composeId;
     }
     /**
      * The Compose deployment type.
-     * 
+     *
      */
     @Export(name="composeType", refs={String.class}, tree="[0]")
     private Output<String> composeType;
 
     /**
      * @return The Compose deployment type.
-     * 
+     *
      */
     public Output<String> composeType() {
         return this.composeType;
     }
     /**
      * Whether to create an environment file.
-     * 
+     *
      */
     @Export(name="createEnvFile", refs={Boolean.class}, tree="[0]")
     private Output</* @Nullable */ Boolean> createEnvFile;
 
     /**
      * @return Whether to create an environment file.
-     * 
+     *
      */
     public Output<Optional<Boolean>> createEnvFile() {
         return Codegen.optional(this.createEnvFile);
     }
     /**
      * Whether to delete volumes on destroy.
-     * 
+     *
      */
     @Export(name="deleteVolumesOnDestroy", refs={Boolean.class}, tree="[0]")
     private Output</* @Nullable */ Boolean> deleteVolumesOnDestroy;
 
     /**
      * @return Whether to delete volumes on destroy.
-     * 
+     *
      */
     public Output<Optional<Boolean>> deleteVolumesOnDestroy() {
         return Codegen.optional(this.deleteVolumesOnDestroy);
     }
     /**
      * An optional stack description.
-     * 
+     *
      */
     @Export(name="description", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> description;
 
     /**
      * @return An optional stack description.
-     * 
+     *
      */
     public Output<Optional<String>> description() {
         return Codegen.optional(this.description);
     }
     /**
      * Environment variables for the stack.
-     * 
+     *
      */
     @Export(name="environment", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> environment;
 
     /**
      * @return Environment variables for the stack.
-     * 
+     *
      */
     public Output<Optional<String>> environment() {
         return Codegen.optional(this.environment);
     }
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Export(name="environmentId", refs={String.class}, tree="[0]")
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
     }
     /**
      * The Compose stack name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The Compose stack name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Export(name="serverId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Output<Optional<String>> serverId() {
         return Codegen.optional(this.serverId);
     }
     /**
      * The Compose source configuration.
-     * 
+     *
      */
     @Export(name="source", refs={ComposeSource.class}, tree="[0]")
     private Output<ComposeSource> source;
 
     /**
      * @return The Compose source configuration.
-     * 
+     *
      */
     public Output<ComposeSource> source() {
         return this.source;
     }
     /**
      * The current Compose deployment status.
-     * 
+     *
      */
     @Export(name="status", refs={String.class}, tree="[0]")
     private Output<String> status;
 
     /**
      * @return The current Compose deployment status.
-     * 
+     *
      */
     public Output<String> status() {
         return this.status;

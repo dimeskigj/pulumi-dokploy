@@ -163,4 +163,3 @@ class Tag(pulumi.CustomResource):
         The stable Dokploy tag ID.
         """
         return pulumi.get(self, "tag_id")
-

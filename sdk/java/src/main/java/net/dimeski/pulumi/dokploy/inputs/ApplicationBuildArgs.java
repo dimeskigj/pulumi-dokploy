@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 /**
  * Application build configuration.
- * 
+ *
  */
 public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArgs {
 
@@ -22,14 +22,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
     /**
      * The Docker build stage.
-     * 
+     *
      */
     @Import(name="dockerBuildStage")
     private @Nullable Output<String> dockerBuildStage;
 
     /**
      * @return The Docker build stage.
-     * 
+     *
      */
     public Optional<Output<String>> dockerBuildStage() {
         return Optional.ofNullable(this.dockerBuildStage);
@@ -37,14 +37,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
     /**
      * The Docker build context.
-     * 
+     *
      */
     @Import(name="dockerContextPath")
     private @Nullable Output<String> dockerContextPath;
 
     /**
      * @return The Docker build context.
-     * 
+     *
      */
     public Optional<Output<String>> dockerContextPath() {
         return Optional.ofNullable(this.dockerContextPath);
@@ -52,14 +52,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
     /**
      * The Dockerfile path.
-     * 
+     *
      */
     @Import(name="dockerfile")
     private @Nullable Output<String> dockerfile;
 
     /**
      * @return The Dockerfile path.
-     * 
+     *
      */
     public Optional<Output<String>> dockerfile() {
         return Optional.ofNullable(this.dockerfile);
@@ -67,14 +67,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
     /**
      * The build type.
-     * 
+     *
      */
     @Import(name="type", required=true)
     private Output<String> type;
 
     /**
      * @return The build type.
-     * 
+     *
      */
     public Output<String> type() {
         return this.type;
@@ -109,9 +109,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param dockerBuildStage The Docker build stage.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerBuildStage(@Nullable Output<String> dockerBuildStage) {
             $.dockerBuildStage = dockerBuildStage;
@@ -120,9 +120,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param dockerBuildStage The Docker build stage.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerBuildStage(String dockerBuildStage) {
             return dockerBuildStage(Output.of(dockerBuildStage));
@@ -130,9 +130,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param dockerContextPath The Docker build context.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerContextPath(@Nullable Output<String> dockerContextPath) {
             $.dockerContextPath = dockerContextPath;
@@ -141,9 +141,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param dockerContextPath The Docker build context.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerContextPath(String dockerContextPath) {
             return dockerContextPath(Output.of(dockerContextPath));
@@ -151,9 +151,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param dockerfile The Dockerfile path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerfile(@Nullable Output<String> dockerfile) {
             $.dockerfile = dockerfile;
@@ -162,9 +162,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param dockerfile The Dockerfile path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerfile(String dockerfile) {
             return dockerfile(Output.of(dockerfile));
@@ -172,9 +172,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param type The build type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(Output<String> type) {
             $.type = type;
@@ -183,9 +183,9 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param type The build type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(String type) {
             return type(Output.of(type));

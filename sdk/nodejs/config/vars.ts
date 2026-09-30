@@ -28,4 +28,3 @@ Object.defineProperty(exports, "endpoint", {
     },
     enumerable: true,
 });
-

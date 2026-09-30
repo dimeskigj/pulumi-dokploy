@@ -18,202 +18,202 @@ import net.dimeski.pulumi.dokploy.outputs.ApplicationSource;
 
 /**
  * A Dokploy application.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Application")
 public class Application extends com.pulumi.resources.CustomResource {
     /**
      * The optional deployed application name.
-     * 
+     *
      */
     @Export(name="appName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> appName;
 
     /**
      * @return The optional deployed application name.
-     * 
+     *
      */
     public Output<Optional<String>> appName() {
         return Codegen.optional(this.appName);
     }
     /**
      * The stable Dokploy application ID.
-     * 
+     *
      */
     @Export(name="applicationId", refs={String.class}, tree="[0]")
     private Output<String> applicationId;
 
     /**
      * @return The stable Dokploy application ID.
-     * 
+     *
      */
     public Output<String> applicationId() {
         return this.applicationId;
     }
     /**
      * Build arguments for the application.
-     * 
+     *
      */
     @Export(name="buildArgs", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> buildArgs;
 
     /**
      * @return Build arguments for the application.
-     * 
+     *
      */
     public Output<Optional<String>> buildArgs() {
         return Codegen.optional(this.buildArgs);
     }
     /**
      * The optional build registry ID.
-     * 
+     *
      */
     @Export(name="buildRegistryId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> buildRegistryId;
 
     /**
      * @return The optional build registry ID.
-     * 
+     *
      */
     public Output<Optional<String>> buildRegistryId() {
         return Codegen.optional(this.buildRegistryId);
     }
     /**
      * Build secrets for the application.
-     * 
+     *
      */
     @Export(name="buildSecrets", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> buildSecrets;
 
     /**
      * @return Build secrets for the application.
-     * 
+     *
      */
     public Output<Optional<String>> buildSecrets() {
         return Codegen.optional(this.buildSecrets);
     }
     /**
      * Whether to create an environment file.
-     * 
+     *
      */
     @Export(name="createEnvFile", refs={Boolean.class}, tree="[0]")
     private Output</* @Nullable */ Boolean> createEnvFile;
 
     /**
      * @return Whether to create an environment file.
-     * 
+     *
      */
     public Output<Optional<Boolean>> createEnvFile() {
         return Codegen.optional(this.createEnvFile);
     }
     /**
      * An optional application description.
-     * 
+     *
      */
     @Export(name="description", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> description;
 
     /**
      * @return An optional application description.
-     * 
+     *
      */
     public Output<Optional<String>> description() {
         return Codegen.optional(this.description);
     }
     /**
      * Environment variables for the application.
-     * 
+     *
      */
     @Export(name="environment", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> environment;
 
     /**
      * @return Environment variables for the application.
-     * 
+     *
      */
     public Output<Optional<String>> environment() {
         return Codegen.optional(this.environment);
     }
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Export(name="environmentId", refs={String.class}, tree="[0]")
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
     }
     /**
      * The application name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The application name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The optional deployment registry ID.
-     * 
+     *
      */
     @Export(name="registryId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> registryId;
 
     /**
      * @return The optional deployment registry ID.
-     * 
+     *
      */
     public Output<Optional<String>> registryId() {
         return Codegen.optional(this.registryId);
     }
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Export(name="serverId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Output<Optional<String>> serverId() {
         return Codegen.optional(this.serverId);
     }
     /**
      * The application source configuration.
-     * 
+     *
      */
     @Export(name="source", refs={ApplicationSource.class}, tree="[0]")
     private Output<ApplicationSource> source;
 
     /**
      * @return The application source configuration.
-     * 
+     *
      */
     public Output<ApplicationSource> source() {
         return this.source;
     }
     /**
      * The current application deployment status.
-     * 
+     *
      */
     @Export(name="status", refs={String.class}, tree="[0]")
     private Output<String> status;
 
     /**
      * @return The current application deployment status.
-     * 
+     *
      */
     public Output<String> status() {
         return this.status;

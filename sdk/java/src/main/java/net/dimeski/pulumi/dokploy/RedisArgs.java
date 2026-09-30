@@ -20,14 +20,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional deployed database name.
-     * 
+     *
      */
     @Import(name="appName")
     private @Nullable Output<String> appName;
 
     /**
      * @return The optional deployed database name.
-     * 
+     *
      */
     public Optional<Output<String>> appName() {
         return Optional.ofNullable(this.appName);
@@ -35,14 +35,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Redis database password.
-     * 
+     *
      */
     @Import(name="databasePassword", required=true)
     private Output<String> databasePassword;
 
     /**
      * @return The Redis database password.
-     * 
+     *
      */
     public Output<String> databasePassword() {
         return this.databasePassword;
@@ -50,14 +50,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * An optional database description.
-     * 
+     *
      */
     @Import(name="description")
     private @Nullable Output<String> description;
 
     /**
      * @return An optional database description.
-     * 
+     *
      */
     public Optional<Output<String>> description() {
         return Optional.ofNullable(this.description);
@@ -65,14 +65,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Redis Docker image.
-     * 
+     *
      */
     @Import(name="dockerImage")
     private @Nullable Output<String> dockerImage;
 
     /**
      * @return The Redis Docker image.
-     * 
+     *
      */
     public Optional<Output<String>> dockerImage() {
         return Optional.ofNullable(this.dockerImage);
@@ -80,14 +80,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Environment variables for Redis.
-     * 
+     *
      */
     @Import(name="environment")
     private @Nullable Output<String> environment;
 
     /**
      * @return Environment variables for Redis.
-     * 
+     *
      */
     public Optional<Output<String>> environment() {
         return Optional.ofNullable(this.environment);
@@ -95,14 +95,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Import(name="environmentId", required=true)
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
@@ -110,14 +110,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional externally exposed port.
-     * 
+     *
      */
     @Import(name="externalPort")
     private @Nullable Output<Integer> externalPort;
 
     /**
      * @return The optional externally exposed port.
-     * 
+     *
      */
     public Optional<Output<Integer>> externalPort() {
         return Optional.ofNullable(this.externalPort);
@@ -125,14 +125,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The database resource name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The database resource name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -140,14 +140,14 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Import(name="serverId")
     private @Nullable Output<String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Optional<Output<String>> serverId() {
         return Optional.ofNullable(this.serverId);
@@ -187,9 +187,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed database name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(@Nullable Output<String> appName) {
             $.appName = appName;
@@ -198,9 +198,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed database name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(String appName) {
             return appName(Output.of(appName));
@@ -208,9 +208,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databasePassword The Redis database password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databasePassword(Output<String> databasePassword) {
             $.databasePassword = databasePassword;
@@ -219,9 +219,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databasePassword The Redis database password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databasePassword(String databasePassword) {
             return databasePassword(Output.of(databasePassword));
@@ -229,9 +229,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional database description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(@Nullable Output<String> description) {
             $.description = description;
@@ -240,9 +240,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional database description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(String description) {
             return description(Output.of(description));
@@ -250,9 +250,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param dockerImage The Redis Docker image.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerImage(@Nullable Output<String> dockerImage) {
             $.dockerImage = dockerImage;
@@ -261,9 +261,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param dockerImage The Redis Docker image.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerImage(String dockerImage) {
             return dockerImage(Output.of(dockerImage));
@@ -271,9 +271,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for Redis.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(@Nullable Output<String> environment) {
             $.environment = environment;
@@ -282,9 +282,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for Redis.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(String environment) {
             return environment(Output.of(environment));
@@ -292,9 +292,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(Output<String> environmentId) {
             $.environmentId = environmentId;
@@ -303,9 +303,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(String environmentId) {
             return environmentId(Output.of(environmentId));
@@ -313,9 +313,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param externalPort The optional externally exposed port.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder externalPort(@Nullable Output<Integer> externalPort) {
             $.externalPort = externalPort;
@@ -324,9 +324,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param externalPort The optional externally exposed port.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder externalPort(Integer externalPort) {
             return externalPort(Output.of(externalPort));
@@ -334,9 +334,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The database resource name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -345,9 +345,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The database resource name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -355,9 +355,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(@Nullable Output<String> serverId) {
             $.serverId = serverId;
@@ -366,9 +366,9 @@ public final class RedisArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(String serverId) {
             return serverId(Output.of(serverId));

@@ -417,4 +417,3 @@ class Compose(pulumi.CustomResource):
         The current Compose deployment status.
         """
         return pulumi.get(self, "status")
-

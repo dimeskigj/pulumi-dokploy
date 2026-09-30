@@ -17,50 +17,50 @@ import net.dimeski.pulumi.dokploy.outputs.RawComposeSource;
 public final class ComposeSource {
     /**
      * @return Git Compose source.
-     * 
+     *
      */
     private @Nullable GitComposeSource git;
     /**
      * @return GitLab Compose source.
-     * 
+     *
      */
     private @Nullable GitLabComposeSource gitlab;
     /**
      * @return Raw Compose source.
-     * 
+     *
      */
     private @Nullable RawComposeSource raw;
     /**
      * @return The Compose source type.
-     * 
+     *
      */
     private String type;
 
     private ComposeSource() {}
     /**
      * @return Git Compose source.
-     * 
+     *
      */
     public Optional<GitComposeSource> git() {
         return Optional.ofNullable(this.git);
     }
     /**
      * @return GitLab Compose source.
-     * 
+     *
      */
     public Optional<GitLabComposeSource> gitlab() {
         return Optional.ofNullable(this.gitlab);
     }
     /**
      * @return Raw Compose source.
-     * 
+     *
      */
     public Optional<RawComposeSource> raw() {
         return Optional.ofNullable(this.raw);
     }
     /**
      * @return The Compose source type.
-     * 
+     *
      */
     public String type() {
         return this.type;

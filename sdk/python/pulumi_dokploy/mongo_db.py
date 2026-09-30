@@ -445,4 +445,3 @@ class MongoDB(pulumi.CustomResource):
         The current MongoDB deployment status.
         """
         return pulumi.get(self, "status")
-

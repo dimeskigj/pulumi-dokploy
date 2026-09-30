@@ -20,14 +20,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The storage access key ID.
-     * 
+     *
      */
     @Import(name="accessKey", required=true)
     private Output<String> accessKey;
 
     /**
      * @return The storage access key ID.
-     * 
+     *
      */
     public Output<String> accessKey() {
         return this.accessKey;
@@ -35,14 +35,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Additional rclone flags for backup and restore operations.
-     * 
+     *
      */
     @Import(name="additionalFlags")
     private @Nullable Output<List<String>> additionalFlags;
 
     /**
      * @return Additional rclone flags for backup and restore operations.
-     * 
+     *
      */
     public Optional<Output<List<String>>> additionalFlags() {
         return Optional.ofNullable(this.additionalFlags);
@@ -50,14 +50,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The storage bucket name.
-     * 
+     *
      */
     @Import(name="bucket", required=true)
     private Output<String> bucket;
 
     /**
      * @return The storage bucket name.
-     * 
+     *
      */
     public Output<String> bucket() {
         return this.bucket;
@@ -65,14 +65,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The storage endpoint URL.
-     * 
+     *
      */
     @Import(name="endpoint", required=true)
     private Output<String> endpoint;
 
     /**
      * @return The storage endpoint URL.
-     * 
+     *
      */
     public Output<String> endpoint() {
         return this.endpoint;
@@ -80,14 +80,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The destination name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The destination name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -95,14 +95,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The storage provider.
-     * 
+     *
      */
     @Import(name="provider")
     private @Nullable Output<String> provider;
 
     /**
      * @return The storage provider.
-     * 
+     *
      */
     public Optional<Output<String>> provider() {
         return Optional.ofNullable(this.provider);
@@ -110,14 +110,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The storage region.
-     * 
+     *
      */
     @Import(name="region", required=true)
     private Output<String> region;
 
     /**
      * @return The storage region.
-     * 
+     *
      */
     public Output<String> region() {
         return this.region;
@@ -125,14 +125,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The storage secret access key.
-     * 
+     *
      */
     @Import(name="secretAccessKey", required=true)
     private Output<String> secretAccessKey;
 
     /**
      * @return The storage secret access key.
-     * 
+     *
      */
     public Output<String> secretAccessKey() {
         return this.secretAccessKey;
@@ -140,14 +140,14 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional server ID this destination is scoped to.
-     * 
+     *
      */
     @Import(name="serverId")
     private @Nullable Output<String> serverId;
 
     /**
      * @return The optional server ID this destination is scoped to.
-     * 
+     *
      */
     public Optional<Output<String>> serverId() {
         return Optional.ofNullable(this.serverId);
@@ -187,9 +187,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param accessKey The storage access key ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder accessKey(Output<String> accessKey) {
             $.accessKey = accessKey;
@@ -198,9 +198,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param accessKey The storage access key ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder accessKey(String accessKey) {
             return accessKey(Output.of(accessKey));
@@ -208,9 +208,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param additionalFlags Additional rclone flags for backup and restore operations.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder additionalFlags(@Nullable Output<List<String>> additionalFlags) {
             $.additionalFlags = additionalFlags;
@@ -219,9 +219,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param additionalFlags Additional rclone flags for backup and restore operations.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder additionalFlags(List<String> additionalFlags) {
             return additionalFlags(Output.of(additionalFlags));
@@ -229,9 +229,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param additionalFlags Additional rclone flags for backup and restore operations.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder additionalFlags(String... additionalFlags) {
             return additionalFlags(List.of(additionalFlags));
@@ -239,9 +239,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param bucket The storage bucket name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder bucket(Output<String> bucket) {
             $.bucket = bucket;
@@ -250,9 +250,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param bucket The storage bucket name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder bucket(String bucket) {
             return bucket(Output.of(bucket));
@@ -260,9 +260,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param endpoint The storage endpoint URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder endpoint(Output<String> endpoint) {
             $.endpoint = endpoint;
@@ -271,9 +271,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param endpoint The storage endpoint URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder endpoint(String endpoint) {
             return endpoint(Output.of(endpoint));
@@ -281,9 +281,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The destination name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -292,9 +292,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The destination name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -302,9 +302,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param provider The storage provider.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder provider(@Nullable Output<String> provider) {
             $.provider = provider;
@@ -313,9 +313,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param provider The storage provider.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder provider(String provider) {
             return provider(Output.of(provider));
@@ -323,9 +323,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param region The storage region.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder region(Output<String> region) {
             $.region = region;
@@ -334,9 +334,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param region The storage region.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder region(String region) {
             return region(Output.of(region));
@@ -344,9 +344,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param secretAccessKey The storage secret access key.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder secretAccessKey(Output<String> secretAccessKey) {
             $.secretAccessKey = secretAccessKey;
@@ -355,9 +355,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param secretAccessKey The storage secret access key.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder secretAccessKey(String secretAccessKey) {
             return secretAccessKey(Output.of(secretAccessKey));
@@ -365,9 +365,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID this destination is scoped to.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(@Nullable Output<String> serverId) {
             $.serverId = serverId;
@@ -376,9 +376,9 @@ public final class DestinationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID this destination is scoped to.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(String serverId) {
             return serverId(Output.of(serverId));

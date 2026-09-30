@@ -404,4 +404,3 @@ class Backup(pulumi.CustomResource):
         The backup cron schedule.
         """
         return pulumi.get(self, "schedule")
-

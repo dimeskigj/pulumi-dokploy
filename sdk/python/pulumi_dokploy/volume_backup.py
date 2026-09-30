@@ -434,4 +434,3 @@ class VolumeBackup(pulumi.CustomResource):
         The Docker volume name to back up.
         """
         return pulumi.get(self, "volume_name")
-

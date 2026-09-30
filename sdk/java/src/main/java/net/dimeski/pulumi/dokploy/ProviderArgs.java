@@ -17,14 +17,14 @@ public final class ProviderArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Dokploy API key sent through x-api-key.
-     * 
+     *
      */
     @Import(name="apiKey", required=true)
     private Output<String> apiKey;
 
     /**
      * @return Dokploy API key sent through x-api-key.
-     * 
+     *
      */
     public Output<String> apiKey() {
         return this.apiKey;
@@ -32,14 +32,14 @@ public final class ProviderArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Base URL of the Dokploy instance.
-     * 
+     *
      */
     @Import(name="endpoint", required=true)
     private Output<String> endpoint;
 
     /**
      * @return Base URL of the Dokploy instance.
-     * 
+     *
      */
     public Output<String> endpoint() {
         return this.endpoint;
@@ -72,9 +72,9 @@ public final class ProviderArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param apiKey Dokploy API key sent through x-api-key.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder apiKey(Output<String> apiKey) {
             $.apiKey = apiKey;
@@ -83,9 +83,9 @@ public final class ProviderArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param apiKey Dokploy API key sent through x-api-key.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder apiKey(String apiKey) {
             return apiKey(Output.of(apiKey));
@@ -93,9 +93,9 @@ public final class ProviderArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param endpoint Base URL of the Dokploy instance.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder endpoint(Output<String> endpoint) {
             $.endpoint = endpoint;
@@ -104,9 +104,9 @@ public final class ProviderArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param endpoint Base URL of the Dokploy instance.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder endpoint(String endpoint) {
             return endpoint(Output.of(endpoint));

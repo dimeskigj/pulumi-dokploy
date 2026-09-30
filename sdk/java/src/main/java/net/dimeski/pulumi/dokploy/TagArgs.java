@@ -18,14 +18,14 @@ public final class TagArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional opaque tag color.
-     * 
+     *
      */
     @Import(name="color")
     private @Nullable Output<String> color;
 
     /**
      * @return The optional opaque tag color.
-     * 
+     *
      */
     public Optional<Output<String>> color() {
         return Optional.ofNullable(this.color);
@@ -33,14 +33,14 @@ public final class TagArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The tag name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The tag name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -73,9 +73,9 @@ public final class TagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param color The optional opaque tag color.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder color(@Nullable Output<String> color) {
             $.color = color;
@@ -84,9 +84,9 @@ public final class TagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param color The optional opaque tag color.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder color(String color) {
             return color(Output.of(color));
@@ -94,9 +94,9 @@ public final class TagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The tag name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -105,9 +105,9 @@ public final class TagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The tag name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));

@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 /**
  * Docker source configuration.
- * 
+ *
  */
 public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
@@ -22,14 +22,14 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Docker image.
-     * 
+     *
      */
     @Import(name="image", required=true)
     private Output<String> image;
 
     /**
      * @return The Docker image.
-     * 
+     *
      */
     public Output<String> image() {
         return this.image;
@@ -37,14 +37,14 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The registry password.
-     * 
+     *
      */
     @Import(name="password")
     private @Nullable Output<String> password;
 
     /**
      * @return The registry password.
-     * 
+     *
      */
     public Optional<Output<String>> password() {
         return Optional.ofNullable(this.password);
@@ -52,14 +52,14 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The registry URL.
-     * 
+     *
      */
     @Import(name="registryUrl")
     private @Nullable Output<String> registryUrl;
 
     /**
      * @return The registry URL.
-     * 
+     *
      */
     public Optional<Output<String>> registryUrl() {
         return Optional.ofNullable(this.registryUrl);
@@ -67,14 +67,14 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The registry username.
-     * 
+     *
      */
     @Import(name="username")
     private @Nullable Output<String> username;
 
     /**
      * @return The registry username.
-     * 
+     *
      */
     public Optional<Output<String>> username() {
         return Optional.ofNullable(this.username);
@@ -109,9 +109,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param image The Docker image.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder image(Output<String> image) {
             $.image = image;
@@ -120,9 +120,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param image The Docker image.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder image(String image) {
             return image(Output.of(image));
@@ -130,9 +130,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param password The registry password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder password(@Nullable Output<String> password) {
             $.password = password;
@@ -141,9 +141,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param password The registry password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder password(String password) {
             return password(Output.of(password));
@@ -151,9 +151,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param registryUrl The registry URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder registryUrl(@Nullable Output<String> registryUrl) {
             $.registryUrl = registryUrl;
@@ -162,9 +162,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param registryUrl The registry URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder registryUrl(String registryUrl) {
             return registryUrl(Output.of(registryUrl));
@@ -172,9 +172,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param username The registry username.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder username(@Nullable Output<String> username) {
             $.username = username;
@@ -183,9 +183,9 @@ public final class DockerSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param username The registry username.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder username(String username) {
             return username(Output.of(username));

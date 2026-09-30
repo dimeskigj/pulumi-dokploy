@@ -15,34 +15,34 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy project-to-tag association.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:ProjectTag")
 public class ProjectTag extends com.pulumi.resources.CustomResource {
     /**
      * The Dokploy project ID.
-     * 
+     *
      */
     @Export(name="projectId", refs={String.class}, tree="[0]")
     private Output<String> projectId;
 
     /**
      * @return The Dokploy project ID.
-     * 
+     *
      */
     public Output<String> projectId() {
         return this.projectId;
     }
     /**
      * The Dokploy tag ID.
-     * 
+     *
      */
     @Export(name="tagId", refs={String.class}, tree="[0]")
     private Output<String> tagId;
 
     /**
      * @return The Dokploy tag ID.
-     * 
+     *
      */
     public Output<String> tagId() {
         return this.tagId;

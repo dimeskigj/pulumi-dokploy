@@ -458,4 +458,3 @@ class Mount(pulumi.CustomResource):
         The volume name.
         """
         return pulumi.get(self, "volume_name")
-

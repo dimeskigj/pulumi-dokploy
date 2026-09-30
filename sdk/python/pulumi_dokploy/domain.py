@@ -467,4 +467,3 @@ class Domain(pulumi.CustomResource):
         Whether to strip the public path.
         """
         return pulumi.get(self, "strip_path")
-

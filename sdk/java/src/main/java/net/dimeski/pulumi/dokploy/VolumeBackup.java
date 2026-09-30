@@ -18,174 +18,174 @@ import net.dimeski.pulumi.dokploy.VolumeBackupArgs;
 
 /**
  * A scheduled Dokploy volume backup for an application or Compose service. Exactly one of applicationId or composeId must be set.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:VolumeBackup")
 public class VolumeBackup extends com.pulumi.resources.CustomResource {
     /**
      * The optional target application ID.
-     * 
+     *
      */
     @Export(name="applicationId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> applicationId;
 
     /**
      * @return The optional target application ID.
-     * 
+     *
      */
     public Output<Optional<String>> applicationId() {
         return Codegen.optional(this.applicationId);
     }
     /**
      * The optional target Compose ID.
-     * 
+     *
      */
     @Export(name="composeId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> composeId;
 
     /**
      * @return The optional target Compose ID.
-     * 
+     *
      */
     public Output<Optional<String>> composeId() {
         return Codegen.optional(this.composeId);
     }
     /**
      * The backup cron schedule.
-     * 
+     *
      */
     @Export(name="cronExpression", refs={String.class}, tree="[0]")
     private Output<String> cronExpression;
 
     /**
      * @return The backup cron schedule.
-     * 
+     *
      */
     public Output<String> cronExpression() {
         return this.cronExpression;
     }
     /**
      * The destination ID backups are stored to.
-     * 
+     *
      */
     @Export(name="destinationId", refs={String.class}, tree="[0]")
     private Output<String> destinationId;
 
     /**
      * @return The destination ID backups are stored to.
-     * 
+     *
      */
     public Output<String> destinationId() {
         return this.destinationId;
     }
     /**
      * Whether the backup schedule is enabled.
-     * 
+     *
      */
     @Export(name="enabled", refs={Boolean.class}, tree="[0]")
     private Output<Boolean> enabled;
 
     /**
      * @return Whether the backup schedule is enabled.
-     * 
+     *
      */
     public Output<Boolean> enabled() {
         return this.enabled;
     }
     /**
      * The optional number of most recent backups to retain.
-     * 
+     *
      */
     @Export(name="keepLatestCount", refs={Integer.class}, tree="[0]")
     private Output</* @Nullable */ Integer> keepLatestCount;
 
     /**
      * @return The optional number of most recent backups to retain.
-     * 
+     *
      */
     public Output<Optional<Integer>> keepLatestCount() {
         return Codegen.optional(this.keepLatestCount);
     }
     /**
      * The volume backup resource name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The volume backup resource name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The backup file prefix.
-     * 
+     *
      */
     @Export(name="prefix", refs={String.class}, tree="[0]")
     private Output<String> prefix;
 
     /**
      * @return The backup file prefix.
-     * 
+     *
      */
     public Output<String> prefix() {
         return this.prefix;
     }
     /**
      * The Compose service name that owns the volume.
-     * 
+     *
      */
     @Export(name="serviceName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serviceName;
 
     /**
      * @return The Compose service name that owns the volume.
-     * 
+     *
      */
     public Output<Optional<String>> serviceName() {
         return Codegen.optional(this.serviceName);
     }
     /**
      * Whether to turn the backup off without deleting it.
-     * 
+     *
      */
     @Export(name="turnOff", refs={Boolean.class}, tree="[0]")
     private Output</* @Nullable */ Boolean> turnOff;
 
     /**
      * @return Whether to turn the backup off without deleting it.
-     * 
+     *
      */
     public Output<Optional<Boolean>> turnOff() {
         return Codegen.optional(this.turnOff);
     }
     /**
      * The stable Dokploy volume backup ID.
-     * 
+     *
      */
     @Export(name="volumeBackupId", refs={String.class}, tree="[0]")
     private Output<String> volumeBackupId;
 
     /**
      * @return The stable Dokploy volume backup ID.
-     * 
+     *
      */
     public Output<String> volumeBackupId() {
         return this.volumeBackupId;
     }
     /**
      * The Docker volume name to back up.
-     * 
+     *
      */
     @Export(name="volumeName", refs={String.class}, tree="[0]")
     private Output<String> volumeName;
 
     /**
      * @return The Docker volume name to back up.
-     * 
+     *
      */
     public Output<String> volumeName() {
         return this.volumeName;

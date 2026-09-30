@@ -237,4 +237,3 @@ class SSHKey(pulumi.CustomResource):
         The stable Dokploy SSH key ID.
         """
         return pulumi.get(self, "ssh_key_id")
-

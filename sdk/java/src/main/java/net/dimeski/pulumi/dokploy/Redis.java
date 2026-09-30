@@ -17,160 +17,160 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy Redis database.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Redis")
 public class Redis extends com.pulumi.resources.CustomResource {
     /**
      * The optional deployed database name.
-     * 
+     *
      */
     @Export(name="appName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> appName;
 
     /**
      * @return The optional deployed database name.
-     * 
+     *
      */
     public Output<Optional<String>> appName() {
         return Codegen.optional(this.appName);
     }
     /**
      * The Redis database password.
-     * 
+     *
      */
     @Export(name="databasePassword", refs={String.class}, tree="[0]")
     private Output<String> databasePassword;
 
     /**
      * @return The Redis database password.
-     * 
+     *
      */
     public Output<String> databasePassword() {
         return this.databasePassword;
     }
     /**
      * An optional database description.
-     * 
+     *
      */
     @Export(name="description", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> description;
 
     /**
      * @return An optional database description.
-     * 
+     *
      */
     public Output<Optional<String>> description() {
         return Codegen.optional(this.description);
     }
     /**
      * The Redis Docker image.
-     * 
+     *
      */
     @Export(name="dockerImage", refs={String.class}, tree="[0]")
     private Output<String> dockerImage;
 
     /**
      * @return The Redis Docker image.
-     * 
+     *
      */
     public Output<String> dockerImage() {
         return this.dockerImage;
     }
     /**
      * Environment variables for Redis.
-     * 
+     *
      */
     @Export(name="environment", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> environment;
 
     /**
      * @return Environment variables for Redis.
-     * 
+     *
      */
     public Output<Optional<String>> environment() {
         return Codegen.optional(this.environment);
     }
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Export(name="environmentId", refs={String.class}, tree="[0]")
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
     }
     /**
      * The optional externally exposed port.
-     * 
+     *
      */
     @Export(name="externalPort", refs={Integer.class}, tree="[0]")
     private Output</* @Nullable */ Integer> externalPort;
 
     /**
      * @return The optional externally exposed port.
-     * 
+     *
      */
     public Output<Optional<Integer>> externalPort() {
         return Codegen.optional(this.externalPort);
     }
     /**
      * The database resource name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The database resource name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The stable Dokploy Redis ID.
-     * 
+     *
      */
     @Export(name="redisId", refs={String.class}, tree="[0]")
     private Output<String> redisId;
 
     /**
      * @return The stable Dokploy Redis ID.
-     * 
+     *
      */
     public Output<String> redisId() {
         return this.redisId;
     }
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Export(name="serverId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Output<Optional<String>> serverId() {
         return Codegen.optional(this.serverId);
     }
     /**
      * The current Redis deployment status.
-     * 
+     *
      */
     @Export(name="status", refs={String.class}, tree="[0]")
     private Output<String> status;
 
     /**
      * @return The current Redis deployment status.
-     * 
+     *
      */
     public Output<String> status() {
         return this.status;

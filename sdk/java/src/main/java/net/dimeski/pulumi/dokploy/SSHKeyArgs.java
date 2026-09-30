@@ -18,14 +18,14 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional SSH key description.
-     * 
+     *
      */
     @Import(name="description")
     private @Nullable Output<String> description;
 
     /**
      * @return The optional SSH key description.
-     * 
+     *
      */
     public Optional<Output<String>> description() {
         return Optional.ofNullable(this.description);
@@ -33,14 +33,14 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The SSH key name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The SSH key name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -48,14 +48,14 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The private SSH key material.
-     * 
+     *
      */
     @Import(name="privateKey", required=true)
     private Output<String> privateKey;
 
     /**
      * @return The private SSH key material.
-     * 
+     *
      */
     public Output<String> privateKey() {
         return this.privateKey;
@@ -63,14 +63,14 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The public SSH key material.
-     * 
+     *
      */
     @Import(name="publicKey", required=true)
     private Output<String> publicKey;
 
     /**
      * @return The public SSH key material.
-     * 
+     *
      */
     public Output<String> publicKey() {
         return this.publicKey;
@@ -105,9 +105,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description The optional SSH key description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(@Nullable Output<String> description) {
             $.description = description;
@@ -116,9 +116,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description The optional SSH key description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(String description) {
             return description(Output.of(description));
@@ -126,9 +126,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The SSH key name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -137,9 +137,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The SSH key name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -147,9 +147,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param privateKey The private SSH key material.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder privateKey(Output<String> privateKey) {
             $.privateKey = privateKey;
@@ -158,9 +158,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param privateKey The private SSH key material.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder privateKey(String privateKey) {
             return privateKey(Output.of(privateKey));
@@ -168,9 +168,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param publicKey The public SSH key material.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder publicKey(Output<String> publicKey) {
             $.publicKey = publicKey;
@@ -179,9 +179,9 @@ public final class SSHKeyArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param publicKey The public SSH key material.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder publicKey(String publicKey) {
             return publicKey(Output.of(publicKey));

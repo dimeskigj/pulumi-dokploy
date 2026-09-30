@@ -20,14 +20,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Optional application name.
-     * 
+     *
      */
     @Import(name="appName")
     private @Nullable Output<String> appName;
 
     /**
      * @return Optional application name.
-     * 
+     *
      */
     public Optional<Output<String>> appName() {
         return Optional.ofNullable(this.appName);
@@ -35,14 +35,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Target application ID.
-     * 
+     *
      */
     @Import(name="applicationId")
     private @Nullable Output<String> applicationId;
 
     /**
      * @return Target application ID.
-     * 
+     *
      */
     public Optional<Output<String>> applicationId() {
         return Optional.ofNullable(this.applicationId);
@@ -50,14 +50,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Command executed by the schedule.
-     * 
+     *
      */
     @Import(name="command", required=true)
     private Output<String> command;
 
     /**
      * @return Command executed by the schedule.
-     * 
+     *
      */
     public Output<String> command() {
         return this.command;
@@ -65,14 +65,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Target Compose ID.
-     * 
+     *
      */
     @Import(name="composeId")
     private @Nullable Output<String> composeId;
 
     /**
      * @return Target Compose ID.
-     * 
+     *
      */
     public Optional<Output<String>> composeId() {
         return Optional.ofNullable(this.composeId);
@@ -80,14 +80,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Cron expression for the schedule.
-     * 
+     *
      */
     @Import(name="cronExpression", required=true)
     private Output<String> cronExpression;
 
     /**
      * @return Cron expression for the schedule.
-     * 
+     *
      */
     public Output<String> cronExpression() {
         return this.cronExpression;
@@ -95,14 +95,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Optional schedule description.
-     * 
+     *
      */
     @Import(name="description")
     private @Nullable Output<String> description;
 
     /**
      * @return Optional schedule description.
-     * 
+     *
      */
     public Optional<Output<String>> description() {
         return Optional.ofNullable(this.description);
@@ -110,14 +110,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether the schedule is enabled; defaults to false.
-     * 
+     *
      */
     @Import(name="enabled")
     private @Nullable Output<Boolean> enabled;
 
     /**
      * @return Whether the schedule is enabled; defaults to false.
-     * 
+     *
      */
     public Optional<Output<Boolean>> enabled() {
         return Optional.ofNullable(this.enabled);
@@ -125,14 +125,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Schedule name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return Schedule name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -140,14 +140,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Dokploy organization ID.
-     * 
+     *
      */
     @Import(name="organizationId")
     private @Nullable Output<String> organizationId;
 
     /**
      * @return Dokploy organization ID.
-     * 
+     *
      */
     public Optional<Output<String>> organizationId() {
         return Optional.ofNullable(this.organizationId);
@@ -155,14 +155,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Schedule target type: application, compose, server, or dokploy-server.
-     * 
+     *
      */
     @Import(name="scheduleType", required=true)
     private Output<String> scheduleType;
 
     /**
      * @return Schedule target type: application, compose, server, or dokploy-server.
-     * 
+     *
      */
     public Output<String> scheduleType() {
         return this.scheduleType;
@@ -170,14 +170,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Optional script executed by the schedule.
-     * 
+     *
      */
     @Import(name="script")
     private @Nullable Output<String> script;
 
     /**
      * @return Optional script executed by the schedule.
-     * 
+     *
      */
     public Optional<Output<String>> script() {
         return Optional.ofNullable(this.script);
@@ -185,14 +185,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Target server ID.
-     * 
+     *
      */
     @Import(name="serverId")
     private @Nullable Output<String> serverId;
 
     /**
      * @return Target server ID.
-     * 
+     *
      */
     public Optional<Output<String>> serverId() {
         return Optional.ofNullable(this.serverId);
@@ -200,14 +200,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Optional Compose service name.
-     * 
+     *
      */
     @Import(name="serviceName")
     private @Nullable Output<String> serviceName;
 
     /**
      * @return Optional Compose service name.
-     * 
+     *
      */
     public Optional<Output<String>> serviceName() {
         return Optional.ofNullable(this.serviceName);
@@ -215,14 +215,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Shell used to execute the command (bash or sh).
-     * 
+     *
      */
     @Import(name="shellType")
     private @Nullable Output<String> shellType;
 
     /**
      * @return Shell used to execute the command (bash or sh).
-     * 
+     *
      */
     public Optional<Output<String>> shellType() {
         return Optional.ofNullable(this.shellType);
@@ -230,14 +230,14 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Timezone for the schedule.
-     * 
+     *
      */
     @Import(name="timezone")
     private @Nullable Output<String> timezone;
 
     /**
      * @return Timezone for the schedule.
-     * 
+     *
      */
     public Optional<Output<String>> timezone() {
         return Optional.ofNullable(this.timezone);
@@ -283,9 +283,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName Optional application name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(@Nullable Output<String> appName) {
             $.appName = appName;
@@ -294,9 +294,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName Optional application name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(String appName) {
             return appName(Output.of(appName));
@@ -304,9 +304,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId Target application ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(@Nullable Output<String> applicationId) {
             $.applicationId = applicationId;
@@ -315,9 +315,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId Target application ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(String applicationId) {
             return applicationId(Output.of(applicationId));
@@ -325,9 +325,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param command Command executed by the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder command(Output<String> command) {
             $.command = command;
@@ -336,9 +336,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param command Command executed by the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder command(String command) {
             return command(Output.of(command));
@@ -346,9 +346,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId Target Compose ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(@Nullable Output<String> composeId) {
             $.composeId = composeId;
@@ -357,9 +357,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId Target Compose ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(String composeId) {
             return composeId(Output.of(composeId));
@@ -367,9 +367,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param cronExpression Cron expression for the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder cronExpression(Output<String> cronExpression) {
             $.cronExpression = cronExpression;
@@ -378,9 +378,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param cronExpression Cron expression for the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder cronExpression(String cronExpression) {
             return cronExpression(Output.of(cronExpression));
@@ -388,9 +388,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description Optional schedule description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(@Nullable Output<String> description) {
             $.description = description;
@@ -399,9 +399,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description Optional schedule description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(String description) {
             return description(Output.of(description));
@@ -409,9 +409,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the schedule is enabled; defaults to false.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(@Nullable Output<Boolean> enabled) {
             $.enabled = enabled;
@@ -420,9 +420,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the schedule is enabled; defaults to false.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(Boolean enabled) {
             return enabled(Output.of(enabled));
@@ -430,9 +430,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name Schedule name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -441,9 +441,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name Schedule name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -451,9 +451,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param organizationId Dokploy organization ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder organizationId(@Nullable Output<String> organizationId) {
             $.organizationId = organizationId;
@@ -462,9 +462,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param organizationId Dokploy organization ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder organizationId(String organizationId) {
             return organizationId(Output.of(organizationId));
@@ -472,9 +472,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param scheduleType Schedule target type: application, compose, server, or dokploy-server.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder scheduleType(Output<String> scheduleType) {
             $.scheduleType = scheduleType;
@@ -483,9 +483,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param scheduleType Schedule target type: application, compose, server, or dokploy-server.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder scheduleType(String scheduleType) {
             return scheduleType(Output.of(scheduleType));
@@ -493,9 +493,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param script Optional script executed by the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder script(@Nullable Output<String> script) {
             $.script = script;
@@ -504,9 +504,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param script Optional script executed by the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder script(String script) {
             return script(Output.of(script));
@@ -514,9 +514,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId Target server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(@Nullable Output<String> serverId) {
             $.serverId = serverId;
@@ -525,9 +525,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId Target server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(String serverId) {
             return serverId(Output.of(serverId));
@@ -535,9 +535,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serviceName Optional Compose service name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serviceName(@Nullable Output<String> serviceName) {
             $.serviceName = serviceName;
@@ -546,9 +546,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serviceName Optional Compose service name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serviceName(String serviceName) {
             return serviceName(Output.of(serviceName));
@@ -556,9 +556,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param shellType Shell used to execute the command (bash or sh).
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder shellType(@Nullable Output<String> shellType) {
             $.shellType = shellType;
@@ -567,9 +567,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param shellType Shell used to execute the command (bash or sh).
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder shellType(String shellType) {
             return shellType(Output.of(shellType));
@@ -577,9 +577,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param timezone Timezone for the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder timezone(@Nullable Output<String> timezone) {
             $.timezone = timezone;
@@ -588,9 +588,9 @@ public final class ScheduleArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param timezone Timezone for the schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder timezone(String timezone) {
             return timezone(Output.of(timezone));

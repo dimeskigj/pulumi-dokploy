@@ -20,14 +20,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional deployed database name.
-     * 
+     *
      */
     @Import(name="appName")
     private @Nullable Output<String> appName;
 
     /**
      * @return The optional deployed database name.
-     * 
+     *
      */
     public Optional<Output<String>> appName() {
         return Optional.ofNullable(this.appName);
@@ -35,14 +35,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The MySQL database name.
-     * 
+     *
      */
     @Import(name="databaseName", required=true)
     private Output<String> databaseName;
 
     /**
      * @return The MySQL database name.
-     * 
+     *
      */
     public Output<String> databaseName() {
         return this.databaseName;
@@ -50,14 +50,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The MySQL database password.
-     * 
+     *
      */
     @Import(name="databasePassword", required=true)
     private Output<String> databasePassword;
 
     /**
      * @return The MySQL database password.
-     * 
+     *
      */
     public Output<String> databasePassword() {
         return this.databasePassword;
@@ -65,14 +65,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional MySQL root password.
-     * 
+     *
      */
     @Import(name="databaseRootPassword")
     private @Nullable Output<String> databaseRootPassword;
 
     /**
      * @return The optional MySQL root password.
-     * 
+     *
      */
     public Optional<Output<String>> databaseRootPassword() {
         return Optional.ofNullable(this.databaseRootPassword);
@@ -80,14 +80,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The MySQL database user.
-     * 
+     *
      */
     @Import(name="databaseUser", required=true)
     private Output<String> databaseUser;
 
     /**
      * @return The MySQL database user.
-     * 
+     *
      */
     public Output<String> databaseUser() {
         return this.databaseUser;
@@ -95,14 +95,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * An optional database description.
-     * 
+     *
      */
     @Import(name="description")
     private @Nullable Output<String> description;
 
     /**
      * @return An optional database description.
-     * 
+     *
      */
     public Optional<Output<String>> description() {
         return Optional.ofNullable(this.description);
@@ -110,14 +110,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The MySQL Docker image.
-     * 
+     *
      */
     @Import(name="dockerImage")
     private @Nullable Output<String> dockerImage;
 
     /**
      * @return The MySQL Docker image.
-     * 
+     *
      */
     public Optional<Output<String>> dockerImage() {
         return Optional.ofNullable(this.dockerImage);
@@ -125,14 +125,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Environment variables for MySQL.
-     * 
+     *
      */
     @Import(name="environment")
     private @Nullable Output<String> environment;
 
     /**
      * @return Environment variables for MySQL.
-     * 
+     *
      */
     public Optional<Output<String>> environment() {
         return Optional.ofNullable(this.environment);
@@ -140,14 +140,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Import(name="environmentId", required=true)
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
@@ -155,14 +155,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional externally exposed port.
-     * 
+     *
      */
     @Import(name="externalPort")
     private @Nullable Output<Integer> externalPort;
 
     /**
      * @return The optional externally exposed port.
-     * 
+     *
      */
     public Optional<Output<Integer>> externalPort() {
         return Optional.ofNullable(this.externalPort);
@@ -170,14 +170,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The database resource name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The database resource name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -185,14 +185,14 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Import(name="serverId")
     private @Nullable Output<String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Optional<Output<String>> serverId() {
         return Optional.ofNullable(this.serverId);
@@ -235,9 +235,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed database name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(@Nullable Output<String> appName) {
             $.appName = appName;
@@ -246,9 +246,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed database name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(String appName) {
             return appName(Output.of(appName));
@@ -256,9 +256,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databaseName The MySQL database name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databaseName(Output<String> databaseName) {
             $.databaseName = databaseName;
@@ -267,9 +267,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databaseName The MySQL database name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databaseName(String databaseName) {
             return databaseName(Output.of(databaseName));
@@ -277,9 +277,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databasePassword The MySQL database password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databasePassword(Output<String> databasePassword) {
             $.databasePassword = databasePassword;
@@ -288,9 +288,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databasePassword The MySQL database password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databasePassword(String databasePassword) {
             return databasePassword(Output.of(databasePassword));
@@ -298,9 +298,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databaseRootPassword The optional MySQL root password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databaseRootPassword(@Nullable Output<String> databaseRootPassword) {
             $.databaseRootPassword = databaseRootPassword;
@@ -309,9 +309,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databaseRootPassword The optional MySQL root password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databaseRootPassword(String databaseRootPassword) {
             return databaseRootPassword(Output.of(databaseRootPassword));
@@ -319,9 +319,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databaseUser The MySQL database user.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databaseUser(Output<String> databaseUser) {
             $.databaseUser = databaseUser;
@@ -330,9 +330,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param databaseUser The MySQL database user.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder databaseUser(String databaseUser) {
             return databaseUser(Output.of(databaseUser));
@@ -340,9 +340,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional database description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(@Nullable Output<String> description) {
             $.description = description;
@@ -351,9 +351,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional database description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(String description) {
             return description(Output.of(description));
@@ -361,9 +361,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param dockerImage The MySQL Docker image.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerImage(@Nullable Output<String> dockerImage) {
             $.dockerImage = dockerImage;
@@ -372,9 +372,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param dockerImage The MySQL Docker image.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder dockerImage(String dockerImage) {
             return dockerImage(Output.of(dockerImage));
@@ -382,9 +382,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for MySQL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(@Nullable Output<String> environment) {
             $.environment = environment;
@@ -393,9 +393,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for MySQL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(String environment) {
             return environment(Output.of(environment));
@@ -403,9 +403,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(Output<String> environmentId) {
             $.environmentId = environmentId;
@@ -414,9 +414,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(String environmentId) {
             return environmentId(Output.of(environmentId));
@@ -424,9 +424,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param externalPort The optional externally exposed port.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder externalPort(@Nullable Output<Integer> externalPort) {
             $.externalPort = externalPort;
@@ -435,9 +435,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param externalPort The optional externally exposed port.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder externalPort(Integer externalPort) {
             return externalPort(Output.of(externalPort));
@@ -445,9 +445,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The database resource name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -456,9 +456,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The database resource name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -466,9 +466,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(@Nullable Output<String> serverId) {
             $.serverId = serverId;
@@ -477,9 +477,9 @@ public final class MySQLArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(String serverId) {
             return serverId(Output.of(serverId));

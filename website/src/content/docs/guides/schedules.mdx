@@ -32,10 +32,27 @@ resources:
         fn::secret: "echo scheduled maintenance"
 ```
 
-`command` and optional `script` are secret inputs in every generated SDK. Use
-secret-aware configuration accessors or YAML `fn::secret` for their values; never
-log commands or scripts, which may contain credentials. No credentials are needed
-for the illustrative command above.
+`command` and optional `script` are marked secret in the Pulumi schema and handled
+as secrets by the provider. This does not mean every SDK builder wraps inputs as
+secrets: Java's generated builder uses ordinary outputs for string arguments.
+Use secret-aware configuration accessors or YAML `fn::secret` for their values.
+In Java, explicitly use secret outputs such as `Output.ofSecret(...)` for both
+fields (or pass outputs from `config.requireSecret(...)`):
+
+```java
+ScheduleArgs.builder()
+    .name("application-maintenance")
+    .cronExpression("0 0 * * *")
+    .scheduleType("application")
+    .applicationId(application.applicationId())
+    .enabled(false)
+    .command(Output.ofSecret("echo scheduled maintenance"))
+    .script(Output.ofSecret("echo optional maintenance script"))
+    .build();
+```
+
+Never log commands or scripts, which may contain credentials. No credentials are
+needed for the illustrative commands above.
 
 ## Target and lifecycle
 

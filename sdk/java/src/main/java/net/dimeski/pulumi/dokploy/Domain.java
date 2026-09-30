@@ -18,188 +18,188 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy domain routing rule.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Domain")
 public class Domain extends com.pulumi.resources.CustomResource {
     /**
      * The optional application ID target.
-     * 
+     *
      */
     @Export(name="applicationId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> applicationId;
 
     /**
      * @return The optional application ID target.
-     * 
+     *
      */
     public Output<Optional<String>> applicationId() {
         return Codegen.optional(this.applicationId);
     }
     /**
      * The certificate resolver type.
-     * 
+     *
      */
     @Export(name="certificateType", refs={String.class}, tree="[0]")
     private Output<String> certificateType;
 
     /**
      * @return The certificate resolver type.
-     * 
+     *
      */
     public Output<String> certificateType() {
         return this.certificateType;
     }
     /**
      * The optional Compose ID target.
-     * 
+     *
      */
     @Export(name="composeId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> composeId;
 
     /**
      * @return The optional Compose ID target.
-     * 
+     *
      */
     public Output<Optional<String>> composeId() {
         return Codegen.optional(this.composeId);
     }
     /**
      * The custom certificate resolver.
-     * 
+     *
      */
     @Export(name="customCertResolver", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> customCertResolver;
 
     /**
      * @return The custom certificate resolver.
-     * 
+     *
      */
     public Output<Optional<String>> customCertResolver() {
         return Codegen.optional(this.customCertResolver);
     }
     /**
      * The stable Dokploy domain ID.
-     * 
+     *
      */
     @Export(name="domainId", refs={String.class}, tree="[0]")
     private Output<String> domainId;
 
     /**
      * @return The stable Dokploy domain ID.
-     * 
+     *
      */
     public Output<String> domainId() {
         return this.domainId;
     }
     /**
      * Whether the domain is enabled.
-     * 
+     *
      */
     @Export(name="enabled", refs={Boolean.class}, tree="[0]")
     private Output<Boolean> enabled;
 
     /**
      * @return Whether the domain is enabled.
-     * 
+     *
      */
     public Output<Boolean> enabled() {
         return this.enabled;
     }
     /**
      * The domain hostname.
-     * 
+     *
      */
     @Export(name="host", refs={String.class}, tree="[0]")
     private Output<String> host;
 
     /**
      * @return The domain hostname.
-     * 
+     *
      */
     public Output<String> host() {
         return this.host;
     }
     /**
      * Whether HTTPS is enabled.
-     * 
+     *
      */
     @Export(name="https", refs={Boolean.class}, tree="[0]")
     private Output<Boolean> https;
 
     /**
      * @return Whether HTTPS is enabled.
-     * 
+     *
      */
     public Output<Boolean> https() {
         return this.https;
     }
     /**
      * The internal URL path.
-     * 
+     *
      */
     @Export(name="internalPath", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> internalPath;
 
     /**
      * @return The internal URL path.
-     * 
+     *
      */
     public Output<Optional<String>> internalPath() {
         return Codegen.optional(this.internalPath);
     }
     /**
      * The public URL path.
-     * 
+     *
      */
     @Export(name="path", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> path;
 
     /**
      * @return The public URL path.
-     * 
+     *
      */
     public Output<Optional<String>> path() {
         return Codegen.optional(this.path);
     }
     /**
      * The target port.
-     * 
+     *
      */
     @Export(name="port", refs={Integer.class}, tree="[0]")
     private Output</* @Nullable */ Integer> port;
 
     /**
      * @return The target port.
-     * 
+     *
      */
     public Output<Optional<Integer>> port() {
         return Codegen.optional(this.port);
     }
     /**
      * The Compose service name.
-     * 
+     *
      */
     @Export(name="serviceName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serviceName;
 
     /**
      * @return The Compose service name.
-     * 
+     *
      */
     public Output<Optional<String>> serviceName() {
         return Codegen.optional(this.serviceName);
     }
     /**
      * Whether to strip the public path.
-     * 
+     *
      */
     @Export(name="stripPath", refs={Boolean.class}, tree="[0]")
     private Output</* @Nullable */ Boolean> stripPath;
 
     /**
      * @return Whether to strip the public path.
-     * 
+     *
      */
     public Output<Optional<Boolean>> stripPath() {
         return Codegen.optional(this.stripPath);

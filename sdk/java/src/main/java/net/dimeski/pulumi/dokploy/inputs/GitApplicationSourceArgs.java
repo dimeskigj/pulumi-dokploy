@@ -17,7 +17,7 @@ import net.dimeski.pulumi.dokploy.inputs.ApplicationBuildArgs;
 
 /**
  * Git source configuration.
- * 
+ *
  */
 public final class GitApplicationSourceArgs extends com.pulumi.resources.ResourceArgs {
 
@@ -25,14 +25,14 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
     /**
      * The Git branch.
-     * 
+     *
      */
     @Import(name="branch", required=true)
     private Output<String> branch;
 
     /**
      * @return The Git branch.
-     * 
+     *
      */
     public Output<String> branch() {
         return this.branch;
@@ -40,14 +40,14 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
     /**
      * The build configuration.
-     * 
+     *
      */
     @Import(name="build", required=true)
     private Output<ApplicationBuildArgs> build;
 
     /**
      * @return The build configuration.
-     * 
+     *
      */
     public Output<ApplicationBuildArgs> build() {
         return this.build;
@@ -55,14 +55,14 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
     /**
      * The build path.
-     * 
+     *
      */
     @Import(name="buildPath")
     private @Nullable Output<String> buildPath;
 
     /**
      * @return The build path.
-     * 
+     *
      */
     public Optional<Output<String>> buildPath() {
         return Optional.ofNullable(this.buildPath);
@@ -70,14 +70,14 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
     /**
      * Whether to enable submodules.
-     * 
+     *
      */
     @Import(name="enableSubmodules")
     private @Nullable Output<Boolean> enableSubmodules;
 
     /**
      * @return Whether to enable submodules.
-     * 
+     *
      */
     public Optional<Output<Boolean>> enableSubmodules() {
         return Optional.ofNullable(this.enableSubmodules);
@@ -85,14 +85,14 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
     /**
      * The SSH key ID.
-     * 
+     *
      */
     @Import(name="sshKeyId")
     private @Nullable Output<String> sshKeyId;
 
     /**
      * @return The SSH key ID.
-     * 
+     *
      */
     public Optional<Output<String>> sshKeyId() {
         return Optional.ofNullable(this.sshKeyId);
@@ -100,14 +100,14 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
     /**
      * The Git repository URL.
-     * 
+     *
      */
     @Import(name="url", required=true)
     private Output<String> url;
 
     /**
      * @return The Git repository URL.
-     * 
+     *
      */
     public Output<String> url() {
         return this.url;
@@ -115,14 +115,14 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
     /**
      * Paths to watch.
-     * 
+     *
      */
     @Import(name="watchPaths")
     private @Nullable Output<List<String>> watchPaths;
 
     /**
      * @return Paths to watch.
-     * 
+     *
      */
     public Optional<Output<List<String>>> watchPaths() {
         return Optional.ofNullable(this.watchPaths);
@@ -160,9 +160,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param branch The Git branch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder branch(Output<String> branch) {
             $.branch = branch;
@@ -171,9 +171,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param branch The Git branch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder branch(String branch) {
             return branch(Output.of(branch));
@@ -181,9 +181,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param build The build configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder build(Output<ApplicationBuildArgs> build) {
             $.build = build;
@@ -192,9 +192,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param build The build configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder build(ApplicationBuildArgs build) {
             return build(Output.of(build));
@@ -202,9 +202,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param buildPath The build path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildPath(@Nullable Output<String> buildPath) {
             $.buildPath = buildPath;
@@ -213,9 +213,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param buildPath The build path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildPath(String buildPath) {
             return buildPath(Output.of(buildPath));
@@ -223,9 +223,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param enableSubmodules Whether to enable submodules.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enableSubmodules(@Nullable Output<Boolean> enableSubmodules) {
             $.enableSubmodules = enableSubmodules;
@@ -234,9 +234,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param enableSubmodules Whether to enable submodules.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enableSubmodules(Boolean enableSubmodules) {
             return enableSubmodules(Output.of(enableSubmodules));
@@ -244,9 +244,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param sshKeyId The SSH key ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder sshKeyId(@Nullable Output<String> sshKeyId) {
             $.sshKeyId = sshKeyId;
@@ -255,9 +255,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param sshKeyId The SSH key ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder sshKeyId(String sshKeyId) {
             return sshKeyId(Output.of(sshKeyId));
@@ -265,9 +265,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param url The Git repository URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder url(Output<String> url) {
             $.url = url;
@@ -276,9 +276,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param url The Git repository URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder url(String url) {
             return url(Output.of(url));
@@ -286,9 +286,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param watchPaths Paths to watch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder watchPaths(@Nullable Output<List<String>> watchPaths) {
             $.watchPaths = watchPaths;
@@ -297,9 +297,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param watchPaths Paths to watch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder watchPaths(List<String> watchPaths) {
             return watchPaths(Output.of(watchPaths));
@@ -307,9 +307,9 @@ public final class GitApplicationSourceArgs extends com.pulumi.resources.Resourc
 
         /**
          * @param watchPaths Paths to watch.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder watchPaths(String... watchPaths) {
             return watchPaths(List.of(watchPaths));
