@@ -15,26 +15,60 @@ type liveScheduleFixtureOps struct {
 	create    func(context.Context, ScheduleArgs) (infer.CreateResponse[ScheduleState], error)
 	read      func(context.Context, string) (infer.ReadResponse[ScheduleArgs, ScheduleState], error)
 	remove    func(context.Context, string) error
-	register  func(string) func()
+	register  func(string, func()) func()
 	exercise  func(context.Context, string, infer.ReadResponse[ScheduleArgs, ScheduleState]) error
 	uncertain func()
+}
+
+// Retain only targets with unresolved Schedule ownership/absence. A project
+// containing such a target must also survive, since its deletion can cascade.
+type liveScheduleCleanupGuard struct{ pending map[string]int }
+
+func newLiveScheduleCleanupGuard() *liveScheduleCleanupGuard {
+	return &liveScheduleCleanupGuard{pending: make(map[string]int)}
+}
+
+func (g *liveScheduleCleanupGuard) hold(typ string) func() {
+	g.pending[typ]++
+	resolved := false
+	return func() {
+		if !resolved {
+			g.pending[typ]--
+			resolved = true
+		}
+	}
+}
+
+func (g *liveScheduleCleanupGuard) cleanupTarget(typ string, cleanup func()) bool {
+	if g.pending[typ] != 0 {
+		return false
+	}
+	cleanup()
+	return true
+}
+
+func (g *liveScheduleCleanupGuard) retainProjectIfNeeded(release func()) {
+	if g.pending["application"] != 0 || g.pending["compose"] != 0 {
+		release()
+	}
 }
 
 // Ownership is registered before inspecting the create error: the provider
 // preserves an acknowledged-create ID even when read-back returns partial state.
 // An unacknowledged create is never retried, discovered by name, or deleted.
-func runScheduleLiveFixture(t *testing.T, ctx context.Context, args ScheduleArgs, prerequisite bool, ops liveScheduleFixtureOps) error {
+func runScheduleLiveFixture(t *testing.T, ctx context.Context, args ScheduleArgs, prerequisite bool, ops liveScheduleFixtureOps, guard *liveScheduleCleanupGuard) error {
 	t.Helper()
 	if !prerequisite {
 		t.Skip("Schedule coverage requires a disposable target or an explicit dedicated server scope and opt-in")
 	}
 	args.Enabled = false
+	absent := guard.hold(args.ScheduleType)
 	created, err := ops.create(ctx, args)
 	if created.ID == "" {
 		ops.uncertain()
 		return errors.New("Schedule create ownership is uncertain; stop and investigate before retrying")
 	}
-	release := ops.register(created.ID)
+	release := ops.register(created.ID, absent)
 	if err != nil {
 		return errors.New("Schedule acknowledged create could not be confirmed")
 	}
@@ -54,7 +88,10 @@ func runScheduleLiveFixture(t *testing.T, ctx context.Context, args ScheduleArgs
 	}, func() (string, error) {
 		gone, readErr := ops.read(cleanupCtx, created.ID)
 		return gone.ID, readErr
-	}, release)
+	}, func() {
+		absent()
+		release()
+	})
 	if err != nil {
 		return errors.New("Schedule deletion or absence verification failed")
 	}
@@ -72,7 +109,7 @@ func scheduleLivePrerequisite(typ, targetID, optIn, serverScope string) bool {
 	}
 }
 
-func runLiveScheduleCases(t *testing.T, ctx context.Context, api *client.Client, applicationID, composeID string) {
+func runLiveScheduleCases(t *testing.T, ctx context.Context, api *client.Client, applicationID, composeID string, guard *liveScheduleCleanupGuard) {
 	t.Helper()
 	serverScope := os.Getenv("DOKPLOY_ACCEPTANCE_SERVER_ID")
 	optIn := os.Getenv("DOKPLOY_ACCEPTANCE_ALLOW_SERVER_SCHEDULES")
@@ -128,15 +165,18 @@ func runLiveScheduleCases(t *testing.T, ctx context.Context, api *client.Client,
 					return nil
 				},
 			}
-			ops.register = func(id string) func() {
+			ops.register = func(id string, absent func()) func() {
 				return registerLiveCleanup(t, "schedule", id, func(c context.Context) error {
 					return ops.remove(c, id)
 				}, func(c context.Context) (string, error) {
 					gone, err := ops.read(c, id)
+					if err == nil && gone.ID == "" {
+						absent()
+					}
 					return gone.ID, err
 				})
 			}
-			err := runScheduleLiveFixture(t, ctx, args, scheduleLivePrerequisite(target.typ, target.id, optIn, serverScope), ops)
+			err := runScheduleLiveFixture(t, ctx, args, scheduleLivePrerequisite(target.typ, target.id, optIn, serverScope), ops, guard)
 			requireLiveLifecycleNoError(t, "Schedule", "disabled lifecycle", err)
 		})
 		if heavyLiveTierStopped() {
@@ -151,6 +191,7 @@ func TestScheduleLiveFixtureDisabledAndCleanupOrdered(t *testing.T) {
 			var events []string
 			present := false
 			acknowledged := phase != "uncertain-create"
+			guard := newLiveScheduleCleanupGuard()
 			ops := liveScheduleFixtureOps{
 				create: func(_ context.Context, a ScheduleArgs) (infer.CreateResponse[ScheduleState], error) {
 					require.False(t, a.Enabled, "fixture must never enable command execution")
@@ -198,17 +239,20 @@ func TestScheduleLiveFixtureDisabledAndCleanupOrdered(t *testing.T) {
 				}
 			}
 			t.Run("fixture", func(t *testing.T) {
-				t.Cleanup(func() { events = append(events, "target-cleanup") })
-				ops.register = func(id string) func() {
+				t.Cleanup(func() { guard.cleanupTarget("application", func() { events = append(events, "target-cleanup") }) })
+				ops.register = func(id string, absent func()) func() {
 					events = append(events, "register")
 					return registerLiveCleanup(t, "schedule", id, func(c context.Context) error {
 						return ops.remove(c, id)
 					}, func(c context.Context) (string, error) {
 						v, err := ops.read(c, id)
+						if err == nil && v.ID == "" {
+							absent()
+						}
 						return v.ID, err
 					})
 				}
-				err := runScheduleLiveFixture(t, context.Background(), ScheduleArgs{Enabled: true}, true, ops)
+				err := runScheduleLiveFixture(t, context.Background(), ScheduleArgs{ScheduleType: "application", Enabled: true}, true, ops, guard)
 				if phase == "success" {
 					require.NoError(t, err)
 				} else {
@@ -224,7 +268,7 @@ func TestScheduleLiveFixtureDisabledAndCleanupOrdered(t *testing.T) {
 				"read-wrong-id":    {"create", "register", "read", "delete", "absence", "target-cleanup"},
 				"exercise-error":   {"create", "register", "read", "exercise", "delete", "absence", "target-cleanup"},
 				"delete-error":     {"create", "register", "read", "delete", "delete", "absence", "target-cleanup"},
-				"uncertain-create": {"create", "stop", "target-cleanup"},
+				"uncertain-create": {"create", "stop"},
 			}
 			require.Equal(t, want[phase], events)
 		})
@@ -232,7 +276,7 @@ func TestScheduleLiveFixtureDisabledAndCleanupOrdered(t *testing.T) {
 	var skipped bool
 	t.Run("missing-prerequisite", func(t *testing.T) {
 		t.Cleanup(func() { skipped = t.Skipped() })
-		err := runScheduleLiveFixture(t, context.Background(), ScheduleArgs{}, false, liveScheduleFixtureOps{})
+		err := runScheduleLiveFixture(t, context.Background(), ScheduleArgs{}, false, liveScheduleFixtureOps{}, newLiveScheduleCleanupGuard())
 		t.Fatalf("missing prerequisite did not skip: %v", err)
 	})
 	require.True(t, skipped)
@@ -250,4 +294,75 @@ func TestScheduleLiveServerPrerequisites(t *testing.T) {
 	require.False(t, scheduleLivePrerequisite("application", "", "1", "offline-scope"))
 	require.True(t, scheduleLivePrerequisite("application", "offline-target", "", ""))
 	require.True(t, scheduleLivePrerequisite("compose", "offline-target", "", ""))
+}
+
+func TestScheduleLiveParentCleanupRetainsUnresolvedTargets(t *testing.T) {
+	for _, phase := range []string{"persistent-delete-error", "uncertain-create"} {
+		for _, typ := range []string{"application", "compose"} {
+			t.Run(phase+"/"+typ, func(t *testing.T) {
+				guard := newLiveScheduleCleanupGuard()
+				var targetDeleted, unrelatedDeleted, projectDeleted bool
+				var stopped bool
+				deleteAttempts := 0
+				t.Run("parent", func(t *testing.T) {
+					projectOwner := newLiveCleanupOwner(func() { projectDeleted = true })
+					t.Cleanup(projectOwner.cleanupOnce)
+					t.Cleanup(func() { guard.retainProjectIfNeeded(projectOwner.release) })
+					t.Cleanup(func() {
+						guard.cleanupTarget(typ, func() { targetDeleted = true })
+						other := "compose"
+						if typ == "compose" {
+							other = "application"
+						}
+						guard.cleanupTarget(other, func() { unrelatedDeleted = true })
+					})
+					t.Run("schedule", func(t *testing.T) {
+						ops := liveScheduleFixtureOps{
+							create: func(context.Context, ScheduleArgs) (infer.CreateResponse[ScheduleState], error) {
+								if phase == "uncertain-create" {
+									return infer.CreateResponse[ScheduleState]{}, errors.New("private response details")
+								}
+								return infer.CreateResponse[ScheduleState]{ID: "offline-schedule"}, nil
+							},
+							read: func(context.Context, string) (infer.ReadResponse[ScheduleArgs, ScheduleState], error) {
+								return infer.ReadResponse[ScheduleArgs, ScheduleState]{ID: "offline-schedule"}, nil
+							},
+							remove: func(context.Context, string) error {
+								deleteAttempts++
+								return errors.New("private response details")
+							},
+							uncertain: func() { stopped = true },
+						}
+						ops.register = func(id string, absent func()) func() {
+							owner := newLiveCleanupOwner(func() {
+								err := verifyLiveCleanup(context.Background(), func(c context.Context) error { return ops.remove(c, id) }, func(c context.Context) (string, error) {
+									read, err := ops.read(c, id)
+									return read.ID, err
+								})
+								if err != nil {
+									stopped = true
+									return
+								}
+								absent()
+							})
+							t.Cleanup(owner.cleanupOnce)
+							return owner.release
+						}
+						err := runScheduleLiveFixture(t, context.Background(), ScheduleArgs{ScheduleType: typ}, true, ops, guard)
+						require.Error(t, err)
+						require.NotContains(t, err.Error(), "private response details")
+					})
+				})
+				require.False(t, targetDeleted, "unresolved schedule must retain its target")
+				require.False(t, projectDeleted, "project deletion must not cascade into retained targets")
+				require.True(t, unrelatedDeleted, "unrelated workload cleanup remains safe")
+				require.True(t, stopped)
+				if phase == "persistent-delete-error" {
+					require.Equal(t, 2, deleteAttempts, "explicit and fallback deletion must both be attempted")
+				} else {
+					require.Zero(t, deleteAttempts, "uncertain identity must not be deleted")
+				}
+			})
+		}
+	}
 }
