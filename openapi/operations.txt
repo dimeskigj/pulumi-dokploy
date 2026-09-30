@@ -98,3 +98,7 @@ mounts.create
 mounts.one
 mounts.update
 mounts.remove
+schedule.create
+schedule.update
+schedule.delete
+schedule.one
