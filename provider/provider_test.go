@@ -52,7 +52,7 @@ func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {
 func TestProviderHasLookupFunctionsAndNoComponents(t *testing.T) {
 	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
 	require.NoError(t, err)
-	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
+	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getApplication", "dokploy:index:getCompose", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
 	for token, resource := range spec.Resources {
 		require.False(t, resource.IsComponent, token)
 	}

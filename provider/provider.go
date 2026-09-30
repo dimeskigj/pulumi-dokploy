@@ -61,6 +61,8 @@ func Provider() p.Provider {
 		Functions: []infer.InferredFunction{
 			infer.Function(&GetProject{client: configuredClient}),
 			infer.Function(&GetEnvironment{client: configuredClient}),
+			infer.Function(&GetApplication{client: configuredClient}),
+			infer.Function(&GetCompose{client: configuredClient}),
 			infer.Function(&GetServer{client: configuredClient}),
 			infer.Function(&GetRegistry{client: configuredClient}),
 			infer.Function(&GetSSHKey{client: configuredClient}),
