@@ -849,7 +849,14 @@ func TestLiveTier2Workloads(t *testing.T) {
 		}
 	})
 
-	// Keep both workloads alive through every dependent Domain/Mount and
+	t.Run("Schedule", func(t *testing.T) {
+		runLiveScheduleCases(t, ctx, api, applicationID, composeID)
+	})
+	if heavyLiveTierStopped() {
+		t.Fatal("workload tier stopped after Schedule cleanup or ownership uncertainty")
+	}
+
+	// Keep both workloads alive through every dependent Domain/Mount/Schedule and
 	// metadata subtest; these are the final explicit lifecycle operations.
 	if applicationID != "" {
 		deleteAndReadApplication(t, ctx, Application{client: fixedClient(api)}, &applicationID)
