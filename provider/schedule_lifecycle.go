@@ -134,13 +134,14 @@ func readSchedule(ctx context.Context, api *client.Client, id string, prior Sche
 	if err := json.Unmarshal(resp.Body, &fields); err != nil {
 		return ScheduleState{}, errors.New("schedule.one returned an invalid schedule")
 	}
-	if string(fields["enabled"]) == "null" {
+	const jsonNull = "null"
+	if string(fields["enabled"]) == jsonNull {
 		return ScheduleState{}, errors.New("schedule.one returned an invalid enabled value")
 	}
-	if string(fields["appName"]) == "null" {
+	if string(fields["appName"]) == jsonNull {
 		prior.AppName = nil
 	}
-	if string(fields["shellType"]) == "null" {
+	if string(fields["shellType"]) == jsonNull {
 		prior.ShellType = nil
 	}
 	a, err := scheduleArgsFrom(resp.JSON200, prior)
