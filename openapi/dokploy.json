@@ -13917,6 +13917,92 @@
         ]
       }
     },
+    "/server.one": {
+      "get": {
+        "operationId": "server-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "serverId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Server"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "server"
+        ]
+      }
+    },
     "/sshKey.all": {
       "get": {
         "operationId": "sshKey-all",
@@ -15766,6 +15852,9 @@
           "environmentId": {
             "type": "string"
           },
+          "isDefault": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -15789,6 +15878,12 @@
           },
           "description": {
             "type": "string"
+          },
+          "dockerImage": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "env": {
             "type": "string"
@@ -15825,6 +15920,12 @@
           },
           "description": {
             "type": "string"
+          },
+          "dockerImage": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "env": {
             "type": "string"
@@ -15949,6 +16050,12 @@
           "description": {
             "type": "string"
           },
+          "dockerImage": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "env": {
             "type": "string"
           },
@@ -15999,6 +16106,12 @@
           },
           "description": {
             "type": "string"
+          },
+          "dockerImage": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "env": {
             "type": "string"
@@ -16068,6 +16181,12 @@
           },
           "description": {
             "type": "string"
+          },
+          "dockerImage": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "env": {
             "type": "string"
@@ -16302,6 +16421,42 @@
         "required": [
           "scheduleId"
         ],
+        "type": "object"
+      },
+      "Server": {
+        "additionalProperties": true,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "ipAddress": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "serverId": {
+            "type": "string"
+          },
+          "serverStatus": {
+            "type": "string"
+          },
+          "serverType": {
+            "type": "string"
+          },
+          "sshKeyId": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "Tag": {

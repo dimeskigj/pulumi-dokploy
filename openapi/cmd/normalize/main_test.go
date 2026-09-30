@@ -400,6 +400,34 @@ func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	require.NotContains(t, organization, "required")
 }
 
+func TestLookupOpenAPIContracts(t *testing.T) {
+	doc := normalizeRealContract(t)
+	require.Contains(t, doc.Paths, "/server.one")
+	require.NotNil(t, doc.Paths["/server.one"].Get)
+	require.Nil(t, doc.Paths["/server.one"].Post)
+	require.Equal(t, "#/components/schemas/Server", responseSchema(t, doc, "/server.one", "get", "200").Ref)
+	serverParams := doc.Paths["/server.one"].Get.Raw["parameters"].([]any)
+	require.Len(t, serverParams, 1)
+	parameter := serverParams[0].(map[string]any)
+	require.Equal(t, "serverId", parameter["name"])
+	require.Equal(t, true, parameter["required"])
+	for _, name := range []string{"environment.one", "compose.one", "postgres.one", "mysql.one", "mariadb.one", "mongo.one", "redis.one"} {
+		require.Contains(t, normalizedOperationIDs(t, doc), strings.Replace(name, ".", "-", 1))
+	}
+	assertProperty := func(schemaName, property string, expected any) {
+		schema := componentSchema(t, doc, schemaName)
+		properties, ok := schema["properties"].(map[string]any)
+		require.True(t, ok, "%s properties", schemaName)
+		require.Equal(t, expected, properties[property], "%s.%s", schemaName, property)
+	}
+	assertProperty("Environment", "isDefault", map[string]any{"type": "boolean"})
+	for _, n := range []string{"Postgres", "MySQL", "MariaDB", "MongoDB", "Redis"} {
+		assertProperty(n, "dockerImage", map[string]any{"type": []any{"string", "null"}})
+		assertProperty(n, "image", map[string]any{"type": "string"})
+	}
+	require.Equal(t, map[string]any{"type": "string"}, componentSchema(t, doc, "Server")["properties"].(map[string]any)["serverId"])
+}
+
 func responseSchemaType(t *testing.T, d *Document, path, method, status string) string {
 	t.Helper()
 	pathItem, ok := d.Paths[path]

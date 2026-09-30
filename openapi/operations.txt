@@ -88,6 +88,7 @@ registry.one
 registry.update
 registry.remove
 registry.testRegistry
+server.one
 tag.create
 tag.one
 tag.update
