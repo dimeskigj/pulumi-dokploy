@@ -15,7 +15,7 @@ Dokploy API. They run in four independent provider tiers:
 
 - `TestLiveTier1ControlPlane` checks control-plane resources.
 - `TestLiveTier2Workloads` checks applications, Compose services, domains,
-  mounts, dispatches, and source integrations.
+  mounts, dispatches, source integrations, and disabled schedules.
 - `TestLiveTier3Databases` checks database lifecycles.
 - `TestLiveTier4Backups` checks backup and volume-backup lifecycles.
 
@@ -90,6 +90,22 @@ The final command is the Pulumi smoke. Run it only after all four provider
 tiers finish and their stop-marker checks pass.
 
 ## Optional coverage
+
+Tier 2 Schedule coverage uses only its disposable application and Compose targets,
+always sends `enabled:false`, and never invokes manual command execution. Server
+and Dokploy-server schedules skip unless
+`DOKPLOY_ACCEPTANCE_ALLOW_SERVER_SCHEDULES=1` and
+`DOKPLOY_ACCEPTANCE_SERVER_ID` are both set. This additional opt-in is an operator
+assertion that the server scope is dedicated to acceptance, has no unrelated
+resources, and (for `dokploy-server`) that the Dokploy host itself is dedicated.
+The server ID scopes the `server` case; it is a safety prerequisite, not a target
+ID sent to the `dokploy-server` case. Never enable this opt-in for production.
+Schedules are deleted and absence verified before workload target cleanup,
+including fallback cleanup for an acknowledged-create ID with a partial-state
+error. If creation returns no acknowledged identity, the fixture stops the tier
+and sets the stop marker for operator investigation; it never retries, searches
+by name, or deletes an unverified identity. Offline tests do not establish the
+deployed Schedule response contract or live compatibility.
 
 Registry coverage requires `DOKPLOY_REGISTRY_URL`,
 `DOKPLOY_REGISTRY_USERNAME`, `DOKPLOY_REGISTRY_PASSWORD`, and, when needed,
