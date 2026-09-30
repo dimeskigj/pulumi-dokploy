@@ -24,7 +24,48 @@ func providerSchema(t *testing.T) schema.PackageSpec {
 
 func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	spec := providerSchema(t)
-	require.Empty(t, spec.Functions)
+	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
+	for token, function := range spec.Functions {
+		require.NotEmpty(t, function.Description, token)
+		require.Len(t, function.Inputs.Required, 1)
+		for key, field := range function.Inputs.Properties {
+			require.NotEmpty(t, field.Description, token+" input "+key)
+			require.Nil(t, field.Default)
+		}
+		require.NotNil(t, function.ReturnType)
+		require.NotNil(t, function.ReturnType.ObjectTypeSpec)
+		for key, field := range function.ReturnType.ObjectTypeSpec.Properties {
+			require.NotEmpty(t, field.Description, token+" output "+key)
+			require.False(t, field.Secret)
+		}
+	}
+	for _, contract := range []struct {
+		token, id string
+		fields    []string
+	}{
+		{"getProject", "projectId", []string{"description", "defaultEnvironmentId"}},
+		{"getEnvironment", "environmentId", []string{"description", "projectId", "isDefault"}},
+		{"getServer", "serverId", []string{"description", "ipAddress", "port", "username", "organizationId", "sshKeyId", "serverType", "status"}},
+		{"getRegistry", "registryId", []string{"url", "username", "imagePrefix", "serverId", "registryType"}},
+		{"getSSHKey", "sshKeyId", []string{"description", "publicKey", "organizationId"}},
+	} {
+		fn := spec.Functions["dokploy:index:"+contract.token]
+		require.Equal(t, []string{contract.id}, fn.Inputs.Required)
+		require.Equal(t, []string{contract.id}, objectKeys(fn.Inputs.Properties))
+		output := fn.ReturnType.ObjectTypeSpec
+		require.ElementsMatch(t, []string{contract.id, "name"}, output.Required)
+		require.ElementsMatch(t, append([]string{contract.id, "name"}, contract.fields...), objectKeys(output.Properties))
+		for _, field := range contract.fields {
+			kind := "string"
+			if field == "isDefault" {
+				kind = "boolean"
+			}
+			if field == "port" {
+				kind = "integer"
+			}
+			require.Equal(t, kind, output.Properties[field].Type, contract.token+"."+field)
+		}
+	}
 	require.Equal(t, "@dimeskigj/pulumi-dokploy", languageSetting(spec, "nodejs", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "packageName"))
 	require.Equal(t, "pulumi_dokploy", languageSetting(spec, "python", "moduleName"))
@@ -233,6 +274,22 @@ func resourceTokens(resources map[string]schema.ResourceSpec) []string {
 		result = append(result, token)
 	}
 	return result
+}
+
+func functionTokens(functions map[string]schema.FunctionSpec) []string {
+	result := make([]string, 0, len(functions))
+	for token := range functions {
+		result = append(result, token)
+	}
+	return result
+}
+
+func objectKeys(properties map[string]schema.PropertySpec) []string {
+	keys := make([]string, 0, len(properties))
+	for key := range properties {
+		keys = append(keys, key)
+	}
+	return keys
 }
 
 func splitSchemaPath(path string) (string, string) {

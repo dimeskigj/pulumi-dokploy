@@ -49,10 +49,10 @@ func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {
 	require.Contains(t, tokens, "dokploy:index:SSHKey")
 }
 
-func TestProviderHasNoSampleFunctionsOrComponents(t *testing.T) {
+func TestProviderHasLookupFunctionsAndNoComponents(t *testing.T) {
 	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
 	require.NoError(t, err)
-	require.Empty(t, spec.Functions)
+	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
 	for token, resource := range spec.Resources {
 		require.False(t, resource.IsComponent, token)
 	}

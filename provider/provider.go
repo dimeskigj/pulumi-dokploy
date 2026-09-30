@@ -58,6 +58,13 @@ func Provider() p.Provider {
 			infer.Resource(&Mount{client: configuredClient}),
 			infer.Resource(&Schedule{client: configuredClient}),
 		},
+		Functions: []infer.InferredFunction{
+			infer.Function(&GetProject{client: configuredClient}),
+			infer.Function(&GetEnvironment{client: configuredClient}),
+			infer.Function(&GetServer{client: configuredClient}),
+			infer.Function(&GetRegistry{client: configuredClient}),
+			infer.Function(&GetSSHKey{client: configuredClient}),
+		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{"provider": "index"},
 	})
 }
