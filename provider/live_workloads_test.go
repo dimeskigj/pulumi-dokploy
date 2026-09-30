@@ -123,34 +123,41 @@ func runDomainComparisonAfterCleanup(cleanup func(), stopped func() bool, compar
 func TestLiveTier2Workloads(t *testing.T) {
 	api := liveClient(t)
 	ctx := liveContext(t, 30*time.Minute)
-	projectID, environmentID, _ := liveProject(t, ctx, api)
+	projectID, environmentID, releaseProject := liveProject(t, ctx, api)
 	_ = projectID
+	scheduleCleanup := newLiveScheduleCleanupGuard()
+	// Registered after project cleanup so this runs first even after Fatal.
+	t.Cleanup(func() { scheduleCleanup.retainProjectIfNeeded(releaseProject) })
 
 	var applicationID, composeID string
 	var applicationStatus, composeStatus string
 	t.Cleanup(func() {
 		// This is a failure-path backstop. The normal path explicitly deletes
 		// both workloads below, after every dependent subtest has finished.
-		if applicationID != "" {
-			r := Application{client: fixedClient(api)}
-			liveCleanupVerified(t, "application", applicationID, func(c context.Context) error {
-				_, e := r.Delete(c, infer.DeleteRequest[ApplicationState]{ID: applicationID})
-				return e
-			}, func(c context.Context) (string, error) {
-				v, e := r.Read(c, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: applicationID})
-				return v.ID, e
-			})
-		}
-		if composeID != "" {
-			r := Compose{client: fixedClient(api)}
-			liveCleanupVerified(t, "compose", composeID, func(c context.Context) error {
-				_, e := r.Delete(c, infer.DeleteRequest[ComposeState]{ID: composeID})
-				return e
-			}, func(c context.Context) (string, error) {
-				v, e := r.Read(c, infer.ReadRequest[ComposeArgs, ComposeState]{ID: composeID})
-				return v.ID, e
-			})
-		}
+		scheduleCleanup.cleanupTarget("application", func() {
+			if applicationID != "" {
+				r := Application{client: fixedClient(api)}
+				liveCleanupVerified(t, "application", applicationID, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[ApplicationState]{ID: applicationID})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: applicationID})
+					return v.ID, e
+				})
+			}
+		})
+		scheduleCleanup.cleanupTarget("compose", func() {
+			if composeID != "" {
+				r := Compose{client: fixedClient(api)}
+				liveCleanupVerified(t, "compose", composeID, func(c context.Context) error {
+					_, e := r.Delete(c, infer.DeleteRequest[ComposeState]{ID: composeID})
+					return e
+				}, func(c context.Context) (string, error) {
+					v, e := r.Read(c, infer.ReadRequest[ComposeArgs, ComposeState]{ID: composeID})
+					return v.ID, e
+				})
+			}
+		})
 	})
 	t.Run("Application", func(t *testing.T) {
 		inputs := ApplicationArgs{Name: liveRunName("application"), EnvironmentID: environmentID, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx:1.27"}}}
@@ -850,7 +857,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 	})
 
 	t.Run("Schedule", func(t *testing.T) {
-		runLiveScheduleCases(t, ctx, api, applicationID, composeID)
+		runLiveScheduleCases(t, ctx, api, applicationID, composeID, scheduleCleanup)
 	})
 	if heavyLiveTierStopped() {
 		t.Fatal("workload tier stopped after Schedule cleanup or ownership uncertainty")
@@ -858,14 +865,18 @@ func TestLiveTier2Workloads(t *testing.T) {
 
 	// Keep both workloads alive through every dependent Domain/Mount/Schedule and
 	// metadata subtest; these are the final explicit lifecycle operations.
-	if applicationID != "" {
-		deleteAndReadApplication(t, ctx, Application{client: fixedClient(api)}, &applicationID)
-		applicationID = ""
-	}
-	if composeID != "" {
-		deleteAndReadCompose(t, ctx, Compose{client: fixedClient(api)}, &composeID)
-		composeID = ""
-	}
+	scheduleCleanup.cleanupTarget("application", func() {
+		if applicationID != "" {
+			deleteAndReadApplication(t, ctx, Application{client: fixedClient(api)}, &applicationID)
+			applicationID = ""
+		}
+	})
+	scheduleCleanup.cleanupTarget("compose", func() {
+		if composeID != "" {
+			deleteAndReadCompose(t, ctx, Compose{client: fixedClient(api)}, &composeID)
+			composeID = ""
+		}
+	})
 }
 
 func workloadDependencyReady(id, status string) bool {
