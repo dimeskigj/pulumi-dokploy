@@ -24,7 +24,7 @@ func providerSchema(t *testing.T) schema.PackageSpec {
 
 func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	spec := providerSchema(t)
-	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getApplication", "dokploy:index:getCompose", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
+	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getApplication", "dokploy:index:getCompose", "dokploy:index:getPostgres", "dokploy:index:getMySQL", "dokploy:index:getMariaDB", "dokploy:index:getMongoDB", "dokploy:index:getRedis", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
 	for token, function := range spec.Functions {
 		require.NotEmpty(t, function.Description, token)
 		require.Len(t, function.Inputs.Required, 1)
@@ -47,6 +47,11 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		{"getEnvironment", "environmentId", []string{"description", "projectId", "isDefault"}},
 		{"getApplication", "applicationId", []string{"description", "appName", "environmentId", "serverId", "status", "registryId", "buildRegistryId"}},
 		{"getCompose", "composeId", []string{"description", "appName", "environmentId", "serverId", "status", "composeType"}},
+		{"getPostgres", "postgresId", []string{"description", "appName", "environmentId", "serverId", "dockerImage", "status", "externalPort", "databaseName", "databaseUser"}},
+		{"getMySQL", "mysqlId", []string{"description", "appName", "environmentId", "serverId", "dockerImage", "status", "externalPort", "databaseName", "databaseUser"}},
+		{"getMariaDB", "mariadbId", []string{"description", "appName", "environmentId", "serverId", "dockerImage", "status", "externalPort", "databaseName", "databaseUser"}},
+		{"getMongoDB", "mongoId", []string{"description", "appName", "environmentId", "serverId", "dockerImage", "status", "externalPort", "databaseUser", "replicaSets"}},
+		{"getRedis", "redisId", []string{"description", "appName", "environmentId", "serverId", "dockerImage", "status", "externalPort"}},
 		{"getServer", "serverId", []string{"description", "ipAddress", "port", "username", "organizationId", "sshKeyId", "serverType", "status"}},
 		{"getRegistry", "registryId", []string{"url", "username", "imagePrefix", "serverId", "registryType"}},
 		{"getSSHKey", "sshKeyId", []string{"description", "publicKey", "organizationId"}},
@@ -59,10 +64,10 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		require.ElementsMatch(t, append([]string{contract.id, "name"}, contract.fields...), objectKeys(output.Properties))
 		for _, field := range contract.fields {
 			kind := "string"
-			if field == "isDefault" {
+			if field == "isDefault" || field == "replicaSets" {
 				kind = "boolean"
 			}
-			if field == "port" {
+			if field == "port" || field == "externalPort" {
 				kind = "integer"
 			}
 			require.Equal(t, kind, output.Properties[field].Type, contract.token+"."+field)
