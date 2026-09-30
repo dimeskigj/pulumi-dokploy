@@ -1,7 +1,8 @@
 {
   "name": "dokploy",
   "displayName": "Dokploy",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, backup destinations, database backups, and volume backups.",
+  "version": "0.0.1-alpha.0+dev",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups.",
   "keywords": [
     "category/infrastructure",
     "kind/native",
@@ -2067,6 +2068,169 @@
         "name",
         "privateKey",
         "publicKey"
+      ]
+    },
+    "dokploy:index:Schedule": {
+      "description": "A Dokploy scheduled command.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "Optional application name.",
+          "replaceOnChanges": true
+        },
+        "applicationId": {
+          "type": "string",
+          "description": "Target application ID.",
+          "replaceOnChanges": true
+        },
+        "command": {
+          "type": "string",
+          "description": "Command executed by the schedule.",
+          "secret": true
+        },
+        "composeId": {
+          "type": "string",
+          "description": "Target Compose ID.",
+          "replaceOnChanges": true
+        },
+        "cronExpression": {
+          "type": "string",
+          "description": "Cron expression for the schedule."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional schedule description."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the schedule is enabled; defaults to false.",
+          "default": false
+        },
+        "name": {
+          "type": "string",
+          "description": "Schedule name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "Dokploy organization ID."
+        },
+        "scheduleId": {
+          "type": "string",
+          "description": "Stable Dokploy schedule ID."
+        },
+        "scheduleType": {
+          "type": "string",
+          "description": "Schedule target type: application, compose, server, or dokploy-server.",
+          "replaceOnChanges": true
+        },
+        "script": {
+          "type": "string",
+          "description": "Optional script executed by the schedule.",
+          "secret": true
+        },
+        "serverId": {
+          "type": "string",
+          "description": "Target server ID.",
+          "replaceOnChanges": true
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "Optional Compose service name.",
+          "replaceOnChanges": true
+        },
+        "shellType": {
+          "type": "string",
+          "description": "Shell used to execute the command (bash or sh)."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Timezone for the schedule."
+        }
+      },
+      "required": [
+        "name",
+        "cronExpression",
+        "command",
+        "scheduleType",
+        "enabled",
+        "scheduleId"
+      ],
+      "inputProperties": {
+        "appName": {
+          "type": "string",
+          "description": "Optional application name.",
+          "replaceOnChanges": true
+        },
+        "applicationId": {
+          "type": "string",
+          "description": "Target application ID.",
+          "replaceOnChanges": true
+        },
+        "command": {
+          "type": "string",
+          "description": "Command executed by the schedule.",
+          "secret": true
+        },
+        "composeId": {
+          "type": "string",
+          "description": "Target Compose ID.",
+          "replaceOnChanges": true
+        },
+        "cronExpression": {
+          "type": "string",
+          "description": "Cron expression for the schedule."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional schedule description."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the schedule is enabled; defaults to false.",
+          "default": false
+        },
+        "name": {
+          "type": "string",
+          "description": "Schedule name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "Dokploy organization ID."
+        },
+        "scheduleType": {
+          "type": "string",
+          "description": "Schedule target type: application, compose, server, or dokploy-server.",
+          "replaceOnChanges": true
+        },
+        "script": {
+          "type": "string",
+          "description": "Optional script executed by the schedule.",
+          "secret": true
+        },
+        "serverId": {
+          "type": "string",
+          "description": "Target server ID.",
+          "replaceOnChanges": true
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "Optional Compose service name.",
+          "replaceOnChanges": true
+        },
+        "shellType": {
+          "type": "string",
+          "description": "Shell used to execute the command (bash or sh)."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Timezone for the schedule."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "cronExpression",
+        "command",
+        "scheduleType"
       ]
     },
     "dokploy:index:Tag": {

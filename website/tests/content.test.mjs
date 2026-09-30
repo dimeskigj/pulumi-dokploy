@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const required = [
@@ -15,6 +15,7 @@ const required = [
   "guides/databases.mdx",
   "guides/domains.mdx",
   "guides/backups.mdx",
+  "guides/schedules.mdx",
   "guides/imports.mdx",
   "guides/troubleshooting.mdx",
   "contributing.mdx",
@@ -164,18 +165,19 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/imports/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
      "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
+    "/reference/schedule/",
   ]);
   for (const match of config.matchAll(/link: "(\/[^\"]*)"/g)) {
     const route = match[1];
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-   assert.equal((config.match(/link: "\//g) ?? []).length, 37);
-  assert.equal(curatedFiles.length, 14);
+   assert.equal((config.match(/link: "\//g) ?? []).length, 39);
+  assert.equal(curatedFiles.length, 15);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
@@ -251,4 +253,40 @@ test("complete example actively wires SSH, registry, and secret mount inputs", a
   assert.match(yaml, /fileMountContent:[\s\S]*?secret: true/);
   assert.match(yaml, /content:\s*\n\s*fn::secret: \$\{fileMountContent\}/);
   assert.doesNotMatch(yaml, /fn::secret: APP_ENV=staging/);
+});
+
+test("Schedule reference and guide are published in the sidebar", async () => {
+  const references = await readdir(new URL("../src/content/docs/reference/", import.meta.url));
+  assert.ok(references.includes("schedule.mdx"), "generated Schedule reference must exist");
+  const reference = await readFile(new URL("../src/content/docs/reference/schedule.mdx", import.meta.url), "utf8");
+  assert.match(reference, /title: "Schedule"/);
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  assert.match(config, /label: "Schedule", link: "\/reference\/schedule\/"/);
+  assert.match(config, /label: "Schedules", link: "\/guides\/schedules\/"/);
+});
+
+test("Schedule YAML sample stays disabled, application-scoped, and secret", async () => {
+  const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
+  const sample = yaml.match(/^  applicationSchedule:\n[\s\S]*?(?=^  \w|$(?![\s\S]))/m)?.[0];
+  assert.ok(sample, "disabled Schedule sample must exist");
+  assert.match(sample, /type: dokploy:index:Schedule/);
+  assert.match(sample, /scheduleType: application/);
+  assert.match(sample, /applicationId: \$\{application\.applicationId\}/);
+  assert.match(sample, /enabled: false/);
+  assert.match(sample, /command:\s*\n\s*fn::secret:/);
+  const complete = await readFile(new URL("../src/content/docs/examples/complete.mdx", import.meta.url), "utf8");
+  assert.match(complete, /dokploy:index:Schedule/);
+  assert.match(complete, /applicationSchedule/);
+});
+
+test("Schedule guide warns about command execution and the unverified live contract", async () => {
+  const pages = await readdir(new URL("../src/content/docs/guides/", import.meta.url));
+  assert.ok(pages.includes("schedules.mdx"), "Schedule safety guide must exist");
+  const guide = await readFile(new URL("../src/content/docs/guides/schedules.mdx", import.meta.url), "utf8");
+  assert.match(guide, /enabled schedules execute shell commands/i);
+  assert.match(guide, /enabled.*defaults to.*false/i);
+  assert.match(guide, /command.*script.*secret/i);
+  assert.match(guide, /unverified.*live|live.*unverified/i);
+  assert.match(guide, /dedicated non-production server/i);
+  assert.match(guide, /reference\/schedule/);
 });

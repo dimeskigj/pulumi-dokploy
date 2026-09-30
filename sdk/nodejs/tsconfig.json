@@ -38,6 +38,7 @@
         "provider.ts",
         "redis.ts",
         "registry.ts",
+        "schedule.ts",
         "sshkey.ts",
         "tag.ts",
         "types/index.ts",

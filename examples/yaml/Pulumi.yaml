@@ -134,6 +134,19 @@ resources:
       #     build:
       #       type: nixpacks
 
+  # Disabled by default: enabling schedules executes shell commands on the target.
+  # Validate the unverified live Schedule contract on a dedicated test server first.
+  applicationSchedule:
+    type: dokploy:index:Schedule
+    properties:
+      name: mvp-application-schedule
+      cronExpression: "0 0 * * *"
+      scheduleType: application
+      applicationId: ${application.applicationId}
+      enabled: false
+      command:
+        fn::secret: "echo scheduled maintenance"
+
   genericGitApplication:
     type: dokploy:index:Application
     properties:
