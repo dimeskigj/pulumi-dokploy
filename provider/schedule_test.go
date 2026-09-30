@@ -102,6 +102,57 @@ func TestScheduleCreateDryRunNoCalls(t *testing.T) {
 	require.Equal(t, "placeholder-id", up.Output.ScheduleID)
 }
 
+func TestScheduleCreateBrokenAcknowledgmentBody(t *testing.T) {
+	for _, confirmed := range []bool{false, true} {
+		t.Run(map[bool]string{false: "partial-state", true: "confirmed"}[confirmed], func(t *testing.T) {
+			calls := 0
+			var id string
+			var body map[string]any
+			r := scheduleTestResource(t, func(w http.ResponseWriter, req *http.Request) {
+				calls++
+				switch calls {
+				case 1:
+					require.Equal(t, "/api/schedule.create", req.URL.Path)
+					require.Equal(t, http.MethodPost, req.Method)
+					require.NoError(t, json.NewDecoder(req.Body).Decode(&body))
+					id, _ = body["scheduleId"].(string)
+					// Acknowledged headers, but a truncated body makes the generated
+					// response parser's io.ReadAll fail with unexpected EOF.
+					w.Header().Set("Content-Length", "100")
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write([]byte("{"))
+				case 2:
+					require.Equal(t, "/api/schedule.one", req.URL.Path)
+					require.Equal(t, http.MethodGet, req.Method)
+					require.True(t, req.URL.Query().Get("scheduleId") == id)
+					if !confirmed {
+						w.WriteHeader(http.StatusNotFound)
+						return
+					}
+					w.Header().Set("Content-Type", "application/json")
+					require.NoError(t, json.NewEncoder(w).Encode(body))
+				default:
+					t.Error("unexpected request: creation must not retry or delete")
+				}
+			})
+			a := scheduleTestArgs()
+			got, err := r.Create(t.Context(), infer.CreateRequest[ScheduleArgs]{Inputs: a})
+			if confirmed {
+				require.NoError(t, err)
+			} else {
+				var partial infer.ResourceInitFailedError
+				require.ErrorAs(t, err, &partial)
+				for _, secret := range []string{id, a.Command, *a.Script} {
+					require.False(t, strings.Contains(err.Error(), secret))
+				}
+			}
+			require.True(t, id != "" && got.ID == id && got.Output.ScheduleID == id)
+			require.True(t, got.Output.Command == a.Command && got.Output.Script != nil && *got.Output.Script == *a.Script)
+			require.Equal(t, 2, calls)
+		})
+	}
+}
+
 func TestScheduleCreateReadbackFailuresKeepPartialID(t *testing.T) {
 	for _, body := range []string{"404", "null", "", "{}", `{"scheduleId":"unrelated"}`, "transport"} {
 		t.Run(body, func(t *testing.T) {
@@ -386,6 +437,27 @@ func TestScheduleCheckDefersComputedTargets(t *testing.T) {
 	require.Empty(t, got.Failures)
 }
 
+func TestScheduleCheckEmptyAndComputedType(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		typ      property.Value
+		failures []string
+	}{
+		{"empty", property.New(""), []string{"scheduleType"}},
+		{"computed-with-known-target", property.New(property.Computed), nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			values := map[string]property.Value{"name": property.New("n"), "cronExpression": property.New("cron"), "command": property.New("echo"), "scheduleType": tc.typ}
+			if tc.name == "computed-with-known-target" {
+				values["applicationId"] = property.New("placeholder-app")
+			}
+			got, err := (Schedule{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(values)})
+			require.NoError(t, err)
+			require.ElementsMatch(t, tc.failures, failureProperties(got.Failures))
+		})
+	}
+}
+
 func TestScheduleCheckRejectsMissingRequiredFieldsAndInvalidShell(t *testing.T) {
 	inputs := property.NewMap(map[string]property.Value{"name": property.New(""), "cronExpression": property.New(""), "command": property.New(""), "scheduleType": property.New("dokploy-server"), "shellType": property.New("zsh")})
 	got, err := (Schedule{}).Check(t.Context(), infer.CheckRequest{NewInputs: inputs})
@@ -420,4 +492,43 @@ func TestScheduleDiffReplacementAndUpdates(t *testing.T) {
 	equal, err := (Schedule{}).Diff(t.Context(), infer.DiffRequest[ScheduleArgs, ScheduleState]{Inputs: old, State: ScheduleState{ScheduleArgs: old}})
 	require.NoError(t, err)
 	require.False(t, equal.HasChanges)
+}
+
+func TestScheduleDiffFieldMatrix(t *testing.T) {
+	for _, tc := range []struct {
+		field   string
+		replace bool
+		change  func(*ScheduleArgs)
+	}{
+		{"scheduleType", true, func(a *ScheduleArgs) { a.ScheduleType = "server" }},
+		{"applicationId", true, func(a *ScheduleArgs) { a.ApplicationID = ptr("new-app") }},
+		{"composeId", true, func(a *ScheduleArgs) { a.ComposeID = ptr("new-compose") }},
+		{"serverId", true, func(a *ScheduleArgs) { a.ServerID = ptr("new-server") }},
+		{"appName", true, func(a *ScheduleArgs) { a.AppName = ptr("new-app-name") }},
+		{"serviceName", true, func(a *ScheduleArgs) { a.ServiceName = ptr("new-service") }},
+		{"name", false, func(a *ScheduleArgs) { a.Name = "new-name" }},
+		{"cronExpression", false, func(a *ScheduleArgs) { a.CronExpression = "new-cron" }},
+		{"command", false, func(a *ScheduleArgs) { a.Command = "new-command" }},
+		{"description", false, func(a *ScheduleArgs) { a.Description = ptr("new-description") }},
+		{"shellType", false, func(a *ScheduleArgs) { a.ShellType = ptr("bash") }},
+		{"script", false, func(a *ScheduleArgs) { a.Script = ptr("new-script") }},
+		{"timezone", false, func(a *ScheduleArgs) { a.Timezone = ptr("new-timezone") }},
+		{"organizationId", false, func(a *ScheduleArgs) { a.OrganizationID = ptr("new-org") }},
+		{"enabled", false, func(a *ScheduleArgs) { a.Enabled = true }},
+	} {
+		t.Run(tc.field, func(t *testing.T) {
+			old := scheduleTestArgs()
+			next := old
+			tc.change(&next)
+			got, err := (Schedule{}).Diff(t.Context(), infer.DiffRequest[ScheduleArgs, ScheduleState]{Inputs: next, State: ScheduleState{ScheduleArgs: old}})
+			require.NoError(t, err)
+			kind := p.Update
+			if tc.replace {
+				kind = p.UpdateReplace
+			}
+			require.True(t, got.HasChanges)
+			require.Equal(t, map[string]p.PropertyDiff{tc.field: {Kind: kind}}, got.DetailedDiff)
+			require.Equal(t, tc.replace, got.DeleteBeforeReplace)
+		})
+	}
 }
