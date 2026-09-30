@@ -18,14 +18,14 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * An optional environment description.
-     * 
+     *
      */
     @Import(name="description")
     private @Nullable Output<String> description;
 
     /**
      * @return An optional environment description.
-     * 
+     *
      */
     public Optional<Output<String>> description() {
         return Optional.ofNullable(this.description);
@@ -33,14 +33,14 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The environment name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The environment name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -48,14 +48,14 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The parent project ID.
-     * 
+     *
      */
     @Import(name="projectId", required=true)
     private Output<String> projectId;
 
     /**
      * @return The parent project ID.
-     * 
+     *
      */
     public Output<String> projectId() {
         return this.projectId;
@@ -89,9 +89,9 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional environment description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(@Nullable Output<String> description) {
             $.description = description;
@@ -100,9 +100,9 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional environment description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(String description) {
             return description(Output.of(description));
@@ -110,9 +110,9 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The environment name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -121,9 +121,9 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The environment name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -131,9 +131,9 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param projectId The parent project ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder projectId(Output<String> projectId) {
             $.projectId = projectId;
@@ -142,9 +142,9 @@ public final class EnvironmentArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param projectId The parent project ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder projectId(String projectId) {
             return projectId(Output.of(projectId));

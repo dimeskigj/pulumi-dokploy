@@ -16,104 +16,104 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy container registry.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Registry")
 public class Registry extends com.pulumi.resources.CustomResource {
     /**
      * The optional image prefix.
-     * 
+     *
      */
     @Export(name="imagePrefix", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> imagePrefix;
 
     /**
      * @return The optional image prefix.
-     * 
+     *
      */
     public Output<Optional<String>> imagePrefix() {
         return Codegen.optional(this.imagePrefix);
     }
     /**
      * The registry name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The registry name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The registry password.
-     * 
+     *
      */
     @Export(name="password", refs={String.class}, tree="[0]")
     private Output<String> password;
 
     /**
      * @return The registry password.
-     * 
+     *
      */
     public Output<String> password() {
         return this.password;
     }
     /**
      * The stable Dokploy registry ID.
-     * 
+     *
      */
     @Export(name="registryId", refs={String.class}, tree="[0]")
     private Output<String> registryId;
 
     /**
      * @return The stable Dokploy registry ID.
-     * 
+     *
      */
     public Output<String> registryId() {
         return this.registryId;
     }
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Export(name="serverId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Output<Optional<String>> serverId() {
         return Codegen.optional(this.serverId);
     }
     /**
      * The registry URL.
-     * 
+     *
      */
     @Export(name="url", refs={String.class}, tree="[0]")
     private Output<String> url;
 
     /**
      * @return The registry URL.
-     * 
+     *
      */
     public Output<String> url() {
         return this.url;
     }
     /**
      * The registry username.
-     * 
+     *
      */
     @Export(name="username", refs={String.class}, tree="[0]")
     private Output<String> username;
 
     /**
      * @return The registry username.
-     * 
+     *
      */
     public Output<String> username() {
         return this.username;

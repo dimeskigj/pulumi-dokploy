@@ -471,4 +471,3 @@ class Application(pulumi.CustomResource):
         The current application deployment status.
         """
         return pulumi.get(self, "status")
-

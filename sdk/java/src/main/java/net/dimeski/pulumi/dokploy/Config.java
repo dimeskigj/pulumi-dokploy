@@ -11,14 +11,14 @@ public final class Config {
     private static final com.pulumi.Config config = com.pulumi.Config.of("dokploy");
 /**
  * Dokploy API key sent through x-api-key.
- * 
+ *
  */
     public String apiKey() {
         return Codegen.stringProp("apiKey").config(config).env("DOKPLOY_API_KEY").require();
     }
 /**
  * Base URL of the Dokploy instance.
- * 
+ *
  */
     public String endpoint() {
         return Codegen.stringProp("endpoint").config(config).env("DOKPLOY_ENDPOINT").require();

@@ -173,4 +173,3 @@ class Project(pulumi.CustomResource):
         The stable Dokploy project ID.
         """
         return pulumi.get(self, "project_id")
-

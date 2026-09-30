@@ -203,4 +203,3 @@ class Environment(pulumi.CustomResource):
         The parent project ID.
         """
         return pulumi.get(self, "project_id")
-

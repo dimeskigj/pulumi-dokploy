@@ -847,5 +847,3 @@ class RawComposeSource(dict):
         The raw Compose file.
         """
         return pulumi.get(self, "compose_file")
-
-

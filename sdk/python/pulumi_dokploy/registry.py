@@ -284,4 +284,3 @@ class Registry(pulumi.CustomResource):
         The registry username.
         """
         return pulumi.get(self, "username")
-

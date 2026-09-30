@@ -15,48 +15,48 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A reusable Dokploy project tag.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Tag")
 public class Tag extends com.pulumi.resources.CustomResource {
     /**
      * The optional opaque tag color.
-     * 
+     *
      */
     @Export(name="color", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> color;
 
     /**
      * @return The optional opaque tag color.
-     * 
+     *
      */
     public Output<Optional<String>> color() {
         return Codegen.optional(this.color);
     }
     /**
      * The tag name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The tag name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The stable Dokploy tag ID.
-     * 
+     *
      */
     @Export(name="tagId", refs={String.class}, tree="[0]")
     private Output<String> tagId;
 
     /**
      * @return The stable Dokploy tag ID.
-     * 
+     *
      */
     public Output<String> tagId() {
         return this.tagId;

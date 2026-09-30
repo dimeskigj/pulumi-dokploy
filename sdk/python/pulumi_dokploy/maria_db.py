@@ -475,4 +475,3 @@ class MariaDB(pulumi.CustomResource):
         The current MariaDB deployment status.
         """
         return pulumi.get(self, "status")
-

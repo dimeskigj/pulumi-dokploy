@@ -446,4 +446,3 @@ class Postgres(pulumi.CustomResource):
         The current PostgreSQL deployment status.
         """
         return pulumi.get(self, "status")
-

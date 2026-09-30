@@ -15,62 +15,62 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy project.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Project")
 public class Project extends com.pulumi.resources.CustomResource {
     /**
      * The project&#39;s default environment ID.
-     * 
+     *
      */
     @Export(name="defaultEnvironmentId", refs={String.class}, tree="[0]")
     private Output<String> defaultEnvironmentId;
 
     /**
      * @return The project&#39;s default environment ID.
-     * 
+     *
      */
     public Output<String> defaultEnvironmentId() {
         return this.defaultEnvironmentId;
     }
     /**
      * An optional project description.
-     * 
+     *
      */
     @Export(name="description", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> description;
 
     /**
      * @return An optional project description.
-     * 
+     *
      */
     public Output<Optional<String>> description() {
         return Codegen.optional(this.description);
     }
     /**
      * The project name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The project name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The stable Dokploy project ID.
-     * 
+     *
      */
     @Export(name="projectId", refs={String.class}, tree="[0]")
     private Output<String> projectId;
 
     /**
      * @return The stable Dokploy project ID.
-     * 
+     *
      */
     public Output<String> projectId() {
         return this.projectId;

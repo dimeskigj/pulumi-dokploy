@@ -17,202 +17,202 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy MariaDB database.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:MariaDB")
 public class MariaDB extends com.pulumi.resources.CustomResource {
     /**
      * The optional deployed database name.
-     * 
+     *
      */
     @Export(name="appName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> appName;
 
     /**
      * @return The optional deployed database name.
-     * 
+     *
      */
     public Output<Optional<String>> appName() {
         return Codegen.optional(this.appName);
     }
     /**
      * The MariaDB database name.
-     * 
+     *
      */
     @Export(name="databaseName", refs={String.class}, tree="[0]")
     private Output<String> databaseName;
 
     /**
      * @return The MariaDB database name.
-     * 
+     *
      */
     public Output<String> databaseName() {
         return this.databaseName;
     }
     /**
      * The MariaDB database password.
-     * 
+     *
      */
     @Export(name="databasePassword", refs={String.class}, tree="[0]")
     private Output<String> databasePassword;
 
     /**
      * @return The MariaDB database password.
-     * 
+     *
      */
     public Output<String> databasePassword() {
         return this.databasePassword;
     }
     /**
      * The optional MariaDB root password.
-     * 
+     *
      */
     @Export(name="databaseRootPassword", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> databaseRootPassword;
 
     /**
      * @return The optional MariaDB root password.
-     * 
+     *
      */
     public Output<Optional<String>> databaseRootPassword() {
         return Codegen.optional(this.databaseRootPassword);
     }
     /**
      * The MariaDB database user.
-     * 
+     *
      */
     @Export(name="databaseUser", refs={String.class}, tree="[0]")
     private Output<String> databaseUser;
 
     /**
      * @return The MariaDB database user.
-     * 
+     *
      */
     public Output<String> databaseUser() {
         return this.databaseUser;
     }
     /**
      * An optional database description.
-     * 
+     *
      */
     @Export(name="description", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> description;
 
     /**
      * @return An optional database description.
-     * 
+     *
      */
     public Output<Optional<String>> description() {
         return Codegen.optional(this.description);
     }
     /**
      * The MariaDB Docker image.
-     * 
+     *
      */
     @Export(name="dockerImage", refs={String.class}, tree="[0]")
     private Output<String> dockerImage;
 
     /**
      * @return The MariaDB Docker image.
-     * 
+     *
      */
     public Output<String> dockerImage() {
         return this.dockerImage;
     }
     /**
      * Environment variables for MariaDB.
-     * 
+     *
      */
     @Export(name="environment", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> environment;
 
     /**
      * @return Environment variables for MariaDB.
-     * 
+     *
      */
     public Output<Optional<String>> environment() {
         return Codegen.optional(this.environment);
     }
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Export(name="environmentId", refs={String.class}, tree="[0]")
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
     }
     /**
      * The optional externally exposed port.
-     * 
+     *
      */
     @Export(name="externalPort", refs={Integer.class}, tree="[0]")
     private Output</* @Nullable */ Integer> externalPort;
 
     /**
      * @return The optional externally exposed port.
-     * 
+     *
      */
     public Output<Optional<Integer>> externalPort() {
         return Codegen.optional(this.externalPort);
     }
     /**
      * The stable Dokploy MariaDB ID.
-     * 
+     *
      */
     @Export(name="mariadbId", refs={String.class}, tree="[0]")
     private Output<String> mariadbId;
 
     /**
      * @return The stable Dokploy MariaDB ID.
-     * 
+     *
      */
     public Output<String> mariadbId() {
         return this.mariadbId;
     }
     /**
      * The database resource name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The database resource name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Export(name="serverId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Output<Optional<String>> serverId() {
         return Codegen.optional(this.serverId);
     }
     /**
      * The current MariaDB deployment status.
-     * 
+     *
      */
     @Export(name="status", refs={String.class}, tree="[0]")
     private Output<String> status;
 
     /**
      * @return The current MariaDB deployment status.
-     * 
+     *
      */
     public Output<String> status() {
         return this.status;

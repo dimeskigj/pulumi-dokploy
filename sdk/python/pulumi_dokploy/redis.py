@@ -386,4 +386,3 @@ class Redis(pulumi.CustomResource):
         The current Redis deployment status.
         """
         return pulumi.get(self, "status")
-

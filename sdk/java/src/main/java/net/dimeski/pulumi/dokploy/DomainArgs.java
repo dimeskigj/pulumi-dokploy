@@ -21,14 +21,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional application ID target.
-     * 
+     *
      */
     @Import(name="applicationId")
     private @Nullable Output<String> applicationId;
 
     /**
      * @return The optional application ID target.
-     * 
+     *
      */
     public Optional<Output<String>> applicationId() {
         return Optional.ofNullable(this.applicationId);
@@ -36,14 +36,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The certificate resolver type.
-     * 
+     *
      */
     @Import(name="certificateType")
     private @Nullable Output<String> certificateType;
 
     /**
      * @return The certificate resolver type.
-     * 
+     *
      */
     public Optional<Output<String>> certificateType() {
         return Optional.ofNullable(this.certificateType);
@@ -51,14 +51,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional Compose ID target.
-     * 
+     *
      */
     @Import(name="composeId")
     private @Nullable Output<String> composeId;
 
     /**
      * @return The optional Compose ID target.
-     * 
+     *
      */
     public Optional<Output<String>> composeId() {
         return Optional.ofNullable(this.composeId);
@@ -66,14 +66,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The custom certificate resolver.
-     * 
+     *
      */
     @Import(name="customCertResolver")
     private @Nullable Output<String> customCertResolver;
 
     /**
      * @return The custom certificate resolver.
-     * 
+     *
      */
     public Optional<Output<String>> customCertResolver() {
         return Optional.ofNullable(this.customCertResolver);
@@ -81,14 +81,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether the domain is enabled.
-     * 
+     *
      */
     @Import(name="enabled")
     private @Nullable Output<Boolean> enabled;
 
     /**
      * @return Whether the domain is enabled.
-     * 
+     *
      */
     public Optional<Output<Boolean>> enabled() {
         return Optional.ofNullable(this.enabled);
@@ -96,14 +96,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The domain hostname.
-     * 
+     *
      */
     @Import(name="host", required=true)
     private Output<String> host;
 
     /**
      * @return The domain hostname.
-     * 
+     *
      */
     public Output<String> host() {
         return this.host;
@@ -111,14 +111,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether HTTPS is enabled.
-     * 
+     *
      */
     @Import(name="https")
     private @Nullable Output<Boolean> https;
 
     /**
      * @return Whether HTTPS is enabled.
-     * 
+     *
      */
     public Optional<Output<Boolean>> https() {
         return Optional.ofNullable(this.https);
@@ -126,14 +126,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The internal URL path.
-     * 
+     *
      */
     @Import(name="internalPath")
     private @Nullable Output<String> internalPath;
 
     /**
      * @return The internal URL path.
-     * 
+     *
      */
     public Optional<Output<String>> internalPath() {
         return Optional.ofNullable(this.internalPath);
@@ -141,14 +141,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The public URL path.
-     * 
+     *
      */
     @Import(name="path")
     private @Nullable Output<String> path;
 
     /**
      * @return The public URL path.
-     * 
+     *
      */
     public Optional<Output<String>> path() {
         return Optional.ofNullable(this.path);
@@ -156,14 +156,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target port.
-     * 
+     *
      */
     @Import(name="port")
     private @Nullable Output<Integer> port;
 
     /**
      * @return The target port.
-     * 
+     *
      */
     public Optional<Output<Integer>> port() {
         return Optional.ofNullable(this.port);
@@ -171,14 +171,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Compose service name.
-     * 
+     *
      */
     @Import(name="serviceName")
     private @Nullable Output<String> serviceName;
 
     /**
      * @return The Compose service name.
-     * 
+     *
      */
     public Optional<Output<String>> serviceName() {
         return Optional.ofNullable(this.serviceName);
@@ -186,14 +186,14 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether to strip the public path.
-     * 
+     *
      */
     @Import(name="stripPath")
     private @Nullable Output<Boolean> stripPath;
 
     /**
      * @return Whether to strip the public path.
-     * 
+     *
      */
     public Optional<Output<Boolean>> stripPath() {
         return Optional.ofNullable(this.stripPath);
@@ -236,9 +236,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId The optional application ID target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(@Nullable Output<String> applicationId) {
             $.applicationId = applicationId;
@@ -247,9 +247,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId The optional application ID target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(String applicationId) {
             return applicationId(Output.of(applicationId));
@@ -257,9 +257,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param certificateType The certificate resolver type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder certificateType(@Nullable Output<String> certificateType) {
             $.certificateType = certificateType;
@@ -268,9 +268,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param certificateType The certificate resolver type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder certificateType(String certificateType) {
             return certificateType(Output.of(certificateType));
@@ -278,9 +278,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId The optional Compose ID target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(@Nullable Output<String> composeId) {
             $.composeId = composeId;
@@ -289,9 +289,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId The optional Compose ID target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(String composeId) {
             return composeId(Output.of(composeId));
@@ -299,9 +299,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param customCertResolver The custom certificate resolver.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder customCertResolver(@Nullable Output<String> customCertResolver) {
             $.customCertResolver = customCertResolver;
@@ -310,9 +310,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param customCertResolver The custom certificate resolver.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder customCertResolver(String customCertResolver) {
             return customCertResolver(Output.of(customCertResolver));
@@ -320,9 +320,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the domain is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(@Nullable Output<Boolean> enabled) {
             $.enabled = enabled;
@@ -331,9 +331,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the domain is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(Boolean enabled) {
             return enabled(Output.of(enabled));
@@ -341,9 +341,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param host The domain hostname.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder host(Output<String> host) {
             $.host = host;
@@ -352,9 +352,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param host The domain hostname.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder host(String host) {
             return host(Output.of(host));
@@ -362,9 +362,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param https Whether HTTPS is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder https(@Nullable Output<Boolean> https) {
             $.https = https;
@@ -373,9 +373,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param https Whether HTTPS is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder https(Boolean https) {
             return https(Output.of(https));
@@ -383,9 +383,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param internalPath The internal URL path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder internalPath(@Nullable Output<String> internalPath) {
             $.internalPath = internalPath;
@@ -394,9 +394,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param internalPath The internal URL path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder internalPath(String internalPath) {
             return internalPath(Output.of(internalPath));
@@ -404,9 +404,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param path The public URL path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder path(@Nullable Output<String> path) {
             $.path = path;
@@ -415,9 +415,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param path The public URL path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder path(String path) {
             return path(Output.of(path));
@@ -425,9 +425,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param port The target port.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder port(@Nullable Output<Integer> port) {
             $.port = port;
@@ -436,9 +436,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param port The target port.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder port(Integer port) {
             return port(Output.of(port));
@@ -446,9 +446,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serviceName The Compose service name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serviceName(@Nullable Output<String> serviceName) {
             $.serviceName = serviceName;
@@ -457,9 +457,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serviceName The Compose service name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serviceName(String serviceName) {
             return serviceName(Output.of(serviceName));
@@ -467,9 +467,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param stripPath Whether to strip the public path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder stripPath(@Nullable Output<Boolean> stripPath) {
             $.stripPath = stripPath;
@@ -478,9 +478,9 @@ public final class DomainArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param stripPath Whether to strip the public path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder stripPath(Boolean stripPath) {
             return stripPath(Output.of(stripPath));

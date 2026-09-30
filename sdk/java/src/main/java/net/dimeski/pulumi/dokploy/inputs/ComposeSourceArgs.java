@@ -17,7 +17,7 @@ import net.dimeski.pulumi.dokploy.inputs.RawComposeSourceArgs;
 
 /**
  * Compose source configuration.
- * 
+ *
  */
 public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
@@ -25,14 +25,14 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Git Compose source.
-     * 
+     *
      */
     @Import(name="git")
     private @Nullable Output<GitComposeSourceArgs> git;
 
     /**
      * @return Git Compose source.
-     * 
+     *
      */
     public Optional<Output<GitComposeSourceArgs>> git() {
         return Optional.ofNullable(this.git);
@@ -40,14 +40,14 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * GitLab Compose source.
-     * 
+     *
      */
     @Import(name="gitlab")
     private @Nullable Output<GitLabComposeSourceArgs> gitlab;
 
     /**
      * @return GitLab Compose source.
-     * 
+     *
      */
     public Optional<Output<GitLabComposeSourceArgs>> gitlab() {
         return Optional.ofNullable(this.gitlab);
@@ -55,14 +55,14 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Raw Compose source.
-     * 
+     *
      */
     @Import(name="raw")
     private @Nullable Output<RawComposeSourceArgs> raw;
 
     /**
      * @return Raw Compose source.
-     * 
+     *
      */
     public Optional<Output<RawComposeSourceArgs>> raw() {
         return Optional.ofNullable(this.raw);
@@ -70,14 +70,14 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Compose source type.
-     * 
+     *
      */
     @Import(name="type", required=true)
     private Output<String> type;
 
     /**
      * @return The Compose source type.
-     * 
+     *
      */
     public Output<String> type() {
         return this.type;
@@ -112,9 +112,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param git Git Compose source.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder git(@Nullable Output<GitComposeSourceArgs> git) {
             $.git = git;
@@ -123,9 +123,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param git Git Compose source.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder git(GitComposeSourceArgs git) {
             return git(Output.of(git));
@@ -133,9 +133,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param gitlab GitLab Compose source.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder gitlab(@Nullable Output<GitLabComposeSourceArgs> gitlab) {
             $.gitlab = gitlab;
@@ -144,9 +144,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param gitlab GitLab Compose source.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder gitlab(GitLabComposeSourceArgs gitlab) {
             return gitlab(Output.of(gitlab));
@@ -154,9 +154,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param raw Raw Compose source.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder raw(@Nullable Output<RawComposeSourceArgs> raw) {
             $.raw = raw;
@@ -165,9 +165,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param raw Raw Compose source.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder raw(RawComposeSourceArgs raw) {
             return raw(Output.of(raw));
@@ -175,9 +175,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param type The Compose source type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(Output<String> type) {
             $.type = type;
@@ -186,9 +186,9 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param type The Compose source type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(String type) {
             return type(Output.of(type));

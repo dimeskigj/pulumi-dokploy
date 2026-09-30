@@ -18,14 +18,14 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional image prefix.
-     * 
+     *
      */
     @Import(name="imagePrefix")
     private @Nullable Output<String> imagePrefix;
 
     /**
      * @return The optional image prefix.
-     * 
+     *
      */
     public Optional<Output<String>> imagePrefix() {
         return Optional.ofNullable(this.imagePrefix);
@@ -33,14 +33,14 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The registry name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The registry name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -48,14 +48,14 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The registry password.
-     * 
+     *
      */
     @Import(name="password", required=true)
     private Output<String> password;
 
     /**
      * @return The registry password.
-     * 
+     *
      */
     public Output<String> password() {
         return this.password;
@@ -63,14 +63,14 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Import(name="serverId")
     private @Nullable Output<String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Optional<Output<String>> serverId() {
         return Optional.ofNullable(this.serverId);
@@ -78,14 +78,14 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The registry URL.
-     * 
+     *
      */
     @Import(name="url", required=true)
     private Output<String> url;
 
     /**
      * @return The registry URL.
-     * 
+     *
      */
     public Output<String> url() {
         return this.url;
@@ -93,14 +93,14 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The registry username.
-     * 
+     *
      */
     @Import(name="username", required=true)
     private Output<String> username;
 
     /**
      * @return The registry username.
-     * 
+     *
      */
     public Output<String> username() {
         return this.username;
@@ -137,9 +137,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param imagePrefix The optional image prefix.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder imagePrefix(@Nullable Output<String> imagePrefix) {
             $.imagePrefix = imagePrefix;
@@ -148,9 +148,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param imagePrefix The optional image prefix.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder imagePrefix(String imagePrefix) {
             return imagePrefix(Output.of(imagePrefix));
@@ -158,9 +158,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The registry name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -169,9 +169,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The registry name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -179,9 +179,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param password The registry password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder password(Output<String> password) {
             $.password = password;
@@ -190,9 +190,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param password The registry password.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder password(String password) {
             return password(Output.of(password));
@@ -200,9 +200,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(@Nullable Output<String> serverId) {
             $.serverId = serverId;
@@ -211,9 +211,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(String serverId) {
             return serverId(Output.of(serverId));
@@ -221,9 +221,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param url The registry URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder url(Output<String> url) {
             $.url = url;
@@ -232,9 +232,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param url The registry URL.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder url(String url) {
             return url(Output.of(url));
@@ -242,9 +242,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param username The registry username.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder username(Output<String> username) {
             $.username = username;
@@ -253,9 +253,9 @@ public final class RegistryArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param username The registry username.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder username(String username) {
             return username(Output.of(username));

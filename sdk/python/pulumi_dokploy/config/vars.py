@@ -33,4 +33,3 @@ class _ExportableConfig(types.ModuleType):
         Base URL of the Dokploy instance.
         """
         return __config__.get('endpoint') or _utilities.get_env('DOKPLOY_ENDPOINT')
-

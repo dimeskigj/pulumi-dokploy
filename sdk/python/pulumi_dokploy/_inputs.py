@@ -1116,5 +1116,3 @@ class RawComposeSourceArgs:
     @compose_file.setter
     def compose_file(self, value: pulumi.Input[_builtins.str]):
         pulumi.set(self, "compose_file", value)
-
-

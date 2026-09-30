@@ -475,4 +475,3 @@ class MySQL(pulumi.CustomResource):
         The current MySQL deployment status.
         """
         return pulumi.get(self, "status")
-

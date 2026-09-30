@@ -18,14 +18,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The application target.
-     * 
+     *
      */
     @Import(name="applicationId")
     private @Nullable Output<String> applicationId;
 
     /**
      * @return The application target.
-     * 
+     *
      */
     public Optional<Output<String>> applicationId() {
         return Optional.ofNullable(this.applicationId);
@@ -33,14 +33,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Compose target.
-     * 
+     *
      */
     @Import(name="composeId")
     private @Nullable Output<String> composeId;
 
     /**
      * @return The Compose target.
-     * 
+     *
      */
     public Optional<Output<String>> composeId() {
         return Optional.ofNullable(this.composeId);
@@ -48,14 +48,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The file content.
-     * 
+     *
      */
     @Import(name="content")
     private @Nullable Output<String> content;
 
     /**
      * @return The file content.
-     * 
+     *
      */
     public Optional<Output<String>> content() {
         return Optional.ofNullable(this.content);
@@ -63,14 +63,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The file path.
-     * 
+     *
      */
     @Import(name="filePath")
     private @Nullable Output<String> filePath;
 
     /**
      * @return The file path.
-     * 
+     *
      */
     public Optional<Output<String>> filePath() {
         return Optional.ofNullable(this.filePath);
@@ -78,14 +78,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The host path.
-     * 
+     *
      */
     @Import(name="hostPath")
     private @Nullable Output<String> hostPath;
 
     /**
      * @return The host path.
-     * 
+     *
      */
     public Optional<Output<String>> hostPath() {
         return Optional.ofNullable(this.hostPath);
@@ -93,14 +93,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The MariaDB target.
-     * 
+     *
      */
     @Import(name="mariadbId")
     private @Nullable Output<String> mariadbId;
 
     /**
      * @return The MariaDB target.
-     * 
+     *
      */
     public Optional<Output<String>> mariadbId() {
         return Optional.ofNullable(this.mariadbId);
@@ -108,14 +108,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The path inside the workload.
-     * 
+     *
      */
     @Import(name="mountPath", required=true)
     private Output<String> mountPath;
 
     /**
      * @return The path inside the workload.
-     * 
+     *
      */
     public Output<String> mountPath() {
         return this.mountPath;
@@ -123,14 +123,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The MySQL target.
-     * 
+     *
      */
     @Import(name="mysqlId")
     private @Nullable Output<String> mysqlId;
 
     /**
      * @return The MySQL target.
-     * 
+     *
      */
     public Optional<Output<String>> mysqlId() {
         return Optional.ofNullable(this.mysqlId);
@@ -138,14 +138,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Postgres target.
-     * 
+     *
      */
     @Import(name="postgresId")
     private @Nullable Output<String> postgresId;
 
     /**
      * @return The Postgres target.
-     * 
+     *
      */
     public Optional<Output<String>> postgresId() {
         return Optional.ofNullable(this.postgresId);
@@ -153,14 +153,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Redis target.
-     * 
+     *
      */
     @Import(name="redisId")
     private @Nullable Output<String> redisId;
 
     /**
      * @return The Redis target.
-     * 
+     *
      */
     public Optional<Output<String>> redisId() {
         return Optional.ofNullable(this.redisId);
@@ -168,14 +168,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The mount type.
-     * 
+     *
      */
     @Import(name="type", required=true)
     private Output<String> type;
 
     /**
      * @return The mount type.
-     * 
+     *
      */
     public Output<String> type() {
         return this.type;
@@ -183,14 +183,14 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The volume name.
-     * 
+     *
      */
     @Import(name="volumeName")
     private @Nullable Output<String> volumeName;
 
     /**
      * @return The volume name.
-     * 
+     *
      */
     public Optional<Output<String>> volumeName() {
         return Optional.ofNullable(this.volumeName);
@@ -233,9 +233,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId The application target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(@Nullable Output<String> applicationId) {
             $.applicationId = applicationId;
@@ -244,9 +244,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId The application target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(String applicationId) {
             return applicationId(Output.of(applicationId));
@@ -254,9 +254,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId The Compose target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(@Nullable Output<String> composeId) {
             $.composeId = composeId;
@@ -265,9 +265,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId The Compose target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(String composeId) {
             return composeId(Output.of(composeId));
@@ -275,9 +275,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param content The file content.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder content(@Nullable Output<String> content) {
             $.content = content;
@@ -286,9 +286,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param content The file content.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder content(String content) {
             return content(Output.of(content));
@@ -296,9 +296,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param filePath The file path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder filePath(@Nullable Output<String> filePath) {
             $.filePath = filePath;
@@ -307,9 +307,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param filePath The file path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder filePath(String filePath) {
             return filePath(Output.of(filePath));
@@ -317,9 +317,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param hostPath The host path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder hostPath(@Nullable Output<String> hostPath) {
             $.hostPath = hostPath;
@@ -328,9 +328,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param hostPath The host path.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder hostPath(String hostPath) {
             return hostPath(Output.of(hostPath));
@@ -338,9 +338,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mariadbId The MariaDB target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mariadbId(@Nullable Output<String> mariadbId) {
             $.mariadbId = mariadbId;
@@ -349,9 +349,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mariadbId The MariaDB target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mariadbId(String mariadbId) {
             return mariadbId(Output.of(mariadbId));
@@ -359,9 +359,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mountPath The path inside the workload.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mountPath(Output<String> mountPath) {
             $.mountPath = mountPath;
@@ -370,9 +370,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mountPath The path inside the workload.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mountPath(String mountPath) {
             return mountPath(Output.of(mountPath));
@@ -380,9 +380,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mysqlId The MySQL target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mysqlId(@Nullable Output<String> mysqlId) {
             $.mysqlId = mysqlId;
@@ -391,9 +391,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mysqlId The MySQL target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mysqlId(String mysqlId) {
             return mysqlId(Output.of(mysqlId));
@@ -401,9 +401,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param postgresId The Postgres target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder postgresId(@Nullable Output<String> postgresId) {
             $.postgresId = postgresId;
@@ -412,9 +412,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param postgresId The Postgres target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder postgresId(String postgresId) {
             return postgresId(Output.of(postgresId));
@@ -422,9 +422,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param redisId The Redis target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder redisId(@Nullable Output<String> redisId) {
             $.redisId = redisId;
@@ -433,9 +433,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param redisId The Redis target.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder redisId(String redisId) {
             return redisId(Output.of(redisId));
@@ -443,9 +443,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param type The mount type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(Output<String> type) {
             $.type = type;
@@ -454,9 +454,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param type The mount type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(String type) {
             return type(Output.of(type));
@@ -464,9 +464,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param volumeName The volume name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder volumeName(@Nullable Output<String> volumeName) {
             $.volumeName = volumeName;
@@ -475,9 +475,9 @@ public final class MountArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param volumeName The volume name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder volumeName(String volumeName) {
             return volumeName(Output.of(volumeName));

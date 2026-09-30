@@ -12,14 +12,14 @@ import java.util.Objects;
 public final class RawComposeSource {
     /**
      * @return The raw Compose file.
-     * 
+     *
      */
     private String composeFile;
 
     private RawComposeSource() {}
     /**
      * @return The raw Compose file.
-     * 
+     *
      */
     public String composeFile() {
         return this.composeFile;

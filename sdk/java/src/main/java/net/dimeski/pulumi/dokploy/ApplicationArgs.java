@@ -20,14 +20,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional deployed application name.
-     * 
+     *
      */
     @Import(name="appName")
     private @Nullable Output<String> appName;
 
     /**
      * @return The optional deployed application name.
-     * 
+     *
      */
     public Optional<Output<String>> appName() {
         return Optional.ofNullable(this.appName);
@@ -35,14 +35,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Build arguments for the application.
-     * 
+     *
      */
     @Import(name="buildArgs")
     private @Nullable Output<String> buildArgs;
 
     /**
      * @return Build arguments for the application.
-     * 
+     *
      */
     public Optional<Output<String>> buildArgs() {
         return Optional.ofNullable(this.buildArgs);
@@ -50,14 +50,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional build registry ID.
-     * 
+     *
      */
     @Import(name="buildRegistryId")
     private @Nullable Output<String> buildRegistryId;
 
     /**
      * @return The optional build registry ID.
-     * 
+     *
      */
     public Optional<Output<String>> buildRegistryId() {
         return Optional.ofNullable(this.buildRegistryId);
@@ -65,14 +65,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Build secrets for the application.
-     * 
+     *
      */
     @Import(name="buildSecrets")
     private @Nullable Output<String> buildSecrets;
 
     /**
      * @return Build secrets for the application.
-     * 
+     *
      */
     public Optional<Output<String>> buildSecrets() {
         return Optional.ofNullable(this.buildSecrets);
@@ -80,14 +80,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether to create an environment file.
-     * 
+     *
      */
     @Import(name="createEnvFile")
     private @Nullable Output<Boolean> createEnvFile;
 
     /**
      * @return Whether to create an environment file.
-     * 
+     *
      */
     public Optional<Output<Boolean>> createEnvFile() {
         return Optional.ofNullable(this.createEnvFile);
@@ -95,14 +95,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * An optional application description.
-     * 
+     *
      */
     @Import(name="description")
     private @Nullable Output<String> description;
 
     /**
      * @return An optional application description.
-     * 
+     *
      */
     public Optional<Output<String>> description() {
         return Optional.ofNullable(this.description);
@@ -110,14 +110,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Environment variables for the application.
-     * 
+     *
      */
     @Import(name="environment")
     private @Nullable Output<String> environment;
 
     /**
      * @return Environment variables for the application.
-     * 
+     *
      */
     public Optional<Output<String>> environment() {
         return Optional.ofNullable(this.environment);
@@ -125,14 +125,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target environment ID.
-     * 
+     *
      */
     @Import(name="environmentId", required=true)
     private Output<String> environmentId;
 
     /**
      * @return The target environment ID.
-     * 
+     *
      */
     public Output<String> environmentId() {
         return this.environmentId;
@@ -140,14 +140,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The application name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The application name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -155,14 +155,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional deployment registry ID.
-     * 
+     *
      */
     @Import(name="registryId")
     private @Nullable Output<String> registryId;
 
     /**
      * @return The optional deployment registry ID.
-     * 
+     *
      */
     public Optional<Output<String>> registryId() {
         return Optional.ofNullable(this.registryId);
@@ -170,14 +170,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional server ID.
-     * 
+     *
      */
     @Import(name="serverId")
     private @Nullable Output<String> serverId;
 
     /**
      * @return The optional server ID.
-     * 
+     *
      */
     public Optional<Output<String>> serverId() {
         return Optional.ofNullable(this.serverId);
@@ -185,14 +185,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The application source configuration.
-     * 
+     *
      */
     @Import(name="source", required=true)
     private Output<ApplicationSourceArgs> source;
 
     /**
      * @return The application source configuration.
-     * 
+     *
      */
     public Output<ApplicationSourceArgs> source() {
         return this.source;
@@ -235,9 +235,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed application name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(@Nullable Output<String> appName) {
             $.appName = appName;
@@ -246,9 +246,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param appName The optional deployed application name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder appName(String appName) {
             return appName(Output.of(appName));
@@ -256,9 +256,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param buildArgs Build arguments for the application.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildArgs(@Nullable Output<String> buildArgs) {
             $.buildArgs = buildArgs;
@@ -267,9 +267,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param buildArgs Build arguments for the application.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildArgs(String buildArgs) {
             return buildArgs(Output.of(buildArgs));
@@ -277,9 +277,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param buildRegistryId The optional build registry ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildRegistryId(@Nullable Output<String> buildRegistryId) {
             $.buildRegistryId = buildRegistryId;
@@ -288,9 +288,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param buildRegistryId The optional build registry ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildRegistryId(String buildRegistryId) {
             return buildRegistryId(Output.of(buildRegistryId));
@@ -298,9 +298,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param buildSecrets Build secrets for the application.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildSecrets(@Nullable Output<String> buildSecrets) {
             $.buildSecrets = buildSecrets;
@@ -309,9 +309,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param buildSecrets Build secrets for the application.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder buildSecrets(String buildSecrets) {
             return buildSecrets(Output.of(buildSecrets));
@@ -319,9 +319,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param createEnvFile Whether to create an environment file.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder createEnvFile(@Nullable Output<Boolean> createEnvFile) {
             $.createEnvFile = createEnvFile;
@@ -330,9 +330,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param createEnvFile Whether to create an environment file.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder createEnvFile(Boolean createEnvFile) {
             return createEnvFile(Output.of(createEnvFile));
@@ -340,9 +340,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional application description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(@Nullable Output<String> description) {
             $.description = description;
@@ -351,9 +351,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param description An optional application description.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder description(String description) {
             return description(Output.of(description));
@@ -361,9 +361,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for the application.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(@Nullable Output<String> environment) {
             $.environment = environment;
@@ -372,9 +372,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environment Environment variables for the application.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environment(String environment) {
             return environment(Output.of(environment));
@@ -382,9 +382,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(Output<String> environmentId) {
             $.environmentId = environmentId;
@@ -393,9 +393,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param environmentId The target environment ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder environmentId(String environmentId) {
             return environmentId(Output.of(environmentId));
@@ -403,9 +403,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The application name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -414,9 +414,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The application name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -424,9 +424,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param registryId The optional deployment registry ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder registryId(@Nullable Output<String> registryId) {
             $.registryId = registryId;
@@ -435,9 +435,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param registryId The optional deployment registry ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder registryId(String registryId) {
             return registryId(Output.of(registryId));
@@ -445,9 +445,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(@Nullable Output<String> serverId) {
             $.serverId = serverId;
@@ -456,9 +456,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serverId The optional server ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serverId(String serverId) {
             return serverId(Output.of(serverId));
@@ -466,9 +466,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param source The application source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder source(Output<ApplicationSourceArgs> source) {
             $.source = source;
@@ -477,9 +477,9 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param source The application source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder source(ApplicationSourceArgs source) {
             return source(Output.of(source));

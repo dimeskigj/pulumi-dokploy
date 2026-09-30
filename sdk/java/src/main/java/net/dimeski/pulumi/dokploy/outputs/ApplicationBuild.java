@@ -14,50 +14,50 @@ import javax.annotation.Nullable;
 public final class ApplicationBuild {
     /**
      * @return The Docker build stage.
-     * 
+     *
      */
     private @Nullable String dockerBuildStage;
     /**
      * @return The Docker build context.
-     * 
+     *
      */
     private @Nullable String dockerContextPath;
     /**
      * @return The Dockerfile path.
-     * 
+     *
      */
     private @Nullable String dockerfile;
     /**
      * @return The build type.
-     * 
+     *
      */
     private String type;
 
     private ApplicationBuild() {}
     /**
      * @return The Docker build stage.
-     * 
+     *
      */
     public Optional<String> dockerBuildStage() {
         return Optional.ofNullable(this.dockerBuildStage);
     }
     /**
      * @return The Docker build context.
-     * 
+     *
      */
     public Optional<String> dockerContextPath() {
         return Optional.ofNullable(this.dockerContextPath);
     }
     /**
      * @return The Dockerfile path.
-     * 
+     *
      */
     public Optional<String> dockerfile() {
         return Optional.ofNullable(this.dockerfile);
     }
     /**
      * @return The build type.
-     * 
+     *
      */
     public String type() {
         return this.type;

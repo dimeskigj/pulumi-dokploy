@@ -16,14 +16,14 @@ public final class ProjectTagArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Dokploy project ID.
-     * 
+     *
      */
     @Import(name="projectId", required=true)
     private Output<String> projectId;
 
     /**
      * @return The Dokploy project ID.
-     * 
+     *
      */
     public Output<String> projectId() {
         return this.projectId;
@@ -31,14 +31,14 @@ public final class ProjectTagArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Dokploy tag ID.
-     * 
+     *
      */
     @Import(name="tagId", required=true)
     private Output<String> tagId;
 
     /**
      * @return The Dokploy tag ID.
-     * 
+     *
      */
     public Output<String> tagId() {
         return this.tagId;
@@ -71,9 +71,9 @@ public final class ProjectTagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param projectId The Dokploy project ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder projectId(Output<String> projectId) {
             $.projectId = projectId;
@@ -82,9 +82,9 @@ public final class ProjectTagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param projectId The Dokploy project ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder projectId(String projectId) {
             return projectId(Output.of(projectId));
@@ -92,9 +92,9 @@ public final class ProjectTagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param tagId The Dokploy tag ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder tagId(Output<String> tagId) {
             $.tagId = tagId;
@@ -103,9 +103,9 @@ public final class ProjectTagArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param tagId The Dokploy tag ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder tagId(String tagId) {
             return tagId(Output.of(tagId));

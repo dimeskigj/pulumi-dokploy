@@ -17,230 +17,230 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy scheduled command.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Schedule")
 public class Schedule extends com.pulumi.resources.CustomResource {
     /**
      * Optional application name.
-     * 
+     *
      */
     @Export(name="appName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> appName;
 
     /**
      * @return Optional application name.
-     * 
+     *
      */
     public Output<Optional<String>> appName() {
         return Codegen.optional(this.appName);
     }
     /**
      * Target application ID.
-     * 
+     *
      */
     @Export(name="applicationId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> applicationId;
 
     /**
      * @return Target application ID.
-     * 
+     *
      */
     public Output<Optional<String>> applicationId() {
         return Codegen.optional(this.applicationId);
     }
     /**
      * Command executed by the schedule.
-     * 
+     *
      */
     @Export(name="command", refs={String.class}, tree="[0]")
     private Output<String> command;
 
     /**
      * @return Command executed by the schedule.
-     * 
+     *
      */
     public Output<String> command() {
         return this.command;
     }
     /**
      * Target Compose ID.
-     * 
+     *
      */
     @Export(name="composeId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> composeId;
 
     /**
      * @return Target Compose ID.
-     * 
+     *
      */
     public Output<Optional<String>> composeId() {
         return Codegen.optional(this.composeId);
     }
     /**
      * Cron expression for the schedule.
-     * 
+     *
      */
     @Export(name="cronExpression", refs={String.class}, tree="[0]")
     private Output<String> cronExpression;
 
     /**
      * @return Cron expression for the schedule.
-     * 
+     *
      */
     public Output<String> cronExpression() {
         return this.cronExpression;
     }
     /**
      * Optional schedule description.
-     * 
+     *
      */
     @Export(name="description", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> description;
 
     /**
      * @return Optional schedule description.
-     * 
+     *
      */
     public Output<Optional<String>> description() {
         return Codegen.optional(this.description);
     }
     /**
      * Whether the schedule is enabled; defaults to false.
-     * 
+     *
      */
     @Export(name="enabled", refs={Boolean.class}, tree="[0]")
     private Output<Boolean> enabled;
 
     /**
      * @return Whether the schedule is enabled; defaults to false.
-     * 
+     *
      */
     public Output<Boolean> enabled() {
         return this.enabled;
     }
     /**
      * Schedule name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return Schedule name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * Dokploy organization ID.
-     * 
+     *
      */
     @Export(name="organizationId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> organizationId;
 
     /**
      * @return Dokploy organization ID.
-     * 
+     *
      */
     public Output<Optional<String>> organizationId() {
         return Codegen.optional(this.organizationId);
     }
     /**
      * Stable Dokploy schedule ID.
-     * 
+     *
      */
     @Export(name="scheduleId", refs={String.class}, tree="[0]")
     private Output<String> scheduleId;
 
     /**
      * @return Stable Dokploy schedule ID.
-     * 
+     *
      */
     public Output<String> scheduleId() {
         return this.scheduleId;
     }
     /**
      * Schedule target type: application, compose, server, or dokploy-server.
-     * 
+     *
      */
     @Export(name="scheduleType", refs={String.class}, tree="[0]")
     private Output<String> scheduleType;
 
     /**
      * @return Schedule target type: application, compose, server, or dokploy-server.
-     * 
+     *
      */
     public Output<String> scheduleType() {
         return this.scheduleType;
     }
     /**
      * Optional script executed by the schedule.
-     * 
+     *
      */
     @Export(name="script", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> script;
 
     /**
      * @return Optional script executed by the schedule.
-     * 
+     *
      */
     public Output<Optional<String>> script() {
         return Codegen.optional(this.script);
     }
     /**
      * Target server ID.
-     * 
+     *
      */
     @Export(name="serverId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serverId;
 
     /**
      * @return Target server ID.
-     * 
+     *
      */
     public Output<Optional<String>> serverId() {
         return Codegen.optional(this.serverId);
     }
     /**
      * Optional Compose service name.
-     * 
+     *
      */
     @Export(name="serviceName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> serviceName;
 
     /**
      * @return Optional Compose service name.
-     * 
+     *
      */
     public Output<Optional<String>> serviceName() {
         return Codegen.optional(this.serviceName);
     }
     /**
      * Shell used to execute the command (bash or sh).
-     * 
+     *
      */
     @Export(name="shellType", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> shellType;
 
     /**
      * @return Shell used to execute the command (bash or sh).
-     * 
+     *
      */
     public Output<Optional<String>> shellType() {
         return Codegen.optional(this.shellType);
     }
     /**
      * Timezone for the schedule.
-     * 
+     *
      */
     @Export(name="timezone", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> timezone;
 
     /**
      * @return Timezone for the schedule.
-     * 
+     *
      */
     public Output<Optional<String>> timezone() {
         return Codegen.optional(this.timezone);

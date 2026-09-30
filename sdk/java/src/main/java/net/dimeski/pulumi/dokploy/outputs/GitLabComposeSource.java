@@ -17,110 +17,110 @@ import javax.annotation.Nullable;
 public final class GitLabComposeSource {
     /**
      * @return The GitLab branch.
-     * 
+     *
      */
     private String branch;
     /**
      * @return The Compose file path.
-     * 
+     *
      */
     private @Nullable String composePath;
     /**
      * @return Whether to enable submodules.
-     * 
+     *
      */
     private @Nullable Boolean enableSubmodules;
     /**
      * @return The GitLab integration ID.
-     * 
+     *
      */
     private String integrationId;
     /**
      * @return The GitLab namespace.
-     * 
+     *
      */
     private String namespace;
     /**
      * @return The GitLab owner.
-     * 
+     *
      */
     private String owner;
     /**
      * @return The GitLab project ID.
-     * 
+     *
      */
     private Integer projectId;
     /**
      * @return The GitLab repository.
-     * 
+     *
      */
     private String repository;
     /**
      * @return Paths to watch.
-     * 
+     *
      */
     private @Nullable List<String> watchPaths;
 
     private GitLabComposeSource() {}
     /**
      * @return The GitLab branch.
-     * 
+     *
      */
     public String branch() {
         return this.branch;
     }
     /**
      * @return The Compose file path.
-     * 
+     *
      */
     public Optional<String> composePath() {
         return Optional.ofNullable(this.composePath);
     }
     /**
      * @return Whether to enable submodules.
-     * 
+     *
      */
     public Optional<Boolean> enableSubmodules() {
         return Optional.ofNullable(this.enableSubmodules);
     }
     /**
      * @return The GitLab integration ID.
-     * 
+     *
      */
     public String integrationId() {
         return this.integrationId;
     }
     /**
      * @return The GitLab namespace.
-     * 
+     *
      */
     public String namespace() {
         return this.namespace;
     }
     /**
      * @return The GitLab owner.
-     * 
+     *
      */
     public String owner() {
         return this.owner;
     }
     /**
      * @return The GitLab project ID.
-     * 
+     *
      */
     public Integer projectId() {
         return this.projectId;
     }
     /**
      * @return The GitLab repository.
-     * 
+     *
      */
     public String repository() {
         return this.repository;
     }
     /**
      * @return Paths to watch.
-     * 
+     *
      */
     public List<String> watchPaths() {
         return this.watchPaths == null ? List.of() : this.watchPaths;

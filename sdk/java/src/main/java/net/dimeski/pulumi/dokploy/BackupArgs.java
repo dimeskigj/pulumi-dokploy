@@ -21,14 +21,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The database name inside the target instance to back up.
-     * 
+     *
      */
     @Import(name="database", required=true)
     private Output<String> database;
 
     /**
      * @return The database name inside the target instance to back up.
-     * 
+     *
      */
     public Output<String> database() {
         return this.database;
@@ -36,14 +36,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The destination ID backups are stored to.
-     * 
+     *
      */
     @Import(name="destinationId", required=true)
     private Output<String> destinationId;
 
     /**
      * @return The destination ID backups are stored to.
-     * 
+     *
      */
     public Output<String> destinationId() {
         return this.destinationId;
@@ -51,14 +51,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether the backup schedule is enabled.
-     * 
+     *
      */
     @Import(name="enabled")
     private @Nullable Output<Boolean> enabled;
 
     /**
      * @return Whether the backup schedule is enabled.
-     * 
+     *
      */
     public Optional<Output<Boolean>> enabled() {
         return Optional.ofNullable(this.enabled);
@@ -66,14 +66,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional number of most recent backups to retain.
-     * 
+     *
      */
     @Import(name="keepLatestCount")
     private @Nullable Output<Integer> keepLatestCount;
 
     /**
      * @return The optional number of most recent backups to retain.
-     * 
+     *
      */
     public Optional<Output<Integer>> keepLatestCount() {
         return Optional.ofNullable(this.keepLatestCount);
@@ -81,14 +81,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target MariaDB ID.
-     * 
+     *
      */
     @Import(name="mariadbId")
     private @Nullable Output<String> mariadbId;
 
     /**
      * @return The target MariaDB ID.
-     * 
+     *
      */
     public Optional<Output<String>> mariadbId() {
         return Optional.ofNullable(this.mariadbId);
@@ -96,14 +96,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target MongoDB ID.
-     * 
+     *
      */
     @Import(name="mongoId")
     private @Nullable Output<String> mongoId;
 
     /**
      * @return The target MongoDB ID.
-     * 
+     *
      */
     public Optional<Output<String>> mongoId() {
         return Optional.ofNullable(this.mongoId);
@@ -111,14 +111,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target MySQL ID.
-     * 
+     *
      */
     @Import(name="mysqlId")
     private @Nullable Output<String> mysqlId;
 
     /**
      * @return The target MySQL ID.
-     * 
+     *
      */
     public Optional<Output<String>> mysqlId() {
         return Optional.ofNullable(this.mysqlId);
@@ -126,14 +126,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The target Postgres ID.
-     * 
+     *
      */
     @Import(name="postgresId")
     private @Nullable Output<String> postgresId;
 
     /**
      * @return The target Postgres ID.
-     * 
+     *
      */
     public Optional<Output<String>> postgresId() {
         return Optional.ofNullable(this.postgresId);
@@ -141,14 +141,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The backup file prefix.
-     * 
+     *
      */
     @Import(name="prefix", required=true)
     private Output<String> prefix;
 
     /**
      * @return The backup file prefix.
-     * 
+     *
      */
     public Output<String> prefix() {
         return this.prefix;
@@ -156,14 +156,14 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The backup cron schedule.
-     * 
+     *
      */
     @Import(name="schedule", required=true)
     private Output<String> schedule;
 
     /**
      * @return The backup cron schedule.
-     * 
+     *
      */
     public Output<String> schedule() {
         return this.schedule;
@@ -204,9 +204,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param database The database name inside the target instance to back up.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder database(Output<String> database) {
             $.database = database;
@@ -215,9 +215,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param database The database name inside the target instance to back up.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder database(String database) {
             return database(Output.of(database));
@@ -225,9 +225,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param destinationId The destination ID backups are stored to.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder destinationId(Output<String> destinationId) {
             $.destinationId = destinationId;
@@ -236,9 +236,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param destinationId The destination ID backups are stored to.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder destinationId(String destinationId) {
             return destinationId(Output.of(destinationId));
@@ -246,9 +246,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the backup schedule is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(@Nullable Output<Boolean> enabled) {
             $.enabled = enabled;
@@ -257,9 +257,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the backup schedule is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(Boolean enabled) {
             return enabled(Output.of(enabled));
@@ -267,9 +267,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param keepLatestCount The optional number of most recent backups to retain.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder keepLatestCount(@Nullable Output<Integer> keepLatestCount) {
             $.keepLatestCount = keepLatestCount;
@@ -278,9 +278,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param keepLatestCount The optional number of most recent backups to retain.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder keepLatestCount(Integer keepLatestCount) {
             return keepLatestCount(Output.of(keepLatestCount));
@@ -288,9 +288,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mariadbId The target MariaDB ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mariadbId(@Nullable Output<String> mariadbId) {
             $.mariadbId = mariadbId;
@@ -299,9 +299,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mariadbId The target MariaDB ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mariadbId(String mariadbId) {
             return mariadbId(Output.of(mariadbId));
@@ -309,9 +309,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mongoId The target MongoDB ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mongoId(@Nullable Output<String> mongoId) {
             $.mongoId = mongoId;
@@ -320,9 +320,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mongoId The target MongoDB ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mongoId(String mongoId) {
             return mongoId(Output.of(mongoId));
@@ -330,9 +330,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mysqlId The target MySQL ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mysqlId(@Nullable Output<String> mysqlId) {
             $.mysqlId = mysqlId;
@@ -341,9 +341,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param mysqlId The target MySQL ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder mysqlId(String mysqlId) {
             return mysqlId(Output.of(mysqlId));
@@ -351,9 +351,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param postgresId The target Postgres ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder postgresId(@Nullable Output<String> postgresId) {
             $.postgresId = postgresId;
@@ -362,9 +362,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param postgresId The target Postgres ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder postgresId(String postgresId) {
             return postgresId(Output.of(postgresId));
@@ -372,9 +372,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param prefix The backup file prefix.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder prefix(Output<String> prefix) {
             $.prefix = prefix;
@@ -383,9 +383,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param prefix The backup file prefix.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder prefix(String prefix) {
             return prefix(Output.of(prefix));
@@ -393,9 +393,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param schedule The backup cron schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder schedule(Output<String> schedule) {
             $.schedule = schedule;
@@ -404,9 +404,9 @@ public final class BackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param schedule The backup cron schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder schedule(String schedule) {
             return schedule(Output.of(schedule));

@@ -12,7 +12,7 @@ import java.util.Objects;
 
 /**
  * Raw Compose source configuration.
- * 
+ *
  */
 public final class RawComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
@@ -20,14 +20,14 @@ public final class RawComposeSourceArgs extends com.pulumi.resources.ResourceArg
 
     /**
      * The raw Compose file.
-     * 
+     *
      */
     @Import(name="composeFile", required=true)
     private Output<String> composeFile;
 
     /**
      * @return The raw Compose file.
-     * 
+     *
      */
     public Output<String> composeFile() {
         return this.composeFile;
@@ -59,9 +59,9 @@ public final class RawComposeSourceArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param composeFile The raw Compose file.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeFile(Output<String> composeFile) {
             $.composeFile = composeFile;
@@ -70,9 +70,9 @@ public final class RawComposeSourceArgs extends com.pulumi.resources.ResourceArg
 
         /**
          * @param composeFile The raw Compose file.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeFile(String composeFile) {
             return composeFile(Output.of(composeFile));

@@ -17,7 +17,7 @@ import net.dimeski.pulumi.dokploy.inputs.GitLabAppSourceArgs;
 
 /**
  * Application source configuration.
- * 
+ *
  */
 public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceArgs {
 
@@ -25,14 +25,14 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
     /**
      * Docker source configuration.
-     * 
+     *
      */
     @Import(name="docker")
     private @Nullable Output<DockerSourceArgs> docker;
 
     /**
      * @return Docker source configuration.
-     * 
+     *
      */
     public Optional<Output<DockerSourceArgs>> docker() {
         return Optional.ofNullable(this.docker);
@@ -40,14 +40,14 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
     /**
      * Git source configuration.
-     * 
+     *
      */
     @Import(name="git")
     private @Nullable Output<GitApplicationSourceArgs> git;
 
     /**
      * @return Git source configuration.
-     * 
+     *
      */
     public Optional<Output<GitApplicationSourceArgs>> git() {
         return Optional.ofNullable(this.git);
@@ -55,14 +55,14 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
     /**
      * GitLab source configuration.
-     * 
+     *
      */
     @Import(name="gitlab")
     private @Nullable Output<GitLabAppSourceArgs> gitlab;
 
     /**
      * @return GitLab source configuration.
-     * 
+     *
      */
     public Optional<Output<GitLabAppSourceArgs>> gitlab() {
         return Optional.ofNullable(this.gitlab);
@@ -70,14 +70,14 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
     /**
      * The application source type.
-     * 
+     *
      */
     @Import(name="type", required=true)
     private Output<String> type;
 
     /**
      * @return The application source type.
-     * 
+     *
      */
     public Output<String> type() {
         return this.type;
@@ -112,9 +112,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param docker Docker source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder docker(@Nullable Output<DockerSourceArgs> docker) {
             $.docker = docker;
@@ -123,9 +123,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param docker Docker source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder docker(DockerSourceArgs docker) {
             return docker(Output.of(docker));
@@ -133,9 +133,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param git Git source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder git(@Nullable Output<GitApplicationSourceArgs> git) {
             $.git = git;
@@ -144,9 +144,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param git Git source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder git(GitApplicationSourceArgs git) {
             return git(Output.of(git));
@@ -154,9 +154,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param gitlab GitLab source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder gitlab(@Nullable Output<GitLabAppSourceArgs> gitlab) {
             $.gitlab = gitlab;
@@ -165,9 +165,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param gitlab GitLab source configuration.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder gitlab(GitLabAppSourceArgs gitlab) {
             return gitlab(Output.of(gitlab));
@@ -175,9 +175,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param type The application source type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(Output<String> type) {
             $.type = type;
@@ -186,9 +186,9 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         /**
          * @param type The application source type.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder type(String type) {
             return type(Output.of(type));

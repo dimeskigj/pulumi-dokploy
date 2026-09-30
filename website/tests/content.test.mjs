@@ -40,7 +40,7 @@ test("secret and destructive lifecycle guidance is explicit", async () => {
 
 test("sidebar keeps the canonical resource order and base-safe links", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
-   const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
+   const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Schedule", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
   const resources = config.slice(config.indexOf('label: "Resources"'), config.indexOf('label: "Examples"'));
   let previous = -1;
   for (const label of resourceOrder) {
@@ -289,4 +289,14 @@ test("Schedule guide warns about command execution and the unverified live contr
   assert.match(guide, /unverified.*live|live.*unverified/i);
   assert.match(guide, /dedicated non-production server/i);
   assert.match(guide, /reference\/schedule/);
+});
+
+test("Schedule guide distinguishes schema secrecy from Java builder outputs", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/schedules.mdx", import.meta.url), "utf8");
+  assert.match(guide, /command.*script.*secret.*Pulumi schema/);
+  assert.match(guide, /Java.*ordinary outputs/);
+  assert.match(guide, /Output\.ofSecret/);
+  assert.match(guide, /\.command\(Output\.ofSecret/);
+  assert.match(guide, /\.script\(Output\.ofSecret/);
+  assert.doesNotMatch(guide, /secret inputs in every generated SDK/);
 });

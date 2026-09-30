@@ -144,4 +144,3 @@ class Provider(pulumi.ProviderResource):
         Base URL of the Dokploy instance.
         """
         return pulumi.get(self, "endpoint")
-

@@ -16,90 +16,90 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy SSH key for Git and registry access.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:SSHKey")
 public class SSHKey extends com.pulumi.resources.CustomResource {
     /**
      * The optional SSH key description.
-     * 
+     *
      */
     @Export(name="description", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> description;
 
     /**
      * @return The optional SSH key description.
-     * 
+     *
      */
     public Output<Optional<String>> description() {
         return Codegen.optional(this.description);
     }
     /**
      * The SSH key name.
-     * 
+     *
      */
     @Export(name="name", refs={String.class}, tree="[0]")
     private Output<String> name;
 
     /**
      * @return The SSH key name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
     }
     /**
      * The Dokploy organization ID owning this SSH key.
-     * 
+     *
      */
     @Export(name="organizationId", refs={String.class}, tree="[0]")
     private Output<String> organizationId;
 
     /**
      * @return The Dokploy organization ID owning this SSH key.
-     * 
+     *
      */
     public Output<String> organizationId() {
         return this.organizationId;
     }
     /**
      * The private SSH key material.
-     * 
+     *
      */
     @Export(name="privateKey", refs={String.class}, tree="[0]")
     private Output<String> privateKey;
 
     /**
      * @return The private SSH key material.
-     * 
+     *
      */
     public Output<String> privateKey() {
         return this.privateKey;
     }
     /**
      * The public SSH key material.
-     * 
+     *
      */
     @Export(name="publicKey", refs={String.class}, tree="[0]")
     private Output<String> publicKey;
 
     /**
      * @return The public SSH key material.
-     * 
+     *
      */
     public Output<String> publicKey() {
         return this.publicKey;
     }
     /**
      * The stable Dokploy SSH key ID.
-     * 
+     *
      */
     @Export(name="sshKeyId", refs={String.class}, tree="[0]")
     private Output<String> sshKeyId;
 
     /**
      * @return The stable Dokploy SSH key ID.
-     * 
+     *
      */
     public Output<String> sshKeyId() {
         return this.sshKeyId;

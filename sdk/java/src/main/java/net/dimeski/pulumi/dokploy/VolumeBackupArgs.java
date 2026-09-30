@@ -21,14 +21,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional target application ID.
-     * 
+     *
      */
     @Import(name="applicationId")
     private @Nullable Output<String> applicationId;
 
     /**
      * @return The optional target application ID.
-     * 
+     *
      */
     public Optional<Output<String>> applicationId() {
         return Optional.ofNullable(this.applicationId);
@@ -36,14 +36,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional target Compose ID.
-     * 
+     *
      */
     @Import(name="composeId")
     private @Nullable Output<String> composeId;
 
     /**
      * @return The optional target Compose ID.
-     * 
+     *
      */
     public Optional<Output<String>> composeId() {
         return Optional.ofNullable(this.composeId);
@@ -51,14 +51,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The backup cron schedule.
-     * 
+     *
      */
     @Import(name="cronExpression", required=true)
     private Output<String> cronExpression;
 
     /**
      * @return The backup cron schedule.
-     * 
+     *
      */
     public Output<String> cronExpression() {
         return this.cronExpression;
@@ -66,14 +66,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The destination ID backups are stored to.
-     * 
+     *
      */
     @Import(name="destinationId", required=true)
     private Output<String> destinationId;
 
     /**
      * @return The destination ID backups are stored to.
-     * 
+     *
      */
     public Output<String> destinationId() {
         return this.destinationId;
@@ -81,14 +81,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether the backup schedule is enabled.
-     * 
+     *
      */
     @Import(name="enabled")
     private @Nullable Output<Boolean> enabled;
 
     /**
      * @return Whether the backup schedule is enabled.
-     * 
+     *
      */
     public Optional<Output<Boolean>> enabled() {
         return Optional.ofNullable(this.enabled);
@@ -96,14 +96,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The optional number of most recent backups to retain.
-     * 
+     *
      */
     @Import(name="keepLatestCount")
     private @Nullable Output<Integer> keepLatestCount;
 
     /**
      * @return The optional number of most recent backups to retain.
-     * 
+     *
      */
     public Optional<Output<Integer>> keepLatestCount() {
         return Optional.ofNullable(this.keepLatestCount);
@@ -111,14 +111,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The volume backup resource name.
-     * 
+     *
      */
     @Import(name="name", required=true)
     private Output<String> name;
 
     /**
      * @return The volume backup resource name.
-     * 
+     *
      */
     public Output<String> name() {
         return this.name;
@@ -126,14 +126,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The backup file prefix.
-     * 
+     *
      */
     @Import(name="prefix", required=true)
     private Output<String> prefix;
 
     /**
      * @return The backup file prefix.
-     * 
+     *
      */
     public Output<String> prefix() {
         return this.prefix;
@@ -141,14 +141,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Compose service name that owns the volume.
-     * 
+     *
      */
     @Import(name="serviceName")
     private @Nullable Output<String> serviceName;
 
     /**
      * @return The Compose service name that owns the volume.
-     * 
+     *
      */
     public Optional<Output<String>> serviceName() {
         return Optional.ofNullable(this.serviceName);
@@ -156,14 +156,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * Whether to turn the backup off without deleting it.
-     * 
+     *
      */
     @Import(name="turnOff")
     private @Nullable Output<Boolean> turnOff;
 
     /**
      * @return Whether to turn the backup off without deleting it.
-     * 
+     *
      */
     public Optional<Output<Boolean>> turnOff() {
         return Optional.ofNullable(this.turnOff);
@@ -171,14 +171,14 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
     /**
      * The Docker volume name to back up.
-     * 
+     *
      */
     @Import(name="volumeName", required=true)
     private Output<String> volumeName;
 
     /**
      * @return The Docker volume name to back up.
-     * 
+     *
      */
     public Output<String> volumeName() {
         return this.volumeName;
@@ -220,9 +220,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId The optional target application ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(@Nullable Output<String> applicationId) {
             $.applicationId = applicationId;
@@ -231,9 +231,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param applicationId The optional target application ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder applicationId(String applicationId) {
             return applicationId(Output.of(applicationId));
@@ -241,9 +241,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId The optional target Compose ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(@Nullable Output<String> composeId) {
             $.composeId = composeId;
@@ -252,9 +252,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param composeId The optional target Compose ID.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder composeId(String composeId) {
             return composeId(Output.of(composeId));
@@ -262,9 +262,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param cronExpression The backup cron schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder cronExpression(Output<String> cronExpression) {
             $.cronExpression = cronExpression;
@@ -273,9 +273,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param cronExpression The backup cron schedule.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder cronExpression(String cronExpression) {
             return cronExpression(Output.of(cronExpression));
@@ -283,9 +283,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param destinationId The destination ID backups are stored to.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder destinationId(Output<String> destinationId) {
             $.destinationId = destinationId;
@@ -294,9 +294,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param destinationId The destination ID backups are stored to.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder destinationId(String destinationId) {
             return destinationId(Output.of(destinationId));
@@ -304,9 +304,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the backup schedule is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(@Nullable Output<Boolean> enabled) {
             $.enabled = enabled;
@@ -315,9 +315,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param enabled Whether the backup schedule is enabled.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder enabled(Boolean enabled) {
             return enabled(Output.of(enabled));
@@ -325,9 +325,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param keepLatestCount The optional number of most recent backups to retain.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder keepLatestCount(@Nullable Output<Integer> keepLatestCount) {
             $.keepLatestCount = keepLatestCount;
@@ -336,9 +336,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param keepLatestCount The optional number of most recent backups to retain.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder keepLatestCount(Integer keepLatestCount) {
             return keepLatestCount(Output.of(keepLatestCount));
@@ -346,9 +346,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The volume backup resource name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(Output<String> name) {
             $.name = name;
@@ -357,9 +357,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param name The volume backup resource name.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder name(String name) {
             return name(Output.of(name));
@@ -367,9 +367,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param prefix The backup file prefix.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder prefix(Output<String> prefix) {
             $.prefix = prefix;
@@ -378,9 +378,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param prefix The backup file prefix.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder prefix(String prefix) {
             return prefix(Output.of(prefix));
@@ -388,9 +388,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serviceName The Compose service name that owns the volume.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serviceName(@Nullable Output<String> serviceName) {
             $.serviceName = serviceName;
@@ -399,9 +399,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param serviceName The Compose service name that owns the volume.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder serviceName(String serviceName) {
             return serviceName(Output.of(serviceName));
@@ -409,9 +409,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param turnOff Whether to turn the backup off without deleting it.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder turnOff(@Nullable Output<Boolean> turnOff) {
             $.turnOff = turnOff;
@@ -420,9 +420,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param turnOff Whether to turn the backup off without deleting it.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder turnOff(Boolean turnOff) {
             return turnOff(Output.of(turnOff));
@@ -430,9 +430,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param volumeName The Docker volume name to back up.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder volumeName(Output<String> volumeName) {
             $.volumeName = volumeName;
@@ -441,9 +441,9 @@ public final class VolumeBackupArgs extends com.pulumi.resources.ResourceArgs {
 
         /**
          * @param volumeName The Docker volume name to back up.
-         * 
+         *
          * @return builder
-         * 
+         *
          */
         public Builder volumeName(String volumeName) {
             return volumeName(Output.of(volumeName));

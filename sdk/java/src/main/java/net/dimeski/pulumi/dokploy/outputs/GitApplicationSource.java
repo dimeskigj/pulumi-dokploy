@@ -17,86 +17,86 @@ import net.dimeski.pulumi.dokploy.outputs.ApplicationBuild;
 public final class GitApplicationSource {
     /**
      * @return The Git branch.
-     * 
+     *
      */
     private String branch;
     /**
      * @return The build configuration.
-     * 
+     *
      */
     private ApplicationBuild build;
     /**
      * @return The build path.
-     * 
+     *
      */
     private @Nullable String buildPath;
     /**
      * @return Whether to enable submodules.
-     * 
+     *
      */
     private @Nullable Boolean enableSubmodules;
     /**
      * @return The SSH key ID.
-     * 
+     *
      */
     private @Nullable String sshKeyId;
     /**
      * @return The Git repository URL.
-     * 
+     *
      */
     private String url;
     /**
      * @return Paths to watch.
-     * 
+     *
      */
     private @Nullable List<String> watchPaths;
 
     private GitApplicationSource() {}
     /**
      * @return The Git branch.
-     * 
+     *
      */
     public String branch() {
         return this.branch;
     }
     /**
      * @return The build configuration.
-     * 
+     *
      */
     public ApplicationBuild build() {
         return this.build;
     }
     /**
      * @return The build path.
-     * 
+     *
      */
     public Optional<String> buildPath() {
         return Optional.ofNullable(this.buildPath);
     }
     /**
      * @return Whether to enable submodules.
-     * 
+     *
      */
     public Optional<Boolean> enableSubmodules() {
         return Optional.ofNullable(this.enableSubmodules);
     }
     /**
      * @return The SSH key ID.
-     * 
+     *
      */
     public Optional<String> sshKeyId() {
         return Optional.ofNullable(this.sshKeyId);
     }
     /**
      * @return The Git repository URL.
-     * 
+     *
      */
     public String url() {
         return this.url;
     }
     /**
      * @return Paths to watch.
-     * 
+     *
      */
     public List<String> watchPaths() {
         return this.watchPaths == null ? List.of() : this.watchPaths;

@@ -17,28 +17,28 @@ import net.dimeski.pulumi.dokploy.Utilities;
 public class Provider extends com.pulumi.resources.ProviderResource {
     /**
      * Dokploy API key sent through x-api-key.
-     * 
+     *
      */
     @Export(name="apiKey", refs={String.class}, tree="[0]")
     private Output<String> apiKey;
 
     /**
      * @return Dokploy API key sent through x-api-key.
-     * 
+     *
      */
     public Output<String> apiKey() {
         return this.apiKey;
     }
     /**
      * Base URL of the Dokploy instance.
-     * 
+     *
      */
     @Export(name="endpoint", refs={String.class}, tree="[0]")
     private Output<String> endpoint;
 
     /**
      * @return Base URL of the Dokploy instance.
-     * 
+     *
      */
     public Output<String> endpoint() {
         return this.endpoint;

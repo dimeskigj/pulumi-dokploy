@@ -156,4 +156,3 @@ class ProjectTag(pulumi.CustomResource):
         The Dokploy tag ID.
         """
         return pulumi.get(self, "tag_id")
-

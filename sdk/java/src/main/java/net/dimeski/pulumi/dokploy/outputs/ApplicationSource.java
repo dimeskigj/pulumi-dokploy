@@ -17,50 +17,50 @@ import net.dimeski.pulumi.dokploy.outputs.GitLabAppSource;
 public final class ApplicationSource {
     /**
      * @return Docker source configuration.
-     * 
+     *
      */
     private @Nullable DockerSource docker;
     /**
      * @return Git source configuration.
-     * 
+     *
      */
     private @Nullable GitApplicationSource git;
     /**
      * @return GitLab source configuration.
-     * 
+     *
      */
     private @Nullable GitLabAppSource gitlab;
     /**
      * @return The application source type.
-     * 
+     *
      */
     private String type;
 
     private ApplicationSource() {}
     /**
      * @return Docker source configuration.
-     * 
+     *
      */
     public Optional<DockerSource> docker() {
         return Optional.ofNullable(this.docker);
     }
     /**
      * @return Git source configuration.
-     * 
+     *
      */
     public Optional<GitApplicationSource> git() {
         return Optional.ofNullable(this.git);
     }
     /**
      * @return GitLab source configuration.
-     * 
+     *
      */
     public Optional<GitLabAppSource> gitlab() {
         return Optional.ofNullable(this.gitlab);
     }
     /**
      * @return The application source type.
-     * 
+     *
      */
     public String type() {
         return this.type;

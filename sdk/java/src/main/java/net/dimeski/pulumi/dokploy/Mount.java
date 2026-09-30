@@ -16,188 +16,188 @@ import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
  * A Dokploy workload mount.
- * 
+ *
  */
 @ResourceType(type="dokploy:index:Mount")
 public class Mount extends com.pulumi.resources.CustomResource {
     /**
      * The application target.
-     * 
+     *
      */
     @Export(name="applicationId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> applicationId;
 
     /**
      * @return The application target.
-     * 
+     *
      */
     public Output<Optional<String>> applicationId() {
         return Codegen.optional(this.applicationId);
     }
     /**
      * The Compose target.
-     * 
+     *
      */
     @Export(name="composeId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> composeId;
 
     /**
      * @return The Compose target.
-     * 
+     *
      */
     public Output<Optional<String>> composeId() {
         return Codegen.optional(this.composeId);
     }
     /**
      * The file content.
-     * 
+     *
      */
     @Export(name="content", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> content;
 
     /**
      * @return The file content.
-     * 
+     *
      */
     public Output<Optional<String>> content() {
         return Codegen.optional(this.content);
     }
     /**
      * The file path.
-     * 
+     *
      */
     @Export(name="filePath", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> filePath;
 
     /**
      * @return The file path.
-     * 
+     *
      */
     public Output<Optional<String>> filePath() {
         return Codegen.optional(this.filePath);
     }
     /**
      * The host path.
-     * 
+     *
      */
     @Export(name="hostPath", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> hostPath;
 
     /**
      * @return The host path.
-     * 
+     *
      */
     public Output<Optional<String>> hostPath() {
         return Codegen.optional(this.hostPath);
     }
     /**
      * The MariaDB target.
-     * 
+     *
      */
     @Export(name="mariadbId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> mariadbId;
 
     /**
      * @return The MariaDB target.
-     * 
+     *
      */
     public Output<Optional<String>> mariadbId() {
         return Codegen.optional(this.mariadbId);
     }
     /**
      * The stable Dokploy mount ID.
-     * 
+     *
      */
     @Export(name="mountId", refs={String.class}, tree="[0]")
     private Output<String> mountId;
 
     /**
      * @return The stable Dokploy mount ID.
-     * 
+     *
      */
     public Output<String> mountId() {
         return this.mountId;
     }
     /**
      * The path inside the workload.
-     * 
+     *
      */
     @Export(name="mountPath", refs={String.class}, tree="[0]")
     private Output<String> mountPath;
 
     /**
      * @return The path inside the workload.
-     * 
+     *
      */
     public Output<String> mountPath() {
         return this.mountPath;
     }
     /**
      * The MySQL target.
-     * 
+     *
      */
     @Export(name="mysqlId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> mysqlId;
 
     /**
      * @return The MySQL target.
-     * 
+     *
      */
     public Output<Optional<String>> mysqlId() {
         return Codegen.optional(this.mysqlId);
     }
     /**
      * The Postgres target.
-     * 
+     *
      */
     @Export(name="postgresId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> postgresId;
 
     /**
      * @return The Postgres target.
-     * 
+     *
      */
     public Output<Optional<String>> postgresId() {
         return Codegen.optional(this.postgresId);
     }
     /**
      * The Redis target.
-     * 
+     *
      */
     @Export(name="redisId", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> redisId;
 
     /**
      * @return The Redis target.
-     * 
+     *
      */
     public Output<Optional<String>> redisId() {
         return Codegen.optional(this.redisId);
     }
     /**
      * The mount type.
-     * 
+     *
      */
     @Export(name="type", refs={String.class}, tree="[0]")
     private Output<String> type;
 
     /**
      * @return The mount type.
-     * 
+     *
      */
     public Output<String> type() {
         return this.type;
     }
     /**
      * The volume name.
-     * 
+     *
      */
     @Export(name="volumeName", refs={String.class}, tree="[0]")
     private Output</* @Nullable */ String> volumeName;
 
     /**
      * @return The volume name.
-     * 
+     *
      */
     public Output<Optional<String>> volumeName() {
         return Codegen.optional(this.volumeName);

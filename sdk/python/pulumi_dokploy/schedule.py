@@ -551,4 +551,3 @@ class Schedule(pulumi.CustomResource):
         Timezone for the schedule.
         """
         return pulumi.get(self, "timezone")
-
