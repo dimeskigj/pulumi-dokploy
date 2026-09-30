@@ -70,7 +70,7 @@ func (r Schedule) Check(ctx context.Context, req infer.CheckRequest) (infer.Chec
 	}
 	targets := map[string]*string{"applicationId": in.ApplicationID, "composeId": in.ComposeID, "serverId": in.ServerID}
 	computed := func(k string) bool { return req.NewInputs.Get(k).HasComputed() }
-	known := in.ScheduleType != "" && !req.NewInputs.Get("scheduleType").HasComputed()
+	known := !req.NewInputs.Get("scheduleType").HasComputed()
 	valid := map[string]string{"application": "applicationId", "compose": "composeId", "server": "serverId", "dokploy-server": ""}
 	if known {
 		required, ok := valid[in.ScheduleType]

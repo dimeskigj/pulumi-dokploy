@@ -205,10 +205,20 @@ func TestRealContractIncludesScheduleCRUD(t *testing.T) {
 	}
 	require.Equal(t, "#/components/schemas/Schedule", responseSchema(t, d, "/schedule.one", "get", "200").Ref)
 	schedule := componentSchema(t, d, "Schedule")
-	require.Contains(t, schedule["required"], "scheduleId")
+	require.Equal(t, []any{"scheduleId"}, schedule["required"])
 	require.Equal(t, true, schedule["additionalProperties"])
+	for _, operation := range []string{"schedule.create", "schedule.update", "schedule.delete"} {
+		responses := d.Paths["/"+operation].Post.Raw["responses"].(map[string]any)
+		ack := responses["200"].(map[string]any)
+		require.NotContains(t, ack, "content", "%s acknowledgment must be bodyless", operation)
+	}
 	for _, operation := range []string{"schedule.create", "schedule.update"} {
 		schema := operationRequestSchema(t, d, operation)
+		required := []any{"name", "cronExpression", "command"}
+		if operation == "schedule.update" {
+			required = append(required, "scheduleId")
+		}
+		require.ElementsMatch(t, required, schema["required"])
 		for _, field := range []string{"scheduleId", "name", "cronExpression", "command", "enabled"} {
 			require.Contains(t, schema["properties"], field, "%s request lacks %s", operation, field)
 		}

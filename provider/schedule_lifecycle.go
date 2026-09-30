@@ -158,9 +158,15 @@ func (r Schedule) Create(ctx context.Context, req infer.CreateRequest[ScheduleAr
 	}
 	id := uuid.NewString()
 	api := r.client(ctx)
-	if _, err := api.ScheduleCreateWithResponse(ctx, scheduleCreateBody(id, req.Inputs)); err != nil {
+	// The create contract is bodyless. Use the generated raw request method:
+	// parsing even an unused body can fail after successful response headers,
+	// losing the acknowledged identity. The client transport rejects non-2xx.
+	resp, err := api.ScheduleCreate(ctx, scheduleCreateBody(id, req.Inputs))
+	if err != nil {
 		return infer.CreateResponse[ScheduleState]{}, fmt.Errorf("schedule.create failed: %w", sanitizeScheduleError(err, req.Inputs))
 	}
+	// Body/close failures cannot undo acknowledgment; confirm the exact ID below.
+	_ = resp.Body.Close()
 	state.ScheduleID = id
 	observed, err := readSchedule(ctx, api, id, req.Inputs)
 	if err != nil {
