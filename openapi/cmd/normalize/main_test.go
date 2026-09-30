@@ -192,6 +192,30 @@ func TestNormalizeSelectsAndCorrectsContract(t *testing.T) {
 	require.Equal(t, "#/components/schemas/CreateProjectResult", responseSchema(t, doc, "/project.create", "post", "200").Ref)
 	require.Equal(t, "3.1.0", doc.OpenAPI)
 }
+
+func TestRealContractIncludesScheduleCRUD(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, operation := range []struct{ path, method string }{
+		{"/schedule.create", "post"}, {"/schedule.update", "post"},
+		{"/schedule.delete", "post"}, {"/schedule.one", "get"},
+	} {
+		p, ok := d.Paths[operation.path]
+		require.True(t, ok, "missing path %s", operation.path)
+		require.NotNil(t, p.Methods[operation.method], "missing %s method at %s", operation.method, operation.path)
+	}
+	require.Equal(t, "#/components/schemas/Schedule", responseSchema(t, d, "/schedule.one", "get", "200").Ref)
+	schedule := componentSchema(t, d, "Schedule")
+	require.Contains(t, schedule["required"], "scheduleId")
+	require.Equal(t, true, schedule["additionalProperties"])
+	for _, operation := range []string{"schedule.create", "schedule.update"} {
+		schema := operationRequestSchema(t, d, operation)
+		for _, field := range []string{"scheduleId", "name", "cronExpression", "command", "enabled"} {
+			require.Contains(t, schema["properties"], field, "%s request lacks %s", operation, field)
+		}
+	}
+	require.NotContains(t, d.Paths, "/schedule.list")
+	require.NotContains(t, d.Paths, "/schedule.runManually")
+}
 func TestNormalizeRejectsMissingOperation(t *testing.T) {
 	_, err := normalize(contractWithout("/domain.one"), []string{"domain.one"}, corrections())
 	require.ErrorContains(t, err, "allowed operation domain.one is absent")

@@ -21,6 +21,48 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// Defines values for ScheduleScheduleType.
+const (
+	ScheduleScheduleTypeApplication   ScheduleScheduleType = "application"
+	ScheduleScheduleTypeCompose       ScheduleScheduleType = "compose"
+	ScheduleScheduleTypeDokployServer ScheduleScheduleType = "dokploy-server"
+	ScheduleScheduleTypeServer        ScheduleScheduleType = "server"
+)
+
+// Valid indicates whether the value is a known member of the ScheduleScheduleType enum.
+func (e ScheduleScheduleType) Valid() bool {
+	switch e {
+	case ScheduleScheduleTypeApplication:
+		return true
+	case ScheduleScheduleTypeCompose:
+		return true
+	case ScheduleScheduleTypeDokployServer:
+		return true
+	case ScheduleScheduleTypeServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ScheduleShellType.
+const (
+	ScheduleShellTypeBash ScheduleShellType = "bash"
+	ScheduleShellTypeSh   ScheduleShellType = "sh"
+)
+
+// Valid indicates whether the value is a known member of the ScheduleShellType enum.
+func (e ScheduleShellType) Valid() bool {
+	switch e {
+	case ScheduleShellTypeBash:
+		return true
+	case ScheduleShellTypeSh:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ApplicationSaveBuildTypeJSONBodyBuildType.
 const (
 	ApplicationSaveBuildTypeJSONBodyBuildTypeDockerfile       ApplicationSaveBuildTypeJSONBodyBuildType = "dockerfile"
@@ -711,6 +753,90 @@ func (e RegistryTestRegistryJSONBodyRegistryType) Valid() bool {
 	}
 }
 
+// Defines values for ScheduleCreateJSONBodyScheduleType.
+const (
+	ScheduleCreateJSONBodyScheduleTypeApplication   ScheduleCreateJSONBodyScheduleType = "application"
+	ScheduleCreateJSONBodyScheduleTypeCompose       ScheduleCreateJSONBodyScheduleType = "compose"
+	ScheduleCreateJSONBodyScheduleTypeDokployServer ScheduleCreateJSONBodyScheduleType = "dokploy-server"
+	ScheduleCreateJSONBodyScheduleTypeServer        ScheduleCreateJSONBodyScheduleType = "server"
+)
+
+// Valid indicates whether the value is a known member of the ScheduleCreateJSONBodyScheduleType enum.
+func (e ScheduleCreateJSONBodyScheduleType) Valid() bool {
+	switch e {
+	case ScheduleCreateJSONBodyScheduleTypeApplication:
+		return true
+	case ScheduleCreateJSONBodyScheduleTypeCompose:
+		return true
+	case ScheduleCreateJSONBodyScheduleTypeDokployServer:
+		return true
+	case ScheduleCreateJSONBodyScheduleTypeServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ScheduleCreateJSONBodyShellType.
+const (
+	ScheduleCreateJSONBodyShellTypeBash ScheduleCreateJSONBodyShellType = "bash"
+	ScheduleCreateJSONBodyShellTypeSh   ScheduleCreateJSONBodyShellType = "sh"
+)
+
+// Valid indicates whether the value is a known member of the ScheduleCreateJSONBodyShellType enum.
+func (e ScheduleCreateJSONBodyShellType) Valid() bool {
+	switch e {
+	case ScheduleCreateJSONBodyShellTypeBash:
+		return true
+	case ScheduleCreateJSONBodyShellTypeSh:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ScheduleUpdateJSONBodyScheduleType.
+const (
+	ScheduleUpdateJSONBodyScheduleTypeApplication   ScheduleUpdateJSONBodyScheduleType = "application"
+	ScheduleUpdateJSONBodyScheduleTypeCompose       ScheduleUpdateJSONBodyScheduleType = "compose"
+	ScheduleUpdateJSONBodyScheduleTypeDokployServer ScheduleUpdateJSONBodyScheduleType = "dokploy-server"
+	ScheduleUpdateJSONBodyScheduleTypeServer        ScheduleUpdateJSONBodyScheduleType = "server"
+)
+
+// Valid indicates whether the value is a known member of the ScheduleUpdateJSONBodyScheduleType enum.
+func (e ScheduleUpdateJSONBodyScheduleType) Valid() bool {
+	switch e {
+	case ScheduleUpdateJSONBodyScheduleTypeApplication:
+		return true
+	case ScheduleUpdateJSONBodyScheduleTypeCompose:
+		return true
+	case ScheduleUpdateJSONBodyScheduleTypeDokployServer:
+		return true
+	case ScheduleUpdateJSONBodyScheduleTypeServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ScheduleUpdateJSONBodyShellType.
+const (
+	ScheduleUpdateJSONBodyShellTypeBash ScheduleUpdateJSONBodyShellType = "bash"
+	ScheduleUpdateJSONBodyShellTypeSh   ScheduleUpdateJSONBodyShellType = "sh"
+)
+
+// Valid indicates whether the value is a known member of the ScheduleUpdateJSONBodyShellType enum.
+func (e ScheduleUpdateJSONBodyShellType) Valid() bool {
+	switch e {
+	case ScheduleUpdateJSONBodyShellTypeBash:
+		return true
+	case ScheduleUpdateJSONBodyShellTypeSh:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for VolumeBackupsCreateJSONBodyServiceType.
 const (
 	VolumeBackupsCreateJSONBodyServiceTypeApplication VolumeBackupsCreateJSONBodyServiceType = "application"
@@ -1043,6 +1169,33 @@ type SSHKey struct {
 
 // SSHKeyList defines model for SSHKeyList.
 type SSHKeyList = []SSHKey
+
+// Schedule defines model for Schedule.
+type Schedule struct {
+	AppName              *string                   `json:"appName,omitempty"`
+	ApplicationId        nullable.Nullable[string] `json:"applicationId,omitempty"`
+	Command              *string                   `json:"command,omitempty"`
+	ComposeId            nullable.Nullable[string] `json:"composeId,omitempty"`
+	CronExpression       *string                   `json:"cronExpression,omitempty"`
+	Description          nullable.Nullable[string] `json:"description,omitempty"`
+	Enabled              *bool                     `json:"enabled,omitempty"`
+	Name                 *string                   `json:"name,omitempty"`
+	OrganizationId       nullable.Nullable[string] `json:"organizationId,omitempty"`
+	ScheduleId           string                    `json:"scheduleId"`
+	ScheduleType         *ScheduleScheduleType     `json:"scheduleType,omitempty"`
+	Script               nullable.Nullable[string] `json:"script,omitempty"`
+	ServerId             nullable.Nullable[string] `json:"serverId,omitempty"`
+	ServiceName          nullable.Nullable[string] `json:"serviceName,omitempty"`
+	ShellType            *ScheduleShellType        `json:"shellType,omitempty"`
+	Timezone             nullable.Nullable[string] `json:"timezone,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// ScheduleScheduleType defines model for Schedule.ScheduleType.
+type ScheduleScheduleType string
+
+// ScheduleShellType defines model for Schedule.ShellType.
+type ScheduleShellType string
 
 // Tag defines model for Tag.
 type Tag struct {
@@ -2549,6 +2702,70 @@ type RegistryTestRegistryJSONBody struct {
 // RegistryTestRegistryJSONBodyRegistryType defines parameters for RegistryTestRegistry.
 type RegistryTestRegistryJSONBodyRegistryType string
 
+// ScheduleCreateJSONBody defines parameters for ScheduleCreate.
+type ScheduleCreateJSONBody struct {
+	AppName        *string                             `json:"appName,omitempty"`
+	ApplicationId  nullable.Nullable[string]           `json:"applicationId,omitempty"`
+	Command        string                              `json:"command"`
+	ComposeId      nullable.Nullable[string]           `json:"composeId,omitempty"`
+	CreatedAt      *string                             `json:"createdAt,omitempty"`
+	CronExpression string                              `json:"cronExpression"`
+	Description    nullable.Nullable[string]           `json:"description,omitempty"`
+	Enabled        *bool                               `json:"enabled,omitempty"`
+	Name           string                              `json:"name"`
+	OrganizationId nullable.Nullable[string]           `json:"organizationId,omitempty"`
+	ScheduleId     *string                             `json:"scheduleId,omitempty"`
+	ScheduleType   *ScheduleCreateJSONBodyScheduleType `json:"scheduleType,omitempty"`
+	Script         nullable.Nullable[string]           `json:"script,omitempty"`
+	ServerId       nullable.Nullable[string]           `json:"serverId,omitempty"`
+	ServiceName    nullable.Nullable[string]           `json:"serviceName,omitempty"`
+	ShellType      *ScheduleCreateJSONBodyShellType    `json:"shellType,omitempty"`
+	Timezone       nullable.Nullable[string]           `json:"timezone,omitempty"`
+}
+
+// ScheduleCreateJSONBodyScheduleType defines parameters for ScheduleCreate.
+type ScheduleCreateJSONBodyScheduleType string
+
+// ScheduleCreateJSONBodyShellType defines parameters for ScheduleCreate.
+type ScheduleCreateJSONBodyShellType string
+
+// ScheduleDeleteJSONBody defines parameters for ScheduleDelete.
+type ScheduleDeleteJSONBody struct {
+	ScheduleId string `json:"scheduleId"`
+}
+
+// ScheduleOneParams defines parameters for ScheduleOne.
+type ScheduleOneParams struct {
+	ScheduleId string `form:"scheduleId" json:"scheduleId"`
+}
+
+// ScheduleUpdateJSONBody defines parameters for ScheduleUpdate.
+type ScheduleUpdateJSONBody struct {
+	AppName        *string                             `json:"appName,omitempty"`
+	ApplicationId  nullable.Nullable[string]           `json:"applicationId,omitempty"`
+	Command        string                              `json:"command"`
+	ComposeId      nullable.Nullable[string]           `json:"composeId,omitempty"`
+	CreatedAt      *string                             `json:"createdAt,omitempty"`
+	CronExpression string                              `json:"cronExpression"`
+	Description    nullable.Nullable[string]           `json:"description,omitempty"`
+	Enabled        *bool                               `json:"enabled,omitempty"`
+	Name           string                              `json:"name"`
+	OrganizationId nullable.Nullable[string]           `json:"organizationId,omitempty"`
+	ScheduleId     string                              `json:"scheduleId"`
+	ScheduleType   *ScheduleUpdateJSONBodyScheduleType `json:"scheduleType,omitempty"`
+	Script         nullable.Nullable[string]           `json:"script,omitempty"`
+	ServerId       nullable.Nullable[string]           `json:"serverId,omitempty"`
+	ServiceName    nullable.Nullable[string]           `json:"serviceName,omitempty"`
+	ShellType      *ScheduleUpdateJSONBodyShellType    `json:"shellType,omitempty"`
+	Timezone       nullable.Nullable[string]           `json:"timezone,omitempty"`
+}
+
+// ScheduleUpdateJSONBodyScheduleType defines parameters for ScheduleUpdate.
+type ScheduleUpdateJSONBodyScheduleType string
+
+// ScheduleUpdateJSONBodyShellType defines parameters for ScheduleUpdate.
+type ScheduleUpdateJSONBodyShellType string
+
 // SshKeyCreateJSONBody defines parameters for SshKeyCreate.
 type SshKeyCreateJSONBody struct {
 	Description    nullable.Nullable[string] `json:"description,omitempty"`
@@ -2887,6 +3104,15 @@ type RegistryTestRegistryJSONRequestBody RegistryTestRegistryJSONBody
 
 // RegistryUpdateJSONRequestBody defines body for RegistryUpdate for application/json ContentType.
 type RegistryUpdateJSONRequestBody = RegistryUpdateRequest
+
+// ScheduleCreateJSONRequestBody defines body for ScheduleCreate for application/json ContentType.
+type ScheduleCreateJSONRequestBody ScheduleCreateJSONBody
+
+// ScheduleDeleteJSONRequestBody defines body for ScheduleDelete for application/json ContentType.
+type ScheduleDeleteJSONRequestBody ScheduleDeleteJSONBody
+
+// ScheduleUpdateJSONRequestBody defines body for ScheduleUpdate for application/json ContentType.
+type ScheduleUpdateJSONRequestBody ScheduleUpdateJSONBody
 
 // SshKeyCreateJSONRequestBody defines body for SshKeyCreate for application/json ContentType.
 type SshKeyCreateJSONRequestBody SshKeyCreateJSONBody
@@ -6359,6 +6585,297 @@ func (a SSHKey) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for Schedule. Returns the specified
+// element and whether it was found
+func (a Schedule) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Schedule
+func (a *Schedule) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Schedule to handle AdditionalProperties
+func (a *Schedule) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["appName"]; found {
+		err = json.Unmarshal(raw, &a.AppName)
+		if err != nil {
+			return fmt.Errorf("error reading 'appName': %w", err)
+		}
+		delete(object, "appName")
+	}
+
+	if raw, found := object["applicationId"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationId': %w", err)
+		}
+		delete(object, "applicationId")
+	}
+
+	if raw, found := object["command"]; found {
+		err = json.Unmarshal(raw, &a.Command)
+		if err != nil {
+			return fmt.Errorf("error reading 'command': %w", err)
+		}
+		delete(object, "command")
+	}
+
+	if raw, found := object["composeId"]; found {
+		err = json.Unmarshal(raw, &a.ComposeId)
+		if err != nil {
+			return fmt.Errorf("error reading 'composeId': %w", err)
+		}
+		delete(object, "composeId")
+	}
+
+	if raw, found := object["cronExpression"]; found {
+		err = json.Unmarshal(raw, &a.CronExpression)
+		if err != nil {
+			return fmt.Errorf("error reading 'cronExpression': %w", err)
+		}
+		delete(object, "cronExpression")
+	}
+
+	if raw, found := object["description"]; found {
+		err = json.Unmarshal(raw, &a.Description)
+		if err != nil {
+			return fmt.Errorf("error reading 'description': %w", err)
+		}
+		delete(object, "description")
+	}
+
+	if raw, found := object["enabled"]; found {
+		err = json.Unmarshal(raw, &a.Enabled)
+		if err != nil {
+			return fmt.Errorf("error reading 'enabled': %w", err)
+		}
+		delete(object, "enabled")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+		delete(object, "organizationId")
+	}
+
+	if raw, found := object["scheduleId"]; found {
+		err = json.Unmarshal(raw, &a.ScheduleId)
+		if err != nil {
+			return fmt.Errorf("error reading 'scheduleId': %w", err)
+		}
+		delete(object, "scheduleId")
+	}
+
+	if raw, found := object["scheduleType"]; found {
+		err = json.Unmarshal(raw, &a.ScheduleType)
+		if err != nil {
+			return fmt.Errorf("error reading 'scheduleType': %w", err)
+		}
+		delete(object, "scheduleType")
+	}
+
+	if raw, found := object["script"]; found {
+		err = json.Unmarshal(raw, &a.Script)
+		if err != nil {
+			return fmt.Errorf("error reading 'script': %w", err)
+		}
+		delete(object, "script")
+	}
+
+	if raw, found := object["serverId"]; found {
+		err = json.Unmarshal(raw, &a.ServerId)
+		if err != nil {
+			return fmt.Errorf("error reading 'serverId': %w", err)
+		}
+		delete(object, "serverId")
+	}
+
+	if raw, found := object["serviceName"]; found {
+		err = json.Unmarshal(raw, &a.ServiceName)
+		if err != nil {
+			return fmt.Errorf("error reading 'serviceName': %w", err)
+		}
+		delete(object, "serviceName")
+	}
+
+	if raw, found := object["shellType"]; found {
+		err = json.Unmarshal(raw, &a.ShellType)
+		if err != nil {
+			return fmt.Errorf("error reading 'shellType': %w", err)
+		}
+		delete(object, "shellType")
+	}
+
+	if raw, found := object["timezone"]; found {
+		err = json.Unmarshal(raw, &a.Timezone)
+		if err != nil {
+			return fmt.Errorf("error reading 'timezone': %w", err)
+		}
+		delete(object, "timezone")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Schedule to handle AdditionalProperties
+func (a Schedule) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AppName != nil {
+		object["appName"], err = json.Marshal(a.AppName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'appName': %w", err)
+		}
+	}
+
+	if a.ApplicationId != nil {
+		object["applicationId"], err = json.Marshal(a.ApplicationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	if a.Command != nil {
+		object["command"], err = json.Marshal(a.Command)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'command': %w", err)
+		}
+	}
+
+	if a.ComposeId != nil {
+		object["composeId"], err = json.Marshal(a.ComposeId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'composeId': %w", err)
+		}
+	}
+
+	if a.CronExpression != nil {
+		object["cronExpression"], err = json.Marshal(a.CronExpression)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'cronExpression': %w", err)
+		}
+	}
+
+	if a.Description != nil {
+		object["description"], err = json.Marshal(a.Description)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'description': %w", err)
+		}
+	}
+
+	if a.Enabled != nil {
+		object["enabled"], err = json.Marshal(a.Enabled)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'enabled': %w", err)
+		}
+	}
+
+	if a.Name != nil {
+		object["name"], err = json.Marshal(a.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if a.OrganizationId != nil {
+		object["organizationId"], err = json.Marshal(a.OrganizationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
+		}
+	}
+
+	object["scheduleId"], err = json.Marshal(a.ScheduleId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'scheduleId': %w", err)
+	}
+
+	if a.ScheduleType != nil {
+		object["scheduleType"], err = json.Marshal(a.ScheduleType)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'scheduleType': %w", err)
+		}
+	}
+
+	if a.Script != nil {
+		object["script"], err = json.Marshal(a.Script)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'script': %w", err)
+		}
+	}
+
+	if a.ServerId != nil {
+		object["serverId"], err = json.Marshal(a.ServerId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
+		}
+	}
+
+	if a.ServiceName != nil {
+		object["serviceName"], err = json.Marshal(a.ServiceName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'serviceName': %w", err)
+		}
+	}
+
+	if a.ShellType != nil {
+		object["shellType"], err = json.Marshal(a.ShellType)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'shellType': %w", err)
+		}
+	}
+
+	if a.Timezone != nil {
+		object["timezone"], err = json.Marshal(a.Timezone)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'timezone': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for Tag. Returns the specified
 // element and whether it was found
 func (a Tag) Get(fieldName string) (value interface{}, found bool) {
@@ -7396,6 +7913,33 @@ type ClientInterface interface {
 	// RegistryUpdate performs a POST /registry.update (the `RegistryUpdate` operationId) request.
 	// Takes a body of the `application/json` content type.
 	RegistryUpdate(ctx context.Context, body RegistryUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScheduleCreateWithBody performs a POST /schedule.create (the `ScheduleCreate` operationId) request,
+	// with any type of body and a specified content type.
+	ScheduleCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScheduleCreate performs a POST /schedule.create (the `ScheduleCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	ScheduleCreate(ctx context.Context, body ScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScheduleDeleteWithBody performs a POST /schedule.delete (the `ScheduleDelete` operationId) request,
+	// with any type of body and a specified content type.
+	ScheduleDeleteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScheduleDelete performs a POST /schedule.delete (the `ScheduleDelete` operationId) request.
+	// Takes a body of the `application/json` content type.
+	ScheduleDelete(ctx context.Context, body ScheduleDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScheduleOne performs a GET /schedule.one (the `ScheduleOne` operationId) request.
+	ScheduleOne(ctx context.Context, params *ScheduleOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScheduleUpdateWithBody performs a POST /schedule.update (the `ScheduleUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	ScheduleUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScheduleUpdate performs a POST /schedule.update (the `ScheduleUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	ScheduleUpdate(ctx context.Context, body ScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SshKeyAll performs a GET /sshKey.all (the `SshKeyAll` operationId) request.
 	SshKeyAll(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -9643,6 +10187,103 @@ func (c *Client) RegistryUpdateWithBody(ctx context.Context, contentType string,
 // Takes a body of the `application/json` content type.
 func (c *Client) RegistryUpdate(ctx context.Context, body RegistryUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRegistryUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ScheduleCreateWithBody performs a POST /schedule.create (the `ScheduleCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) ScheduleCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScheduleCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ScheduleCreate performs a POST /schedule.create (the `ScheduleCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) ScheduleCreate(ctx context.Context, body ScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScheduleCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ScheduleDeleteWithBody performs a POST /schedule.delete (the `ScheduleDelete` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) ScheduleDeleteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScheduleDeleteRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ScheduleDelete performs a POST /schedule.delete (the `ScheduleDelete` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) ScheduleDelete(ctx context.Context, body ScheduleDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScheduleDeleteRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ScheduleOne performs a GET /schedule.one (the `ScheduleOne` operationId) request.
+func (c *Client) ScheduleOne(ctx context.Context, params *ScheduleOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScheduleOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ScheduleUpdateWithBody performs a POST /schedule.update (the `ScheduleUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) ScheduleUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScheduleUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ScheduleUpdate performs a POST /schedule.update (the `ScheduleUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) ScheduleUpdate(ctx context.Context, body ScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScheduleUpdateRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -13540,6 +14181,176 @@ func NewRegistryUpdateRequestWithBody(server string, contentType string, body io
 	return req, nil
 }
 
+// NewScheduleCreateRequest calls the generic ScheduleCreate builder with application/json body
+func NewScheduleCreateRequest(server string, body ScheduleCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewScheduleCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewScheduleCreateRequestWithBody constructs an http.Request for the ScheduleCreate method, with any body, and a specified content type
+func NewScheduleCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/schedule.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewScheduleDeleteRequest calls the generic ScheduleDelete builder with application/json body
+func NewScheduleDeleteRequest(server string, body ScheduleDeleteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewScheduleDeleteRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewScheduleDeleteRequestWithBody constructs an http.Request for the ScheduleDelete method, with any body, and a specified content type
+func NewScheduleDeleteRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/schedule.delete")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewScheduleOneRequest constructs an http.Request for the ScheduleOne method
+func NewScheduleOneRequest(server string, params *ScheduleOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/schedule.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "scheduleId", params.ScheduleId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewScheduleUpdateRequest calls the generic ScheduleUpdate builder with application/json body
+func NewScheduleUpdateRequest(server string, body ScheduleUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewScheduleUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewScheduleUpdateRequestWithBody constructs an http.Request for the ScheduleUpdate method, with any body, and a specified content type
+func NewScheduleUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/schedule.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSshKeyAllRequest constructs an http.Request for the SshKeyAll method
 func NewSshKeyAllRequest(server string) (*http.Request, error) {
 	var err error
@@ -14975,6 +15786,41 @@ type ClientWithResponsesInterface interface {
 	// RegistryUpdateWithResponse performs a POST /registry.update (the `RegistryUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	RegistryUpdateWithResponse(ctx context.Context, body RegistryUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*RegistryUpdateResponse, error)
+
+	// ScheduleCreateWithBodyWithResponse performs a POST /schedule.create (the `ScheduleCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	ScheduleCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScheduleCreateResponse, error)
+
+	// ScheduleCreateWithResponse performs a POST /schedule.create (the `ScheduleCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	ScheduleCreateWithResponse(ctx context.Context, body ScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*ScheduleCreateResponse, error)
+
+	// ScheduleDeleteWithBodyWithResponse performs a POST /schedule.delete (the `ScheduleDelete` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	ScheduleDeleteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScheduleDeleteResponse, error)
+
+	// ScheduleDeleteWithResponse performs a POST /schedule.delete (the `ScheduleDelete` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	ScheduleDeleteWithResponse(ctx context.Context, body ScheduleDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*ScheduleDeleteResponse, error)
+
+	// ScheduleOneWithResponse performs a GET /schedule.one (the `ScheduleOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	ScheduleOneWithResponse(ctx context.Context, params *ScheduleOneParams, reqEditors ...RequestEditorFn) (*ScheduleOneResponse, error)
+
+	// ScheduleUpdateWithBodyWithResponse performs a POST /schedule.update (the `ScheduleUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	ScheduleUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScheduleUpdateResponse, error)
+
+	// ScheduleUpdateWithResponse performs a POST /schedule.update (the `ScheduleUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	ScheduleUpdateWithResponse(ctx context.Context, body ScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*ScheduleUpdateResponse, error)
 
 	// SshKeyAllWithResponse performs a GET /sshKey.all (the `SshKeyAll` operationId) request.
 	//
@@ -20895,6 +21741,268 @@ func (r RegistryUpdateResponse) ContentType() string {
 	return ""
 }
 
+type ScheduleCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ScheduleCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ScheduleCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ScheduleCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ScheduleCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ScheduleCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ScheduleCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ScheduleCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ScheduleCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ScheduleDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ScheduleDeleteResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ScheduleDeleteResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ScheduleDeleteResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ScheduleDeleteResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ScheduleDeleteResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ScheduleDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ScheduleDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ScheduleDeleteResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ScheduleOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Schedule
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ScheduleOneResponse) GetJSON200() *Schedule {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ScheduleOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ScheduleOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ScheduleOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ScheduleOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ScheduleOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ScheduleOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ScheduleOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ScheduleOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ScheduleOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ScheduleUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ScheduleUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ScheduleUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ScheduleUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ScheduleUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ScheduleUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ScheduleUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ScheduleUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ScheduleUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SshKeyAllResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -23619,6 +24727,83 @@ func (c *ClientWithResponses) RegistryUpdateWithResponse(ctx context.Context, bo
 		return nil, err
 	}
 	return ParseRegistryUpdateResponse(rsp)
+}
+
+// ScheduleCreateWithBodyWithResponse performs a POST /schedule.create (the `ScheduleCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ScheduleCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScheduleCreateResponse, error) {
+	rsp, err := c.ScheduleCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScheduleCreateResponse(rsp)
+}
+
+// ScheduleCreateWithResponse performs a POST /schedule.create (the `ScheduleCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ScheduleCreateWithResponse(ctx context.Context, body ScheduleCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*ScheduleCreateResponse, error) {
+	rsp, err := c.ScheduleCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScheduleCreateResponse(rsp)
+}
+
+// ScheduleDeleteWithBodyWithResponse performs a POST /schedule.delete (the `ScheduleDelete` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ScheduleDeleteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScheduleDeleteResponse, error) {
+	rsp, err := c.ScheduleDeleteWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScheduleDeleteResponse(rsp)
+}
+
+// ScheduleDeleteWithResponse performs a POST /schedule.delete (the `ScheduleDelete` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ScheduleDeleteWithResponse(ctx context.Context, body ScheduleDeleteJSONRequestBody, reqEditors ...RequestEditorFn) (*ScheduleDeleteResponse, error) {
+	rsp, err := c.ScheduleDelete(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScheduleDeleteResponse(rsp)
+}
+
+// ScheduleOneWithResponse performs a GET /schedule.one (the `ScheduleOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ScheduleOneWithResponse(ctx context.Context, params *ScheduleOneParams, reqEditors ...RequestEditorFn) (*ScheduleOneResponse, error) {
+	rsp, err := c.ScheduleOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScheduleOneResponse(rsp)
+}
+
+// ScheduleUpdateWithBodyWithResponse performs a POST /schedule.update (the `ScheduleUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ScheduleUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScheduleUpdateResponse, error) {
+	rsp, err := c.ScheduleUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScheduleUpdateResponse(rsp)
+}
+
+// ScheduleUpdateWithResponse performs a POST /schedule.update (the `ScheduleUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) ScheduleUpdateWithResponse(ctx context.Context, body ScheduleUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*ScheduleUpdateResponse, error) {
+	rsp, err := c.ScheduleUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScheduleUpdateResponse(rsp)
 }
 
 // SshKeyAllWithResponse performs a GET /sshKey.all (the `SshKeyAll` operationId) request.
@@ -28498,6 +29683,217 @@ func ParseRegistryUpdateResponse(rsp *http.Response) (*RegistryUpdateResponse, e
 	return response, nil
 }
 
+// ParseScheduleCreateResponse parses an HTTP response from a ScheduleCreateWithResponse call
+func ParseScheduleCreateResponse(rsp *http.Response) (*ScheduleCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ScheduleCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseScheduleDeleteResponse parses an HTTP response from a ScheduleDeleteWithResponse call
+func ParseScheduleDeleteResponse(rsp *http.Response) (*ScheduleDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ScheduleDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseScheduleOneResponse parses an HTTP response from a ScheduleOneWithResponse call
+func ParseScheduleOneResponse(rsp *http.Response) (*ScheduleOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ScheduleOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Schedule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseScheduleUpdateResponse parses an HTTP response from a ScheduleUpdateWithResponse call
+func ParseScheduleUpdateResponse(rsp *http.Response) (*ScheduleUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ScheduleUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseSshKeyAllResponse parses an HTTP response from a SshKeyAllWithResponse call
 func ParseSshKeyAllResponse(rsp *http.Response) (*SshKeyAllResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -29317,143 +30713,148 @@ func ParseVolumeBackupsUpdateResponse(rsp *http.Response) (*VolumeBackupsUpdateR
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
+	"QZo0h/ghR76ND23qvUABETTsfwIAAP//",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,
