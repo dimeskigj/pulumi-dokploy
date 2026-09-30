@@ -86,8 +86,8 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 23 {
-		t.Fatalf("canonical YAML has %d managed resources, want 23", len(resources))
+	if len(resources) != 24 {
+		t.Fatalf("canonical YAML has %d managed resources, want 24", len(resources))
 	}
 	want := map[string]int{
 		"dokploy:index:Project":      1,
@@ -103,6 +103,7 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		"dokploy:index:Destination":  1,
 		"dokploy:index:Backup":       1,
 		"dokploy:index:VolumeBackup": 2,
+		"dokploy:index:Schedule":     1,
 		"dokploy:index:SSHKey":       1,
 		"dokploy:index:Registry":     1,
 		"dokploy:index:Tag":          1,

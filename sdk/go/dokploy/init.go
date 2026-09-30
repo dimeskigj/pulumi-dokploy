@@ -53,6 +53,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &Registry{}
 	case "dokploy:index:SSHKey":
 		r = &SSHKey{}
+	case "dokploy:index:Schedule":
+		r = &Schedule{}
 	case "dokploy:index:Tag":
 		r = &Tag{}
 	case "dokploy:index:VolumeBackup":

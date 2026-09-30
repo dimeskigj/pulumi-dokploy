@@ -1,0 +1,78 @@
+---
+title: Schedules
+description: Manage disabled scheduled commands and review execution safety before enabling them.
+---
+
+A `Schedule` manages a Dokploy scheduled command, not a database or volume backup.
+`enabled` defaults to `false`; keep schedules disabled until you have reviewed the
+command, target, timing, and permissions.
+
+:::caution[Command execution is opt-in]
+Enabled schedules execute shell commands on a workload or server. Setting
+`enabled: true` can cause real side effects, including on the Dokploy host for a
+`dokploy-server` schedule. Pulumi resource operations never invoke manual command
+execution, but an enabled schedule can run independently of Pulumi.
+:::
+
+## Disabled application example
+
+Attach the schedule to an existing Application output so Pulumi tracks its dependency:
+
+```yaml
+resources:
+  applicationSchedule:
+    type: dokploy:index:Schedule
+    properties:
+      name: application-maintenance
+      cronExpression: "0 0 * * *"
+      scheduleType: application
+      applicationId: ${application.applicationId}
+      enabled: false
+      command:
+        fn::secret: "echo scheduled maintenance"
+```
+
+`command` and optional `script` are secret inputs in every generated SDK. Use
+secret-aware configuration accessors or YAML `fn::secret` for their values; never
+log commands or scripts, which may contain credentials. No credentials are needed
+for the illustrative command above.
+
+## Target and lifecycle
+
+Choose `scheduleType` and its matching target:
+
+- `application`: supply `applicationId`.
+- `compose`: supply `composeId`; `serviceName` is optional in the checked-in API contract.
+- `server`: supply `serverId`.
+- `dokploy-server`: omit `applicationId`, `composeId`, and `serverId`; this targets the Dokploy host.
+
+Do not mix incompatible target IDs. Optional `appName` and `serviceName` may depend
+on deployed server behavior; the offline contract does not establish an additional
+required target name. Optional `shellType` accepts `bash` or `sh`; `timezone` selects
+the schedule timezone when provided.
+
+Changing `scheduleType`, a target ID, `appName`, or `serviceName` replaces the
+Schedule, deleting the old schedule before replacement to avoid overlapping
+execution. Name, cron expression, command, script, timezone, shell type,
+description, organization ID, and enabled status update in place. Refresh and
+import use the stable `scheduleId`; review imported configuration before enabling
+it, and restore secret inputs as needed.
+
+## Unverified live contract
+
+The live Schedule response contract remains **unverified**. The checked-in
+upstream API describes requests but leaves create and read response schemas empty;
+offline tests and generated SDKs do not prove deployed-server compatibility.
+The provider generates a schedule ID and requires read-back of that exact ID
+instead of finding or adopting a schedule by name.
+
+Creation may succeed remotely before identity verification fails. Inspect Dokploy
+before retrying; do not blindly recreate or delete an unverified schedule. Validate
+response shapes and supplied-ID behavior on a dedicated non-production server
+using the repository's opt-in acceptance safety procedure before claiming live
+support. Never use production for acceptance testing, and keep test schedules
+disabled.
+
+See the [Schedule reference](../../reference/schedule/) for the generated SDK
+surface and the [complete example](../../examples/complete/) for a disabled YAML
+schedule attached to the example application.

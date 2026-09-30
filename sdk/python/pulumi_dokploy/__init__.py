@@ -22,6 +22,7 @@ from .project_tag import *
 from .provider import *
 from .redis import *
 from .registry import *
+from .schedule import *
 from .ssh_key import *
 from .tag import *
 from .volume_backup import *
@@ -59,6 +60,7 @@ _utilities.register(
    "dokploy:index:Redis": "Redis",
    "dokploy:index:Registry": "Registry",
    "dokploy:index:SSHKey": "SSHKey",
+   "dokploy:index:Schedule": "Schedule",
    "dokploy:index:Tag": "Tag",
    "dokploy:index:VolumeBackup": "VolumeBackup"
   }

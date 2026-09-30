@@ -85,6 +85,11 @@ export type Registry = import("./registry").Registry;
 export const Registry: typeof import("./registry").Registry = null as any;
 utilities.lazyLoad(exports, ["Registry"], () => require("./registry"));
 
+export { ScheduleArgs } from "./schedule";
+export type Schedule = import("./schedule").Schedule;
+export const Schedule: typeof import("./schedule").Schedule = null as any;
+utilities.lazyLoad(exports, ["Schedule"], () => require("./schedule"));
+
 export { SSHKeyArgs } from "./sshkey";
 export type SSHKey = import("./sshkey").SSHKey;
 export const SSHKey: typeof import("./sshkey").SSHKey = null as any;
@@ -146,6 +151,8 @@ const _module = {
                 return new Registry(name, <any>undefined, { urn })
             case "dokploy:index:SSHKey":
                 return new SSHKey(name, <any>undefined, { urn })
+            case "dokploy:index:Schedule":
+                return new Schedule(name, <any>undefined, { urn })
             case "dokploy:index:Tag":
                 return new Tag(name, <any>undefined, { urn })
             case "dokploy:index:VolumeBackup":
