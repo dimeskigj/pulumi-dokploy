@@ -49,3 +49,23 @@ func TestLookupRegistryURLSafety(t *testing.T) {
 		require.Equal(t, raw, *safeRegistryURL(&raw))
 	}
 }
+
+func TestLookupOptionalString(t *testing.T) {
+	for _, tc := range []struct {
+		value any
+		want  *string
+	}{
+		{nil, nil}, {"", stringPtr("")}, {"future", stringPtr("future")},
+	} {
+		got, err := lookupOptionalString("compose.one", map[string]any{"status": tc.value}, "status")
+		require.NoError(t, err)
+		require.Equal(t, tc.want, got)
+	}
+	got, err := lookupOptionalString("compose.one", nil, "status")
+	require.NoError(t, err)
+	require.Nil(t, got)
+	for _, value := range []any{false, 1.0, []any{}, map[string]any{}} {
+		_, err := lookupOptionalString("compose.one", map[string]any{"status": value}, "status")
+		require.EqualError(t, err, "compose.one: invalid response contract")
+	}
+}

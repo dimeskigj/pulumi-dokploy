@@ -20,6 +20,8 @@ func TestLookupControlPlaneInvoke(t *testing.T) {
 	}{
 		{"getProject", "projectId", "project.one", `{"projectId":"id","name":"","description":"","defaultEnvironmentId":null,"password":"mock-secret"}`, []string{"projectId", "name", "description"}},
 		{"getEnvironment", "environmentId", "environment.one", `{"environmentId":"id","name":"","isDefault":false,"description":null,"password":"mock-secret"}`, []string{"environmentId", "name", "isDefault"}},
+		{"getApplication", "applicationId", "application.one", `{"applicationId":"id","name":"","applicationStatus":"","registryId":null,"buildRegistryId":null,"env":"mock-secret","source":{"token":"mock-secret"}}`, []string{"applicationId", "name", "status"}},
+		{"getCompose", "composeId", "compose.one", `{"composeId":"id","name":"","composeStatus":"","composeType":"future","composeFile":"mock-secret","command":"mock-secret"}`, []string{"composeId", "name", "status", "composeType"}},
 		{"getServer", "serverId", "server.one", `{"serverId":"id","name":"","port":0,"username":"","password":"mock-secret"}`, []string{"serverId", "name", "port", "username"}},
 		{"getRegistry", "registryId", "registry.one", `{"registryId":"id","registryName":"","registryUrl":"https://user:secret@registry.example","imagePrefix":"","password":"mock-secret"}`, []string{"registryId", "name", "imagePrefix"}},
 		{"getSSHKey", "sshKeyId", "sshKey.one", `{"sshKeyId":"id","name":"","publicKey":"","privateKey":"mock-secret"}`, []string{"sshKeyId", "name", "publicKey"}},

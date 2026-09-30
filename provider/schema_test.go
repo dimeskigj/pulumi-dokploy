@@ -24,7 +24,7 @@ func providerSchema(t *testing.T) schema.PackageSpec {
 
 func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	spec := providerSchema(t)
-	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
+	require.ElementsMatch(t, []string{"dokploy:index:getProject", "dokploy:index:getEnvironment", "dokploy:index:getApplication", "dokploy:index:getCompose", "dokploy:index:getServer", "dokploy:index:getRegistry", "dokploy:index:getSSHKey"}, functionTokens(spec.Functions))
 	for token, function := range spec.Functions {
 		require.NotEmpty(t, function.Description, token)
 		require.Len(t, function.Inputs.Required, 1)
@@ -45,6 +45,8 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 	}{
 		{"getProject", "projectId", []string{"description", "defaultEnvironmentId"}},
 		{"getEnvironment", "environmentId", []string{"description", "projectId", "isDefault"}},
+		{"getApplication", "applicationId", []string{"description", "appName", "environmentId", "serverId", "status", "registryId", "buildRegistryId"}},
+		{"getCompose", "composeId", []string{"description", "appName", "environmentId", "serverId", "status", "composeType"}},
 		{"getServer", "serverId", []string{"description", "ipAddress", "port", "username", "organizationId", "sshKeyId", "serverType", "status"}},
 		{"getRegistry", "registryId", []string{"url", "username", "imagePrefix", "serverId", "registryType"}},
 		{"getSSHKey", "sshKeyId", []string{"description", "publicKey", "organizationId"}},

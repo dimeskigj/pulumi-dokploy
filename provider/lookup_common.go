@@ -29,6 +29,18 @@ func lookupResponseError(operation string) error {
 	return fmt.Errorf("%s: invalid response contract", operation)
 }
 
+func lookupOptionalString(operation string, fields map[string]any, field string) (*string, error) {
+	value, ok := fields[field]
+	if !ok || value == nil {
+		return nil, nil
+	}
+	text, ok := value.(string)
+	if !ok {
+		return nil, lookupResponseError(operation)
+	}
+	return &text, nil
+}
+
 func lookupError(operation string, err error) error {
 	if errors.Is(err, context.Canceled) {
 		return fmt.Errorf("%s: request canceled: %w", operation, context.Canceled)
