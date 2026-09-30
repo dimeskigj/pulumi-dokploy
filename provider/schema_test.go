@@ -39,6 +39,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
 		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount",
+		"dokploy:index:Schedule",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -91,6 +92,27 @@ func TestSchemaSecretsAndDefaults(t *testing.T) {
 	require.True(t, sshKeyProps["publicKey"].ReplaceOnChanges)
 	require.True(t, spec.Resources["dokploy:index:Registry"].InputProperties["password"].Secret)
 	require.True(t, spec.Resources["dokploy:index:Mount"].InputProperties["content"].Secret)
+}
+
+func TestSchemaScheduleContract(t *testing.T) {
+	spec := providerSchema(t)
+	require.Contains(t, spec.Description, "schedules")
+	r, ok := spec.Resources["dokploy:index:Schedule"]
+	require.True(t, ok)
+	require.Equal(t, false, r.InputProperties["enabled"].Default)
+	for _, k := range []string{"command", "script"} {
+		require.True(t, r.InputProperties[k].Secret, k)
+		require.True(t, r.Properties[k].Secret, k)
+	}
+	for _, k := range []string{"scheduleType", "applicationId", "composeId", "serverId", "appName", "serviceName"} {
+		require.True(t, r.InputProperties[k].ReplaceOnChanges, k)
+	}
+	for _, k := range []string{"name", "cronExpression", "command", "script", "timezone", "shellType", "description", "enabled"} {
+		require.False(t, r.InputProperties[k].ReplaceOnChanges, k)
+	}
+	require.Contains(t, r.Properties, "scheduleId")
+	require.NotContains(t, r.InputProperties, "scheduleId")
+	require.NotContains(t, r.Properties, "createdAt")
 }
 
 func TestSchemaPublishingMetadata(t *testing.T) {
