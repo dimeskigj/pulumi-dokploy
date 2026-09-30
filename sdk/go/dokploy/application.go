@@ -62,6 +62,7 @@ func NewApplication(ctx *pulumi.Context,
 	if args.Source == nil {
 		return nil, errors.New("invalid value for required argument 'Source'")
 	}
+	args.Source = args.Source.ToApplicationSourceOutput().ApplyT(func(v ApplicationSource) ApplicationSource { return *v.Defaults() }).(ApplicationSourceOutput)
 	if args.BuildArgs != nil {
 		args.BuildArgs = pulumi.ToSecret(args.BuildArgs).(pulumi.StringPtrInput)
 	}

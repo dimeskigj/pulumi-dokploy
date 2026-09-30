@@ -10,6 +10,7 @@
     "application.saveDockerProvider": "boolean",
     "application.saveEnvironment": "boolean",
     "application.saveGitProvider": "boolean",
+    "application.saveGithubProvider": "boolean",
     "application.saveGitlabProvider": "boolean",
     "application.update": "boolean",
     "backup.create": "",

@@ -5,6 +5,8 @@ import * as pulumi from "@pulumi/pulumi";
 import * as inputs from "../types/input";
 import * as outputs from "../types/output";
 
+import * as utilities from "../utilities";
+
 /**
  * Application build configuration.
  */
@@ -40,6 +42,10 @@ export interface ApplicationSourceArgs {
      */
     git?: pulumi.Input<inputs.GitApplicationSourceArgs | undefined>;
     /**
+     * GitHub source configuration.
+     */
+    github?: pulumi.Input<inputs.GitHubAppSourceArgs | undefined>;
+    /**
      * GitLab source configuration.
      */
     gitlab?: pulumi.Input<inputs.GitLabAppSourceArgs | undefined>;
@@ -47,6 +53,15 @@ export interface ApplicationSourceArgs {
      * The application source type.
      */
     type: pulumi.Input<string>;
+}
+/**
+ * applicationSourceArgsProvideDefaults sets the appropriate defaults for ApplicationSourceArgs
+ */
+export function applicationSourceArgsProvideDefaults(val: ApplicationSourceArgs): ApplicationSourceArgs {
+    return {
+        ...val,
+        github: pulumi.output(val.github).apply(v => v === undefined ? undefined : inputs.gitHubAppSourceArgsProvideDefaults(v)),
+    };
 }
 
 /**
@@ -155,6 +170,57 @@ export interface GitComposeSourceArgs {
      * Paths to watch.
      */
     watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+}
+
+/**
+ * GitHub source configuration.
+ */
+export interface GitHubAppSourceArgs {
+    /**
+     * The GitHub branch.
+     */
+    branch: pulumi.Input<string>;
+    /**
+     * The build configuration.
+     */
+    build: pulumi.Input<inputs.ApplicationBuildArgs>;
+    /**
+     * The build path.
+     */
+    buildPath?: pulumi.Input<string | undefined>;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: pulumi.Input<boolean | undefined>;
+    /**
+     * The GitHub integration ID.
+     */
+    integrationId: pulumi.Input<string>;
+    /**
+     * The GitHub owner.
+     */
+    owner: pulumi.Input<string>;
+    /**
+     * The GitHub repository.
+     */
+    repository: pulumi.Input<string>;
+    /**
+     * The deployment trigger type, either push or tag.
+     */
+    triggerType?: pulumi.Input<string | undefined>;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+}
+/**
+ * gitHubAppSourceArgsProvideDefaults sets the appropriate defaults for GitHubAppSourceArgs
+ */
+export function gitHubAppSourceArgsProvideDefaults(val: GitHubAppSourceArgs): GitHubAppSourceArgs {
+    return {
+        ...val,
+        triggerType: (val.triggerType) ?? "push",
+    };
 }
 
 /**

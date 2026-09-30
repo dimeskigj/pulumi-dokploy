@@ -12,6 +12,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.dimeski.pulumi.dokploy.inputs.DockerSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
+import net.dimeski.pulumi.dokploy.inputs.GitHubAppSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitLabAppSourceArgs;
 
 
@@ -54,6 +55,21 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
     }
 
     /**
+     * GitHub source configuration.
+     * 
+     */
+    @Import(name="github")
+    private @Nullable Output<GitHubAppSourceArgs> github;
+
+    /**
+     * @return GitHub source configuration.
+     * 
+     */
+    public Optional<Output<GitHubAppSourceArgs>> github() {
+        return Optional.ofNullable(this.github);
+    }
+
+    /**
      * GitLab source configuration.
      * 
      */
@@ -88,6 +104,7 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
     private ApplicationSourceArgs(ApplicationSourceArgs $) {
         this.docker = $.docker;
         this.git = $.git;
+        this.github = $.github;
         this.gitlab = $.gitlab;
         this.type = $.type;
     }
@@ -150,6 +167,27 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
          */
         public Builder git(GitApplicationSourceArgs git) {
             return git(Output.of(git));
+        }
+
+        /**
+         * @param github GitHub source configuration.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder github(@Nullable Output<GitHubAppSourceArgs> github) {
+            $.github = github;
+            return this;
+        }
+
+        /**
+         * @param github GitHub source configuration.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder github(GitHubAppSourceArgs github) {
+            return github(Output.of(github));
         }
 
         /**

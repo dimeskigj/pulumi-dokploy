@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
@@ -72,6 +71,12 @@ func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.C
 	if inputs.EnvironmentID == "" && !req.NewInputs.Get("environmentId").HasComputed() {
 		failures = append(failures, p.CheckFailure{Property: "environmentId", Reason: "environmentId must not be empty"})
 	}
+	// Dokploy defaults triggerType to push. Normalizing an omitted value here keeps
+	// the recorded input identical to what a later Read reports, so the property
+	// cannot show a spurious diff.
+	if inputs.Source.Type == SourceGitHub && inputs.Source.GitHub != nil && inputs.Source.GitHub.TriggerType == "" {
+		inputs.Source.GitHub.TriggerType = ApplicationTriggerPush
+	}
 	if err := inputs.Source.validate(); err != nil {
 		failures = append(failures, p.CheckFailure{Property: "source", Reason: err.Error()})
 	}
@@ -104,7 +109,7 @@ func (r Application) Diff(_ context.Context, req infer.DiffRequest[ApplicationAr
 	if !sameOptionalString(req.Inputs.Description, req.State.Description) {
 		d["description"] = p.PropertyDiff{Kind: p.Update}
 	}
-	if !reflect.DeepEqual(req.Inputs.Source, req.State.Source) && req.Inputs.Source.Type == req.State.Source.Type {
+	if !sameApplicationSource(req.Inputs.Source, req.State.Source) && req.Inputs.Source.Type == req.State.Source.Type {
 		d["source"] = p.PropertyDiff{Kind: p.Update}
 	}
 	if !sameOptionalString(req.Inputs.Environment, req.State.Environment) {
@@ -317,6 +322,18 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab projectId")
 		}
 		result.GitLab.Build = decodeBuild(m)
+	case SourceGitHub:
+		integration := stringValue(m, "integrationId", "githubId")
+		owner, repo, branch := stringValue(m, "owner"), stringValue(m, "repository"), stringValue(m, "branch")
+		if integration == "" || owner == "" || repo == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required github source fields")
+		}
+		trigger := ApplicationTriggerType(stringValue(m, "triggerType"))
+		if trigger == "" {
+			trigger = ApplicationTriggerPush
+		}
+		result.GitHub = &GitHubAppSource{IntegrationID: integration, Owner: owner, Repository: repo, Branch: branch, BuildPath: stringPointer(m, "buildPath"), WatchPaths: stringSlice(m, "watchPaths"), TriggerType: trigger, EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.GitHub.Build = decodeBuild(m)
 	default:
 		return ApplicationSource{}, fmt.Errorf("application source data has unsupported source.type %q", kind)
 	}
@@ -403,7 +420,7 @@ func (r Application) Update(ctx context.Context, req infer.UpdateRequest[Applica
 	}
 	metadataChanged := req.Inputs.Name != req.State.Name || !sameOptionalString(req.Inputs.AppName, req.State.AppName) || !sameOptionalString(req.Inputs.Description, req.State.Description)
 	registryChanged := !sameOptionalString(req.Inputs.RegistryID, req.State.RegistryID) || !sameOptionalString(req.Inputs.BuildRegistryID, req.State.BuildRegistryID)
-	runtimeChanged := !reflect.DeepEqual(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile || registryChanged
+	runtimeChanged := !sameApplicationSource(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile || registryChanged
 	if metadataChanged || registryChanged {
 		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID, AppName: req.Inputs.AppName, Name: &req.Inputs.Name, Description: nullable.NewNullNullable[string]()}
 		if req.Inputs.Description != nil {

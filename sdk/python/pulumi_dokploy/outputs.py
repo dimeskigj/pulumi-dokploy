@@ -22,6 +22,7 @@ __all__ = [
     'DockerSource',
     'GitApplicationSource',
     'GitComposeSource',
+    'GitHubAppSource',
     'GitLabAppSource',
     'GitLabComposeSource',
     'RawComposeSource',
@@ -114,6 +115,7 @@ class ApplicationSource(dict):
                  type: _builtins.str,
                  docker: Optional['outputs.DockerSource'] = None,
                  git: Optional['outputs.GitApplicationSource'] = None,
+                 github: Optional['outputs.GitHubAppSource'] = None,
                  gitlab: Optional['outputs.GitLabAppSource'] = None):
         """
         Application source configuration.
@@ -121,6 +123,7 @@ class ApplicationSource(dict):
         :param _builtins.str type: The application source type.
         :param 'DockerSource' docker: Docker source configuration.
         :param 'GitApplicationSource' git: Git source configuration.
+        :param 'GitHubAppSource' github: GitHub source configuration.
         :param 'GitLabAppSource' gitlab: GitLab source configuration.
         """
         pulumi.set(__self__, "type", type)
@@ -128,6 +131,8 @@ class ApplicationSource(dict):
             pulumi.set(__self__, "docker", docker)
         if git is not None:
             pulumi.set(__self__, "git", git)
+        if github is not None:
+            pulumi.set(__self__, "github", github)
         if gitlab is not None:
             pulumi.set(__self__, "gitlab", gitlab)
 
@@ -154,6 +159,14 @@ class ApplicationSource(dict):
         Git source configuration.
         """
         return pulumi.get(self, "git")
+
+    @_builtins.property
+    @pulumi.getter
+    def github(self) -> Optional['outputs.GitHubAppSource']:
+        """
+        GitHub source configuration.
+        """
+        return pulumi.get(self, "github")
 
     @_builtins.property
     @pulumi.getter
@@ -510,6 +523,148 @@ class GitComposeSource(dict):
         The SSH key ID.
         """
         return pulumi.get(self, "ssh_key_id")
+
+    @_builtins.property
+    @pulumi.getter(name="watchPaths")
+    def watch_paths(self) -> Optional[Sequence[_builtins.str]]:
+        """
+        Paths to watch.
+        """
+        return pulumi.get(self, "watch_paths")
+
+
+@pulumi.output_type
+class GitHubAppSource(dict):
+    """
+    GitHub source configuration.
+    """
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "integrationId":
+            suggest = "integration_id"
+        elif key == "buildPath":
+            suggest = "build_path"
+        elif key == "enableSubmodules":
+            suggest = "enable_submodules"
+        elif key == "triggerType":
+            suggest = "trigger_type"
+        elif key == "watchPaths":
+            suggest = "watch_paths"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in GitHubAppSource. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        GitHubAppSource.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        GitHubAppSource.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 branch: _builtins.str,
+                 build: 'outputs.ApplicationBuild',
+                 integration_id: _builtins.str,
+                 owner: _builtins.str,
+                 repository: _builtins.str,
+                 build_path: Optional[_builtins.str] = None,
+                 enable_submodules: Optional[_builtins.bool] = None,
+                 trigger_type: Optional[_builtins.str] = None,
+                 watch_paths: Optional[Sequence[_builtins.str]] = None):
+        """
+        GitHub source configuration.
+
+        :param _builtins.str branch: The GitHub branch.
+        :param 'ApplicationBuild' build: The build configuration.
+        :param _builtins.str integration_id: The GitHub integration ID.
+        :param _builtins.str owner: The GitHub owner.
+        :param _builtins.str repository: The GitHub repository.
+        :param _builtins.str build_path: The build path.
+        :param _builtins.bool enable_submodules: Whether to enable submodules.
+        :param _builtins.str trigger_type: The deployment trigger type, either push or tag.
+        :param Sequence[_builtins.str] watch_paths: Paths to watch.
+        """
+        pulumi.set(__self__, "branch", branch)
+        pulumi.set(__self__, "build", build)
+        pulumi.set(__self__, "integration_id", integration_id)
+        pulumi.set(__self__, "owner", owner)
+        pulumi.set(__self__, "repository", repository)
+        if build_path is not None:
+            pulumi.set(__self__, "build_path", build_path)
+        if enable_submodules is not None:
+            pulumi.set(__self__, "enable_submodules", enable_submodules)
+        if trigger_type is None:
+            trigger_type = 'push'
+        if trigger_type is not None:
+            pulumi.set(__self__, "trigger_type", trigger_type)
+        if watch_paths is not None:
+            pulumi.set(__self__, "watch_paths", watch_paths)
+
+    @_builtins.property
+    @pulumi.getter
+    def branch(self) -> _builtins.str:
+        """
+        The GitHub branch.
+        """
+        return pulumi.get(self, "branch")
+
+    @_builtins.property
+    @pulumi.getter
+    def build(self) -> 'outputs.ApplicationBuild':
+        """
+        The build configuration.
+        """
+        return pulumi.get(self, "build")
+
+    @_builtins.property
+    @pulumi.getter(name="integrationId")
+    def integration_id(self) -> _builtins.str:
+        """
+        The GitHub integration ID.
+        """
+        return pulumi.get(self, "integration_id")
+
+    @_builtins.property
+    @pulumi.getter
+    def owner(self) -> _builtins.str:
+        """
+        The GitHub owner.
+        """
+        return pulumi.get(self, "owner")
+
+    @_builtins.property
+    @pulumi.getter
+    def repository(self) -> _builtins.str:
+        """
+        The GitHub repository.
+        """
+        return pulumi.get(self, "repository")
+
+    @_builtins.property
+    @pulumi.getter(name="buildPath")
+    def build_path(self) -> Optional[_builtins.str]:
+        """
+        The build path.
+        """
+        return pulumi.get(self, "build_path")
+
+    @_builtins.property
+    @pulumi.getter(name="enableSubmodules")
+    def enable_submodules(self) -> Optional[_builtins.bool]:
+        """
+        Whether to enable submodules.
+        """
+        return pulumi.get(self, "enable_submodules")
+
+    @_builtins.property
+    @pulumi.getter(name="triggerType")
+    def trigger_type(self) -> Optional[_builtins.str]:
+        """
+        The deployment trigger type, either push or tag.
+        """
+        return pulumi.get(self, "trigger_type")
 
     @_builtins.property
     @pulumi.getter(name="watchPaths")

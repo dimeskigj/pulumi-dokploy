@@ -26,6 +26,10 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         /// </summary>
         public readonly Outputs.GitApplicationSource? Git;
         /// <summary>
+        /// GitHub source configuration.
+        /// </summary>
+        public readonly Outputs.GitHubAppSource? Github;
+        /// <summary>
         /// GitLab source configuration.
         /// </summary>
         public readonly Outputs.GitLabAppSource? Gitlab;
@@ -40,12 +44,15 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
 
             Outputs.GitApplicationSource? git,
 
+            Outputs.GitHubAppSource? github,
+
             Outputs.GitLabAppSource? gitlab,
 
             string type)
         {
             Docker = docker;
             Git = git;
+            Github = github;
             Gitlab = gitlab;
             Type = type;
         }

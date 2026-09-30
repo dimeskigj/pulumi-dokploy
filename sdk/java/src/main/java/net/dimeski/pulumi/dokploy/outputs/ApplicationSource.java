@@ -11,6 +11,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.dimeski.pulumi.dokploy.outputs.DockerSource;
 import net.dimeski.pulumi.dokploy.outputs.GitApplicationSource;
+import net.dimeski.pulumi.dokploy.outputs.GitHubAppSource;
 import net.dimeski.pulumi.dokploy.outputs.GitLabAppSource;
 
 @CustomType
@@ -25,6 +26,11 @@ public final class ApplicationSource {
      * 
      */
     private @Nullable GitApplicationSource git;
+    /**
+     * @return GitHub source configuration.
+     * 
+     */
+    private @Nullable GitHubAppSource github;
     /**
      * @return GitLab source configuration.
      * 
@@ -52,6 +58,13 @@ public final class ApplicationSource {
         return Optional.ofNullable(this.git);
     }
     /**
+     * @return GitHub source configuration.
+     * 
+     */
+    public Optional<GitHubAppSource> github() {
+        return Optional.ofNullable(this.github);
+    }
+    /**
      * @return GitLab source configuration.
      * 
      */
@@ -77,6 +90,7 @@ public final class ApplicationSource {
     public static final class Builder {
         private @Nullable DockerSource docker;
         private @Nullable GitApplicationSource git;
+        private @Nullable GitHubAppSource github;
         private @Nullable GitLabAppSource gitlab;
         private String type;
         public Builder() {}
@@ -84,6 +98,7 @@ public final class ApplicationSource {
     	      Objects.requireNonNull(defaults);
     	      this.docker = defaults.docker;
     	      this.git = defaults.git;
+    	      this.github = defaults.github;
     	      this.gitlab = defaults.gitlab;
     	      this.type = defaults.type;
         }
@@ -98,6 +113,12 @@ public final class ApplicationSource {
         public Builder git(@Nullable GitApplicationSource git) {
 
             this.git = git;
+            return this;
+        }
+        @CustomType.Setter
+        public Builder github(@Nullable GitHubAppSource github) {
+
+            this.github = github;
             return this;
         }
         @CustomType.Setter
@@ -118,6 +139,7 @@ public final class ApplicationSource {
             final var _resultValue = new ApplicationSource();
             _resultValue.docker = docker;
             _resultValue.git = git;
+            _resultValue.github = github;
             _resultValue.gitlab = gitlab;
             _resultValue.type = type;
             return _resultValue;

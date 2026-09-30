@@ -1116,6 +1116,165 @@
         ]
       }
     },
+    "/application.saveGithubProvider": {
+      "post": {
+        "operationId": "application-saveGithubProvider",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "applicationId": {
+                    "type": "string"
+                  },
+                  "branch": {
+                    "minLength": 1,
+                    "pattern": "^[a-zA-Z0-9._\\-/#]+$",
+                    "type": "string"
+                  },
+                  "buildPath": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "enableSubmodules": {
+                    "type": "boolean"
+                  },
+                  "githubId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "owner": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "repository": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "triggerType": {
+                    "default": "push",
+                    "enum": [
+                      "push",
+                      "tag"
+                    ],
+                    "type": "string"
+                  },
+                  "watchPaths": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "applicationId",
+                  "repository",
+                  "owner",
+                  "buildPath",
+                  "githubId",
+                  "branch",
+                  "triggerType"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "application"
+        ]
+      }
+    },
     "/application.saveGitlabProvider": {
       "post": {
         "operationId": "application-saveGitlabProvider",

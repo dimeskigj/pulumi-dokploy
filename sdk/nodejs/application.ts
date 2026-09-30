@@ -124,7 +124,7 @@ export class Application extends pulumi.CustomResource {
             resourceInputs["name"] = args?.name;
             resourceInputs["registryId"] = args?.registryId;
             resourceInputs["serverId"] = args?.serverId;
-            resourceInputs["source"] = args?.source;
+            resourceInputs["source"] = args ? pulumi.output(args.source).apply(inputs.applicationSourceArgsProvideDefaults) : undefined;
             resourceInputs["applicationId"] = undefined /*out*/;
             resourceInputs["status"] = undefined /*out*/;
         } else {
