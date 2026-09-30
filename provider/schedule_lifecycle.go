@@ -128,11 +128,14 @@ func readSchedule(ctx context.Context, api *client.Client, id string, prior Sche
 		return ScheduleState{}, errors.New("schedule.one could not confirm the requested schedule")
 	}
 	// The generated non-nullable optional pointers collapse JSON null and
-	// omission. Inspect presence only for these fields so explicit clears do
-	// not accidentally retain a prior value. Nullable fields retain presence.
+	// omission. Inspect presence so invalid enabled:null is rejected and explicit
+	// string clears do not retain prior values. Nullable fields retain presence.
 	var fields map[string]json.RawMessage
 	if err := json.Unmarshal(resp.Body, &fields); err != nil {
 		return ScheduleState{}, errors.New("schedule.one returned an invalid schedule")
+	}
+	if string(fields["enabled"]) == "null" {
+		return ScheduleState{}, errors.New("schedule.one returned an invalid enabled value")
 	}
 	if string(fields["appName"]) == "null" {
 		prior.AppName = nil

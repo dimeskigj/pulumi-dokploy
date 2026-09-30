@@ -174,6 +174,45 @@ func TestScheduleReadDriftNullAbsentAndNotFound(t *testing.T) {
 	}
 }
 
+func TestScheduleReadEnabledPresence(t *testing.T) {
+	for _, priorEnabled := range []bool{true, false} {
+		priorName := "empty-import"
+		prior := ScheduleState{}
+		if priorEnabled {
+			priorName = "prior-enabled"
+			prior.ScheduleArgs = scheduleTestArgs()
+			prior.Enabled = true
+		}
+		for _, field := range []struct {
+			name, json string
+			invalid    bool
+			want       bool
+		}{
+			{"null", `,"enabled":null`, true, false},
+			{"omitted", "", false, priorEnabled},
+			{"false", `,"enabled":false`, false, false},
+			{"true", `,"enabled":true`, false, true},
+		} {
+			t.Run(priorName+"/"+field.name, func(t *testing.T) {
+				r := scheduleTestResource(t, func(w http.ResponseWriter, req *http.Request) {
+					w.Header().Set("Content-Type", "application/json")
+					_, _ = w.Write([]byte(`{"scheduleId":"placeholder-id","name":"n","command":"c","cronExpression":"cron","scheduleType":"dokploy-server"` + field.json + `}`))
+				})
+				got, err := r.Read(t.Context(), infer.ReadRequest[ScheduleArgs, ScheduleState]{ID: "placeholder-id", State: prior})
+				if field.invalid {
+					require.Error(t, err)
+					require.Empty(t, got.ID)
+					return
+				}
+				require.NoError(t, err)
+				require.Equal(t, "placeholder-id", got.ID)
+				require.Equal(t, field.want, got.Inputs.Enabled)
+				require.Equal(t, field.want, got.State.Enabled)
+			})
+		}
+	}
+}
+
 func TestScheduleReadClearsExplicitNullPointerFields(t *testing.T) {
 	r := scheduleTestResource(t, func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

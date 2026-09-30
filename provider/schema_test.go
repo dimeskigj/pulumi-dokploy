@@ -100,6 +100,8 @@ func TestSchemaScheduleContract(t *testing.T) {
 	r, ok := spec.Resources["dokploy:index:Schedule"]
 	require.True(t, ok)
 	require.Equal(t, false, r.InputProperties["enabled"].Default)
+	require.Equal(t, "boolean", r.InputProperties["enabled"].Type)
+	require.Equal(t, "boolean", r.Properties["enabled"].Type)
 	for _, k := range []string{"command", "script"} {
 		require.True(t, r.InputProperties[k].Secret, k)
 		require.True(t, r.Properties[k].Secret, k)
