@@ -45,6 +45,7 @@ func (a *ScheduleArgs) Annotate(n infer.Annotator) {
 	n.Describe(&a.ComposeID, "Target Compose ID.")
 	n.Describe(&a.ServerID, "Target server ID.")
 	n.Describe(&a.Enabled, "Whether the schedule is enabled; defaults to false.")
+	n.SetDefault(&a.Enabled, false)
 }
 func (a *ScheduleState) Annotate(n infer.Annotator) {
 	n.Describe(&a.ScheduleID, "Stable Dokploy schedule ID.")
