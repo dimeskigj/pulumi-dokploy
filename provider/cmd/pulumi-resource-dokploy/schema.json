@@ -1,7 +1,7 @@
 {
   "name": "dokploy",
   "displayName": "Dokploy",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
   "keywords": [
     "category/infrastructure",
     "kind/native",
@@ -2388,6 +2388,700 @@
         "destinationId",
         "cronExpression"
       ]
+    }
+  },
+  "functions": {
+    "dokploy:index:getApplication": {
+      "description": "Read non-secret metadata for an existing Dokploy application by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "applicationId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy application to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "applicationId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "appName": {
+            "description": "The optional application name metadata.",
+            "type": "string"
+          },
+          "applicationId": {
+            "description": "The stable Dokploy application ID.",
+            "type": "string"
+          },
+          "buildRegistryId": {
+            "description": "The optional build registry ID metadata.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The optional environment ID metadata.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The application name.",
+            "type": "string"
+          },
+          "registryId": {
+            "description": "The optional registry ID metadata.",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional application status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "applicationId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getCompose": {
+      "description": "Read non-secret metadata for an existing Dokploy Compose deployment by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "composeId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy Compose deployment to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "composeId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "appName": {
+            "description": "The optional application name metadata.",
+            "type": "string"
+          },
+          "composeId": {
+            "description": "The stable Dokploy Compose ID.",
+            "type": "string"
+          },
+          "composeType": {
+            "description": "The optional Compose type.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The optional environment ID metadata.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The Compose deployment name.",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional Compose status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "composeId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getEnvironment": {
+      "description": "Read non-secret metadata for an existing Dokploy environment by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "environmentId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy environment to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "environmentId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The stable Dokploy environment ID.",
+            "type": "string"
+          },
+          "isDefault": {
+            "description": "The optional is default metadata.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The environment name.",
+            "type": "string"
+          },
+          "projectId": {
+            "description": "The optional project ID metadata.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "environmentId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getMariaDB": {
+      "description": "Read non-secret metadata for an existing Dokploy MariaDB database by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "mariadbId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy MariaDB database to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "mariadbId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "appName": {
+            "description": "The optional application name metadata.",
+            "type": "string"
+          },
+          "databaseName": {
+            "description": "The optional database name metadata.",
+            "type": "string"
+          },
+          "databaseUser": {
+            "description": "The optional database username metadata.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "dockerImage": {
+            "description": "The optional Docker image metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The optional environment ID metadata.",
+            "type": "string"
+          },
+          "externalPort": {
+            "description": "The optional external port.",
+            "type": "integer"
+          },
+          "mariadbId": {
+            "description": "The stable Dokploy MariaDB ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The MariaDB database name.",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional application status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mariadbId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getMongoDB": {
+      "description": "Read non-secret metadata for an existing Dokploy MongoDB database by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "mongoId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy MongoDB database to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "mongoId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "appName": {
+            "description": "The optional application name metadata.",
+            "type": "string"
+          },
+          "databaseUser": {
+            "description": "The optional database username metadata.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "dockerImage": {
+            "description": "The optional Docker image metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The optional environment ID metadata.",
+            "type": "string"
+          },
+          "externalPort": {
+            "description": "The optional external port.",
+            "type": "integer"
+          },
+          "mongoId": {
+            "description": "The stable Dokploy MongoDB ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The MongoDB database name.",
+            "type": "string"
+          },
+          "replicaSets": {
+            "description": "Whether replica sets are enabled, if supplied.",
+            "type": "boolean"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional application status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mongoId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getMySQL": {
+      "description": "Read non-secret metadata for an existing Dokploy MySQL database by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "mysqlId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy MySQL database to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "mysqlId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "appName": {
+            "description": "The optional application name metadata.",
+            "type": "string"
+          },
+          "databaseName": {
+            "description": "The optional database name metadata.",
+            "type": "string"
+          },
+          "databaseUser": {
+            "description": "The optional database username metadata.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "dockerImage": {
+            "description": "The optional Docker image metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The optional environment ID metadata.",
+            "type": "string"
+          },
+          "externalPort": {
+            "description": "The optional external port.",
+            "type": "integer"
+          },
+          "mysqlId": {
+            "description": "The stable Dokploy MySQL ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The MySQL database name.",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional application status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mysqlId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getPostgres": {
+      "description": "Read non-secret metadata for an existing Dokploy Postgres database by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "postgresId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy Postgres database to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "postgresId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "appName": {
+            "description": "The optional application name metadata.",
+            "type": "string"
+          },
+          "databaseName": {
+            "description": "The optional database name metadata.",
+            "type": "string"
+          },
+          "databaseUser": {
+            "description": "The optional database username metadata.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "dockerImage": {
+            "description": "The optional Docker image metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The optional environment ID metadata.",
+            "type": "string"
+          },
+          "externalPort": {
+            "description": "The optional external port.",
+            "type": "integer"
+          },
+          "name": {
+            "description": "The Postgres database name.",
+            "type": "string"
+          },
+          "postgresId": {
+            "description": "The stable Dokploy Postgres ID.",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional application status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "postgresId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getProject": {
+      "description": "Read non-secret metadata for an existing Dokploy project by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy project to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "projectId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "defaultEnvironmentId": {
+            "description": "The optional default environment ID metadata.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The project name.",
+            "type": "string"
+          },
+          "projectId": {
+            "description": "The stable Dokploy project ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getRedis": {
+      "description": "Read non-secret metadata for an existing Dokploy Redis database by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "redisId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy Redis database to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "redisId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "appName": {
+            "description": "The optional application name metadata.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "dockerImage": {
+            "description": "The optional Docker image metadata.",
+            "type": "string"
+          },
+          "environmentId": {
+            "description": "The optional environment ID metadata.",
+            "type": "string"
+          },
+          "externalPort": {
+            "description": "The optional external port.",
+            "type": "integer"
+          },
+          "name": {
+            "description": "The Redis database name.",
+            "type": "string"
+          },
+          "redisId": {
+            "description": "The stable Dokploy Redis ID.",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional application status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "redisId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getRegistry": {
+      "description": "Read non-secret metadata for an existing Dokploy registry by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "registryId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy registry to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "registryId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "imagePrefix": {
+            "description": "The optional image prefix metadata.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The registry name.",
+            "type": "string"
+          },
+          "registryId": {
+            "description": "The stable Dokploy registry ID.",
+            "type": "string"
+          },
+          "registryType": {
+            "description": "The optional registry type metadata.",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "The optional server ID metadata.",
+            "type": "string"
+          },
+          "url": {
+            "description": "The optional URL metadata.",
+            "type": "string"
+          },
+          "username": {
+            "description": "The optional username metadata.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "registryId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getSSHKey": {
+      "description": "Read non-secret metadata for an existing Dokploy SSH key by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "sshKeyId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy SSH key to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sshKeyId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The SSH key name.",
+            "type": "string"
+          },
+          "organizationId": {
+            "description": "The optional organization ID metadata.",
+            "type": "string"
+          },
+          "publicKey": {
+            "description": "The optional public key metadata.",
+            "type": "string"
+          },
+          "sshKeyId": {
+            "description": "The stable Dokploy SSH key ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sshKeyId",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "dokploy:index:getServer": {
+      "description": "Read non-secret metadata for an existing Dokploy server by ID without managing it.",
+      "inputs": {
+        "properties": {
+          "serverId": {
+            "type": "string",
+            "description": "The ID of the existing Dokploy server to read."
+          }
+        },
+        "type": "object",
+        "required": [
+          "serverId"
+        ]
+      },
+      "outputs": {
+        "properties": {
+          "description": {
+            "description": "The optional description metadata.",
+            "type": "string"
+          },
+          "ipAddress": {
+            "description": "The optional IP address metadata.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The server name.",
+            "type": "string"
+          },
+          "organizationId": {
+            "description": "The optional organization ID metadata.",
+            "type": "string"
+          },
+          "port": {
+            "description": "The optional port metadata.",
+            "type": "integer"
+          },
+          "serverId": {
+            "description": "The stable Dokploy server ID.",
+            "type": "string"
+          },
+          "serverType": {
+            "description": "The optional server type metadata.",
+            "type": "string"
+          },
+          "sshKeyId": {
+            "description": "The optional SSH key ID metadata.",
+            "type": "string"
+          },
+          "status": {
+            "description": "The optional status metadata.",
+            "type": "string"
+          },
+          "username": {
+            "description": "The optional username metadata.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "serverId",
+          "name"
+        ],
+        "type": "object"
+      }
     }
   }
 }

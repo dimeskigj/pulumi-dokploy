@@ -35,6 +35,66 @@ export type Environment = import("./environment").Environment;
 export const Environment: typeof import("./environment").Environment = null as any;
 utilities.lazyLoad(exports, ["Environment"], () => require("./environment"));
 
+export { GetApplicationArgs, GetApplicationResult, GetApplicationOutputArgs } from "./getApplication";
+export const getApplication: typeof import("./getApplication").getApplication = null as any;
+export const getApplicationOutput: typeof import("./getApplication").getApplicationOutput = null as any;
+utilities.lazyLoad(exports, ["getApplication","getApplicationOutput"], () => require("./getApplication"));
+
+export { GetComposeArgs, GetComposeResult, GetComposeOutputArgs } from "./getCompose";
+export const getCompose: typeof import("./getCompose").getCompose = null as any;
+export const getComposeOutput: typeof import("./getCompose").getComposeOutput = null as any;
+utilities.lazyLoad(exports, ["getCompose","getComposeOutput"], () => require("./getCompose"));
+
+export { GetEnvironmentArgs, GetEnvironmentResult, GetEnvironmentOutputArgs } from "./getEnvironment";
+export const getEnvironment: typeof import("./getEnvironment").getEnvironment = null as any;
+export const getEnvironmentOutput: typeof import("./getEnvironment").getEnvironmentOutput = null as any;
+utilities.lazyLoad(exports, ["getEnvironment","getEnvironmentOutput"], () => require("./getEnvironment"));
+
+export { GetMariaDBArgs, GetMariaDBResult, GetMariaDBOutputArgs } from "./getMariaDB";
+export const getMariaDB: typeof import("./getMariaDB").getMariaDB = null as any;
+export const getMariaDBOutput: typeof import("./getMariaDB").getMariaDBOutput = null as any;
+utilities.lazyLoad(exports, ["getMariaDB","getMariaDBOutput"], () => require("./getMariaDB"));
+
+export { GetMongoDBArgs, GetMongoDBResult, GetMongoDBOutputArgs } from "./getMongoDB";
+export const getMongoDB: typeof import("./getMongoDB").getMongoDB = null as any;
+export const getMongoDBOutput: typeof import("./getMongoDB").getMongoDBOutput = null as any;
+utilities.lazyLoad(exports, ["getMongoDB","getMongoDBOutput"], () => require("./getMongoDB"));
+
+export { GetMySQLArgs, GetMySQLResult, GetMySQLOutputArgs } from "./getMySQL";
+export const getMySQL: typeof import("./getMySQL").getMySQL = null as any;
+export const getMySQLOutput: typeof import("./getMySQL").getMySQLOutput = null as any;
+utilities.lazyLoad(exports, ["getMySQL","getMySQLOutput"], () => require("./getMySQL"));
+
+export { GetPostgresArgs, GetPostgresResult, GetPostgresOutputArgs } from "./getPostgres";
+export const getPostgres: typeof import("./getPostgres").getPostgres = null as any;
+export const getPostgresOutput: typeof import("./getPostgres").getPostgresOutput = null as any;
+utilities.lazyLoad(exports, ["getPostgres","getPostgresOutput"], () => require("./getPostgres"));
+
+export { GetProjectArgs, GetProjectResult, GetProjectOutputArgs } from "./getProject";
+export const getProject: typeof import("./getProject").getProject = null as any;
+export const getProjectOutput: typeof import("./getProject").getProjectOutput = null as any;
+utilities.lazyLoad(exports, ["getProject","getProjectOutput"], () => require("./getProject"));
+
+export { GetRedisArgs, GetRedisResult, GetRedisOutputArgs } from "./getRedis";
+export const getRedis: typeof import("./getRedis").getRedis = null as any;
+export const getRedisOutput: typeof import("./getRedis").getRedisOutput = null as any;
+utilities.lazyLoad(exports, ["getRedis","getRedisOutput"], () => require("./getRedis"));
+
+export { GetRegistryArgs, GetRegistryResult, GetRegistryOutputArgs } from "./getRegistry";
+export const getRegistry: typeof import("./getRegistry").getRegistry = null as any;
+export const getRegistryOutput: typeof import("./getRegistry").getRegistryOutput = null as any;
+utilities.lazyLoad(exports, ["getRegistry","getRegistryOutput"], () => require("./getRegistry"));
+
+export { GetSSHKeyArgs, GetSSHKeyResult, GetSSHKeyOutputArgs } from "./getSSHKey";
+export const getSSHKey: typeof import("./getSSHKey").getSSHKey = null as any;
+export const getSSHKeyOutput: typeof import("./getSSHKey").getSSHKeyOutput = null as any;
+utilities.lazyLoad(exports, ["getSSHKey","getSSHKeyOutput"], () => require("./getSSHKey"));
+
+export { GetServerArgs, GetServerResult, GetServerOutputArgs } from "./getServer";
+export const getServer: typeof import("./getServer").getServer = null as any;
+export const getServerOutput: typeof import("./getServer").getServerOutput = null as any;
+utilities.lazyLoad(exports, ["getServer","getServerOutput"], () => require("./getServer"));
+
 export { MariaDBArgs } from "./mariaDB";
 export type MariaDB = import("./mariaDB").MariaDB;
 export const MariaDB: typeof import("./mariaDB").MariaDB = null as any;
