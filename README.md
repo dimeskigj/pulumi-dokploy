@@ -44,6 +44,10 @@ redacted in Pulumi diagnostics.
 
 ## Resources
 
+Read-only ID-based lookups for projects, environments, workloads, databases, servers,
+registries, and SSH keys return non-secret metadata without adopting or managing existing
+objects. See the [lookup guide](https://dimeskigj.github.io/pulumi-dokploy/guides/lookups/).
+
 The provider exposes eighteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,

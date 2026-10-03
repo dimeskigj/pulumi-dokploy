@@ -62,6 +62,30 @@ test("normalizes config, inputs, outputs, and complex types", () => {
   assert.equal(model.resources[0].inputs[0].replaceOnChanges, true);
   assert.equal(model.resources[0].inputs[1].typeHref, "../types/#source");
   assert.equal(model.types[0].properties[0].required, true);
+  assert.deepEqual(model.functions, []);
+});
+
+test("normalizes function contracts deterministically and validates descriptions/references", () => {
+  const project = { description: "Read project metadata.", inputs: { properties: { projectId: { type: "string", description: "ID." } }, required: ["projectId"] }, outputs: { properties: { name: { type: "string", description: "Name." }, projectId: { type: "string", description: "ID." }, description: { type: "string", description: "Description." } }, required: ["name", "projectId"] } };
+  const fixture = { ...schema, functions: { "dokploy:index:getProject": project, "dokploy:index:getEnvironment": { ...structuredClone(project), description: "Read environment metadata." } } };
+  const model = parseSchema(fixture, { expectedResources: new Set(["Application"]) });
+  assert.deepEqual(model.functions.map(({ name }) => name), ["getEnvironment", "getProject"]);
+  const result = model.functions[1];
+  assert.equal(result.name, "getProject");
+  assert.equal(result.slug, "get-project");
+  assert.equal(result.inputs[0].name, "projectId");
+  assert.equal(result.inputs[0].required, true);
+  assert.deepEqual(result.outputs.map(({ name, type, required }) => ({ name, type, required })), [
+    { name: "description", type: "string", required: false },
+    { name: "name", type: "string", required: true },
+    { name: "projectId", type: "string", required: true },
+  ]);
+  const badDescription = structuredClone(fixture);
+  delete badDescription.functions["dokploy:index:getProject"].outputs.properties.name.description;
+  assert.throws(() => parseSchema(badDescription, { expectedResources: new Set(["Application"]) }), /Missing description.*getProject.*name/);
+  const badReference = structuredClone(fixture);
+  badReference.functions["dokploy:index:getProject"].inputs.properties.projectId = { $ref: "#/types/dokploy:index:Missing", description: "ID." };
+  assert.throws(() => parseSchema(badReference, { expectedResources: new Set(["Application"]) }), /Dangling type reference/);
 });
 
 test("formats every schema type used by the provider", () => {
@@ -74,6 +98,8 @@ test("formats every schema type used by the provider", () => {
 
 test("derives stable lowercase slugs", () => {
   assert.equal(slugFromToken("dokploy:index:Postgres"), "postgres");
+  assert.equal(slugFromToken("dokploy:index:getSSHKey"), "get-ssh-key");
+  assert.equal(slugFromToken("dokploy:index:getMySQL"), "get-mysql");
 });
 
 test("rejects tokens that are not exactly dokploy:index:identifier", () => {
@@ -106,6 +132,14 @@ test("loads and validates the real provider schema", async () => {
    assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").secret, true);
    assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").replaceOnChanges, true);
    assert.equal(model.resources.find(({ name }) => name === "ProjectTag").inputs.find(({ name }) => name === "projectId").replaceOnChanges, true);
+   assert.deepEqual(model.functions.map(({ name }) => name), ["getApplication", "getCompose", "getEnvironment", "getMariaDB", "getMongoDB", "getMySQL", "getPostgres", "getProject", "getRedis", "getRegistry", "getSSHKey", "getServer"]);
+   for (const fn of model.functions) {
+     assert.equal(fn.inputs.length, 1);
+     assert.equal(fn.inputs[0].required, true);
+     assert.equal(fn.outputs.find(({ name }) => name === "name").required, true);
+     assert.equal(fn.outputs.find(({ name }) => name === fn.inputs[0].name).required, true);
+     assert.ok(fn.outputs.every(({ description }) => description));
+   }
 });
 
 test("rejects duplicate normalized resource names", () => {

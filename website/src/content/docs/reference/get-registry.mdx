@@ -1,0 +1,20 @@
+---
+title: "getRegistry"
+description: "Read non-secret metadata for an existing Dokploy registry by ID without managing it."
+---
+
+import PropertyTable from "../../../components/PropertyTable.astro";
+
+> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.
+
+This read-only lookup returns non-secret metadata. It does not manage or refresh the referenced resource.
+
+Read non-secret metadata for an existing Dokploy registry by ID without managing it.
+
+## Inputs
+
+<PropertyTable properties={[{"name":"registryId","type":"string","typeHref":null,"description":"The ID of the existing Dokploy registry to read.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+## Outputs
+
+<PropertyTable properties={[{"name":"imagePrefix","type":"string","typeHref":null,"description":"The optional image prefix metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The registry name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"registryId","type":"string","typeHref":null,"description":"The stable Dokploy registry ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"registryType","type":"string","typeHref":null,"description":"The optional registry type metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"serverId","type":"string","typeHref":null,"description":"The optional server ID metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"url","type":"string","typeHref":null,"description":"The optional URL metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"username","type":"string","typeHref":null,"description":"The optional username metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />

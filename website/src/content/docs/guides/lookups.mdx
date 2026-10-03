@@ -1,0 +1,41 @@
+---
+title: "Look up existing infrastructure"
+description: "Reference externally managed Dokploy objects by ID without importing or managing them."
+---
+
+Use the [read-only lookup functions](../../reference/get-project/) when an existing Dokploy object is managed outside this Pulumi stack. Each function takes exactly one ID; there is no name search or discovery. Lookups do not create lifecycle ownership, import, adopt, update, or delete the referenced object. A lookup is an invoke, not a managed resource's static `get` or a `pulumi import` operation. Use [imports](../imports/) only when you intend this stack to own the existing object.
+
+## TypeScript: use looked-up IDs explicitly
+
+The generated Node.js SDK exports `getProject` and `getEnvironment`. Replace the placeholder IDs with the IDs of objects you already have permission to read. Here the two results are independent reads; check their relationship if your program relies on it.
+
+```ts
+import * as dokploy from "@dimeskigj/pulumi-dokploy";
+
+const project = await dokploy.getProject({ projectId: "<existing-project-id>" });
+const environment = await dokploy.getEnvironment({ environmentId: "<existing-environment-id>" });
+
+// Pass the looked-up ID explicitly to a managed resource you choose to create.
+const app = new dokploy.Application("my-app", {
+  environmentId: environment.environmentId,
+  name: "my-app",
+  source: { type: "docker", docker: { image: "nginx:stable" } },
+});
+```
+
+The lookup itself does not register a Project or Environment resource. Its result is evaluated during Pulumi program execution (including preview when IDs are known), not tracked as refreshable managed-resource state. Preview therefore needs connectivity to Dokploy and read permissions. If the object is missing, the invoke fails with a not-found error rather than an empty result; authentication/authorization failures and network/timeouts are separate errors. Verify IDs and permissions before relying on the result.
+
+## Go: generated invoke without ownership
+
+The [mocked Go SDK consumer](https://github.com/dimeskigj/pulumi-dokploy/blob/main/examples/go/lookup_test.go) compiles and tests these generated calls without contacting Dokploy or registering a Dokploy resource:
+
+```go
+project, err := dokploy.LookupProject(ctx, &dokploy.LookupProjectArgs{ProjectId: "<existing-project-id>"})
+if err != nil { return err }
+environment, err := dokploy.LookupEnvironment(ctx, &dokploy.LookupEnvironmentArgs{EnvironmentId: "<existing-environment-id>"})
+if err != nil { return err }
+_ = project.Name
+_ = environment.EnvironmentId // Supply explicitly to a managed resource when needed.
+```
+
+Results project only documented non-secret metadata: ID and name are required, while other fields (including default-environment metadata) are optional and may be absent. Passwords, private keys, environment values, source configuration, Compose files, commands, nested objects, and monitoring settings are omitted. Names and descriptions are ordinary metadata, **not** scanned for secrets deliberately stored in them; avoid placing secrets there. See the [environment function reference](../../reference/get-environment/) for input and output types.

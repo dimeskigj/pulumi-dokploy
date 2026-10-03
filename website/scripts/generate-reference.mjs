@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { loadSchema, parseSchema } from "./reference-model.mjs";
-import { renderConfiguration, renderResource, renderTypes, replaceGeneratedDirectory } from "./render-reference.mjs";
+import { renderConfiguration, renderFunction, renderResource, renderTypes, replaceGeneratedDirectory } from "./render-reference.mjs";
 
 try {
   const scriptsDirectory = fileURLToPath(new URL(".", import.meta.url));
@@ -14,6 +14,9 @@ try {
   };
   for (const resource of [...model.resources].sort((left, right) => left.name.localeCompare(right.name))) {
     files[`${resource.slug}.mdx`] = renderResource(resource);
+  }
+  for (const fn of model.functions) {
+    files[`${fn.slug}.mdx`] = renderFunction(fn);
   }
   await replaceGeneratedDirectory(target, files);
 } catch (error) {

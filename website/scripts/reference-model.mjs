@@ -24,7 +24,13 @@ export async function loadSchema(path) {
 // the generic camelCase-to-kebab split below would produce (my-sql,
 // maria-db, mongo-db) because they pack multiple capitalized segments,
 // including an acronym, together.
-const SLUG_OVERRIDES = { MySQL: "mysql", MariaDB: "mariadb", MongoDB: "mongodb" };
+const SLUG_OVERRIDES = {
+  MySQL: "mysql", MariaDB: "mariadb", MongoDB: "mongodb",
+  getProject: "get-project", getEnvironment: "get-environment", getApplication: "get-application",
+  getCompose: "get-compose", getPostgres: "get-postgres", getMySQL: "get-mysql",
+  getMariaDB: "get-mariadb", getMongoDB: "get-mongodb", getRedis: "get-redis",
+  getServer: "get-server", getRegistry: "get-registry", getSSHKey: "get-ssh-key",
+};
 
 export function slugFromToken(token) {
   if (typeof token !== "string" || !/^dokploy:index:[A-Za-z][A-Za-z0-9_-]*$/.test(token)) {
@@ -95,6 +101,7 @@ function parseSchemaInternal(schema, options = {}) {
   }
   const types = schema.types ?? {};
   const resources = schema.resources ?? {};
+  const functions = schema.functions ?? {};
   const expectedResources = options.expectedResources ?? EXPECTED_RESOURCES;
   const resourceTokens = Object.keys(resources);
   const expectedTokens = new Set([...expectedResources].map((name) => `dokploy:index:${name}`));
@@ -128,9 +135,21 @@ function parseSchemaInternal(schema, options = {}) {
       outputs: normalizeProperties(definition.properties, definition.required, `resource ${token} outputs`, types),
     };
   });
+  const functionModels = Object.keys(functions).sort().map((token) => {
+    const definition = functions[token];
+    return {
+      token,
+      name: resourceName(token),
+      slug: slugFromToken(token),
+      description: assertDescription(definition.description, `function ${token}`),
+      inputs: normalizeProperties(definition.inputs?.properties, definition.inputs?.required, `function ${token} inputs`, types),
+      outputs: normalizeProperties(definition.outputs?.properties, definition.outputs?.required, `function ${token} outputs`, types),
+    };
+  });
   return {
     config: normalizeProperties(schema.config?.variables, schema.config?.required, "config", types),
     resources: resourceModels,
+    functions: functionModels,
     types: typeModels,
   };
 }

@@ -1,0 +1,20 @@
+---
+title: "getSSHKey"
+description: "Read non-secret metadata for an existing Dokploy SSH key by ID without managing it."
+---
+
+import PropertyTable from "../../../components/PropertyTable.astro";
+
+> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.
+
+This read-only lookup returns non-secret metadata. It does not manage or refresh the referenced resource.
+
+Read non-secret metadata for an existing Dokploy SSH key by ID without managing it.
+
+## Inputs
+
+<PropertyTable properties={[{"name":"sshKeyId","type":"string","typeHref":null,"description":"The ID of the existing Dokploy SSH key to read.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+## Outputs
+
+<PropertyTable properties={[{"name":"description","type":"string","typeHref":null,"description":"The optional description metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The SSH key name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"organizationId","type":"string","typeHref":null,"description":"The optional organization ID metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"publicKey","type":"string","typeHref":null,"description":"The optional public key metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"sshKeyId","type":"string","typeHref":null,"description":"The stable Dokploy SSH key ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />

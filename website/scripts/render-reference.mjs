@@ -33,6 +33,26 @@ ${resource.description}
 `;
 }
 
+export function renderFunction(functionModel) {
+  return `${frontmatter(functionModel.name, functionModel.description)}
+${propertyTableImport}
+
+${generatedNotice}
+
+This read-only lookup returns non-secret metadata. It does not manage or refresh the referenced resource.
+
+${functionModel.description}
+
+## Inputs
+
+<PropertyTable properties={${JSON.stringify(functionModel.inputs)}} />
+
+## Outputs
+
+<PropertyTable properties={${JSON.stringify(functionModel.outputs)}} />
+`;
+}
+
 export function renderConfiguration(model) {
   return `${frontmatter("Configuration", "Configure the Dokploy provider.")}
 ${propertyTableImport}

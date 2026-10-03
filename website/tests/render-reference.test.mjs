@@ -3,7 +3,22 @@ import { access, mkdir, mkdtemp, readFile, readdir, rename as fsRename, rm, writ
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { renderConfiguration, renderResource, renderTypes, replaceGeneratedDirectory } from "../scripts/render-reference.mjs";
+import { renderConfiguration, renderFunction, renderResource, renderTypes, replaceGeneratedDirectory } from "../scripts/render-reference.mjs";
+
+test("renders read-only function metadata as typed input/output tables", () => {
+  const inputs = [{ name: "projectId", type: "string", required: true, description: "ID." }];
+  const outputs = [{ name: "name", type: "string", required: true, description: "Name." }, { name: "description", type: "string", required: false, description: "Description." }];
+  const mdx = renderFunction({ name: "getProject", description: "Read project metadata.", inputs, outputs });
+  assert.match(mdx, /title: "getProject"/);
+  assert.match(mdx, /Read project metadata\./);
+  assert.match(mdx, /Generated from `schema\.json`/);
+  assert.match(mdx, /read-only/i);
+  assert.match(mdx, /non-secret/i);
+  assert.match(mdx, /## Inputs/);
+  assert.match(mdx, /## Outputs/);
+  assert.ok(mdx.includes(`<PropertyTable properties={${JSON.stringify(inputs)}} />`));
+  assert.ok(mdx.includes(`<PropertyTable properties={${JSON.stringify(outputs)}} />`));
+});
 
 test("renders generated notice and input/output metadata", () => {
   const mdx = renderResource({
