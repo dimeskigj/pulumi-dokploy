@@ -49,16 +49,13 @@ func (r GetRegistry) Invoke(ctx context.Context, req infer.FunctionRequest[GetRe
 	if err := validateLookupID("registryId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).RegistryOneWithResponse(ctx, &generated.RegistryOneParams{RegistryId: id})
+	response, err := r.client(ctx).RegistryOne(ctx, &generated.RegistryOneParams{RegistryId: id})
+	obj, err := lookupDecode[lookupRegistry]("registry.one", response, err)
 	if err != nil {
-		return empty, lookupError("registry.one", err)
-	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("registry.one")
-	}
-	obj := response.JSON200
-	if err := validateLookupIdentity("registry.one", id, &obj.RegistryId, obj.RegistryName); err != nil {
 		return empty, err
 	}
-	return infer.FunctionResponse[GetRegistryResult]{Output: GetRegistryResult{RegistryID: id, Name: *obj.RegistryName, URL: safeRegistryURL(obj.RegistryUrl), Username: obj.Username, ImagePrefix: nullableValue(obj.ImagePrefix), ServerID: nullableValue(obj.ServerId), RegistryType: obj.RegistryType}}, nil
+	if err := validateLookupIdentity("registry.one", id, obj.RegistryId, obj.RegistryName); err != nil {
+		return empty, err
+	}
+	return infer.FunctionResponse[GetRegistryResult]{Output: GetRegistryResult{RegistryID: id, Name: *obj.RegistryName, URL: safeRegistryURL(obj.RegistryUrl), Username: obj.Username, ImagePrefix: obj.ImagePrefix, ServerID: obj.ServerId, RegistryType: obj.RegistryType}}, nil
 }

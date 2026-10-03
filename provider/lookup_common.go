@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
-	"github.com/oapi-codegen/nullable"
 )
 
 func validateLookupID(field, id string) error {
@@ -17,13 +16,6 @@ func validateLookupID(field, id string) error {
 		return fmt.Errorf("%s must not be empty", field)
 	}
 	return nil
-}
-
-func lookupDatabaseImage(canonical nullable.Nullable[string], legacy *string) *string {
-	if image, err := canonical.Get(); err == nil && canonical.IsSpecified() {
-		return &image
-	}
-	return legacy
 }
 
 func validateLookupIdentity(operation, requestedID string, returnedID, name *string) error {

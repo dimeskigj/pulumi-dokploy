@@ -55,20 +55,13 @@ func (r GetMySQL) Invoke(ctx context.Context, req infer.FunctionRequest[GetMySQL
 	if err := validateLookupID("mysqlId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).MysqlOneWithResponse(ctx, &generated.MysqlOneParams{MysqlId: id})
+	response, err := r.client(ctx).MysqlOne(ctx, &generated.MysqlOneParams{MysqlId: id})
+	obj, err := lookupDecode[lookupMysql]("mysql.one", response, err)
 	if err != nil {
-		return empty, lookupError("mysql.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("mysql.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("mysql.one", id, obj.MysqlId, obj.Name); err != nil {
 		return empty, err
 	}
-	status, err := lookupOptionalString("mysql.one", obj.AdditionalProperties, "applicationStatus")
-	if err != nil {
-		return empty, err
-	}
-	return infer.FunctionResponse[GetMySQLResult]{Output: GetMySQLResult{MySQLID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupDatabaseImage(obj.DockerImage, obj.Image), Status: status, ExternalPort: obj.ExternalPort, DatabaseName: obj.DatabaseName, DatabaseUser: obj.DatabaseUser}}, nil
+	return infer.FunctionResponse[GetMySQLResult]{Output: GetMySQLResult{MySQLID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupImage(obj.DockerImage, obj.Image), Status: obj.ApplicationStatus, ExternalPort: obj.ExternalPort, DatabaseName: obj.DatabaseName, DatabaseUser: obj.DatabaseUser}}, nil
 }

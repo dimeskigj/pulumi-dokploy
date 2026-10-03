@@ -43,14 +43,11 @@ func (r GetProject) Invoke(ctx context.Context, req infer.FunctionRequest[GetPro
 	if err := validateLookupID("projectId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).ProjectOneWithResponse(ctx, &generated.ProjectOneParams{ProjectId: id})
+	response, err := r.client(ctx).ProjectOne(ctx, &generated.ProjectOneParams{ProjectId: id})
+	obj, err := lookupDecode[lookupProject]("project.one", response, err)
 	if err != nil {
-		return empty, lookupError("project.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("project.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("project.one", id, obj.ProjectId, obj.Name); err != nil {
 		return empty, err
 	}

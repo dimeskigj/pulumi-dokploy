@@ -55,20 +55,13 @@ func (r GetPostgres) Invoke(ctx context.Context, req infer.FunctionRequest[GetPo
 	if err := validateLookupID("postgresId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).PostgresOneWithResponse(ctx, &generated.PostgresOneParams{PostgresId: id})
+	response, err := r.client(ctx).PostgresOne(ctx, &generated.PostgresOneParams{PostgresId: id})
+	obj, err := lookupDecode[lookupPostgres]("postgres.one", response, err)
 	if err != nil {
-		return empty, lookupError("postgres.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("postgres.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("postgres.one", id, obj.PostgresId, obj.Name); err != nil {
 		return empty, err
 	}
-	status, err := lookupOptionalString("postgres.one", obj.AdditionalProperties, "applicationStatus")
-	if err != nil {
-		return empty, err
-	}
-	return infer.FunctionResponse[GetPostgresResult]{Output: GetPostgresResult{PostgresID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupDatabaseImage(obj.DockerImage, obj.Image), Status: status, ExternalPort: obj.ExternalPort, DatabaseName: obj.DatabaseName, DatabaseUser: obj.DatabaseUser}}, nil
+	return infer.FunctionResponse[GetPostgresResult]{Output: GetPostgresResult{PostgresID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupImage(obj.DockerImage, obj.Image), Status: obj.ApplicationStatus, ExternalPort: obj.ExternalPort, DatabaseName: obj.DatabaseName, DatabaseUser: obj.DatabaseUser}}, nil
 }

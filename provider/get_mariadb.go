@@ -55,20 +55,13 @@ func (r GetMariaDB) Invoke(ctx context.Context, req infer.FunctionRequest[GetMar
 	if err := validateLookupID("mariadbId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).MariadbOneWithResponse(ctx, &generated.MariadbOneParams{MariadbId: id})
+	response, err := r.client(ctx).MariadbOne(ctx, &generated.MariadbOneParams{MariadbId: id})
+	obj, err := lookupDecode[lookupMariadb]("mariadb.one", response, err)
 	if err != nil {
-		return empty, lookupError("mariadb.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("mariadb.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("mariadb.one", id, obj.MariadbId, obj.Name); err != nil {
 		return empty, err
 	}
-	status, err := lookupOptionalString("mariadb.one", obj.AdditionalProperties, "applicationStatus")
-	if err != nil {
-		return empty, err
-	}
-	return infer.FunctionResponse[GetMariaDBResult]{Output: GetMariaDBResult{MariaDBID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupDatabaseImage(obj.DockerImage, obj.Image), Status: status, ExternalPort: obj.ExternalPort, DatabaseName: obj.DatabaseName, DatabaseUser: obj.DatabaseUser}}, nil
+	return infer.FunctionResponse[GetMariaDBResult]{Output: GetMariaDBResult{MariaDBID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupImage(obj.DockerImage, obj.Image), Status: obj.ApplicationStatus, ExternalPort: obj.ExternalPort, DatabaseName: obj.DatabaseName, DatabaseUser: obj.DatabaseUser}}, nil
 }
