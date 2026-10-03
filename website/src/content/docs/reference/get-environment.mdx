@@ -1,0 +1,20 @@
+---
+title: "getEnvironment"
+description: "Read non-secret metadata for an existing Dokploy environment by ID without managing it."
+---
+
+import PropertyTable from "../../../components/PropertyTable.astro";
+
+> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.
+
+This read-only lookup returns non-secret metadata. It does not manage or refresh the referenced resource.
+
+Read non-secret metadata for an existing Dokploy environment by ID without managing it.
+
+## Inputs
+
+<PropertyTable properties={[{"name":"environmentId","type":"string","typeHref":null,"description":"The ID of the existing Dokploy environment to read.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+## Outputs
+
+<PropertyTable properties={[{"name":"description","type":"string","typeHref":null,"description":"The optional description metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"environmentId","type":"string","typeHref":null,"description":"The stable Dokploy environment ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"isDefault","type":"boolean","typeHref":null,"description":"The optional is default metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The environment name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"projectId","type":"string","typeHref":null,"description":"The optional project ID metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />

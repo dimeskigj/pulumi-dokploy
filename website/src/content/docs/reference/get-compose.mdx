@@ -1,0 +1,20 @@
+---
+title: "getCompose"
+description: "Read non-secret metadata for an existing Dokploy Compose deployment by ID without managing it."
+---
+
+import PropertyTable from "../../../components/PropertyTable.astro";
+
+> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.
+
+This read-only lookup returns non-secret metadata. It does not manage or refresh the referenced resource.
+
+Read non-secret metadata for an existing Dokploy Compose deployment by ID without managing it.
+
+## Inputs
+
+<PropertyTable properties={[{"name":"composeId","type":"string","typeHref":null,"description":"The ID of the existing Dokploy Compose deployment to read.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+## Outputs
+
+<PropertyTable properties={[{"name":"appName","type":"string","typeHref":null,"description":"The optional application name metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"composeId","type":"string","typeHref":null,"description":"The stable Dokploy Compose ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"composeType","type":"string","typeHref":null,"description":"The optional Compose type.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"description","type":"string","typeHref":null,"description":"The optional description metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"environmentId","type":"string","typeHref":null,"description":"The optional environment ID metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The Compose deployment name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"serverId","type":"string","typeHref":null,"description":"The optional server ID metadata.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"status","type":"string","typeHref":null,"description":"The optional Compose status.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />

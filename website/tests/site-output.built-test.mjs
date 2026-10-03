@@ -18,6 +18,10 @@ async function exists(file) {
 test("built site has valid internal links, base paths, routes, and search index", async () => {
   assert.ok(await exists(path.join(DIST, "index.html")));
   assert.ok(await exists(path.join(DIST, "reference/application/index.html")));
+  assert.ok(await exists(path.join(DIST, "guides/lookups/index.html")));
+  for (const slug of ["get-project", "get-environment", "get-application", "get-compose", "get-postgres", "get-mysql", "get-mariadb", "get-mongodb", "get-redis", "get-server", "get-registry", "get-ssh-key"]) {
+    assert.ok(await exists(path.join(DIST, `reference/${slug}/index.html`)), `missing ${slug} route`);
+  }
   assert.ok(await exists(path.join(DIST, "examples/complete/index.html")));
   assert.ok(await exists(path.join(DIST, "pagefind")));
 

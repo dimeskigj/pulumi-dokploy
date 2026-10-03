@@ -17,6 +17,7 @@ const required = [
   "guides/backups.mdx",
   "guides/schedules.mdx",
   "guides/imports.mdx",
+  "guides/lookups.mdx",
   "guides/troubleshooting.mdx",
   "contributing.mdx",
 ];
@@ -58,6 +59,28 @@ test("sidebar keeps the canonical resource order and base-safe links", async () 
   assert.match(landing, /text: Get started/);
   assert.match(landing, /text: Resource reference/);
   assert.doesNotMatch(landing, /link: \/(getting-started|reference)\//);
+});
+
+const lookupRoutes = ["get-project", "get-environment", "get-application", "get-compose", "get-postgres", "get-mysql", "get-mariadb", "get-mongodb", "get-redis", "get-server", "get-registry", "get-ssh-key"];
+
+test("lookup guide and sidebar link every generated function without altering resources", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  const guide = await readFile(new URL("../src/content/docs/guides/lookups.mdx", import.meta.url), "utf8");
+  assert.match(guide, /^---\ntitle:/);
+  assert.match(guide, /description:/);
+  for (const phrase of [/getProject/, /getEnvironment/, /LookupProject/, /ID.only|by ID/i, /import/i, /adopt/i, /refresh/i, /preview/i, /not.found/i, /authoriz/i, /non.secret/i, /managed resource/i]) assert.match(guide, phrase);
+  assert.match(config, /label: "Lookups", link: "\/guides\/lookups\/"/);
+  const functions = config.slice(config.indexOf('label: "Functions"'), config.indexOf('label: "Examples"'));
+  let previous = -1;
+  for (const route of lookupRoutes) {
+    const position = functions.indexOf(`link: "/reference/${route}/"`);
+    assert.ok(position > previous, `${route} must follow the previous function`);
+    previous = position;
+    const page = await readFile(new URL(`../src/content/docs/reference/${route}.mdx`, import.meta.url), "utf8");
+    assert.match(page, /^---\ntitle:/);
+    assert.match(page, /## Inputs[\s\S]*## Outputs/);
+    assert.match(page, /read-only/i);
+  }
 });
 
 test("landing page contains the required hierarchy and publication-safe Registry wording", async () => {
@@ -165,19 +188,20 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
      "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
     "/reference/schedule/",
+    ...lookupRoutes.map((slug) => `/reference/${slug}/`),
   ]);
   for (const match of config.matchAll(/link: "(\/[^\"]*)"/g)) {
     const route = match[1];
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-   assert.equal((config.match(/link: "\//g) ?? []).length, 39);
-  assert.equal(curatedFiles.length, 15);
+   assert.equal((config.match(/link: "\//g) ?? []).length, 52);
+   assert.equal(curatedFiles.length, 16);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
