@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
+
+const execFileAsync = promisify(execFile);
 
 const required = [
   "index.mdx",
@@ -62,6 +68,38 @@ test("sidebar keeps the canonical resource order and base-safe links", async () 
 });
 
 const lookupRoutes = ["get-project", "get-environment", "get-application", "get-compose", "get-postgres", "get-mysql", "get-mariadb", "get-mongodb", "get-redis", "get-server", "get-registry", "get-ssh-key"];
+
+test("lookup TypeScript guide snippet compiles with the CommonJS example and generated SDK", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/lookups.mdx", import.meta.url), "utf8");
+  const snippet = guide.match(/```ts\n([\s\S]*?)\n```/)?.[1];
+  assert.ok(snippet, "lookup guide must include a TypeScript code fence");
+  const exampleDirectory = fileURLToPath(new URL("../../examples/nodejs/", import.meta.url));
+  // Keep the temporary program inside the example package so NodeNext uses its
+  // CommonJS package boundary and resolves its installed generated SDK.
+  const temporary = await mkdtemp(join(exampleDirectory, ".lookup-guide-test-"));
+  try {
+    await writeFile(join(temporary, "index.ts"), `${snippet}\n`);
+    // The example links the SDK source; route its Pulumi peer dependency to the
+    // example's existing installation rather than requiring SDK-local npm install.
+    await writeFile(join(temporary, "tsconfig.json"), JSON.stringify({
+      extends: "../tsconfig.json",
+      files: ["index.ts"],
+      compilerOptions: {
+        noEmit: true,
+        baseUrl: "..",
+        paths: { "@pulumi/pulumi": ["node_modules/@pulumi/pulumi"], "@pulumi/pulumi/*": ["node_modules/@pulumi/pulumi/*"] },
+      },
+    }));
+    const compiler = fileURLToPath(new URL("../../examples/nodejs/node_modules/typescript/bin/tsc", import.meta.url));
+    try {
+      await execFileAsync(process.execPath, [compiler, "--project", join(temporary, "tsconfig.json")], { cwd: exampleDirectory });
+    } catch (error) {
+      assert.fail(`lookup guide TypeScript does not compile:\n${error.stdout || error.stderr || error.message}`);
+    }
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+  }
+});
 
 test("lookup guide and sidebar link every generated function without altering resources", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");

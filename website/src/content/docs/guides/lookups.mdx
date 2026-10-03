@@ -12,15 +12,18 @@ The generated Node.js SDK exports `getProject` and `getEnvironment`. Replace the
 ```ts
 import * as dokploy from "@dimeskigj/pulumi-dokploy";
 
-const project = await dokploy.getProject({ projectId: "<existing-project-id>" });
-const environment = await dokploy.getEnvironment({ environmentId: "<existing-environment-id>" });
+export default async function () {
+  const project = await dokploy.getProject({ projectId: "<existing-project-id>" });
+  const environment = await dokploy.getEnvironment({ environmentId: "<existing-environment-id>" });
 
-// Pass the looked-up ID explicitly to a managed resource you choose to create.
-const app = new dokploy.Application("my-app", {
-  environmentId: environment.environmentId,
-  name: "my-app",
-  source: { type: "docker", docker: { image: "nginx:stable" } },
-});
+  // Pass the looked-up ID explicitly to a managed resource you choose to create.
+  const app = new dokploy.Application("my-app", {
+    environmentId: environment.environmentId,
+    name: "my-app",
+    source: { type: "docker", docker: { image: "nginx:stable" } },
+  });
+  return { projectName: project.name, applicationId: app.applicationId };
+}
 ```
 
 The lookup itself does not register a Project or Environment resource. Its result is evaluated during Pulumi program execution (including preview when IDs are known), not tracked as refreshable managed-resource state. Preview therefore needs connectivity to Dokploy and read permissions. If the object is missing, the invoke fails with a not-found error rather than an empty result; authentication/authorization failures and network/timeouts are separate errors. Verify IDs and permissions before relying on the result.

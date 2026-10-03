@@ -167,6 +167,7 @@ docs_generate:
 
 docs_check:
 	npm ci --prefix website
+	npm install --prefix examples/nodejs --package-lock=false --ignore-scripts --no-audit --no-fund
 	npm --prefix website run check:generated
 	npm --prefix website run check
 	npm --prefix website run build
