@@ -1,25 +1,34 @@
 package dokploy
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/blang/semver"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	p "github.com/pulumi/pulumi-go-provider"
+	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/integration"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
-type lookupFaultBody struct{ closed bool }
+type lookupFaultBody struct {
+	closed bool
+	err    error
+}
 
-func (b *lookupFaultBody) Read([]byte) (int, error) { return 0, errors.New("mock-secret read failure") }
+func (b *lookupFaultBody) Read([]byte) (int, error) { return 0, b.err }
 func (b *lookupFaultBody) Close() error             { b.closed = true; return nil }
 
 func TestLookupDecodeBodyAndResponseSafety(t *testing.T) {
@@ -32,11 +41,11 @@ func TestLookupDecodeBodyAndResponseSafety(t *testing.T) {
 		requestErr error
 		category   string
 	}{
-		{200, nil, "invalid response contract"},
+		{200, nil, "request failed"},
 		{404, nil, "not found"},
 		{200, errors.New("mock-secret"), "request failed"},
 	} {
-		body := &lookupFaultBody{}
+		body := &lookupFaultBody{err: errors.New("mock-secret read failure")}
 		_, err := lookupDecode[lookupProject]("project.one", &http.Response{StatusCode: tc.status, Body: body}, tc.requestErr)
 		require.ErrorContains(t, err, tc.category)
 		require.NotContains(t, err.Error(), "mock-secret")
@@ -46,6 +55,93 @@ func TestLookupDecodeBodyAndResponseSafety(t *testing.T) {
 	obj, err := lookupDecode[lookupProject]("project.one", &http.Response{StatusCode: 200, Body: body}, nil)
 	require.NoError(t, err)
 	require.Equal(t, "ok", *obj.Name)
+}
+
+func TestLookupBodyReadContextCategories(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		cause    error
+		category string
+	}{
+		{"canceled", context.Canceled, "request canceled"},
+		{"deadline", context.DeadlineExceeded, "request deadline exceeded"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			body := &lookupFaultBody{err: fmt.Errorf("mock-secret reader detail: %w", tc.cause)}
+			_, err := lookupDecode[lookupProject]("project.one", &http.Response{StatusCode: http.StatusOK, Body: body}, nil)
+			require.ErrorIs(t, err, tc.cause)
+			require.ErrorContains(t, err, tc.category)
+			require.NotContains(t, err.Error(), "mock-secret")
+			require.True(t, body.closed)
+		})
+	}
+}
+
+func TestLookupBodyReadCancellationAfterHeaders(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		cause    error
+		category string
+	}{
+		{"canceled", context.Canceled, "request canceled"},
+		{"deadline", context.DeadlineExceeded, "request deadline exceeded"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			flushed := make(chan struct{})
+			release := make(chan struct{})
+			var calls atomic.Int32
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				calls.Add(1)
+				if r.Method != http.MethodGet || r.URL.Path != "/api/project.one" || r.URL.Query().Get("projectId") != "id" {
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = io.WriteString(w, `{"projectId":"id","name":"`)
+				w.(http.Flusher).Flush()
+				close(flushed)
+				select {
+				case <-r.Context().Done():
+				case <-release:
+				}
+			}))
+			defer s.Close()
+			defer close(release)
+			api, err := client.New(s.URL, "mock-api-key")
+			require.NoError(t, err)
+			var ctx context.Context
+			var cancel context.CancelFunc
+			if tc.cause == context.Canceled {
+				ctx, cancel = context.WithCancel(t.Context())
+			} else {
+				ctx, cancel = context.WithTimeout(t.Context(), time.Second)
+			}
+			defer cancel()
+			result := make(chan error, 1)
+			go func() {
+				_, invokeErr := (GetProject{client: fixedClient(api)}).Invoke(ctx, infer.FunctionRequest[GetProjectArgs]{Input: GetProjectArgs{ProjectID: "id"}})
+				result <- invokeErr
+			}()
+			select {
+			case <-flushed:
+			case <-time.After(3 * time.Second):
+				t.Fatal("response headers were not flushed")
+			}
+			if tc.cause == context.Canceled {
+				cancel()
+			}
+			select {
+			case invokeErr := <-result:
+				require.ErrorIs(t, invokeErr, tc.cause)
+				require.ErrorContains(t, invokeErr, tc.category)
+				require.NotContains(t, invokeErr.Error(), s.URL)
+				require.NotContains(t, invokeErr.Error(), "mock-api-key")
+			case <-time.After(3 * time.Second):
+				t.Fatal("body read did not terminate")
+			}
+			require.Equal(t, int32(1), calls.Load(), "must not retry or discover")
+		})
+	}
 }
 
 func TestLookupExcludedFieldsDoNotBlockInvokes(t *testing.T) {

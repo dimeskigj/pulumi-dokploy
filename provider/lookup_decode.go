@@ -28,7 +28,7 @@ func lookupDecode[T any](operation string, response *http.Response, requestErr e
 	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return value, lookupResponseError(operation)
+		return value, lookupError(operation, err)
 	}
 	trimmed := bytes.TrimSpace(body)
 	if len(trimmed) == 0 || trimmed[0] != '{' {
