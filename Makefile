@@ -33,6 +33,7 @@ codegen: provider
 	mise exec pulumi@3.259.0 -- pulumi package get-schema $(CURDIR)/bin/$(PROVIDER) > provider/cmd/$(PROVIDER)/schema.json
 	rm -rf sdk/nodejs sdk/python sdk/go sdk/dotnet sdk/java
 	mise exec pulumi@3.259.0 -- pulumi package gen-sdk provider/cmd/$(PROVIDER)/schema.json --language all -o sdk
+	python3 scripts/normalize-java-invokes.py provider/cmd/$(PROVIDER)/schema.json sdk/java
 	python3 scripts/remove-dotnet-package-icon.py sdk/dotnet/Dimeskigj.Pulumi.Dokploy.csproj
 	rm -f sdk/dotnet/logo.png
 	printf '%s' '$(VERSION_GENERIC)' > sdk/dotnet/version.txt

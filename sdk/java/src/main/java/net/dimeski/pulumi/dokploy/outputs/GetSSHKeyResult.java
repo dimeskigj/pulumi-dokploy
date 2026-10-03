@@ -91,12 +91,12 @@ public final class GetSSHKeyResult {
         private String sshKeyId;
         public Builder() {}
         public Builder(GetSSHKeyResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.description = defaults.description;
-    	      this.name = defaults.name;
-    	      this.organizationId = defaults.organizationId;
-    	      this.publicKey = defaults.publicKey;
-    	      this.sshKeyId = defaults.sshKeyId;
+              Objects.requireNonNull(defaults);
+              this.description = defaults.description;
+              this.name = defaults.name;
+              this.organizationId = defaults.organizationId;
+              this.publicKey = defaults.publicKey;
+              this.sshKeyId = defaults.sshKeyId;
         }
 
         @CustomType.Setter

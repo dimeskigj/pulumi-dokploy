@@ -170,18 +170,18 @@ public final class GetMariaDBResult {
         private @Nullable String status;
         public Builder() {}
         public Builder(GetMariaDBResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.appName = defaults.appName;
-    	      this.databaseName = defaults.databaseName;
-    	      this.databaseUser = defaults.databaseUser;
-    	      this.description = defaults.description;
-    	      this.dockerImage = defaults.dockerImage;
-    	      this.environmentId = defaults.environmentId;
-    	      this.externalPort = defaults.externalPort;
-    	      this.mariadbId = defaults.mariadbId;
-    	      this.name = defaults.name;
-    	      this.serverId = defaults.serverId;
-    	      this.status = defaults.status;
+              Objects.requireNonNull(defaults);
+              this.appName = defaults.appName;
+              this.databaseName = defaults.databaseName;
+              this.databaseUser = defaults.databaseUser;
+              this.description = defaults.description;
+              this.dockerImage = defaults.dockerImage;
+              this.environmentId = defaults.environmentId;
+              this.externalPort = defaults.externalPort;
+              this.mariadbId = defaults.mariadbId;
+              this.name = defaults.name;
+              this.serverId = defaults.serverId;
+              this.status = defaults.status;
         }
 
         @CustomType.Setter

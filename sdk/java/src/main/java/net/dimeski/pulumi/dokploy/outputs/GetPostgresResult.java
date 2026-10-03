@@ -170,18 +170,18 @@ public final class GetPostgresResult {
         private @Nullable String status;
         public Builder() {}
         public Builder(GetPostgresResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.appName = defaults.appName;
-    	      this.databaseName = defaults.databaseName;
-    	      this.databaseUser = defaults.databaseUser;
-    	      this.description = defaults.description;
-    	      this.dockerImage = defaults.dockerImage;
-    	      this.environmentId = defaults.environmentId;
-    	      this.externalPort = defaults.externalPort;
-    	      this.name = defaults.name;
-    	      this.postgresId = defaults.postgresId;
-    	      this.serverId = defaults.serverId;
-    	      this.status = defaults.status;
+              Objects.requireNonNull(defaults);
+              this.appName = defaults.appName;
+              this.databaseName = defaults.databaseName;
+              this.databaseUser = defaults.databaseUser;
+              this.description = defaults.description;
+              this.dockerImage = defaults.dockerImage;
+              this.environmentId = defaults.environmentId;
+              this.externalPort = defaults.externalPort;
+              this.name = defaults.name;
+              this.postgresId = defaults.postgresId;
+              this.serverId = defaults.serverId;
+              this.status = defaults.status;
         }
 
         @CustomType.Setter

@@ -171,18 +171,18 @@ public final class GetMongoDBResult {
         private @Nullable String status;
         public Builder() {}
         public Builder(GetMongoDBResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.appName = defaults.appName;
-    	      this.databaseUser = defaults.databaseUser;
-    	      this.description = defaults.description;
-    	      this.dockerImage = defaults.dockerImage;
-    	      this.environmentId = defaults.environmentId;
-    	      this.externalPort = defaults.externalPort;
-    	      this.mongoId = defaults.mongoId;
-    	      this.name = defaults.name;
-    	      this.replicaSets = defaults.replicaSets;
-    	      this.serverId = defaults.serverId;
-    	      this.status = defaults.status;
+              Objects.requireNonNull(defaults);
+              this.appName = defaults.appName;
+              this.databaseUser = defaults.databaseUser;
+              this.description = defaults.description;
+              this.dockerImage = defaults.dockerImage;
+              this.environmentId = defaults.environmentId;
+              this.externalPort = defaults.externalPort;
+              this.mongoId = defaults.mongoId;
+              this.name = defaults.name;
+              this.replicaSets = defaults.replicaSets;
+              this.serverId = defaults.serverId;
+              this.status = defaults.status;
         }
 
         @CustomType.Setter

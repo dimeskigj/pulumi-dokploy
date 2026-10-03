@@ -92,12 +92,12 @@ public final class GetEnvironmentResult {
         private @Nullable String projectId;
         public Builder() {}
         public Builder(GetEnvironmentResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.description = defaults.description;
-    	      this.environmentId = defaults.environmentId;
-    	      this.isDefault = defaults.isDefault;
-    	      this.name = defaults.name;
-    	      this.projectId = defaults.projectId;
+              Objects.requireNonNull(defaults);
+              this.description = defaults.description;
+              this.environmentId = defaults.environmentId;
+              this.isDefault = defaults.isDefault;
+              this.name = defaults.name;
+              this.projectId = defaults.projectId;
         }
 
         @CustomType.Setter
