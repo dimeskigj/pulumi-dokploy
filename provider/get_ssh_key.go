@@ -45,16 +45,13 @@ func (r GetSSHKey) Invoke(ctx context.Context, req infer.FunctionRequest[GetSSHK
 	if err := validateLookupID("sshKeyId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).SshKeyOneWithResponse(ctx, &generated.SshKeyOneParams{SshKeyId: id})
+	response, err := r.client(ctx).SshKeyOne(ctx, &generated.SshKeyOneParams{SshKeyId: id})
+	obj, err := lookupDecode[lookupSSHKey]("sshKey.one", response, err)
 	if err != nil {
-		return empty, lookupError("sshKey.one", err)
-	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("sshKey.one")
-	}
-	obj := response.JSON200
-	if err := validateLookupIdentity("sshKey.one", id, &obj.SshKeyId, obj.Name); err != nil {
 		return empty, err
 	}
-	return infer.FunctionResponse[GetSSHKeyResult]{Output: GetSSHKeyResult{SSHKeyID: id, Name: *obj.Name, Description: nullableValue(obj.Description), PublicKey: obj.PublicKey, OrganizationID: obj.OrganizationId}}, nil
+	if err := validateLookupIdentity("sshKey.one", id, obj.SshKeyId, obj.Name); err != nil {
+		return empty, err
+	}
+	return infer.FunctionResponse[GetSSHKeyResult]{Output: GetSSHKeyResult{SSHKeyID: id, Name: *obj.Name, Description: obj.Description, PublicKey: obj.PublicKey, OrganizationID: obj.OrganizationId}}, nil
 }

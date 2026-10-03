@@ -55,14 +55,11 @@ func (r GetServer) Invoke(ctx context.Context, req infer.FunctionRequest[GetServ
 	if err := validateLookupID("serverId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).ServerOneWithResponse(ctx, &generated.ServerOneParams{ServerId: id})
+	response, err := r.client(ctx).ServerOne(ctx, &generated.ServerOneParams{ServerId: id})
+	obj, err := lookupDecode[lookupServer]("server.one", response, err)
 	if err != nil {
-		return empty, lookupError("server.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("server.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("server.one", id, obj.ServerId, obj.Name); err != nil {
 		return empty, err
 	}

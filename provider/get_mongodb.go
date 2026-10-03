@@ -55,20 +55,13 @@ func (r GetMongoDB) Invoke(ctx context.Context, req infer.FunctionRequest[GetMon
 	if err := validateLookupID("mongoId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).MongoOneWithResponse(ctx, &generated.MongoOneParams{MongoId: id})
+	response, err := r.client(ctx).MongoOne(ctx, &generated.MongoOneParams{MongoId: id})
+	obj, err := lookupDecode[lookupMongo]("mongo.one", response, err)
 	if err != nil {
-		return empty, lookupError("mongo.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("mongo.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("mongo.one", id, obj.MongoId, obj.Name); err != nil {
 		return empty, err
 	}
-	status, err := lookupOptionalString("mongo.one", obj.AdditionalProperties, "applicationStatus")
-	if err != nil {
-		return empty, err
-	}
-	return infer.FunctionResponse[GetMongoDBResult]{Output: GetMongoDBResult{MongoID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupDatabaseImage(obj.DockerImage, obj.Image), Status: status, ExternalPort: obj.ExternalPort, DatabaseUser: obj.DatabaseUser, ReplicaSets: obj.ReplicaSets}}, nil
+	return infer.FunctionResponse[GetMongoDBResult]{Output: GetMongoDBResult{MongoID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupImage(obj.DockerImage, obj.Image), Status: obj.ApplicationStatus, ExternalPort: obj.ExternalPort, DatabaseUser: obj.DatabaseUser, ReplicaSets: obj.ReplicaSets}}, nil
 }

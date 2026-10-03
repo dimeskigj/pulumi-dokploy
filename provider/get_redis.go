@@ -51,20 +51,13 @@ func (r GetRedis) Invoke(ctx context.Context, req infer.FunctionRequest[GetRedis
 	if err := validateLookupID("redisId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).RedisOneWithResponse(ctx, &generated.RedisOneParams{RedisId: id})
+	response, err := r.client(ctx).RedisOne(ctx, &generated.RedisOneParams{RedisId: id})
+	obj, err := lookupDecode[lookupRedis]("redis.one", response, err)
 	if err != nil {
-		return empty, lookupError("redis.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("redis.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("redis.one", id, obj.RedisId, obj.Name); err != nil {
 		return empty, err
 	}
-	status, err := lookupOptionalString("redis.one", obj.AdditionalProperties, "applicationStatus")
-	if err != nil {
-		return empty, err
-	}
-	return infer.FunctionResponse[GetRedisResult]{Output: GetRedisResult{RedisID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupDatabaseImage(obj.DockerImage, obj.Image), Status: status, ExternalPort: obj.ExternalPort}}, nil
+	return infer.FunctionResponse[GetRedisResult]{Output: GetRedisResult{RedisID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, DockerImage: lookupImage(obj.DockerImage, obj.Image), Status: obj.ApplicationStatus, ExternalPort: obj.ExternalPort}}, nil
 }

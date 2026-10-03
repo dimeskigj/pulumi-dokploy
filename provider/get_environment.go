@@ -45,14 +45,11 @@ func (r GetEnvironment) Invoke(ctx context.Context, req infer.FunctionRequest[Ge
 	if err := validateLookupID("environmentId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).EnvironmentOneWithResponse(ctx, &generated.EnvironmentOneParams{EnvironmentId: id})
+	response, err := r.client(ctx).EnvironmentOne(ctx, &generated.EnvironmentOneParams{EnvironmentId: id})
+	obj, err := lookupDecode[lookupEnvironment]("environment.one", response, err)
 	if err != nil {
-		return empty, lookupError("environment.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("environment.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("environment.one", id, obj.EnvironmentId, obj.Name); err != nil {
 		return empty, err
 	}

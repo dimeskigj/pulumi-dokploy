@@ -51,32 +51,13 @@ func (r GetApplication) Invoke(ctx context.Context, req infer.FunctionRequest[Ge
 	if err := validateLookupID("applicationId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).ApplicationOneWithResponse(ctx, &generated.ApplicationOneParams{ApplicationId: id})
+	response, err := r.client(ctx).ApplicationOne(ctx, &generated.ApplicationOneParams{ApplicationId: id})
+	obj, err := lookupDecode[lookupApplication]("application.one", response, err)
 	if err != nil {
-		return empty, lookupError("application.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("application.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("application.one", id, obj.ApplicationId, obj.Name); err != nil {
 		return empty, err
 	}
-	status := obj.ApplicationStatus
-	registryID, registryErr := obj.RegistryId.Get()
-	if registryErr != nil {
-		registryID = ""
-	}
-	buildRegistryID, buildRegistryErr := obj.BuildRegistryId.Get()
-	if buildRegistryErr != nil {
-		buildRegistryID = ""
-	}
-	var registry, buildRegistry *string
-	if obj.RegistryId.IsSpecified() && registryErr == nil {
-		registry = &registryID
-	}
-	if obj.BuildRegistryId.IsSpecified() && buildRegistryErr == nil {
-		buildRegistry = &buildRegistryID
-	}
-	return infer.FunctionResponse[GetApplicationResult]{Output: GetApplicationResult{ApplicationID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, Status: status, RegistryID: registry, BuildRegistryID: buildRegistry}}, nil
+	return infer.FunctionResponse[GetApplicationResult]{Output: GetApplicationResult{ApplicationID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, Status: obj.ApplicationStatus, RegistryID: obj.RegistryId, BuildRegistryID: obj.BuildRegistryId}}, nil
 }

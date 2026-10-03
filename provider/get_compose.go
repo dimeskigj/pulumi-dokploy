@@ -48,20 +48,13 @@ func (r GetCompose) Invoke(ctx context.Context, req infer.FunctionRequest[GetCom
 	if err := validateLookupID("composeId", id); err != nil {
 		return empty, err
 	}
-	response, err := r.client(ctx).ComposeOneWithResponse(ctx, &generated.ComposeOneParams{ComposeId: id})
+	response, err := r.client(ctx).ComposeOne(ctx, &generated.ComposeOneParams{ComposeId: id})
+	obj, err := lookupDecode[lookupCompose]("compose.one", response, err)
 	if err != nil {
-		return empty, lookupError("compose.one", err)
+		return empty, err
 	}
-	if response == nil || response.JSON200 == nil {
-		return empty, lookupResponseError("compose.one")
-	}
-	obj := response.JSON200
 	if err := validateLookupIdentity("compose.one", id, obj.ComposeId, obj.Name); err != nil {
 		return empty, err
 	}
-	status, err := lookupOptionalString("compose.one", obj.AdditionalProperties, "composeStatus")
-	if err != nil {
-		return empty, err
-	}
-	return infer.FunctionResponse[GetComposeResult]{Output: GetComposeResult{ComposeID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, Status: status, ComposeType: obj.ComposeType}}, nil
+	return infer.FunctionResponse[GetComposeResult]{Output: GetComposeResult{ComposeID: id, Name: *obj.Name, Description: obj.Description, AppName: obj.AppName, EnvironmentID: obj.EnvironmentId, ServerID: obj.ServerId, Status: obj.ComposeStatus, ComposeType: obj.ComposeType}}, nil
 }
