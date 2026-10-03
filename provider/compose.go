@@ -23,6 +23,7 @@ type ComposeArgs struct {
 	Environment            *string       `pulumi:"environment,optional" provider:"secret"`
 	CreateEnvFile          bool          `pulumi:"createEnvFile,optional"`
 	DeleteVolumesOnDestroy bool          `pulumi:"deleteVolumesOnDestroy,optional"`
+	DeployOnUpdate         *bool         `pulumi:"deployOnUpdate,optional"`
 }
 type ComposeState struct {
 	ComposeArgs
@@ -52,7 +53,9 @@ func (a *ComposeArgs) Annotate(annotator infer.Annotator) {
 	annotator.Describe(&a.Environment, "Environment variables for the stack.")
 	annotator.Describe(&a.CreateEnvFile, "Whether to create an environment file.")
 	annotator.Describe(&a.DeleteVolumesOnDestroy, "Whether to delete volumes on destroy.")
+	annotator.Describe(&a.DeployOnUpdate, "Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.")
 	annotator.SetDefault(&a.ComposeType, string(ComposeDocker))
+	annotator.SetDefault(&a.DeployOnUpdate, true)
 }
 func (r Compose) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ComposeArgs], error) {
 	in, failures, err := infer.DefaultCheck[ComposeArgs](ctx, req.NewInputs)
@@ -117,6 +120,15 @@ func (r Compose) Diff(_ context.Context, req infer.DiffRequest[ComposeArgs, Comp
 	}
 	if req.Inputs.DeleteVolumesOnDestroy != req.State.DeleteVolumesOnDestroy {
 		d["deleteVolumesOnDestroy"] = p.PropertyDiff{Kind: p.Update}
+	}
+	// deployOnUpdate only steers the update path, so it is reported as a change to get
+	// the new value recorded in state but deliberately left out of the runtime check.
+	// Compare effective values, not pointers: Dokploy does not store the flag, so a
+	// Read-derived state (every import) holds nil, while Check fills the program's
+	// omitted value with the default true. Both mean "deploy", and a literal
+	// comparison would put a deployOnUpdate update on every imported resource.
+	if deployOnUpdate(req.Inputs.DeployOnUpdate) != deployOnUpdate(req.State.DeployOnUpdate) {
+		d["deployOnUpdate"] = p.PropertyDiff{Kind: p.Update}
 	}
 	return infer.DiffResponse{HasChanges: len(d) > 0, DetailedDiff: d}, nil
 }
@@ -241,6 +253,11 @@ func (r Compose) Read(ctx context.Context, req infer.ReadRequest[ComposeArgs, Co
 	if c.CreateEnvFile != nil {
 		a.CreateEnvFile = *c.CreateEnvFile
 	}
+	// compose.one reports the stored environment. Adopting it makes an import faithful
+	// instead of leaving it unset and diffing on the next up. It stays secret via the
+	// provider:"secret" tag and WireDependencies. A value Dokploy does not report falls
+	// back to prior state, preserving a write-only secret.
+	a.Environment = preferLiveSecret(c.Env, a.Environment)
 	src, e := decodeComposeSource(c.AdditionalProperties, a.Source)
 	if e != nil {
 		return infer.ReadResponse[ComposeArgs, ComposeState]{}, e
@@ -303,6 +320,9 @@ func (r Compose) Update(ctx context.Context, req infer.UpdateRequest[ComposeArgs
 		if e := configureComposeEnvironment(ctx, api, req.ID, req.Inputs); e != nil {
 			return infer.UpdateResponse[ComposeState]{Output: st}, sanitizeComposeError(e, req.Inputs)
 		}
+		if !deployOnUpdate(req.Inputs.DeployOnUpdate) {
+			return infer.UpdateResponse[ComposeState]{Output: st}, nil
+		}
 		if _, e := api.ComposeRedeployWithResponse(ctx, generated.ComposeRedeployJSONRequestBody{ComposeId: req.ID}); e != nil {
 			return infer.UpdateResponse[ComposeState]{Output: st}, sanitizeComposeError(e, req.Inputs)
 		}
@@ -321,7 +341,7 @@ func (r Compose) Delete(ctx context.Context, req infer.DeleteRequest[ComposeStat
 	return infer.DeleteResponse{}, e
 }
 func (r Compose) WireDependencies(f infer.FieldSelector, args *ComposeArgs, state *ComposeState) {
-	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.ComposeType), f.InputField(&args.Source), f.InputField(&args.CreateEnvFile), f.InputField(&args.DeleteVolumesOnDestroy)}
+	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.ComposeType), f.InputField(&args.Source), f.InputField(&args.CreateEnvFile), f.InputField(&args.DeleteVolumesOnDestroy), f.InputField(&args.DeployOnUpdate)}
 	f.OutputField(&state.ComposeID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
 	f.OutputField(&state.Environment).DependsOn(f.InputField(&args.Environment).Secret())

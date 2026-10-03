@@ -28,6 +28,8 @@ type Application struct {
 	BuildSecrets pulumi.StringPtrOutput `pulumi:"buildSecrets"`
 	// Whether to create an environment file.
 	CreateEnvFile pulumi.BoolPtrOutput `pulumi:"createEnvFile"`
+	// Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+	DeployOnUpdate pulumi.BoolOutput `pulumi:"deployOnUpdate"`
 	// An optional application description.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// Environment variables for the application.
@@ -61,6 +63,9 @@ func NewApplication(ctx *pulumi.Context,
 	}
 	if args.Source == nil {
 		return nil, errors.New("invalid value for required argument 'Source'")
+	}
+	if args.DeployOnUpdate == nil {
+		args.DeployOnUpdate = pulumi.BoolPtr(true)
 	}
 	if args.BuildArgs != nil {
 		args.BuildArgs = pulumi.ToSecret(args.BuildArgs).(pulumi.StringPtrInput)
@@ -125,6 +130,8 @@ type applicationArgs struct {
 	BuildSecrets *string `pulumi:"buildSecrets"`
 	// Whether to create an environment file.
 	CreateEnvFile *bool `pulumi:"createEnvFile"`
+	// Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+	DeployOnUpdate *bool `pulumi:"deployOnUpdate"`
 	// An optional application description.
 	Description *string `pulumi:"description"`
 	// Environment variables for the application.
@@ -153,6 +160,8 @@ type ApplicationArgs struct {
 	BuildSecrets pulumi.StringPtrInput
 	// Whether to create an environment file.
 	CreateEnvFile pulumi.BoolPtrInput
+	// Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+	DeployOnUpdate pulumi.BoolPtrInput
 	// An optional application description.
 	Description pulumi.StringPtrInput
 	// Environment variables for the application.
@@ -234,6 +243,11 @@ func (o ApplicationOutput) BuildSecrets() pulumi.StringPtrOutput {
 // Whether to create an environment file.
 func (o ApplicationOutput) CreateEnvFile() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v *Application) pulumi.BoolPtrOutput { return v.CreateEnvFile }).(pulumi.BoolPtrOutput)
+}
+
+// Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+func (o ApplicationOutput) DeployOnUpdate() pulumi.BoolOutput {
+	return o.ApplyT(func(v *Application) pulumi.BoolOutput { return v.DeployOnUpdate }).(pulumi.BoolOutput)
 }
 
 // An optional application description.

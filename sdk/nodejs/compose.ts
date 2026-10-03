@@ -57,6 +57,10 @@ export class Compose extends pulumi.CustomResource {
      */
     declare public readonly deleteVolumesOnDestroy: pulumi.Output<boolean | undefined>;
     /**
+     * Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     */
+    declare public readonly deployOnUpdate: pulumi.Output<boolean>;
+    /**
      * An optional stack description.
      */
     declare public readonly description: pulumi.Output<string | undefined>;
@@ -109,6 +113,7 @@ export class Compose extends pulumi.CustomResource {
             resourceInputs["composeType"] = (args?.composeType) ?? "docker-compose";
             resourceInputs["createEnvFile"] = args?.createEnvFile;
             resourceInputs["deleteVolumesOnDestroy"] = args?.deleteVolumesOnDestroy;
+            resourceInputs["deployOnUpdate"] = (args?.deployOnUpdate) ?? true;
             resourceInputs["description"] = args?.description;
             resourceInputs["environment"] = args?.environment ? pulumi.secret(args.environment) : undefined;
             resourceInputs["environmentId"] = args?.environmentId;
@@ -123,6 +128,7 @@ export class Compose extends pulumi.CustomResource {
             resourceInputs["composeType"] = undefined /*out*/;
             resourceInputs["createEnvFile"] = undefined /*out*/;
             resourceInputs["deleteVolumesOnDestroy"] = undefined /*out*/;
+            resourceInputs["deployOnUpdate"] = undefined /*out*/;
             resourceInputs["description"] = undefined /*out*/;
             resourceInputs["environment"] = undefined /*out*/;
             resourceInputs["environmentId"] = undefined /*out*/;
@@ -160,6 +166,10 @@ export interface ComposeArgs {
      * Whether to delete volumes on destroy.
      */
     deleteVolumesOnDestroy?: pulumi.Input<boolean | undefined>;
+    /**
+     * Whether an update redeploys the stack and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     */
+    deployOnUpdate?: pulumi.Input<boolean | undefined>;
     /**
      * An optional stack description.
      */

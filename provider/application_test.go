@@ -575,3 +575,160 @@ func TestApplicationCreatePollErrorRedactsEchoedSecrets(t *testing.T) {
 	require.NotContains(t, err.Error(), buildArgs)
 	require.NotContains(t, err.Error(), buildSecrets)
 }
+
+// TestApplicationImportPopulatesEnvironmentAndBuildValues covers import fidelity:
+// application.one returns the stored env, buildArgs, and buildSecrets, so an import
+// with no prior state must adopt them instead of leaving them unset.
+func TestApplicationImportPopulatesEnvironmentAndBuildValues(t *testing.T) {
+	const response = `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"docker","dockerImage":"nginx","env":"KEY=value","buildArgs":"ARG=1","buildSecrets":"SECRET=2"}`
+	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, response))
+	got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1"})
+	require.NoError(t, err)
+	require.Equal(t, "KEY=value", *got.Inputs.Environment)
+	require.Equal(t, "ARG=1", *got.Inputs.BuildArgs)
+	require.Equal(t, "SECRET=2", *got.Inputs.BuildSecrets)
+	require.Equal(t, "KEY=value", *got.State.Environment)
+	require.Equal(t, "ARG=1", *got.State.BuildArgs)
+	require.Equal(t, "SECRET=2", *got.State.BuildSecrets)
+}
+
+// TestApplicationImportedEnvironmentProducesNoDiff is the regression this is really
+// about: before import fidelity, the first up after an import reported a spurious diff
+// on environment, buildArgs, and buildSecrets.
+func TestApplicationImportedEnvironmentProducesNoDiff(t *testing.T) {
+	for _, tc := range []struct{ name, response string }{
+		{"docker", `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"docker","dockerImage":"nginx","env":"KEY=value","buildArgs":"ARG=1","buildSecrets":"SECRET=2"}`},
+		{"git", `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","buildType":"nixpacks","env":"KEY=value","buildArgs":"ARG=1","buildSecrets":"SECRET=2"}`},
+		{"gitlab", `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"gitlab","gitlabId":"i1","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","buildType":"nixpacks","env":"KEY=value","buildArgs":"ARG=1","buildSecrets":"SECRET=2"}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, tc.response))
+			read, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1"})
+			require.NoError(t, err)
+			diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{Inputs: read.Inputs, State: read.State})
+			require.NoError(t, err)
+			require.False(t, diff.HasChanges)
+			require.Empty(t, diff.DetailedDiff)
+		})
+	}
+}
+
+func TestApplicationReadPrefersLiveEnvironmentOverPriorState(t *testing.T) {
+	const response = `{"applicationId":"a1","name":"demo","environmentId":"e1","applicationStatus":"done","type":"docker","dockerImage":"nginx","env":"LIVE=1","buildArgs":"LIVE=2","buildSecrets":"LIVE=3"}`
+	s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, response))
+	prior := ApplicationState{ApplicationArgs: ApplicationArgs{Environment: stringPtr("STALE=1"), BuildArgs: stringPtr("STALE=2"), BuildSecrets: stringPtr("STALE=3")}}
+	got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: "a1", State: prior})
+	require.NoError(t, err)
+	require.Equal(t, "LIVE=1", *got.Inputs.Environment)
+	require.Equal(t, "LIVE=2", *got.Inputs.BuildArgs)
+	require.Equal(t, "LIVE=3", *got.Inputs.BuildSecrets)
+}
+
+func TestApplicationEnvironmentAndBuildValuesAreSecretInSchema(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	for _, property := range []string{"environment", "buildArgs", "buildSecrets"} {
+		require.True(t, schemaProperty(spec, "dokploy:index:Application", property).Secret, "input %s must be secret", property)
+		require.True(t, spec.Resources["dokploy:index:Application"].Properties[property].Secret, "output %s must be secret", property)
+	}
+}
+
+// TestApplicationUpdateWithDeployOnUpdateFalseSavesConfigurationWithoutRedeploy uses the
+// scripted server as a strict mock: it fails on any unexpected request and on any
+// unconsumed expectation, so scripting only the save calls proves that neither
+// application.redeploy nor the application.one wait-for-done poll was reached.
+func TestApplicationUpdateWithDeployOnUpdateFalseSavesConfigurationWithoutRedeploy(t *testing.T) {
+	s := newScriptedServer(t,
+		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"redis","password":"","registryUrl":"","username":""}`, `true`),
+		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
+	)
+	deploy := false
+	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: &deploy, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "redis"}}}
+	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: &deploy, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
+	got, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs, Status: "done"}})
+	require.NoError(t, err)
+	require.Equal(t, "done", got.Output.Status)
+	require.Equal(t, &deploy, got.Output.DeployOnUpdate)
+}
+
+func TestApplicationUpdateRedeploysWhenDeployOnUpdateIsOmittedOrTrue(t *testing.T) {
+	deploy := true
+	for _, tc := range []struct {
+		name  string
+		value *bool
+	}{
+		{"omitted", nil},
+		{"true", &deploy},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			oldInterval := waitPollInterval
+			waitPollInterval = 0
+			t.Cleanup(func() { waitPollInterval = oldInterval })
+			s := newScriptedServer(t,
+				expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"redis","password":"","registryUrl":"","username":""}`, `true`),
+				expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
+				expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
+				expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
+			)
+			newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: tc.value, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "redis"}}}
+			oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: tc.value, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
+			got, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs}})
+			require.NoError(t, err)
+			require.Equal(t, statusDone, got.Output.Status)
+		})
+	}
+}
+
+func TestApplicationDeployOnUpdateDefaultsToTrueAndDiffsAsUpdate(t *testing.T) {
+	spec, err := p.GetSchema(t.Context(), Name, Version, Provider())
+	require.NoError(t, err)
+	require.Equal(t, true, schemaProperty(spec, "dokploy:index:Application", "deployOnUpdate").Default)
+
+	deploy := false
+	diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{
+		Inputs: ApplicationArgs{EnvironmentID: "e1", DeployOnUpdate: &deploy, Source: ApplicationSource{Type: SourceDocker}},
+		State:  ApplicationState{ApplicationArgs: ApplicationArgs{EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker}}},
+	})
+	require.NoError(t, err)
+	require.Equal(t, p.Update, diff.DetailedDiff["deployOnUpdate"].Kind)
+}
+
+// TestApplicationDeployOnUpdateOnlyChangeMakesNoRequest pins the flag's own
+// update path: flipping deployOnUpdate changes nothing in Dokploy, so Update
+// must not call it at all — least of all redeploy. The scripted server expects
+// no requests, so any call fails the test.
+func TestApplicationDeployOnUpdateOnlyChangeMakesNoRequest(t *testing.T) {
+	s := newScriptedServer(t)
+	args := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
+	disabled, enabled := args, args
+	disabled.DeployOnUpdate = ptr(false)
+	enabled.DeployOnUpdate = ptr(true)
+	for _, tc := range []struct {
+		name          string
+		inputs, state ApplicationArgs
+	}{
+		{"enabled to disabled", disabled, enabled},
+		{"disabled to enabled", enabled, disabled},
+		{"unset to disabled", disabled, args},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: tc.inputs, State: ApplicationState{ApplicationArgs: tc.state}})
+			require.NoError(t, err)
+		})
+	}
+}
+
+// TestApplicationDeployOnUpdateDefaultMatchesImportedState pins the import path:
+// Check fills an omitted deployOnUpdate with true, and a Read-derived state holds
+// nil because Dokploy never stores the flag. Both mean "deploy", so a program that
+// leaves the flag at its default must preview clean against an imported resource.
+func TestApplicationDeployOnUpdateDefaultMatchesImportedState(t *testing.T) {
+	source := ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}
+	diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{
+		Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", DeployOnUpdate: ptr(true), Source: source},
+		State:  ApplicationState{ApplicationArgs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: source}},
+	})
+	require.NoError(t, err)
+	require.False(t, diff.HasChanges)
+	require.Empty(t, diff.DetailedDiff)
+}

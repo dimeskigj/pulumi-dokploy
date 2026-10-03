@@ -95,8 +95,36 @@ func (r Project) Read(ctx context.Context, req infer.ReadRequest[ProjectArgs, Pr
 	}
 	project := response.JSON200
 	args := ProjectArgs{Name: value(project.Name), Description: project.Description}
-	state := ProjectState{ProjectArgs: args, ProjectID: *project.ProjectId, DefaultEnvironmentID: value(project.DefaultEnvironmentId)}
+	defaultEnvironmentID := value(project.DefaultEnvironmentId)
+	if defaultEnvironmentID == "" {
+		defaultEnvironmentID = flaggedDefaultEnvironmentID(response.Body)
+	}
+	state := ProjectState{ProjectArgs: args, ProjectID: *project.ProjectId, DefaultEnvironmentID: defaultEnvironmentID}
 	return infer.ReadResponse[ProjectArgs, ProjectState]{ID: *project.ProjectId, Inputs: args, State: state}, nil
+}
+
+// flaggedDefaultEnvironmentID returns the environment project.one marks as
+// isDefault. Dokploy v0.30 has no defaultEnvironmentId field on project.one —
+// the default is flagged inside environments[] — so without this an imported
+// project reports its default environment as "", and anything referencing it
+// gets an empty environmentId. Create is unaffected: project.create returns the
+// environment directly.
+func flaggedDefaultEnvironmentID(body []byte) string {
+	var raw struct {
+		Environments []struct {
+			EnvironmentID string `json:"environmentId"`
+			IsDefault     bool   `json:"isDefault"`
+		} `json:"environments"`
+	}
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return ""
+	}
+	for _, environment := range raw.Environments {
+		if environment.IsDefault {
+			return environment.EnvironmentID
+		}
+	}
+	return ""
 }
 
 func (r Project) Update(ctx context.Context, req infer.UpdateRequest[ProjectArgs, ProjectState]) (infer.UpdateResponse[ProjectState], error) {

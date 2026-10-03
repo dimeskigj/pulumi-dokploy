@@ -61,6 +61,10 @@ export class Application extends pulumi.CustomResource {
      */
     declare public readonly createEnvFile: pulumi.Output<boolean | undefined>;
     /**
+     * Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     */
+    declare public readonly deployOnUpdate: pulumi.Output<boolean>;
+    /**
      * An optional application description.
      */
     declare public readonly description: pulumi.Output<string | undefined>;
@@ -118,6 +122,7 @@ export class Application extends pulumi.CustomResource {
             resourceInputs["buildRegistryId"] = args?.buildRegistryId;
             resourceInputs["buildSecrets"] = args?.buildSecrets ? pulumi.secret(args.buildSecrets) : undefined;
             resourceInputs["createEnvFile"] = args?.createEnvFile;
+            resourceInputs["deployOnUpdate"] = (args?.deployOnUpdate) ?? true;
             resourceInputs["description"] = args?.description;
             resourceInputs["environment"] = args?.environment ? pulumi.secret(args.environment) : undefined;
             resourceInputs["environmentId"] = args?.environmentId;
@@ -134,6 +139,7 @@ export class Application extends pulumi.CustomResource {
             resourceInputs["buildRegistryId"] = undefined /*out*/;
             resourceInputs["buildSecrets"] = undefined /*out*/;
             resourceInputs["createEnvFile"] = undefined /*out*/;
+            resourceInputs["deployOnUpdate"] = undefined /*out*/;
             resourceInputs["description"] = undefined /*out*/;
             resourceInputs["environment"] = undefined /*out*/;
             resourceInputs["environmentId"] = undefined /*out*/;
@@ -176,6 +182,10 @@ export interface ApplicationArgs {
      * Whether to create an environment file.
      */
     createEnvFile?: pulumi.Input<boolean | undefined>;
+    /**
+     * Whether an update redeploys the application and waits for the deployment to finish. Defaults to true; set it to false to save configuration without deploying.
+     */
+    deployOnUpdate?: pulumi.Input<boolean | undefined>;
     /**
      * An optional application description.
      */

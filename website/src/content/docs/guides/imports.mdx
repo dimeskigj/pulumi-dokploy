@@ -11,6 +11,15 @@ pulumi import dokploy:index:Project existing p1
 
 Review the generated state, then run `pulumi refresh` to compare it with Dokploy before making changes. Imported resources may omit write-only values such as passwords. Restore those secret inputs with `pulumi config set --secret` before a future update; the provider cannot recover a write-only password from Dokploy.
 
+Application and Compose environment variables are read back from Dokploy, so an import
+matches the program that declares it without a redeploy. They are secret, which means
+`pulumi import --generate-code` writes those values into the generated program: review
+it before committing. A value Dokploy reports as empty counts as "not reported" and
+leaves whatever is already in state, so clearing every variable in the Dokploy UI will
+not appear as drift. Set `deployOnUpdate: false` on a resource whose deployments are
+driven by your own pipeline; the provider then saves configuration changes without
+redeploying.
+
 If the imported object no longer exists, refresh removes it from state and a subsequent `pulumi up` can recreate it. See [lifecycle and state](../../concepts/lifecycle-and-state/) and [Secrets](../../concepts/secrets/).
 
 SSHKey, Registry, Tag, and Mount resources import with their Dokploy IDs:
