@@ -117,14 +117,14 @@ public final class GetRegistryResult {
         private @Nullable String username;
         public Builder() {}
         public Builder(GetRegistryResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.imagePrefix = defaults.imagePrefix;
-    	      this.name = defaults.name;
-    	      this.registryId = defaults.registryId;
-    	      this.registryType = defaults.registryType;
-    	      this.serverId = defaults.serverId;
-    	      this.url = defaults.url;
-    	      this.username = defaults.username;
+              Objects.requireNonNull(defaults);
+              this.imagePrefix = defaults.imagePrefix;
+              this.name = defaults.name;
+              this.registryId = defaults.registryId;
+              this.registryType = defaults.registryType;
+              this.serverId = defaults.serverId;
+              this.url = defaults.url;
+              this.username = defaults.username;
         }
 
         @CustomType.Setter

@@ -143,16 +143,16 @@ public final class GetApplicationResult {
         private @Nullable String status;
         public Builder() {}
         public Builder(GetApplicationResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.appName = defaults.appName;
-    	      this.applicationId = defaults.applicationId;
-    	      this.buildRegistryId = defaults.buildRegistryId;
-    	      this.description = defaults.description;
-    	      this.environmentId = defaults.environmentId;
-    	      this.name = defaults.name;
-    	      this.registryId = defaults.registryId;
-    	      this.serverId = defaults.serverId;
-    	      this.status = defaults.status;
+              Objects.requireNonNull(defaults);
+              this.appName = defaults.appName;
+              this.applicationId = defaults.applicationId;
+              this.buildRegistryId = defaults.buildRegistryId;
+              this.description = defaults.description;
+              this.environmentId = defaults.environmentId;
+              this.name = defaults.name;
+              this.registryId = defaults.registryId;
+              this.serverId = defaults.serverId;
+              this.status = defaults.status;
         }
 
         @CustomType.Setter

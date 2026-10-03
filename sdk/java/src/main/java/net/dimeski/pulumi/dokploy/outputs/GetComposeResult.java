@@ -130,15 +130,15 @@ public final class GetComposeResult {
         private @Nullable String status;
         public Builder() {}
         public Builder(GetComposeResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.appName = defaults.appName;
-    	      this.composeId = defaults.composeId;
-    	      this.composeType = defaults.composeType;
-    	      this.description = defaults.description;
-    	      this.environmentId = defaults.environmentId;
-    	      this.name = defaults.name;
-    	      this.serverId = defaults.serverId;
-    	      this.status = defaults.status;
+              Objects.requireNonNull(defaults);
+              this.appName = defaults.appName;
+              this.composeId = defaults.composeId;
+              this.composeType = defaults.composeType;
+              this.description = defaults.description;
+              this.environmentId = defaults.environmentId;
+              this.name = defaults.name;
+              this.serverId = defaults.serverId;
+              this.status = defaults.status;
         }
 
         @CustomType.Setter

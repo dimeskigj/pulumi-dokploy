@@ -144,16 +144,16 @@ public final class GetRedisResult {
         private @Nullable String status;
         public Builder() {}
         public Builder(GetRedisResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.appName = defaults.appName;
-    	      this.description = defaults.description;
-    	      this.dockerImage = defaults.dockerImage;
-    	      this.environmentId = defaults.environmentId;
-    	      this.externalPort = defaults.externalPort;
-    	      this.name = defaults.name;
-    	      this.redisId = defaults.redisId;
-    	      this.serverId = defaults.serverId;
-    	      this.status = defaults.status;
+              Objects.requireNonNull(defaults);
+              this.appName = defaults.appName;
+              this.description = defaults.description;
+              this.dockerImage = defaults.dockerImage;
+              this.environmentId = defaults.environmentId;
+              this.externalPort = defaults.externalPort;
+              this.name = defaults.name;
+              this.redisId = defaults.redisId;
+              this.serverId = defaults.serverId;
+              this.status = defaults.status;
         }
 
         @CustomType.Setter

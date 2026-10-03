@@ -78,11 +78,11 @@ public final class GetProjectResult {
         private String projectId;
         public Builder() {}
         public Builder(GetProjectResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.defaultEnvironmentId = defaults.defaultEnvironmentId;
-    	      this.description = defaults.description;
-    	      this.name = defaults.name;
-    	      this.projectId = defaults.projectId;
+              Objects.requireNonNull(defaults);
+              this.defaultEnvironmentId = defaults.defaultEnvironmentId;
+              this.description = defaults.description;
+              this.name = defaults.name;
+              this.projectId = defaults.projectId;
         }
 
         @CustomType.Setter

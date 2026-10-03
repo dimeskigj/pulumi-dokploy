@@ -157,17 +157,17 @@ public final class GetServerResult {
         private @Nullable String username;
         public Builder() {}
         public Builder(GetServerResult defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.description = defaults.description;
-    	      this.ipAddress = defaults.ipAddress;
-    	      this.name = defaults.name;
-    	      this.organizationId = defaults.organizationId;
-    	      this.port = defaults.port;
-    	      this.serverId = defaults.serverId;
-    	      this.serverType = defaults.serverType;
-    	      this.sshKeyId = defaults.sshKeyId;
-    	      this.status = defaults.status;
-    	      this.username = defaults.username;
+              Objects.requireNonNull(defaults);
+              this.description = defaults.description;
+              this.ipAddress = defaults.ipAddress;
+              this.name = defaults.name;
+              this.organizationId = defaults.organizationId;
+              this.port = defaults.port;
+              this.serverId = defaults.serverId;
+              this.serverType = defaults.serverType;
+              this.sshKeyId = defaults.sshKeyId;
+              this.status = defaults.status;
+              this.username = defaults.username;
         }
 
         @CustomType.Setter
