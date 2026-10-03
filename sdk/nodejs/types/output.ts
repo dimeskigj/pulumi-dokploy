@@ -5,6 +5,8 @@ import * as pulumi from "@pulumi/pulumi";
 import * as inputs from "../types/input";
 import * as outputs from "../types/output";
 
+import * as utilities from "../utilities";
+
 /**
  * Application build configuration.
  */
@@ -58,6 +60,10 @@ export interface ComposeSource {
      */
     git?: outputs.GitComposeSource;
     /**
+     * GitHub Compose source.
+     */
+    github?: outputs.GitHubComposeSource;
+    /**
      * GitLab Compose source.
      */
     gitlab?: outputs.GitLabComposeSource;
@@ -69,6 +75,15 @@ export interface ComposeSource {
      * The Compose source type.
      */
     type: string;
+}
+/**
+ * composeSourceProvideDefaults sets the appropriate defaults for ComposeSource
+ */
+export function composeSourceProvideDefaults(val: ComposeSource): ComposeSource {
+    return {
+        ...val,
+        github: (val.github ? outputs.gitHubComposeSourceProvideDefaults(val.github) : undefined),
+    };
 }
 
 /**
@@ -155,6 +170,53 @@ export interface GitComposeSource {
      * Paths to watch.
      */
     watchPaths?: string[];
+}
+
+/**
+ * GitHub Compose source configuration.
+ */
+export interface GitHubComposeSource {
+    /**
+     * The GitHub branch.
+     */
+    branch: string;
+    /**
+     * The Compose file path.
+     */
+    composePath?: string;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: boolean;
+    /**
+     * The GitHub integration ID.
+     */
+    integrationId: string;
+    /**
+     * The GitHub owner.
+     */
+    owner: string;
+    /**
+     * The GitHub repository.
+     */
+    repository: string;
+    /**
+     * The deployment trigger type, either push or tag.
+     */
+    triggerType?: string;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: string[];
+}
+/**
+ * gitHubComposeSourceProvideDefaults sets the appropriate defaults for GitHubComposeSource
+ */
+export function gitHubComposeSourceProvideDefaults(val: GitHubComposeSource): GitHubComposeSource {
+    return {
+        ...val,
+        triggerType: (val.triggerType) ?? "push",
+    };
 }
 
 /**

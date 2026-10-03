@@ -296,12 +296,25 @@ func (o ApplicationSourceOutput) Type() pulumi.StringOutput {
 type ComposeSource struct {
 	// Git Compose source.
 	Git *GitComposeSource `pulumi:"git"`
+	// GitHub Compose source.
+	Github *GitHubComposeSource `pulumi:"github"`
 	// GitLab Compose source.
 	Gitlab *GitLabComposeSource `pulumi:"gitlab"`
 	// Raw Compose source.
 	Raw *RawComposeSource `pulumi:"raw"`
 	// The Compose source type.
 	Type string `pulumi:"type"`
+}
+
+// Defaults sets the appropriate defaults for ComposeSource
+func (val *ComposeSource) Defaults() *ComposeSource {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	tmp.Github = tmp.Github.Defaults()
+
+	return &tmp
 }
 
 // ComposeSourceInput is an input type that accepts ComposeSourceArgs and ComposeSourceOutput values.
@@ -319,6 +332,8 @@ type ComposeSourceInput interface {
 type ComposeSourceArgs struct {
 	// Git Compose source.
 	Git GitComposeSourcePtrInput `pulumi:"git"`
+	// GitHub Compose source.
+	Github GitHubComposeSourcePtrInput `pulumi:"github"`
 	// GitLab Compose source.
 	Gitlab GitLabComposeSourcePtrInput `pulumi:"gitlab"`
 	// Raw Compose source.
@@ -327,6 +342,15 @@ type ComposeSourceArgs struct {
 	Type pulumi.StringInput `pulumi:"type"`
 }
 
+// Defaults sets the appropriate defaults for ComposeSourceArgs
+func (val *ComposeSourceArgs) Defaults() *ComposeSourceArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+
+	return &tmp
+}
 func (ComposeSourceArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*ComposeSource)(nil)).Elem()
 }
@@ -357,6 +381,11 @@ func (o ComposeSourceOutput) ToComposeSourceOutputWithContext(ctx context.Contex
 // Git Compose source.
 func (o ComposeSourceOutput) Git() GitComposeSourcePtrOutput {
 	return o.ApplyT(func(v ComposeSource) *GitComposeSource { return v.Git }).(GitComposeSourcePtrOutput)
+}
+
+// GitHub Compose source.
+func (o ComposeSourceOutput) Github() GitHubComposeSourcePtrOutput {
+	return o.ApplyT(func(v ComposeSource) *GitHubComposeSource { return v.Github }).(GitHubComposeSourcePtrOutput)
 }
 
 // GitLab Compose source.
@@ -1053,6 +1082,303 @@ func (o GitComposeSourcePtrOutput) Url() pulumi.StringPtrOutput {
 // Paths to watch.
 func (o GitComposeSourcePtrOutput) WatchPaths() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v *GitComposeSource) []string {
+		if v == nil {
+			return nil
+		}
+		return v.WatchPaths
+	}).(pulumi.StringArrayOutput)
+}
+
+// GitHub Compose source configuration.
+type GitHubComposeSource struct {
+	// The GitHub branch.
+	Branch string `pulumi:"branch"`
+	// The Compose file path.
+	ComposePath *string `pulumi:"composePath"`
+	// Whether to enable submodules.
+	EnableSubmodules *bool `pulumi:"enableSubmodules"`
+	// The GitHub integration ID.
+	IntegrationId string `pulumi:"integrationId"`
+	// The GitHub owner.
+	Owner string `pulumi:"owner"`
+	// The GitHub repository.
+	Repository string `pulumi:"repository"`
+	// The deployment trigger type, either push or tag.
+	TriggerType *string `pulumi:"triggerType"`
+	// Paths to watch.
+	WatchPaths []string `pulumi:"watchPaths"`
+}
+
+// Defaults sets the appropriate defaults for GitHubComposeSource
+func (val *GitHubComposeSource) Defaults() *GitHubComposeSource {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.TriggerType == nil {
+		triggerType_ := "push"
+		tmp.TriggerType = &triggerType_
+	}
+	return &tmp
+}
+
+// GitHubComposeSourceInput is an input type that accepts GitHubComposeSourceArgs and GitHubComposeSourceOutput values.
+// You can construct a concrete instance of `GitHubComposeSourceInput` via:
+//
+//	GitHubComposeSourceArgs{...}
+type GitHubComposeSourceInput interface {
+	pulumi.Input
+
+	ToGitHubComposeSourceOutput() GitHubComposeSourceOutput
+	ToGitHubComposeSourceOutputWithContext(context.Context) GitHubComposeSourceOutput
+}
+
+// GitHub Compose source configuration.
+type GitHubComposeSourceArgs struct {
+	// The GitHub branch.
+	Branch pulumi.StringInput `pulumi:"branch"`
+	// The Compose file path.
+	ComposePath pulumi.StringPtrInput `pulumi:"composePath"`
+	// Whether to enable submodules.
+	EnableSubmodules pulumi.BoolPtrInput `pulumi:"enableSubmodules"`
+	// The GitHub integration ID.
+	IntegrationId pulumi.StringInput `pulumi:"integrationId"`
+	// The GitHub owner.
+	Owner pulumi.StringInput `pulumi:"owner"`
+	// The GitHub repository.
+	Repository pulumi.StringInput `pulumi:"repository"`
+	// The deployment trigger type, either push or tag.
+	TriggerType pulumi.StringPtrInput `pulumi:"triggerType"`
+	// Paths to watch.
+	WatchPaths pulumi.StringArrayInput `pulumi:"watchPaths"`
+}
+
+// Defaults sets the appropriate defaults for GitHubComposeSourceArgs
+func (val *GitHubComposeSourceArgs) Defaults() *GitHubComposeSourceArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.TriggerType == nil {
+		tmp.TriggerType = pulumi.StringPtr("push")
+	}
+	return &tmp
+}
+func (GitHubComposeSourceArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*GitHubComposeSource)(nil)).Elem()
+}
+
+func (i GitHubComposeSourceArgs) ToGitHubComposeSourceOutput() GitHubComposeSourceOutput {
+	return i.ToGitHubComposeSourceOutputWithContext(context.Background())
+}
+
+func (i GitHubComposeSourceArgs) ToGitHubComposeSourceOutputWithContext(ctx context.Context) GitHubComposeSourceOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GitHubComposeSourceOutput)
+}
+
+func (i GitHubComposeSourceArgs) ToGitHubComposeSourcePtrOutput() GitHubComposeSourcePtrOutput {
+	return i.ToGitHubComposeSourcePtrOutputWithContext(context.Background())
+}
+
+func (i GitHubComposeSourceArgs) ToGitHubComposeSourcePtrOutputWithContext(ctx context.Context) GitHubComposeSourcePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GitHubComposeSourceOutput).ToGitHubComposeSourcePtrOutputWithContext(ctx)
+}
+
+// GitHubComposeSourcePtrInput is an input type that accepts GitHubComposeSourceArgs, GitHubComposeSourcePtr and GitHubComposeSourcePtrOutput values.
+// You can construct a concrete instance of `GitHubComposeSourcePtrInput` via:
+//
+//	        GitHubComposeSourceArgs{...}
+//
+//	or:
+//
+//	        nil
+type GitHubComposeSourcePtrInput interface {
+	pulumi.Input
+
+	ToGitHubComposeSourcePtrOutput() GitHubComposeSourcePtrOutput
+	ToGitHubComposeSourcePtrOutputWithContext(context.Context) GitHubComposeSourcePtrOutput
+}
+
+type gitHubComposeSourcePtrType GitHubComposeSourceArgs
+
+func GitHubComposeSourcePtr(v *GitHubComposeSourceArgs) GitHubComposeSourcePtrInput {
+	return (*gitHubComposeSourcePtrType)(v)
+}
+
+func (*gitHubComposeSourcePtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**GitHubComposeSource)(nil)).Elem()
+}
+
+func (i *gitHubComposeSourcePtrType) ToGitHubComposeSourcePtrOutput() GitHubComposeSourcePtrOutput {
+	return i.ToGitHubComposeSourcePtrOutputWithContext(context.Background())
+}
+
+func (i *gitHubComposeSourcePtrType) ToGitHubComposeSourcePtrOutputWithContext(ctx context.Context) GitHubComposeSourcePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(GitHubComposeSourcePtrOutput)
+}
+
+// GitHub Compose source configuration.
+type GitHubComposeSourceOutput struct{ *pulumi.OutputState }
+
+func (GitHubComposeSourceOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*GitHubComposeSource)(nil)).Elem()
+}
+
+func (o GitHubComposeSourceOutput) ToGitHubComposeSourceOutput() GitHubComposeSourceOutput {
+	return o
+}
+
+func (o GitHubComposeSourceOutput) ToGitHubComposeSourceOutputWithContext(ctx context.Context) GitHubComposeSourceOutput {
+	return o
+}
+
+func (o GitHubComposeSourceOutput) ToGitHubComposeSourcePtrOutput() GitHubComposeSourcePtrOutput {
+	return o.ToGitHubComposeSourcePtrOutputWithContext(context.Background())
+}
+
+func (o GitHubComposeSourceOutput) ToGitHubComposeSourcePtrOutputWithContext(ctx context.Context) GitHubComposeSourcePtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v GitHubComposeSource) *GitHubComposeSource {
+		return &v
+	}).(GitHubComposeSourcePtrOutput)
+}
+
+// The GitHub branch.
+func (o GitHubComposeSourceOutput) Branch() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubComposeSource) string { return v.Branch }).(pulumi.StringOutput)
+}
+
+// The Compose file path.
+func (o GitHubComposeSourceOutput) ComposePath() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GitHubComposeSource) *string { return v.ComposePath }).(pulumi.StringPtrOutput)
+}
+
+// Whether to enable submodules.
+func (o GitHubComposeSourceOutput) EnableSubmodules() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v GitHubComposeSource) *bool { return v.EnableSubmodules }).(pulumi.BoolPtrOutput)
+}
+
+// The GitHub integration ID.
+func (o GitHubComposeSourceOutput) IntegrationId() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubComposeSource) string { return v.IntegrationId }).(pulumi.StringOutput)
+}
+
+// The GitHub owner.
+func (o GitHubComposeSourceOutput) Owner() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubComposeSource) string { return v.Owner }).(pulumi.StringOutput)
+}
+
+// The GitHub repository.
+func (o GitHubComposeSourceOutput) Repository() pulumi.StringOutput {
+	return o.ApplyT(func(v GitHubComposeSource) string { return v.Repository }).(pulumi.StringOutput)
+}
+
+// The deployment trigger type, either push or tag.
+func (o GitHubComposeSourceOutput) TriggerType() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v GitHubComposeSource) *string { return v.TriggerType }).(pulumi.StringPtrOutput)
+}
+
+// Paths to watch.
+func (o GitHubComposeSourceOutput) WatchPaths() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v GitHubComposeSource) []string { return v.WatchPaths }).(pulumi.StringArrayOutput)
+}
+
+type GitHubComposeSourcePtrOutput struct{ *pulumi.OutputState }
+
+func (GitHubComposeSourcePtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**GitHubComposeSource)(nil)).Elem()
+}
+
+func (o GitHubComposeSourcePtrOutput) ToGitHubComposeSourcePtrOutput() GitHubComposeSourcePtrOutput {
+	return o
+}
+
+func (o GitHubComposeSourcePtrOutput) ToGitHubComposeSourcePtrOutputWithContext(ctx context.Context) GitHubComposeSourcePtrOutput {
+	return o
+}
+
+func (o GitHubComposeSourcePtrOutput) Elem() GitHubComposeSourceOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) GitHubComposeSource {
+		if v != nil {
+			return *v
+		}
+		var ret GitHubComposeSource
+		return ret
+	}).(GitHubComposeSourceOutput)
+}
+
+// The GitHub branch.
+func (o GitHubComposeSourcePtrOutput) Branch() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Branch
+	}).(pulumi.StringPtrOutput)
+}
+
+// The Compose file path.
+func (o GitHubComposeSourcePtrOutput) ComposePath() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) *string {
+		if v == nil {
+			return nil
+		}
+		return v.ComposePath
+	}).(pulumi.StringPtrOutput)
+}
+
+// Whether to enable submodules.
+func (o GitHubComposeSourcePtrOutput) EnableSubmodules() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.EnableSubmodules
+	}).(pulumi.BoolPtrOutput)
+}
+
+// The GitHub integration ID.
+func (o GitHubComposeSourcePtrOutput) IntegrationId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.IntegrationId
+	}).(pulumi.StringPtrOutput)
+}
+
+// The GitHub owner.
+func (o GitHubComposeSourcePtrOutput) Owner() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Owner
+	}).(pulumi.StringPtrOutput)
+}
+
+// The GitHub repository.
+func (o GitHubComposeSourcePtrOutput) Repository() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Repository
+	}).(pulumi.StringPtrOutput)
+}
+
+// The deployment trigger type, either push or tag.
+func (o GitHubComposeSourcePtrOutput) TriggerType() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) *string {
+		if v == nil {
+			return nil
+		}
+		return v.TriggerType
+	}).(pulumi.StringPtrOutput)
+}
+
+// Paths to watch.
+func (o GitHubComposeSourcePtrOutput) WatchPaths() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *GitHubComposeSource) []string {
 		if v == nil {
 			return nil
 		}
@@ -1814,6 +2140,8 @@ func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*GitApplicationSourcePtrInput)(nil)).Elem(), GitApplicationSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitComposeSourceInput)(nil)).Elem(), GitComposeSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitComposeSourcePtrInput)(nil)).Elem(), GitComposeSourceArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*GitHubComposeSourceInput)(nil)).Elem(), GitHubComposeSourceArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*GitHubComposeSourcePtrInput)(nil)).Elem(), GitHubComposeSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabAppSourceInput)(nil)).Elem(), GitLabAppSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabAppSourcePtrInput)(nil)).Elem(), GitLabAppSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabComposeSourceInput)(nil)).Elem(), GitLabComposeSourceArgs{})
@@ -1830,6 +2158,8 @@ func init() {
 	pulumi.RegisterOutputType(GitApplicationSourcePtrOutput{})
 	pulumi.RegisterOutputType(GitComposeSourceOutput{})
 	pulumi.RegisterOutputType(GitComposeSourcePtrOutput{})
+	pulumi.RegisterOutputType(GitHubComposeSourceOutput{})
+	pulumi.RegisterOutputType(GitHubComposeSourcePtrOutput{})
 	pulumi.RegisterOutputType(GitLabAppSourceOutput{})
 	pulumi.RegisterOutputType(GitLabAppSourcePtrOutput{})
 	pulumi.RegisterOutputType(GitLabComposeSourceOutput{})

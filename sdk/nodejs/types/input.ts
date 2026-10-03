@@ -5,6 +5,8 @@ import * as pulumi from "@pulumi/pulumi";
 import * as inputs from "../types/input";
 import * as outputs from "../types/output";
 
+import * as utilities from "../utilities";
+
 /**
  * Application build configuration.
  */
@@ -58,6 +60,10 @@ export interface ComposeSourceArgs {
      */
     git?: pulumi.Input<inputs.GitComposeSourceArgs | undefined>;
     /**
+     * GitHub Compose source.
+     */
+    github?: pulumi.Input<inputs.GitHubComposeSourceArgs | undefined>;
+    /**
      * GitLab Compose source.
      */
     gitlab?: pulumi.Input<inputs.GitLabComposeSourceArgs | undefined>;
@@ -69,6 +75,15 @@ export interface ComposeSourceArgs {
      * The Compose source type.
      */
     type: pulumi.Input<string>;
+}
+/**
+ * composeSourceArgsProvideDefaults sets the appropriate defaults for ComposeSourceArgs
+ */
+export function composeSourceArgsProvideDefaults(val: ComposeSourceArgs): ComposeSourceArgs {
+    return {
+        ...val,
+        github: pulumi.output(val.github).apply(v => v === undefined ? undefined : inputs.gitHubComposeSourceArgsProvideDefaults(v)),
+    };
 }
 
 /**
@@ -155,6 +170,53 @@ export interface GitComposeSourceArgs {
      * Paths to watch.
      */
     watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+}
+
+/**
+ * GitHub Compose source configuration.
+ */
+export interface GitHubComposeSourceArgs {
+    /**
+     * The GitHub branch.
+     */
+    branch: pulumi.Input<string>;
+    /**
+     * The Compose file path.
+     */
+    composePath?: pulumi.Input<string | undefined>;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: pulumi.Input<boolean | undefined>;
+    /**
+     * The GitHub integration ID.
+     */
+    integrationId: pulumi.Input<string>;
+    /**
+     * The GitHub owner.
+     */
+    owner: pulumi.Input<string>;
+    /**
+     * The GitHub repository.
+     */
+    repository: pulumi.Input<string>;
+    /**
+     * The deployment trigger type, either push or tag.
+     */
+    triggerType?: pulumi.Input<string | undefined>;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+}
+/**
+ * gitHubComposeSourceArgsProvideDefaults sets the appropriate defaults for GitHubComposeSourceArgs
+ */
+export function gitHubComposeSourceArgsProvideDefaults(val: GitHubComposeSourceArgs): GitHubComposeSourceArgs {
+    return {
+        ...val,
+        triggerType: (val.triggerType) ?? "push",
+    };
 }
 
 /**
