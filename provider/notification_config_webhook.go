@@ -29,19 +29,25 @@ type NotificationTeamsConfig struct {
 func (a *NotificationSlackConfig) Annotate(n infer.Annotator) {
 	n.Describe(&a.WebhookURL, "Secret Slack webhook URL.")
 	n.Describe(&a.Channel, "Optional routing channel; defaults to empty.")
+	n.SetDefault(&a.Channel, "")
 }
 func (a *NotificationDiscordConfig) Annotate(n infer.Annotator) {
 	n.Describe(&a.WebhookURL, "Secret Discord webhook URL.")
 	n.Describe(&a.Decoration, "Whether to decorate messages; defaults to false.")
+	n.SetDefault(&a.Decoration, false)
 }
 func (a *NotificationMattermostConfig) Annotate(n infer.Annotator) {
 	n.Describe(&a.WebhookURL, "Secret Mattermost webhook URL.")
 	n.Describe(&a.Channel, "Optional routing channel; defaults to empty.")
+	n.SetDefault(&a.Channel, "")
 	n.Describe(&a.Username, "Optional display username; defaults to empty.")
+	n.SetDefault(&a.Username, "")
 }
 func (a *NotificationCustomConfig) Annotate(n infer.Annotator) {
 	n.Describe(&a.Endpoint, "Secret HTTP(S) destination URL.")
 	n.Describe(&a.Headers, "Secret custom HTTP headers; defaults to an empty map.")
+	// Pulumi schema rejects constant defaults for maps. Check normalizes omitted
+	// headers to an empty map; keep the runtime default documented here.
 }
 func (a *NotificationLarkConfig) Annotate(n infer.Annotator) {
 	n.Describe(&a.WebhookURL, "Secret Lark webhook URL.")

@@ -43,6 +43,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationTelegramConfigArgs()
         {
+            MessageThreadId = "";
         }
         public static new NotificationTelegramConfigArgs Empty => new NotificationTelegramConfigArgs();
     }

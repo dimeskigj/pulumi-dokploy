@@ -43,6 +43,8 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationMattermostConfigArgs()
         {
+            Channel = "";
+            Username = "";
         }
         public static new NotificationMattermostConfigArgs Empty => new NotificationMattermostConfigArgs();
     }

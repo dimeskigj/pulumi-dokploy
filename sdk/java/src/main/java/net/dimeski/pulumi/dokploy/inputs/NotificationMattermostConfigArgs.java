@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy.inputs;
 
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
+import com.pulumi.core.internal.Codegen;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
 import java.lang.String;
 import java.util.Objects;
@@ -151,6 +152,8 @@ public final class NotificationMattermostConfigArgs extends com.pulumi.resources
         }
 
         public NotificationMattermostConfigArgs build() {
+            $.channel = Codegen.stringProp("channel").output().arg($.channel).def("").getNullable();
+            $.username = Codegen.stringProp("username").output().arg($.username).def("").getNullable();
             if ($.webhookUrl == null) {
                 throw new MissingRequiredPropertyException("NotificationMattermostConfigArgs", "webhookUrl");
             }

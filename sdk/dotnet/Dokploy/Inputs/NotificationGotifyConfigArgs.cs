@@ -59,6 +59,8 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationGotifyConfigArgs()
         {
+            Decoration = false;
+            Priority = 5;
         }
         public static new NotificationGotifyConfigArgs Empty => new NotificationGotifyConfigArgs();
     }

@@ -37,6 +37,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationSlackConfigArgs()
         {
+            Channel = "";
         }
         public static new NotificationSlackConfigArgs Empty => new NotificationSlackConfigArgs();
     }
