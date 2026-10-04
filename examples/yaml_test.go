@@ -269,6 +269,64 @@ func TestGenerationHelperCleansOnlyAllocatedCache(t *testing.T) {
 	}
 }
 
+func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) {
+	root, err := filepath.Abs("..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name       string
+		cacheValue string
+		unset      bool
+	}{
+		{name: "unset", unset: true},
+		{name: "empty", cacheValue: ""},
+		{name: "invalid", cacheValue: filepath.Join(t.TempDir(), "not-a-directory")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmp := t.TempDir()
+			marker := filepath.Join(tmp, "plugin-install-called")
+			stubBin := filepath.Join(tmp, "bin")
+			if err := os.MkdirAll(stubBin, 0755); err != nil {
+				t.Fatal(err)
+			}
+			mise := filepath.Join(stubBin, "mise")
+			if err := os.WriteFile(mise, []byte("#!/bin/sh\nprintf called > \"$PLUGIN_MARKER\"\nexit 1\n"), 0755); err != nil {
+				t.Fatal(err)
+			}
+			existing := filepath.Join(root, "examples", "nodejs", "index.ts")
+			original, err := os.ReadFile(existing)
+			if err != nil {
+				t.Fatal(err)
+			}
+			overrides := filepath.Join(tmp, "override.mk")
+			if err := os.WriteFile(overrides, []byte("provider:\n\t@true\n"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			args := []string{"-j4", "--no-print-directory", "-C", root, "-f", "Makefile", "-f", overrides, "gen_examples_in_cache"}
+			if !tt.unset {
+				args = append(args, "PULUMI_HOME="+tt.cacheValue)
+			}
+			cmd := exec.Command("make", args...)
+			cmd.Env = append(os.Environ(), "PATH="+stubBin+string(os.PathListSeparator)+os.Getenv("PATH"), "PLUGIN_MARKER="+marker)
+			if tt.unset {
+				cmd.Env = append(cmd.Env, "PULUMI_HOME=")
+			}
+			if out, err := cmd.CombinedOutput(); err == nil {
+				t.Fatalf("unsafe cache accepted: %s", out)
+			}
+			if _, err := os.Stat(marker); !os.IsNotExist(err) {
+				t.Fatalf("plugin installation ran before cache validation (stat error %v)", err)
+			}
+			got, err := os.ReadFile(existing)
+			if err != nil || string(got) != string(original) {
+				t.Fatalf("existing generated example changed: %v", err)
+			}
+		})
+	}
+}
+
 func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
 	out := t.TempDir()
 	cmd := exec.Command("mise", "exec", "pulumi@3.259.0", "--", "pulumi", "convert", "--from", "yaml", "--language", "yaml", "--cwd", "yaml", "--out", out, "--generate-only")

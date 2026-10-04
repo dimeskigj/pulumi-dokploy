@@ -10,7 +10,7 @@ MAVEN_TLS_OPTS := -Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2
 JAVA11_EXEC := mise exec java@temurin-11.0.32+101 gradle@8.14.3 --
 JAVA17_MAVEN_EXEC := mise exec java@temurin-17.0.20+8 maven@3.9.11 --
 
-.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_go_sdk install_python_sdk install_nodejs_sdk install_dotnet_sdk install_java_sdk install_plugin gen_examples gen_examples_in_cache test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi build prepare_local_workspace local_generate docs_generate docs_check docs_build
+.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_go_sdk install_python_sdk install_nodejs_sdk install_dotnet_sdk install_java_sdk install_plugin install_plugin_in_cache validate_pulumi_home gen_examples gen_examples_in_cache test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi build prepare_local_workspace local_generate docs_generate docs_check docs_build
 
 provider:
 	mkdir -p bin
@@ -89,13 +89,19 @@ install_java_sdk:
 
 build_sdks: build_go build_python build_nodejs build_dotnet build_java
 
+validate_pulumi_home:
+	@test -n "$(PULUMI_HOME)" && test -d "$(PULUMI_HOME)" || { echo "PULUMI_HOME must name an existing isolated directory" >&2; exit 1; }
+
 install_plugin: provider
 	@if [ -n "$(PULUMI_HOME)" ]; then PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; else mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; fi
+
+install_plugin_in_cache: validate_pulumi_home provider
+	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall
 
 gen_examples: codegen
 	scripts/gen-examples.sh "$(MAKE)" "$(CURDIR)"
 
-gen_examples_in_cache: install_plugin
+gen_examples_in_cache: validate_pulumi_home install_plugin_in_cache
 	rm -rf examples/nodejs examples/python examples/go examples/dotnet examples/java
 	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out ../nodejs --generate-only
 	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language python --cwd examples/yaml --out ../python --generate-only
