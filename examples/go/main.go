@@ -176,6 +176,16 @@ func main() {
 		if err != nil {
 			return err
 		}
+		remoteServer, err := dokploy.NewServer(ctx, "remoteServer", &dokploy.ServerArgs{
+			Name:                pulumi.String("example-remote"),
+			IpAddress:           pulumi.String("192.0.2.10"),
+			SshKeyId:            sshKey.SshKeyId,
+			ServerType:          pulumi.String("deploy"),
+			EnableDockerCleanup: pulumi.Bool(false),
+		})
+		if err != nil {
+			return err
+		}
 		compose, err := dokploy.NewCompose(ctx, "compose", &dokploy.ComposeArgs{
 			Name:          pulumi.String("mvp-compose"),
 			EnvironmentId: projectResource.DefaultEnvironmentId,
@@ -364,6 +374,7 @@ func main() {
 		ctx.Export("gitlabNamespace", pulumi.String(gitlabNamespace))
 		ctx.Export("gitlabRepository", pulumi.String(gitlabRepository))
 		ctx.Export("gitBranch", pulumi.String(gitBranch))
+		ctx.Export("remoteServerId", remoteServer.ServerId)
 		return nil
 	})
 }

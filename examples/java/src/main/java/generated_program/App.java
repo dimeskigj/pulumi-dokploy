@@ -23,6 +23,8 @@ import net.dimeski.pulumi.dokploy.SSHKey;
 import net.dimeski.pulumi.dokploy.SSHKeyArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.ApplicationBuildArgs;
+import net.dimeski.pulumi.dokploy.Server;
+import net.dimeski.pulumi.dokploy.ServerArgs;
 import net.dimeski.pulumi.dokploy.Compose;
 import net.dimeski.pulumi.dokploy.ComposeArgs;
 import net.dimeski.pulumi.dokploy.inputs.ComposeSourceArgs;
@@ -158,6 +160,14 @@ public class App {
                         .build())
                     .build())
                 .build())
+            .build());
+
+        var remoteServer = new Server("remoteServer", ServerArgs.builder()
+            .name("example-remote")
+            .ipAddress("192.0.2.10")
+            .sshKeyId(sshKey.sshKeyId())
+            .serverType("deploy")
+            .enableDockerCleanup(false)
             .build());
 
         var compose = new Compose("compose", ComposeArgs.builder()
@@ -315,5 +325,6 @@ services:
         ctx.export("gitlabNamespace", gitlabNamespace);
         ctx.export("gitlabRepository", gitlabRepository);
         ctx.export("gitBranch", gitBranch);
+        ctx.export("remoteServerId", remoteServer.serverId());
     }
 }
