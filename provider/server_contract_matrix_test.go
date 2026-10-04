@@ -224,6 +224,83 @@ func TestServerMutationAcknowledgments(t *testing.T) {
 	}
 }
 
+func TestServerAcknowledgedFallbackProjectsOnlySafeMatchingFields(t *testing.T) {
+	for _, tc := range []struct {
+		name, acknowledgment string
+		create               bool
+		want                 ServerState
+	}{
+		{
+			name: "create persisted configuration and metadata", create: true,
+			acknowledgment: `{"serverId":"placeholder-server","name":"persisted","description":"","ipAddress":"2001:db8::10","port":65535,"username":"operator","sshKeyId":null,"serverType":"build","enableDockerCleanup":false,"organizationId":"placeholder-new-org","serverStatus":"inactive","sshKey":{"privateKey":"fixture-private-key"},"monitoring":{"token":"fixture-monitoring-token"},"command":"fixture-command"}`,
+			want:           ServerState{ServerArgs: ServerArgs{Name: "persisted", Description: ptr(""), IPAddress: "2001:db8::10", Port: 65535, Username: "operator", ServerType: "build", EnableDockerCleanup: false}, ServerID: "placeholder-server", OrganizationID: ptr("placeholder-new-org"), Status: ptr("inactive")},
+		},
+		{
+			name: "create independently skips invalid and absent fields", create: true,
+			acknowledgment: `{"serverId":"placeholder-server","name":{"privateKey":"fixture-private-key"},"description":42,"ipAddress":"persisted.example","port":22.5,"username":null,"sshKeyId":false,"serverType":{},"enableDockerCleanup":0,"organizationId":[],"serverStatus":"observed","sshKey":{"privateKey":"fixture-private-key"}}`,
+			want:           ServerState{ServerArgs: ServerArgs{Name: "node", Description: ptr("before"), IPAddress: "persisted.example", Port: 22, Username: "root", SSHKeyID: ptr("placeholder-key"), ServerType: "deploy", EnableDockerCleanup: true}, ServerID: "placeholder-server", Status: ptr("observed")},
+		},
+		{
+			name: "update persisted configuration and metadata", create: false,
+			acknowledgment: `{"serverId":"placeholder-server","name":"persisted","description":null,"ipAddress":"2001:db8::10","port":1,"username":"operator","sshKeyId":"placeholder-new-key","serverType":"build","enableDockerCleanup":false,"organizationId":"placeholder-new-org","serverStatus":"inactive","sshKey":{"privateKey":"fixture-private-key"}}`,
+			want:           ServerState{ServerArgs: ServerArgs{Name: "persisted", IPAddress: "2001:db8::10", Port: 1, Username: "operator", SSHKeyID: ptr("placeholder-new-key"), ServerType: "build", EnableDockerCleanup: false}, ServerID: "placeholder-server", OrganizationID: ptr("placeholder-new-org"), Status: ptr("inactive")},
+		},
+		{
+			name: "update invalid fields skipped and absent metadata retained", create: false,
+			acknowledgment: `{"serverId":"placeholder-server","name":"persisted","description":null,"ipAddress":false,"port":65536,"username":[],"sshKeyId":{},"serverType":null,"enableDockerCleanup":"false","organizationId":{"privateKey":"fixture-private-key"},"sshKey":{"privateKey":"fixture-private-key"}}`,
+			want:           ServerState{ServerArgs: ServerArgs{Name: "persisted", IPAddress: "192.0.2.10", Port: 22, Username: "root", SSHKeyID: ptr("placeholder-key"), ServerType: "deploy", EnableDockerCleanup: true}, ServerID: "placeholder-server", OrganizationID: ptr("placeholder-old-org"), Status: ptr("active")},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			a := serverArgs()
+			a.Description = ptr("before")
+			a.SSHKeyID = ptr("placeholder-key")
+			a.EnableDockerCleanup = true
+			prior := ServerState{ServerArgs: serverArgs(), ServerID: "placeholder-server", OrganizationID: ptr("placeholder-old-org"), Status: ptr("active")}
+			body := serverMutationBody("node", "before", "placeholder-key", true)
+			endpoint := "/api/server.update"
+			if tc.create {
+				endpoint = "/api/server.create"
+				delete(body, "serverId")
+			}
+			s := newScriptedServer(t,
+				scriptedRequest{Method: http.MethodPost, Path: endpoint, Body: body, Status: 200, Response: []byte(tc.acknowledgment)},
+				scriptedRequest{Method: http.MethodGet, Path: "/api/server.one", Query: url.Values{"serverId": {"placeholder-server"}}, Status: 404, Response: []byte(`{}`)},
+			)
+			r := Server{client: fixedClient(s.API())}
+			var got ServerState
+			var err error
+			if tc.create {
+				created, createErr := r.Create(t.Context(), infer.CreateRequest[ServerArgs]{Inputs: a})
+				err, got = createErr, created.Output
+				require.Equal(t, "placeholder-server", created.ID)
+			} else {
+				updated, updateErr := r.Update(t.Context(), infer.UpdateRequest[ServerArgs, ServerState]{ID: prior.ServerID, State: prior, Inputs: a})
+				err, got = updateErr, updated.Output
+			}
+			var partial infer.ResourceInitFailedError
+			require.ErrorAs(t, err, &partial)
+			require.Equal(t, tc.want, got)
+			encoded := fmt.Sprintf("%+v", got)
+			for _, marker := range []string{"fixture-private-key", "fixture-monitoring-token", "fixture-command"} {
+				require.NotContains(t, encoded, marker)
+				require.NotContains(t, err.Error(), marker)
+			}
+		})
+	}
+}
+
+func TestServerMismatchedUpdateAcknowledgmentCannotOverlay(t *testing.T) {
+	prior := ServerState{ServerArgs: serverArgs(), ServerID: "placeholder-server", OrganizationID: ptr("placeholder-old-org"), Status: ptr("active")}
+	inputs := serverArgs()
+	inputs.Name = "after"
+	s := newScriptedServer(t, scriptedRequest{Method: http.MethodPost, Path: "/api/server.update", Body: serverMutationBody("after", nil, nil, false), Status: 200, Response: []byte(`{"serverId":"other-server","name":"unrelated","organizationId":"unrelated-org","sshKey":{"privateKey":"fixture-private-key"}}`)})
+	got, err := (Server{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ServerArgs, ServerState]{ID: prior.ServerID, Inputs: inputs, State: prior})
+	require.Error(t, err)
+	require.Equal(t, prior, got.Output)
+	require.NotContains(t, err.Error(), "fixture-private-key")
+}
+
 type serverRoundTripFunc func(*http.Request) (*http.Response, error)
 
 const serverTestOperationUpdate = "update"
