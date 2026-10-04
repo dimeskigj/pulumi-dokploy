@@ -53,6 +53,7 @@
         "redis.ts",
         "registry.ts",
         "schedule.ts",
+        "server.ts",
         "sshkey.ts",
         "tag.ts",
         "types/enums/index.ts",
