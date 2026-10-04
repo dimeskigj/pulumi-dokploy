@@ -24,6 +24,8 @@ test("built site has valid internal links, base paths, routes, and search index"
   }
   assert.ok(await exists(path.join(DIST, "reference/port/index.html")));
   assert.ok(await exists(path.join(DIST, "guides/ports/index.html")));
+  assert.ok(await exists(path.join(DIST, "reference/notification/index.html")));
+  assert.ok(await exists(path.join(DIST, "guides/notifications/index.html")));
   assert.ok(await exists(path.join(DIST, "examples/complete/index.html")));
   assert.ok(await exists(path.join(DIST, "pagefind")));
 
@@ -52,6 +54,14 @@ test("built site has valid internal links, base paths, routes, and search index"
       }
     }
   }
+});
+
+test("built Notification guide links to reference and channel type anchors", async () => {
+  const guide = await readFile(path.join(DIST, "guides/notifications/index.html"), "utf8");
+  assert.match(guide, /reference\/notification\//);
+  assert.match(guide, /reference\/types\/#notification-custom-config/);
+  const types = await readFile(path.join(DIST, "reference/types/index.html"), "utf8");
+  assertAnchorExists(types, "notification-custom-config");
 });
 
 test("built component output preserves accessibility semantics", async () => {
