@@ -275,16 +275,18 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 		t.Fatal(err)
 	}
 	tests := []struct {
-		name       string
-		cacheValue string
-		unset      bool
-		populated  bool
+		name          string
+		cacheValue    string
+		unset         bool
+		populated     bool
+		matchingOwner bool
 	}{
 		{name: "unset", unset: true},
 		{name: "empty", cacheValue: ""},
 		{name: "invalid", cacheValue: filepath.Join(t.TempDir(), "not-a-directory")},
 		{name: "existing-empty-shared-cache", cacheValue: filepath.Join(t.TempDir(), "shared-cache")},
 		{name: "existing-populated-shared-cache", cacheValue: filepath.Join(t.TempDir(), "populated-cache"), populated: true},
+		{name: "populated-shared-cache-with-matching-owner", cacheValue: filepath.Join(t.TempDir(), "published-plugin-cache"), populated: true, matchingOwner: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -301,6 +303,12 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 					t.Fatal(err)
 				}
 				if err := os.WriteFile(sentinel, []byte("shared plugin must remain untouched"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			const ownerToken = "copied-owner-token"
+			if tt.matchingOwner {
+				if err := os.WriteFile(filepath.Join(tt.cacheValue, ".pulumi-dokploy-example-owner"), []byte(ownerToken), 0600); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -326,6 +334,9 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 			if !tt.unset {
 				args = append(args, "PULUMI_HOME="+tt.cacheValue)
 			}
+			if tt.matchingOwner {
+				args = append(args, "PULUMI_HOME_OWNER_TOKEN="+ownerToken)
+			}
 			cmd := exec.Command("make", args...)
 			cmd.Env = append(os.Environ(), "PATH="+stubBin+string(os.PathListSeparator)+os.Getenv("PATH"), "PLUGIN_MARKER="+marker)
 			if tt.unset {
@@ -341,6 +352,12 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 				got, err := os.ReadFile(sentinel)
 				if err != nil || string(got) != "shared plugin must remain untouched" {
 					t.Fatalf("shared cache fixture changed: %q, %v", got, err)
+				}
+			}
+			if tt.matchingOwner {
+				got, err := os.ReadFile(filepath.Join(tt.cacheValue, ".pulumi-dokploy-example-owner"))
+				if err != nil || string(got) != ownerToken {
+					t.Fatalf("shared cache owner marker changed: %q, %v", got, err)
 				}
 			}
 			got, err := os.ReadFile(existing)
