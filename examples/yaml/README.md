@@ -34,6 +34,11 @@ source:
 The canonical program deliberately enables the Docker and raw Compose sources
 instead; the alternatives above are documentation only.
 
+The canonical program includes an `applicationPort` mapping. Port create, update,
+and delete only configure the mapping; they do not deploy or redeploy the application.
+Deploy the application explicitly when its runtime configuration should be applied.
+See the [Ports guide](https://dimeskigj.github.io/pulumi-dokploy/guides/ports/).
+
 The active `genericGitApplication` uses the managed `SSHKey` resource's
 `sshKeyId`; the Docker application remains enabled separately so both source
 shapes are deployable examples. `sshPrivateKey`, `registryPassword`, and

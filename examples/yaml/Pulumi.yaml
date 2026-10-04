@@ -147,6 +147,16 @@ resources:
       command:
         fn::secret: "echo scheduled maintenance"
 
+  # Port changes are configuration-only; deploy the application explicitly when needed.
+  applicationPort:
+    type: dokploy:index:Port
+    properties:
+      applicationId: ${application.applicationId}
+      publishedPort: 8081
+      targetPort: 80
+      protocol: tcp
+      publishMode: ingress
+
   genericGitApplication:
     type: dokploy:index:Application
     properties:

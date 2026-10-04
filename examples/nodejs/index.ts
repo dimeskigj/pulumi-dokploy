@@ -54,6 +54,21 @@ const application = new dokploy.Application("application", {
     registryId: registry.registryId,
     buildRegistryId: registry.registryId,
 });
+const applicationSchedule = new dokploy.Schedule("applicationSchedule", {
+    name: "mvp-application-schedule",
+    cronExpression: "0 0 * * *",
+    scheduleType: "application",
+    applicationId: application.applicationId,
+    enabled: false,
+    command: pulumi.secret("echo scheduled maintenance"),
+});
+const applicationPort = new dokploy.Port("applicationPort", {
+    applicationId: application.applicationId,
+    publishedPort: 8081,
+    targetPort: 80,
+    protocol: dokploy.PortProtocol.Tcp,
+    publishMode: dokploy.PortPublishMode.Ingress,
+});
 const sshKey = new dokploy.SSHKey("sshKey", {
     name: "mvp-git-ssh",
     privateKey: pulumi.secret(sshPrivateKey),

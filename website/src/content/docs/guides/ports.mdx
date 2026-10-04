@@ -1,0 +1,29 @@
+---
+title: Ports
+description: Configure published application ports without triggering deployment.
+---
+
+The [`Port` resource reference](../../reference/port/) manages one published application port. `publishedPort` and `targetPort` must each be in **1..65535**. `protocol` defaults to `tcp` (`udp` is also supported); `publishMode` defaults to `ingress` (`host` is also supported). Host mode does not imply that a host port is available. Dokploy/provider does not check availability or configure firewalls.
+
+```yaml
+applicationPort:
+  type: dokploy:index:Port
+  properties:
+    applicationId: ${application.applicationId}
+    publishedPort: 8081
+    targetPort: 80
+    protocol: tcp
+    publishMode: ingress
+```
+
+`applicationId` is the Dokploy application relation, separate from Pulumi's optional `parent` resource option. Only changing the application replaces the Port; other inputs update in place. This is configuration-only: create, update, and delete do not deploy or redeploy the application, mutate it, or discover ports. After deleting a Port, explicitly deploy the application if its runtime configuration should take effect. Compose services are not supported.
+
+Generated Python `None` and Node.js `null`/`undefined` values for enum inputs normalize to their schema defaults before provider Check and therefore mean omission. An explicit null sent literally to provider Check and empty enum strings remain invalid; omit the value to use its default.
+
+Import uses the ID only:
+
+```bash
+pulumi import dokploy:index:Port mapping <port-id>
+```
+
+Only HTTP 404 or a structured `NOT_FOUND` response confirms absence. An HTTP 400 “Port not found” response is ambiguous and can indicate lost permission, so refresh retains state rather than assuming confirmed absence. External application deletion may therefore require operator investigation on this pinned provider version.

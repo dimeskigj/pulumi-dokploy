@@ -22,6 +22,7 @@ const required = [
   "guides/domains.mdx",
   "guides/backups.mdx",
   "guides/schedules.mdx",
+  "guides/ports.mdx",
   "guides/imports.mdx",
   "guides/lookups.mdx",
   "guides/troubleshooting.mdx",
@@ -47,7 +48,7 @@ test("secret and destructive lifecycle guidance is explicit", async () => {
 
 test("sidebar keeps the canonical resource order and base-safe links", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
-   const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Schedule", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
+   const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Schedule", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Port", "Configuration", "Complex Types"];
   const resources = config.slice(config.indexOf('label: "Resources"'), config.indexOf('label: "Examples"'));
   let previous = -1;
   for (const label of resourceOrder) {
@@ -226,9 +227,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
-     "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
+     "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
     "/reference/schedule/",
     ...lookupRoutes.map((slug) => `/reference/${slug}/`),
@@ -238,8 +239,8 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-   assert.equal((config.match(/link: "\//g) ?? []).length, 52);
-   assert.equal(curatedFiles.length, 16);
+    assert.equal((config.match(/link: "\//g) ?? []).length, 53);
+    assert.equal(curatedFiles.length, 16);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
@@ -361,4 +362,36 @@ test("Schedule guide distinguishes schema secrecy from Java builder outputs", as
   assert.match(guide, /\.command\(Output\.ofSecret/);
   assert.match(guide, /\.script\(Output\.ofSecret/);
   assert.doesNotMatch(guide, /secret inputs in every generated SDK/);
+});
+
+test("Port reference and guide are published", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  assert.match(config, /label: "Port", link: "\/reference\/port\/"/);
+  assert.match(config, /label: "Ports", link: "\/guides\/ports\/"/);
+  const guide = await readFile(new URL("../src/content/docs/guides/ports.mdx", import.meta.url), "utf8");
+  assert.match(guide, /reference\/port/);
+  const reference = await readFile(new URL("../src/content/docs/reference/port.mdx", import.meta.url), "utf8");
+  for (const field of ["applicationId", "publishedPort", "targetPort", "protocol", "publishMode", "portId"]) assert.match(reference, new RegExp(`"name":"${field}"`));
+  assert.match(reference, /"defaultValue":"tcp"/);
+  assert.match(reference, /"defaultValue":"ingress"/);
+  const types = await readFile(new URL("../src/content/docs/reference/types.mdx", import.meta.url), "utf8");
+  assert.match(types, /Port protocol: tcp or udp/);
+  assert.match(types, /Port publish mode: ingress or host/);
+});
+
+test("Port guide explains configuration-only lifecycle and import limitations", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/ports.mdx", import.meta.url), "utf8");
+  for (const marker of [/configuration.only/i, /do not deploy|does not deploy/i, /after deleting/i, /Compose/i, /firewall/i, /availability/i, /400/, /permission/i, /1\.\.65535/, /ingress/i, /host/i, /pulumi import dokploy:index:Port mapping <port-id>/, /application.*relation/i, /parent.*resource option/i, /404.*NOT_FOUND|NOT_FOUND.*404/i, /confirmed absence/i]) assert.match(guide, marker);
+  assert.match(guide, /null|None|undefined/i);
+  assert.match(guide, /omission|default/i);
+  assert.match(guide, /explicit null/i);
+});
+
+test("Port canonical and generated examples are present", async () => {
+  const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
+  assert.match(yaml, /applicationPort:[\s\S]*?type: dokploy:index:Port[\s\S]*?publishedPort: 8081[\s\S]*?targetPort: 80/);
+  const complete = await readFile(new URL("../src/content/docs/examples/complete.mdx", import.meta.url), "utf8");
+  assert.match(complete, /applicationPort/);
+  assert.match(complete, /PortProtocol\.Tcp/);
+  assert.match(complete, /PortPublishMode\.Ingress/);
 });
