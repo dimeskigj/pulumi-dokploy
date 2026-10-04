@@ -216,6 +216,10 @@ func TestSchemaPortSDKEnumDefaultNormalization(t *testing.T) {
 	for _, fragment := range []string{"if protocol is None:\n            protocol = 'tcp'", "if publish_mode is None:\n            publish_mode = 'ingress'", "if protocol is not None:\n            pulumi.set(__self__, \"protocol\", protocol)", "if publish_mode is not None:\n            pulumi.set(__self__, \"publish_mode\", publish_mode)"} {
 		require.Contains(t, python, fragment)
 	}
+	constructor := strings.Split(strings.Split(python, "def _internal_init(__self__,")[1], "replace_on_changes =")[0]
+	for _, fragment := range []string{"if protocol is None:\n                protocol = 'tcp'", "__props__.__dict__[\"protocol\"] = protocol", "if publish_mode is None:\n                publish_mode = 'ingress'", "__props__.__dict__[\"publish_mode\"] = publish_mode"} {
+		require.Contains(t, constructor, fragment)
+	}
 	node := readGenerated(t, "sdk", "nodejs", "port.ts")
 	require.Contains(t, node, `resourceInputs["protocol"] = (args?.protocol) ?? "tcp";`)
 	require.Contains(t, node, `resourceInputs["publishMode"] = (args?.publishMode) ?? "ingress";`)

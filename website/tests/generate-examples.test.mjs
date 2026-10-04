@@ -28,6 +28,21 @@ test("loads all complete examples in canonical order", async () => {
   assert.ok(examples.every(({ code }) => code.endsWith("\n")));
 });
 
+test("every tracked language includes an application Port mapping", async () => {
+  const examples = await loadExamples(new URL("../../examples/", import.meta.url));
+  const markers = {
+    typescript: /new dokploy\.Port\("applicationPort"/,
+    python: /dokploy\.Port\("applicationPort"/,
+    go: /dokploy\.NewPort\(ctx, "applicationPort"/,
+    csharp: /new Dokploy\.Port\("applicationPort"/,
+    java: /new Port\("applicationPort", PortArgs\.builder\(\)/,
+    yaml: /applicationPort:\s*\n\s*type: dokploy:index:Port/,
+  };
+  for (const { language, code } of examples) {
+    assert.match(code, markers[language], `${language} must include the Port resource`);
+  }
+});
+
 test("renders one synchronized six-language component", async () => {
   const examples = await loadExamples(new URL("../../examples/", import.meta.url));
   const mdx = renderCompleteExamples(examples);

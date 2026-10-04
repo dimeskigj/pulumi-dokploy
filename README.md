@@ -52,7 +52,7 @@ The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
-`dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:SSHKey`,
+`dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:Schedule`, `dokploy:index:SSHKey`,
 `dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
 `dokploy:index:Mount`, and `dokploy:index:Port`.
 
@@ -67,7 +67,8 @@ integration/project/owner/namespace/repository/branch details. The referenced Gi
 by this provider; SSH keys can be managed using the `SSHKey` resource.
 
 Source type changes replace that resource rather than attempting an
-in-place conversion. Create and update operations wait for Dokploy deployment completion;
+in-place conversion. Create and update operations for deploying workload resources
+wait for Dokploy deployment completion;
 deployment errors preserve partial state so the failed resource can be inspected and repaired.
 Compose volumes are preserved on destroy by default. Set `deleteVolumesOnDestroy` only when
 those volumes should be deleted.
@@ -110,6 +111,7 @@ pulumi import dokploy:index:Registry registry <registry-id>
 pulumi import dokploy:index:Tag tag <tag-id>
 pulumi import dokploy:index:ProjectTag projectTag <project-id>/<tag-id>
 pulumi import dokploy:index:Mount mount <mount-id>
+pulumi import dokploy:index:Port mapping <port-id>
 ```
 
 ## Development

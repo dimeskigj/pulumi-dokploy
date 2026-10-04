@@ -11,7 +11,7 @@ The endpoint is normalized before requests are made; configure the Dokploy origi
 
 ## Failed deployments
 
-Create and update operations poll Dokploy deployment status. A failed deployment can retain the remote ID in partial state. Inspect the Dokploy deployment, repair the source or configuration, and run `pulumi up` again rather than assuming the object was deleted.
+Create and update operations for deploying workload resources poll Dokploy deployment status; Port operations are configuration-only and do not poll deployments. A failed deployment can retain the remote ID in partial state. Inspect the Dokploy deployment, repair the source or configuration, and run `pulumi up` again rather than assuming the object was deleted.
 
 ## Source changes
 

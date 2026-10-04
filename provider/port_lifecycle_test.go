@@ -236,8 +236,20 @@ func TestPortUpdateFailureState(t *testing.T) {
 }
 
 func TestPortMutationAcknowledgmentIgnoresUnusedBody(t *testing.T) {
-	TestPortUpdateAndReadBack(t)
-	TestPortDelete(t)
+	t.Run("empty update response", func(t *testing.T) {
+		r, calls := portFixture(t, portStep(t, "POST", "update", ""), portStep(t, "GET", "one", portRow))
+		got, err := r.Update(t.Context(), infer.UpdateRequest[PortArgs, PortState]{ID: "p1", Inputs: portArgs(), State: PortState{PortArgs: portArgs(), PortID: "p1"}})
+		require.NoError(t, err)
+		require.Equal(t, "p1", got.Output.PortID)
+		require.Equal(t, 8081, got.Output.PublishedPort)
+		require.Equal(t, 2, *calls)
+	})
+	t.Run("empty delete response", func(t *testing.T) {
+		r, calls := portFixture(t, portStep(t, "POST", "delete", ""))
+		_, err := r.Delete(t.Context(), infer.DeleteRequest[PortState]{ID: "p1"})
+		require.NoError(t, err)
+		require.Equal(t, 1, *calls)
+	})
 }
 
 func TestPortAbsenceAndErrors(t *testing.T) {

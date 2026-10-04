@@ -387,6 +387,19 @@ test("Port guide explains configuration-only lifecycle and import limitations", 
   assert.match(guide, /explicit null/i);
 });
 
+test("README retains Schedule and Port import and scopes deployment polling", async () => {
+  const readme = await readFile(new URL("../../README.md", import.meta.url), "utf8");
+  const resources = readme.split("## Resources\n")[1]?.split("\n## ")[0];
+  assert.ok(resources, "README resource inventory must exist");
+  for (const token of ["Schedule", "Port"]) assert.match(resources, new RegExp(`dokploy:index:${token}\\b`));
+  assert.match(readme, /pulumi import dokploy:index:Port mapping <port-id>/);
+  assert.match(readme, /(?:deploying workload resources|workload resources that deploy)[^.]*wait for Dokploy deployment completion/i);
+  assert.match(readme, /`Port` maps[\s\S]*?configuration.only and do not deploy or redeploy/i);
+  const troubleshooting = await readFile(new URL("../src/content/docs/guides/troubleshooting.mdx", import.meta.url), "utf8");
+  assert.match(troubleshooting, /(?:deploying workload resources|workload resources that deploy)[^.]*poll Dokploy deployment status/i);
+  assert.match(troubleshooting, /Port.*(?:configuration.only|do not deploy)/i);
+});
+
 test("Port canonical and generated examples are present", async () => {
   const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
   assert.match(yaml, /applicationPort:[\s\S]*?type: dokploy:index:Port[\s\S]*?publishedPort: 8081[\s\S]*?targetPort: 80/);
