@@ -17,15 +17,15 @@ resources:
       enableDockerCleanup: false
 ```
 
-The example only registers configuration. Replace the reserved address and prepare a separate, dedicated host yourself (including Dokploy-compatible software and SSH access) before workload placement. Only a separately prepared host should be wired into a workload, for example:
+The example only registers configuration. Replace the reserved address and prepare a separate, dedicated host yourself (including Dokploy-compatible software and SSH access) before workload placement. A workload should refer to a separately prepared host, never the registration-only example above. This fully commented illustration assumes `separatelyPreparedServer` represents that independent, prepared host:
 
 ```ts
-const app = new dokploy.Application("app", {
-  name: "app",
-  environmentId: environment.environmentId,
-  serverId: remoteServer.serverId,
-  // Configure a supported source separately.
-});
+// const app = new dokploy.Application("app", {
+//   name: "app",
+//   environmentId: environment.environmentId,
+//   serverId: separatelyPreparedServer.serverId,
+//   source: { type: "docker", docker: { image: "nginx:1.27" } },
+// });
 ```
 
 The returned `server.serverId` is a normal dependency reference; a status output is descriptive, not a readiness signal. Do not place existing workloads on a newly registered host just because the resource exists.
