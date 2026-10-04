@@ -89,72 +89,38 @@ func (r Notification) Check(ctx context.Context, req infer.CheckRequest) (infer.
 		return infer.CheckResponse[NotificationArgs]{Inputs: in, Failures: failures}, err
 	}
 	in = normalizeNotificationArgs(in)
-	if req.NewInputs.Get("events").IsComputed() {
-		in.Events = nil
-	}
-	if v := req.NewInputs.Get("custom"); v.IsMap() && v.AsMap().Get("headers").IsComputed() && in.Custom != nil {
-		in.Custom.Headers = nil
-	}
-	// Keep computed optional values unresolved; inference's encoder retains their
-	// original property metadata when the normalized typed inputs are returned.
-	for _, field := range []struct {
-		block, key string
-		clear      func()
-	}{
-		{"slack", "channel", func() {
-			if in.Slack != nil {
-				in.Slack.Channel = nil
-			}
-		}},
-		{"telegram", "messageThreadId", func() {
-			if in.Telegram != nil {
-				in.Telegram.MessageThreadID = nil
-			}
-		}},
-		{"discord", "decoration", func() {
-			if in.Discord != nil {
-				in.Discord.Decoration = nil
-			}
-		}},
-		{"gotify", "priority", func() {
-			if in.Gotify != nil {
-				in.Gotify.Priority = nil
-			}
-		}},
-		{"gotify", "decoration", func() {
-			if in.Gotify != nil {
-				in.Gotify.Decoration = nil
-			}
-		}},
-		{"ntfy", "priority", func() {
-			if in.Ntfy != nil {
-				in.Ntfy.Priority = nil
-			}
-		}},
-		{"ntfy", "accessToken", func() {
-			if in.Ntfy != nil {
-				in.Ntfy.AccessToken = nil
-			}
-		}},
-		{"mattermost", "channel", func() {
-			if in.Mattermost != nil {
-				in.Mattermost.Channel = nil
-			}
-		}},
-		{"mattermost", "username", func() {
-			if in.Mattermost != nil {
-				in.Mattermost.Username = nil
-			}
-		}},
-		{"pushover", "priority", func() {
-			if in.Pushover != nil {
-				in.Pushover.Priority = nil
-			}
-		}},
-	} {
-		v := req.NewInputs.Get(field.block)
-		if v.IsMap() && v.AsMap().Get(field.key).IsComputed() {
-			field.clear()
+	// Inference reattaches computed/secret metadata to encoded typed values.
+	// Optional nil pointers disappear during encoding, so retain normalized
+	// placeholders for unknown values and instantiate computed whole blocks.
+	for _, kind := range notificationChannels {
+		if !req.NewInputs.Get(kind).IsComputed() {
+			continue
+		}
+		switch kind {
+		case notificationSlack:
+			in.Slack = &NotificationSlackConfig{}
+		case notificationTelegram:
+			in.Telegram = &NotificationTelegramConfig{}
+		case notificationDiscord:
+			in.Discord = &NotificationDiscordConfig{}
+		case notificationEmail:
+			in.Email = &NotificationEmailConfig{}
+		case notificationResend:
+			in.Resend = &NotificationResendConfig{}
+		case notificationGotify:
+			in.Gotify = &NotificationGotifyConfig{}
+		case notificationNtfy:
+			in.Ntfy = &NotificationNtfyConfig{}
+		case notificationMattermost:
+			in.Mattermost = &NotificationMattermostConfig{}
+		case notificationCustom:
+			in.Custom = &NotificationCustomConfig{}
+		case notificationLark:
+			in.Lark = &NotificationLarkConfig{}
+		case notificationTeams:
+			in.Teams = &NotificationTeamsConfig{}
+		case notificationPushover:
+			in.Pushover = &NotificationPushoverConfig{}
 		}
 	}
 	return infer.CheckResponse[NotificationArgs]{Inputs: in, Failures: append(failures, validateNotificationKnown(in, req.NewInputs)...)}, nil
