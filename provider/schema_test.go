@@ -236,6 +236,8 @@ func TestSchemaPortSDKEnumDefaultNormalization(t *testing.T) {
 		require.NoError(t, err)
 		require.Contains(t, portFailureProperties(checked.Failures), key)
 	}
+}
+
 func TestSchemaServerContract(t *testing.T) {
 	spec := providerSchema(t)
 	r := spec.Resources["dokploy:index:Server"]

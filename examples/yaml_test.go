@@ -110,6 +110,7 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		"dokploy:index:ProjectTag":   1,
 		"dokploy:index:Mount":        3,
 		"dokploy:index:Port":         1,
+		"dokploy:index:Server":       1,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
@@ -156,6 +157,38 @@ func TestCanonicalYAMLPort(t *testing.T) {
 	}
 	if _, exists := properties["deploymentId"]; exists {
 		t.Error("Port must not declare a deployment property")
+	}
+}
+
+func TestCanonicalServerExample(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	server := resources["remoteServer"].(map[string]any)
+	if server["type"] != "dokploy:index:Server" {
+		t.Fatalf("remoteServer type = %v", server["type"])
+	}
+	properties := server["properties"].(map[string]any)
+	for key, want := range map[string]any{"ipAddress": "192.0.2.10", "sshKeyId": "${sshKey.sshKeyId}", "serverType": "deploy", "enableDockerCleanup": false} {
+		if properties[key] != want {
+			t.Errorf("remoteServer %s = %v, want %v", key, properties[key], want)
+		}
+	}
+	outputs := document["outputs"].(map[string]any)
+	if outputs["remoteServerId"] != "${remoteServer.serverId}" {
+		t.Errorf("remoteServerId = %v", outputs["remoteServerId"])
+	}
+	for name, raw := range resources {
+		if name == "remoteServer" {
+			continue
+		}
+		resource, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		props, _ := resource["properties"].(map[string]any)
+		if props != nil && props["serverId"] == "${remoteServer.serverId}" {
+			t.Errorf("workload %q targets unready remoteServer", name)
+		}
 	}
 }
 

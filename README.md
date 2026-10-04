@@ -129,6 +129,10 @@ An imported Notification may have required secrets omitted from Dokploy's respon
 resupply them via secret configuration before update. Never use empty imported credentials.
 
 Server import uses the Dokploy server record ID; it does not configure or bootstrap the remote host.
+Server status is descriptive rather than a readiness guarantee. Deleting a Server removes its Dokploy
+record and associated deployment history/logs, not the remote VM or installed software; Dokploy refuses
+removal while workloads remain associated. See the [Servers guide](https://dimeskigj.github.io/pulumi-dokploy/guides/servers/)
+for safe registration, cleanup opt-in, and workload-placement guidance.
 
 ## Development
 
