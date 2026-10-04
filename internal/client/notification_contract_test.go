@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNotificationGeneratedDecoding(t *testing.T) {
@@ -20,7 +20,11 @@ func TestNotificationGeneratedDecoding(t *testing.T) {
 	var custom map[string]json.RawMessage
 	require.NoError(t, json.Unmarshal(output["custom"], &custom))
 	require.JSONEq(t, `{"X-Test":"value"}`, string(custom["headers"]))
-	require.Equal(t, json.RawMessage("null"), func() json.RawMessage { var x map[string]json.RawMessage; _ = json.Unmarshal(output["pushover"], &x); return x["retry"] }())
+	require.Equal(t, json.RawMessage("null"), func() json.RawMessage {
+		var x map[string]json.RawMessage
+		_ = json.Unmarshal(output["pushover"], &x)
+		return x["retry"]
+	}())
 	require.NotContains(t, string(encoded), "unknownFutureField", "unknown response fields are ignored")
 	var list generated.NotificationList
 	require.NoError(t, json.Unmarshal(append(append([]byte("["), fixture...), ']'), &list))
@@ -35,5 +39,33 @@ func TestNotificationGeneratedDecoding(t *testing.T) {
 	require.NoError(t, json.Unmarshal(inactiveJSON, &relations))
 	for _, field := range []string{"slack", "telegram", "discord", "email", "resend", "gotify", "ntfy", "mattermost", "custom", "lark", "teams", "pushover"} {
 		require.Equal(t, json.RawMessage("null"), relations[field], "%s null relation must remain null", field)
+	}
+}
+
+func TestNotificationNullablePresenceRoundTrip(t *testing.T) {
+	for _, tc := range []struct {
+		name, input                                                  string
+		secretSpecified, secretNull, optionalSpecified, optionalNull bool
+	}{
+		{"omitted", `{"slackId":"channel"}`, false, false, false, false},
+		{"null", `{"slackId":"channel","webhookUrl":null,"channel":null}`, true, true, true, true},
+		{"empty", `{"slackId":"channel","webhookUrl":"","channel":""}`, true, false, true, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var v generated.NotificationSlack
+			require.NoError(t, json.Unmarshal([]byte(tc.input), &v))
+			require.Equal(t, tc.secretSpecified, v.WebhookUrl.IsSpecified())
+			require.Equal(t, tc.secretNull, v.WebhookUrl.IsNull())
+			require.Equal(t, tc.optionalSpecified, v.Channel.IsSpecified())
+			require.Equal(t, tc.optionalNull, v.Channel.IsNull())
+			encoded, err := json.Marshal(v)
+			require.NoError(t, err)
+			var decoded generated.NotificationSlack
+			require.NoError(t, json.Unmarshal(encoded, &decoded))
+			require.Equal(t, v.WebhookUrl.IsSpecified(), decoded.WebhookUrl.IsSpecified())
+			require.Equal(t, v.WebhookUrl.IsNull(), decoded.WebhookUrl.IsNull())
+			require.Equal(t, v.Channel.IsSpecified(), decoded.Channel.IsSpecified())
+			require.Equal(t, v.Channel.IsNull(), decoded.Channel.IsNull())
+		})
 	}
 }
