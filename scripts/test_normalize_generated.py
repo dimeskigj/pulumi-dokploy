@@ -32,15 +32,15 @@ class NormalizeGeneratedTests(unittest.TestCase):
         module = self.load_normalizer()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            java = root / "java" / "Schedule.java"
+            java = root / "java" / "Notification.java"
             java.parent.mkdir()
-            java.write_text("/**\n * \n */\nclass Schedule {}  \n\n")
+            java.write_text("/**\n * \n */\nclass Schedule {}  \n    \t  this.value = defaults.value;\n\n")
             python = root / "schedule.py"
             python.write_text("VERSION = '0.0.1-alpha.0+dev'\n\n")
             metadata = root / "package.json"
             metadata.write_text('{"version":"0.0.1-alpha.0+dev"}\n')
             module.normalize_sdks(root)
-            self.assertEqual(java.read_text(), "/**\n *\n */\nclass Schedule {}\n")
+            self.assertEqual(java.read_text(), "/**\n *\n */\nclass Schedule {}\n\t  this.value = defaults.value;\n")
             self.assertEqual(python.read_text(), "VERSION = '0.0.1-alpha.0+dev'\n")
             first = {path: path.read_bytes() for path in [java, python, metadata]}
             module.normalize_sdks(root)

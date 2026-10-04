@@ -44,6 +44,7 @@
         "mongoDB.ts",
         "mount.ts",
         "mySQL.ts",
+        "notification.ts",
         "port.ts",
         "postgres.ts",
         "project.ts",

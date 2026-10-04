@@ -41,6 +41,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &Mount{}
 	case "dokploy:index:MySQL":
 		r = &MySQL{}
+	case "dokploy:index:Notification":
+		r = &Notification{}
 	case "dokploy:index:Port":
 		r = &Port{}
 	case "dokploy:index:Postgres":
