@@ -312,9 +312,28 @@ test("Server guide documents configuration-only lifecycle and safe placement", a
   assert.match(guide, /updates.*in place/i);
   assert.match(guide, /does not destroy.*VM/i);
   assert.match(guide, /prepar.*host.*before.*placement/i);
+  const placementStart = guide.indexOf("Only a separately prepared host");
+  const placement = guide.slice(guide.indexOf("```ts", placementStart), guide.indexOf("The returned `server.serverId`"));
+  assert.match(placement, /\/\/.*separate.*prepared/i);
+  assert.match(placement, /separatelyPreparedServer\.serverId/);
+  assert.match(placement, /source:/);
+  assert.doesNotMatch(placement, /remoteServer\.serverId/);
+  assert.doesNotMatch(placement.replace(/^\s*\/\/.*$/gm, "").replace(/```ts|```/g, ""), /\S/, "placement example must be entirely commented out");
   const imports = await readFile(new URL("../src/content/docs/guides/imports.mdx", import.meta.url), "utf8");
   assert.match(imports, /pulumi import dokploy:index:Server/);
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
   assert.match(config, /link: "\/reference\/server\/"/);
   assert.match(config, /link: "\/guides\/servers\/"/);
+});
+
+test("lifecycle and troubleshooting docs scope deployment polling to workloads", async () => {
+  const lifecycle = await readFile(new URL("../src/content/docs/concepts/lifecycle-and-state.mdx", import.meta.url), "utf8");
+  assert.match(lifecycle, /workload.*poll.*deployment|poll.*deployment.*workload/i);
+  assert.match(lifecycle, /Server.{0,20}do not poll|Server.{0,30}no deployment.*poll/i);
+  assert.doesNotMatch(lifecycle, /During create and update, the provider .*polls deployment status/);
+  const troubleshooting = await readFile(new URL("../src/content/docs/guides/troubleshooting.mdx", import.meta.url), "utf8");
+  assert.match(troubleshooting, /workload.*poll.*deployment|poll.*deployment.*workload/i);
+  assert.match(troubleshooting, /Server.{0,20}do not poll|Server.{0,30}no deployment.*poll/i);
+  assert.match(troubleshooting, /\.\.\/servers\//);
+  assert.doesNotMatch(troubleshooting, /Create and update operations poll Dokploy deployment status/);
 });

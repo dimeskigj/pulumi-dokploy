@@ -192,6 +192,83 @@ func TestGeneratedServerExamplesInstantiateAndExportIdentity(t *testing.T) {
 	}
 }
 
+func TestGenerationDoesNotAllocateCacheForOtherMakeTargets(t *testing.T) {
+	dir := t.TempDir()
+	marker := filepath.Join(dir, "mktemp-called")
+	stub := filepath.Join(dir, "mktemp")
+	if err := os.WriteFile(stub, []byte("#!/bin/sh\nprintf called > \"$MKTemp_MARKER\"\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	path := dir + string(os.PathListSeparator) + os.Getenv("PATH")
+	cmd := exec.Command("make", "--no-print-directory", "-n", "provider")
+	cmd.Dir = ".."
+	cmd.Env = append(os.Environ(), "PATH="+path, "MKTemp_MARKER="+marker)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("make provider dry run: %v\n%s", err, out)
+	}
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatalf("non-generation target invoked mktemp (stat error %v)", err)
+	}
+}
+
+func TestGenerationCacheFailurePreservesExistingExamples(t *testing.T) {
+	root := t.TempDir()
+	existing := filepath.Join(root, "examples", "nodejs", "index.ts")
+	if err := os.MkdirAll(filepath.Dir(existing), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(existing, []byte("preserve me"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	makeMarker := filepath.Join(root, "make-called")
+	fakeMake := filepath.Join(root, "make")
+	if err := os.WriteFile(fakeMake, []byte("#!/bin/sh\nprintf called > \"$MAKE_MARKER\"\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	script, err := filepath.Abs("../scripts/gen-examples.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("sh", script, fakeMake, root)
+	cmd.Env = append(os.Environ(), "TMPDIR="+filepath.Join(root, "does-not-exist"), "MAKE_MARKER="+makeMarker)
+	if out, err := cmd.CombinedOutput(); err == nil {
+		t.Fatalf("cache allocation unexpectedly succeeded: %s", out)
+	}
+	data, err := os.ReadFile(existing)
+	if err != nil || string(data) != "preserve me" {
+		t.Fatalf("existing example was changed: %q, %v", data, err)
+	}
+	if _, err := os.Stat(makeMarker); !os.IsNotExist(err) {
+		t.Fatalf("make was invoked after cache allocation failure (stat error %v)", err)
+	}
+}
+
+func TestGenerationHelperCleansOnlyAllocatedCache(t *testing.T) {
+	root := t.TempDir()
+	cacheRecord := filepath.Join(root, "cache-path")
+	fakeMake := filepath.Join(root, "make")
+	body := "#!/bin/sh\ntest -n \"$PULUMI_HOME\" && test -d \"$PULUMI_HOME\" || exit 9\nprintf '%s' \"$PULUMI_HOME\" > \"$CACHE_RECORD\"\n"
+	if err := os.WriteFile(fakeMake, []byte(body), 0755); err != nil {
+		t.Fatal(err)
+	}
+	script, err := filepath.Abs("../scripts/gen-examples.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("sh", script, fakeMake, root)
+	cmd.Env = append(os.Environ(), "TMPDIR="+root, "CACHE_RECORD="+cacheRecord)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("generation helper: %v\n%s", err, out)
+	}
+	data, err := os.ReadFile(cacheRecord)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(string(data)); !os.IsNotExist(err) {
+		t.Fatalf("owned temporary cache remains or was not cleaned: %q (stat %v)", data, err)
+	}
+}
+
 func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
 	out := t.TempDir()
 	cmd := exec.Command("mise", "exec", "pulumi@3.259.0", "--", "pulumi", "convert", "--from", "yaml", "--language", "yaml", "--cwd", "yaml", "--out", out, "--generate-only")
