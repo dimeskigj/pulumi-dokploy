@@ -100,3 +100,120 @@ test("formats notification string maps", () => {
   assert.equal(formatType({ type: "object", additionalProperties: { type: "string" } }), "map<string, string>");
   assert.throws(() => formatType({ type: "object", additionalProperties: { type: "integer" } }), /Unsupported Pulumi property type/);
   assert.throws(() => formatType({ type: "object", properties: { key: { type: "string" } } }), /Unsupported Pulumi property type/);
+});
+
+test("normalizes Server defaults, flat outputs, and mutable fields", () => {
+  const server = {
+    name: "dokploy",
+    resources: { "dokploy:index:Server": {
+      description: "Remote server record.",
+      inputProperties: Object.fromEntries(Object.entries({
+        name: "string", description: "string", ipAddress: "string", port: "integer", username: "string", sshKeyId: "string", serverType: "string", enableDockerCleanup: "boolean",
+      }).map(([name, type]) => [name, { type, description: `${name}.`, ...( { port: 22, username: "root", serverType: "deploy", enableDockerCleanup: false }[name] === undefined ? {} : { default: { port: 22, username: "root", serverType: "deploy", enableDockerCleanup: false }[name] }) }])),
+      requiredInputs: ["name", "ipAddress"],
+      properties: Object.fromEntries(Object.entries({ name: "string", description: "string", ipAddress: "string", port: "integer", username: "string", sshKeyId: "string", serverType: "string", enableDockerCleanup: "boolean", serverId: "string", organizationId: "string", status: "string" }).map(([name, type]) => [name, { type, description: `${name}.` }])),
+      required: ["name", "ipAddress", "port", "username", "serverType", "enableDockerCleanup", "serverId"],
+    } },
+  };
+  const model = parseSchema(server, { expectedResources: new Set(["Server"]) });
+  const resource = model.resources[0];
+  assert.equal(resource.slug, "server");
+  for (const [name, value] of [["port", 22], ["username", "root"], ["serverType", "deploy"], ["enableDockerCleanup", false]]) assert.equal(resource.inputs.find((item) => item.name === name).defaultValue, value);
+  assert.deepEqual(resource.outputs.map(({ name }) => name), ["description", "enableDockerCleanup", "ipAddress", "name", "organizationId", "port", "serverId", "serverType", "sshKeyId", "status", "username"]);
+  assert.ok([...resource.inputs, ...resource.outputs].every(({ replaceOnChanges }) => !replaceOnChanges));
+});
+
+test("derives stable lowercase slugs", () => {
+  assert.equal(slugFromToken("dokploy:index:Postgres"), "postgres");
+  assert.equal(slugFromToken("dokploy:index:getSSHKey"), "get-ssh-key");
+  assert.equal(slugFromToken("dokploy:index:getMySQL"), "get-mysql");
+});
+
+test("rejects tokens that are not exactly dokploy:index:identifier", () => {
+  for (const token of [
+    "dokploy:other:Postgres",
+    "dokploy:index:Postgres:Extra",
+    "dokploy:index:",
+    "other:index:Postgres",
+    "dokploy:index:Postgres/unsafe",
+  ]) {
+    assert.throws(() => slugFromToken(token), /Invalid Pulumi token/);
+  }
+});
+
+test("loads and validates the real provider schema", async () => {
+  const model = parseSchema(
+    await loadSchema(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url)),
+  );
+  assert.equal(model.resources.length, 22);
+  assert.ok(model.resources.some(({ name }) => name === "Server"));
+  assert.equal(model.config.find(({ name }) => name === "apiKey").secret, true);
+   assert.equal(
+    model.resources
+      .find(({ name }) => name === "Application")
+      .inputs.find(({ name }) => name === "environmentId").replaceOnChanges,
+     true,
+   );
+   for (const resource of ["SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule", "Port", "Notification"]) {
+     assert.ok(model.resources.some(({ name }) => name === resource), `${resource} is published`);
+   }
+   assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").secret, true);
+   assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").replaceOnChanges, true);
+   assert.equal(model.resources.find(({ name }) => name === "ProjectTag").inputs.find(({ name }) => name === "projectId").replaceOnChanges, true);
+   assert.deepEqual(model.functions.map(({ name }) => name), ["getApplication", "getCompose", "getEnvironment", "getMariaDB", "getMongoDB", "getMySQL", "getPostgres", "getProject", "getRedis", "getRegistry", "getSSHKey", "getServer"]);
+   for (const fn of model.functions) {
+     assert.equal(fn.inputs.length, 1);
+     assert.equal(fn.inputs[0].required, true);
+     assert.equal(fn.outputs.find(({ name }) => name === "name").required, true);
+     assert.equal(fn.outputs.find(({ name }) => name === fn.inputs[0].name).required, true);
+     assert.ok(fn.outputs.every(({ description }) => description));
+   }
+});
+
+test("rejects duplicate normalized resource names", () => {
+  const resources = {
+    ...schema.resources,
+    "dokploy:index:Nested:Application": schema.resources["dokploy:index:Application"],
+  };
+  assert.throws(
+    () => parseSchema({ ...schema, resources }, { expectedResources: new Set(["Application"]) }),
+    /Unexpected resource set/,
+  );
+});
+
+test("rejects resource tokens that do not exactly match expected tokens", () => {
+  const resources = { "dokploy:other:Application": schema.resources["dokploy:index:Application"] };
+  assert.throws(
+    () => parseSchema({ ...schema, resources }, { expectedResources: new Set(["Application"]) }),
+    /Unexpected resource set/,
+  );
+});
+
+test("rejects missing descriptions and dangling type references", () => {
+  const missingDescription = structuredClone(schema);
+  missingDescription.resources["dokploy:index:Application"].description = "";
+  assert.throws(
+    () => parseSchema(missingDescription, { expectedResources: new Set(["Application"]) }),
+    /Missing description/,
+  );
+
+  const danglingReference = structuredClone(schema);
+  danglingReference.resources["dokploy:index:Application"].inputProperties.source.$ref =
+    "#/types/dokploy:index:Missing";
+  assert.throws(
+    () => parseSchema(danglingReference, { expectedResources: new Set(["Application"]) }),
+    /Dangling type reference/,
+  );
+});
+
+test("includes the source path in validation errors for loaded schemas", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "reference-model-"));
+  const path = join(directory, "malformed-schema.json");
+  try {
+    await writeFile(path, JSON.stringify({ ...schema, name: "not-dokploy" }));
+    const loaded = await loadSchema(path);
+    assert.throws(() => parseSchema(loaded), new RegExp(`not-dokploy.*${path}`));
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
