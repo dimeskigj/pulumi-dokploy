@@ -10,7 +10,7 @@ MAVEN_TLS_OPTS := -Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2
 JAVA11_EXEC := mise exec java@temurin-11.0.32+101 gradle@8.14.3 --
 JAVA17_MAVEN_EXEC := mise exec java@temurin-17.0.20+8 maven@3.9.11 --
 
-.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_go_sdk install_python_sdk install_nodejs_sdk install_dotnet_sdk install_java_sdk install_plugin install_plugin_in_cache validate_pulumi_home gen_examples gen_examples_in_cache test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi build prepare_local_workspace local_generate docs_generate docs_check docs_build
+.PHONY: provider provider_no_deps codegen generate_schema generate_go generate_nodejs generate_python generate_dotnet generate_java build_go build_python build_nodejs build_dotnet build_java build_sdks install_go_sdk install_python_sdk install_nodejs_sdk install_dotnet_sdk install_java_sdk install_plugin gen_examples test_examples test test_provider test_race check_codegen govulncheck license lint generate_openapi check_openapi build prepare_local_workspace local_generate docs_generate docs_check docs_build
 
 provider:
 	mkdir -p bin
@@ -89,43 +89,11 @@ install_java_sdk:
 
 build_sdks: build_go build_python build_nodejs build_dotnet build_java
 
-validate_pulumi_home:
-	@test -n "$(PULUMI_HOME)" && test -d "$(PULUMI_HOME)" && test -n "$(PULUMI_HOME_OWNER_TOKEN)" && test -f "$(PULUMI_HOME)/.pulumi-dokploy-example-owner" && test "$$(cat "$(PULUMI_HOME)/.pulumi-dokploy-example-owner")" = "$(PULUMI_HOME_OWNER_TOKEN)" && test -z "$$(find "$(PULUMI_HOME)" -mindepth 1 -maxdepth 1 ! -name .pulumi-dokploy-example-owner -print -quit)" || { echo "PULUMI_HOME must be an isolated cache allocated by gen_examples" >&2; exit 1; }
-
 install_plugin: provider
 	@if [ -n "$(PULUMI_HOME)" ]; then PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; else mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; fi
 
-install_plugin_in_cache: validate_pulumi_home provider
-	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall
-
 gen_examples: codegen
-	scripts/gen-examples.sh "$(MAKE)" "$(CURDIR)"
-
-gen_examples_in_cache: validate_pulumi_home install_plugin_in_cache
-	rm -rf examples/nodejs examples/python examples/go examples/dotnet examples/java
-	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out ../nodejs --generate-only
-	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language python --cwd examples/yaml --out ../python --generate-only
-	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language go --cwd examples/yaml --out ../go --generate-only
-	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language csharp --cwd examples/yaml --out ../dotnet --generate-only
-	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language java --cwd examples/yaml --out ../java --generate-only
-	mise exec -- go test ./examples -tags=yaml -run TestGeneratedServerExamplesInstantiateAndExportIdentity -count=1
-	go mod edit -require=$(PROJECT)/sdk/go/$(PACK)@v0.0.0 -replace=$(PROJECT)/sdk/go/$(PACK)=../../sdk/go/$(PACK) examples/go/go.mod
-	cd examples/go && go mod tidy
-	python3 -c 'from pathlib import Path; p=Path("examples/go/go.mod"); s=p.read_text(); s=s.replace(" => " + str(Path.cwd() / "sdk/go/$(PACK)"), " => ../../sdk/go/$(PACK)"); p.write_text(s)'
-	cd examples/nodejs && npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs
-	printf '%s\n' '-e ../../sdk/python' > examples/python/requirements.txt
-	python3 -c 'from pathlib import Path; p=Path("examples/dotnet/dokploy-mvp.csproj"); p.write_text(p.read_text().replace('"'"'<PackageReference Include="Dimeskigj.Pulumi.Dokploy" Version="0.0.1-alpha.0+dev" />'"'"', '"'"'<ProjectReference Include="../../sdk/dotnet/Dimeskigj.Pulumi.Dokploy.csproj" />'"'"'))'
-	python3 -c 'from pathlib import Path; p=Path("examples/java/pom.xml"); p.write_text(p.read_text().replace("<groupId>com.dimeskigj</groupId>", "<groupId>net.dimeski.pulumi</groupId>"))'
-	python3 -c 'from pathlib import Path; p=Path("examples/java/pom.xml"); p.write_text(p.read_text().replace("<maven.compiler.source>11</maven.compiler.source>", "<maven.compiler.source>17</maven.compiler.source>").replace("<maven.compiler.target>11</maven.compiler.target>", "<maven.compiler.target>17</maven.compiler.target>").replace("<maven.compiler.release>11</maven.compiler.release>", "<maven.compiler.release>17</maven.compiler.release>"))'
-	python3 -c 'import re; from pathlib import Path; p=Path("examples/java/src/main/java/generated_program/App.java"); s=p.read_text().replace("com.dimeskigj.dokploy", "net.dimeski.pulumi.dokploy").replace("config.requireObject(\"dokploy:endpoint\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.require(\"dokploy:endpoint\")").replace("config.requireObject(\"dokploy:apiKey\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.requireSecret(\"dokploy:apiKey\")"); s=re.sub(r'"'"'config\.getSecret\("(\w+)"\)\.orElse\("([^"]*)"\)'"'"', r'"'"'config.getSecret("\1").applyValue(v -> v.orElse("\2"))'"'"', s); p.write_text(s)'
-	python3 -c 'import re; from pathlib import Path; p=Path("examples/dotnet/Program.cs"); s=re.sub(r'"'"'config\.GetSecret\("(\w+)"\) \?\? "([^"]*)"'"'"', r'"'"'config.GetSecret("\1") ?? Output.CreateSecret("\2")'"'"', p.read_text()); p.write_text(s)'
-	python3 -c 'from pathlib import Path; [Path(x).write_text(chr(10).join(line.rstrip() for line in Path(x).read_text().splitlines()).rstrip()+chr(10)) for x in ["examples/dotnet/Program.cs", "examples/java/pom.xml"]]'
-	python3 website/scripts/normalize-examples.py
-	cp examples/yaml/README.md examples/nodejs/README.md
-	cp examples/yaml/README.md examples/python/README.md
-	cp examples/yaml/README.md examples/go/README.md
-	cp examples/yaml/README.md examples/dotnet/README.md
-	cp examples/yaml/README.md examples/java/README.md
+	scripts/gen-examples.sh "$(MAKE)" "$(CURDIR)" "$(PROJECT)" "$(PACK)" "$(VERSION_GENERIC)"
 
 test_examples: install_plugin
 	mise exec -- go test ./examples -tags=all -count=1

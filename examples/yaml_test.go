@@ -221,6 +221,13 @@ func TestGenerationCacheFailurePreservesExistingExamples(t *testing.T) {
 		t.Fatal(err)
 	}
 	makeMarker := filepath.Join(root, "make-called")
+	shared := filepath.Join(root, "shared-cache", "plugins", "published-plugin")
+	if err := os.MkdirAll(filepath.Dir(shared), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(shared, []byte("untouched"), 0600); err != nil {
+		t.Fatal(err)
+	}
 	fakeMake := filepath.Join(root, "make")
 	if err := os.WriteFile(fakeMake, []byte("#!/bin/sh\nprintf called > \"$MAKE_MARKER\"\n"), 0755); err != nil {
 		t.Fatal(err)
@@ -229,8 +236,8 @@ func TestGenerationCacheFailurePreservesExistingExamples(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("sh", script, fakeMake, root)
-	cmd.Env = append(os.Environ(), "TMPDIR="+filepath.Join(root, "does-not-exist"), "MAKE_MARKER="+makeMarker)
+	cmd := exec.Command("sh", script, fakeMake, root, "github.com/dimeskigj/pulumi-dokploy", "dokploy", "0.0.1-alpha.0+dev")
+	cmd.Env = append(os.Environ(), "TMPDIR="+filepath.Join(root, "does-not-exist"), "MAKE_MARKER="+makeMarker, "PULUMI_HOME="+filepath.Dir(filepath.Dir(shared)))
 	if out, err := cmd.CombinedOutput(); err == nil {
 		t.Fatalf("cache allocation unexpectedly succeeded: %s", out)
 	}
@@ -241,13 +248,16 @@ func TestGenerationCacheFailurePreservesExistingExamples(t *testing.T) {
 	if _, err := os.Stat(makeMarker); !os.IsNotExist(err) {
 		t.Fatalf("make was invoked after cache allocation failure (stat error %v)", err)
 	}
+	if got, err := os.ReadFile(shared); err != nil || string(got) != "untouched" {
+		t.Fatalf("shared cache changed on allocation failure: %q, %v", got, err)
+	}
 }
 
 func TestGenerationHelperCleansOnlyAllocatedCache(t *testing.T) {
 	root := t.TempDir()
 	cacheRecord := filepath.Join(root, "cache-path")
 	fakeMake := filepath.Join(root, "make")
-	body := "#!/bin/sh\ntest -n \"$PULUMI_HOME\" && test -d \"$PULUMI_HOME\" || exit 9\ntest -n \"$PULUMI_HOME_OWNER_TOKEN\" || exit 10\ntest \"$(cat \"$PULUMI_HOME/.pulumi-dokploy-example-owner\")\" = \"$PULUMI_HOME_OWNER_TOKEN\" || exit 11\nprintf '%s' \"$PULUMI_HOME\" > \"$CACHE_RECORD\"\n"
+	body := "#!/bin/sh\ntest -n \"$PULUMI_HOME\" && test -d \"$PULUMI_HOME\" || exit 9\ntest \"$PULUMI_HOME\" != \"$SHARED_CACHE\" || exit 10\nprintf '%s' \"$PULUMI_HOME\" > \"$CACHE_RECORD\"\nexit 42\n"
 	if err := os.WriteFile(fakeMake, []byte(body), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -255,17 +265,38 @@ func TestGenerationHelperCleansOnlyAllocatedCache(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("sh", script, fakeMake, root)
-	cmd.Env = append(os.Environ(), "TMPDIR="+root, "CACHE_RECORD="+cacheRecord)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		t.Fatalf("generation helper: %v\n%s", err, out)
-	}
-	data, err := os.ReadFile(cacheRecord)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(string(data)); !os.IsNotExist(err) {
-		t.Fatalf("owned temporary cache remains or was not cleaned: %q (stat %v)", data, err)
+	for _, populated := range []bool{false, true} {
+		t.Run(fmt.Sprintf("populated=%t", populated), func(t *testing.T) {
+			shared := filepath.Join(root, fmt.Sprintf("shared-%t", populated))
+			if err := os.Mkdir(shared, 0700); err != nil {
+				t.Fatal(err)
+			}
+			if populated {
+				if err := os.WriteFile(filepath.Join(shared, "published-plugin"), []byte("untouched"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			cmd := exec.Command("sh", script, fakeMake, root, "github.com/dimeskigj/pulumi-dokploy", "dokploy", "0.0.1-alpha.0+dev")
+			cmd.Env = append(os.Environ(), "TMPDIR="+root, "CACHE_RECORD="+cacheRecord, "PULUMI_HOME="+shared, "SHARED_CACHE="+shared)
+			if out, err := cmd.CombinedOutput(); err == nil {
+				t.Fatalf("fake installer unexpectedly succeeded: %s", out)
+			}
+			data, err := os.ReadFile(cacheRecord)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := os.Stat(string(data)); !os.IsNotExist(err) {
+				t.Fatalf("owned temporary cache remains or was not cleaned: %q (stat %v)", data, err)
+			}
+			if info, err := os.Stat(shared); err != nil || !info.IsDir() {
+				t.Fatalf("inherited shared cache was removed: %v", err)
+			}
+			if populated {
+				if got, err := os.ReadFile(filepath.Join(shared, "published-plugin")); err != nil || string(got) != "untouched" {
+					t.Fatalf("inherited shared cache was changed: %q, %v", got, err)
+				}
+			}
+		})
 	}
 }
 
@@ -286,12 +317,13 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 		{name: "invalid", cacheValue: filepath.Join(t.TempDir(), "not-a-directory")},
 		{name: "existing-empty-shared-cache", cacheValue: filepath.Join(t.TempDir(), "shared-cache")},
 		{name: "existing-populated-shared-cache", cacheValue: filepath.Join(t.TempDir(), "populated-cache"), populated: true},
+		{name: "empty-shared-cache-with-matching-owner", cacheValue: filepath.Join(t.TempDir(), "empty-owned-cache"), matchingOwner: true},
 		{name: "populated-shared-cache-with-matching-owner", cacheValue: filepath.Join(t.TempDir(), "published-plugin-cache"), populated: true, matchingOwner: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmp := t.TempDir()
-			if tt.populated || strings.Contains(tt.name, "shared-cache") {
+			if tt.populated || strings.Contains(tt.name, "shared-cache") || tt.matchingOwner {
 				if err := os.MkdirAll(tt.cacheValue, 0700); err != nil {
 					t.Fatal(err)
 				}
@@ -342,7 +374,7 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 			if tt.unset {
 				cmd.Env = append(cmd.Env, "PULUMI_HOME=")
 			}
-			if out, err := cmd.CombinedOutput(); err == nil {
+			if out, err := cmd.CombinedOutput(); err == nil || !strings.Contains(string(out), "No rule to make target 'gen_examples_in_cache'") {
 				t.Fatalf("unsafe cache accepted: %s", out)
 			}
 			if _, err := os.Stat(marker); !os.IsNotExist(err) {
@@ -363,6 +395,19 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 			got, err := os.ReadFile(existing)
 			if err != nil || string(got) != string(original) {
 				t.Fatalf("existing generated example changed: %v", err)
+			}
+		})
+	}
+}
+
+func TestRemovedCacheTargetsAreUnavailable(t *testing.T) {
+	for _, target := range []string{"gen_examples_in_cache", "validate_pulumi_home", "install_plugin_in_cache"} {
+		t.Run(target, func(t *testing.T) {
+			cmd := exec.Command("make", "--no-print-directory", "-n", target)
+			cmd.Dir = ".."
+			out, err := cmd.CombinedOutput()
+			if err == nil || !strings.Contains(string(out), "No rule to make target '"+target+"'") {
+				t.Fatalf("removed target remains available: %v\n%s", err, out)
 			}
 		})
 	}
