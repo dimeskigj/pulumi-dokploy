@@ -88,7 +88,6 @@ registry.one
 registry.update
 registry.remove
 registry.testRegistry
-server.one
 tag.create
 tag.one
 tag.update
@@ -134,3 +133,7 @@ notification.updatePushover
 notification.one
 notification.all
 notification.remove
+server.create
+server.one
+server.remove
+server.update
