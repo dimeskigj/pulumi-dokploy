@@ -54,7 +54,7 @@ The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
 `dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:Schedule`, `dokploy:index:SSHKey`,
 `dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
-`dokploy:index:Mount`, `dokploy:index:Port`, and `dokploy:index:Notification`.
+`dokploy:index:Mount`, `dokploy:index:Port`, `dokploy:index:Notification`, and `dokploy:index:Server`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -122,10 +122,13 @@ pulumi import dokploy:index:ProjectTag projectTag <project-id>/<tag-id>
 pulumi import dokploy:index:Mount mount <mount-id>
 pulumi import dokploy:index:Port mapping <port-id>
 pulumi import dokploy:index:Notification notification <notification-id>
+pulumi import dokploy:index:Server server <server-id>
 ```
 
 An imported Notification may have required secrets omitted from Dokploy's response;
 resupply them via secret configuration before update. Never use empty imported credentials.
+
+Server import uses the Dokploy server record ID; it does not configure or bootstrap the remote host.
 
 ## Development
 
