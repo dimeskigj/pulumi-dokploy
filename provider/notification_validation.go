@@ -10,33 +10,49 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
 )
 
-var notificationChannels = []string{"slack", "telegram", "discord", "email", "resend", "gotify", "ntfy", "mattermost", "custom", "lark", "teams", "pushover"}
+const (
+	notificationSlack      = "slack"
+	notificationTelegram   = "telegram"
+	notificationDiscord    = "discord"
+	notificationEmail      = "email"
+	notificationResend     = "resend"
+	notificationGotify     = "gotify"
+	notificationNtfy       = "ntfy"
+	notificationMattermost = "mattermost"
+	notificationCustom     = "custom"
+	notificationLark       = "lark"
+	notificationTeams      = "teams"
+	notificationPushover   = "pushover"
+	notificationHTTPS      = "https"
+)
+
+var notificationChannels = []string{notificationSlack, notificationTelegram, notificationDiscord, notificationEmail, notificationResend, notificationGotify, notificationNtfy, notificationMattermost, notificationCustom, notificationLark, notificationTeams, notificationPushover}
 
 func notificationBlock(a NotificationArgs, kind string) any {
 	switch kind {
-	case "slack":
+	case notificationSlack:
 		return a.Slack
-	case "telegram":
+	case notificationTelegram:
 		return a.Telegram
-	case "discord":
+	case notificationDiscord:
 		return a.Discord
-	case "email":
+	case notificationEmail:
 		return a.Email
-	case "resend":
+	case notificationResend:
 		return a.Resend
-	case "gotify":
+	case notificationGotify:
 		return a.Gotify
-	case "ntfy":
+	case notificationNtfy:
 		return a.Ntfy
-	case "mattermost":
+	case notificationMattermost:
 		return a.Mattermost
-	case "custom":
+	case notificationCustom:
 		return a.Custom
-	case "lark":
+	case notificationLark:
 		return a.Lark
-	case "teams":
+	case notificationTeams:
 		return a.Teams
-	case "pushover":
+	case notificationPushover:
 		return a.Pushover
 	default:
 		return nil
@@ -199,7 +215,7 @@ func validateNotificationKnown(a NotificationArgs, raw property.Map) []p.CheckFa
 			return
 		}
 		u, err := url.Parse(value)
-		if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
+		if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != notificationHTTPS) {
 			add(path, path+" must be an absolute HTTP(S) URL")
 		}
 	}
@@ -312,7 +328,7 @@ func validateNotificationKnown(a NotificationArgs, raw property.Map) []p.CheckFa
 			}
 		}
 	}
-	if a.Events != nil && a.Events.ServerThreshold && (a.Gotify != nil || a.Ntfy != nil) && known("events.serverThreshold") {
+	if a.Events != nil && a.Events.ServerThreshold && ((a.Gotify != nil && known("gotify")) || (a.Ntfy != nil && known("ntfy"))) && known("events.serverThreshold") {
 		add("events.serverThreshold", "serverThreshold is unsupported for Gotify and Ntfy")
 	}
 	return failures
