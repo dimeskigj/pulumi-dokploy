@@ -57,12 +57,19 @@ func notificationOptionalNumber(v *int) nullable.Nullable[float32] {
 	return nullable.NewNullableWithValue(float32(*v))
 }
 
+func notificationCreateOptionalNumber(v *int) nullable.Nullable[float32] {
+	if v == nil {
+		return nil
+	}
+	return nullable.NewNullableWithValue(float32(*v))
+}
+
 func notificationPushoverCreateBody(name string, a NotificationArgs) generated.NotificationCreatePushoverJSONRequestBody {
 	a = normalizeNotificationArgs(a)
 	v := a.Pushover
 	e := NotificationEvents{}
 	return generated.NotificationCreatePushoverJSONRequestBody{
-		Name: name, UserKey: v.UserKey, ApiToken: v.APIToken, Priority: ptr(float32(*v.Priority)), Retry: notificationOptionalNumber(v.Retry), Expire: notificationOptionalNumber(v.Expire),
+		Name: name, UserKey: v.UserKey, ApiToken: v.APIToken, Priority: ptr(float32(*v.Priority)), Retry: notificationCreateOptionalNumber(v.Retry), Expire: notificationCreateOptionalNumber(v.Expire),
 		AppDeploy: ptr(e.AppDeploy), AppBuildError: ptr(e.AppBuildError), DatabaseBackup: ptr(e.DatabaseBackup), VolumeBackup: ptr(e.VolumeBackup),
 		DokployBackup: ptr(e.DokployBackup), DokployRestart: ptr(e.DokployRestart), DockerCleanup: ptr(e.DockerCleanup), ServerThreshold: ptr(e.ServerThreshold),
 	}
