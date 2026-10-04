@@ -115,6 +115,11 @@ export type MySQL = import("./mySQL").MySQL;
 export const MySQL: typeof import("./mySQL").MySQL = null as any;
 utilities.lazyLoad(exports, ["MySQL"], () => require("./mySQL"));
 
+export { PortArgs } from "./port";
+export type Port = import("./port").Port;
+export const Port: typeof import("./port").Port = null as any;
+utilities.lazyLoad(exports, ["Port"], () => require("./port"));
+
 export { PostgresArgs } from "./postgres";
 export type Postgres = import("./postgres").Postgres;
 export const Postgres: typeof import("./postgres").Postgres = null as any;
@@ -166,6 +171,9 @@ export const VolumeBackup: typeof import("./volumeBackup").VolumeBackup = null a
 utilities.lazyLoad(exports, ["VolumeBackup"], () => require("./volumeBackup"));
 
 
+// Export enums:
+export * from "./types/enums";
+
 // Export sub-modules:
 import * as config from "./config";
 import * as types from "./types";
@@ -199,6 +207,8 @@ const _module = {
                 return new Mount(name, <any>undefined, { urn })
             case "dokploy:index:MySQL":
                 return new MySQL(name, <any>undefined, { urn })
+            case "dokploy:index:Port":
+                return new Port(name, <any>undefined, { urn })
             case "dokploy:index:Postgres":
                 return new Postgres(name, <any>undefined, { urn })
             case "dokploy:index:Project":

@@ -12,9 +12,9 @@ import (
 
 type PortProtocol string
 
-func (PortProtocol) Annotate(n infer.Annotator) {
+func (v *PortProtocol) Annotate(n infer.Annotator) {
 	n.SetToken("index", "PortProtocol")
-	n.Describe(PortProtocolTCP, "Port protocol: tcp or udp.")
+	n.Describe(v, "Port protocol: tcp or udp.")
 }
 
 const (
@@ -28,9 +28,9 @@ func (PortProtocol) Values() []infer.EnumValue[PortProtocol] {
 
 type PortPublishMode string
 
-func (PortPublishMode) Annotate(n infer.Annotator) {
+func (v *PortPublishMode) Annotate(n infer.Annotator) {
 	n.SetToken("index", "PortPublishMode")
-	n.Describe(PortPublishModeIngress, "Port publish mode: ingress or host.")
+	n.Describe(v, "Port publish mode: ingress or host.")
 }
 
 const (
@@ -43,11 +43,11 @@ func (PortPublishMode) Values() []infer.EnumValue[PortPublishMode] {
 }
 
 type PortArgs struct {
-	ApplicationID string          `pulumi:"applicationId" provider:"replaceOnChanges"`
-	PublishedPort int             `pulumi:"publishedPort"`
-	TargetPort    int             `pulumi:"targetPort"`
-	Protocol      PortProtocol    `pulumi:"protocol,optional" provider:"default:tcp"`
-	PublishMode   PortPublishMode `pulumi:"publishMode,optional" provider:"default:ingress"`
+	ApplicationID string           `pulumi:"applicationId" provider:"replaceOnChanges"`
+	PublishedPort int              `pulumi:"publishedPort"`
+	TargetPort    int              `pulumi:"targetPort"`
+	Protocol      *PortProtocol    `pulumi:"protocol,optional" provider:"default:tcp"`
+	PublishMode   *PortPublishMode `pulumi:"publishMode,optional" provider:"default:ingress"`
 }
 type PortState struct {
 	PortArgs
@@ -76,10 +76,10 @@ func (r Port) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRes
 	}
 	add := func(k, s string) { failures = append(failures, p.CheckFailure{Property: k, Reason: s}) }
 	if _, ok := req.NewInputs.GetOk("protocol"); !ok {
-		in.Protocol = PortProtocolTCP
+		in.Protocol = ptr(PortProtocolTCP)
 	}
 	if _, ok := req.NewInputs.GetOk("publishMode"); !ok {
-		in.PublishMode = PortPublishModeIngress
+		in.PublishMode = ptr(PortPublishModeIngress)
 	}
 	app := req.NewInputs.Get("applicationId")
 	if !app.HasComputed() && (app.IsNull() || in.ApplicationID == "") {
@@ -113,7 +113,7 @@ func (r Port) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRes
 		k, v    string
 		allowed []string
 		def     string
-	}{{"protocol", string(in.Protocol), []string{"tcp", "udp"}, "tcp"}, {"publishMode", string(in.PublishMode), []string{"ingress", "host"}, "ingress"}} {
+	}{{"protocol", portProtocol(in.Protocol), []string{"tcp", "udp"}, "tcp"}, {"publishMode", portMode(in.PublishMode), []string{"ingress", "host"}, "ingress"}} {
 		raw, present := req.NewInputs.GetOk(f.k)
 		if !present {
 			continue
@@ -142,8 +142,29 @@ func (r Port) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckRes
 	}
 	return infer.CheckResponse[PortArgs]{Inputs: in, Failures: failures}, nil
 }
+func portProtocol(p *PortProtocol) string {
+	if p == nil {
+		return "tcp"
+	}
+	return string(*p)
+}
+func portMode(m *PortPublishMode) string {
+	if m == nil {
+		return "ingress"
+	}
+	return string(*m)
+}
+func portDefaults(a PortArgs) PortArgs {
+	if a.Protocol == nil {
+		a.Protocol = ptr(PortProtocolTCP)
+	}
+	if a.PublishMode == nil {
+		a.PublishMode = ptr(PortPublishModeIngress)
+	}
+	return a
+}
 func validatePortArgs(a PortArgs) error {
-	if a.ApplicationID == "" {
+	if strings.TrimSpace(a.ApplicationID) == "" {
 		return fmt.Errorf("applicationId must not be empty")
 	}
 	for k, v := range map[string]int{"publishedPort": a.PublishedPort, "targetPort": a.TargetPort} {
@@ -151,10 +172,10 @@ func validatePortArgs(a PortArgs) error {
 			return fmt.Errorf("%s must be between 1 and 65535", k)
 		}
 	}
-	if a.Protocol != PortProtocolTCP && a.Protocol != PortProtocolUDP {
+	if portProtocol(a.Protocol) != string(PortProtocolTCP) && portProtocol(a.Protocol) != string(PortProtocolUDP) {
 		return fmt.Errorf("protocol must be tcp or udp")
 	}
-	if a.PublishMode != PortPublishModeIngress && a.PublishMode != PortPublishModeHost {
+	if portMode(a.PublishMode) != string(PortPublishModeIngress) && portMode(a.PublishMode) != string(PortPublishModeHost) {
 		return fmt.Errorf("publishMode must be ingress or host")
 	}
 	return nil
@@ -168,7 +189,7 @@ func (r Port) Diff(_ context.Context, req infer.DiffRequest[PortArgs, PortState]
 	for _, f := range []struct {
 		k       string
 		changed bool
-	}{{"publishedPort", a.PublishedPort != b.PublishedPort}, {"targetPort", a.TargetPort != b.TargetPort}, {"protocol", a.Protocol != b.Protocol}, {"publishMode", a.PublishMode != b.PublishMode}} {
+	}{{"publishedPort", a.PublishedPort != b.PublishedPort}, {"targetPort", a.TargetPort != b.TargetPort}, {"protocol", portProtocol(a.Protocol) != portProtocol(b.Protocol)}, {"publishMode", portMode(a.PublishMode) != portMode(b.PublishMode)}} {
 		if f.changed {
 			d[f.k] = p.PropertyDiff{Kind: p.Update}
 		}
@@ -176,5 +197,6 @@ func (r Port) Diff(_ context.Context, req infer.DiffRequest[PortArgs, PortState]
 	return infer.DiffResponse{HasChanges: len(d) > 0, DetailedDiff: d}, nil
 }
 func (r Port) WireDependencies(f infer.FieldSelector, args *PortArgs, state *PortState) {
-	f.OutputField(&state.PortID).DependsOn(f.InputField(&args.ApplicationID), f.InputField(&args.PublishedPort), f.InputField(&args.TargetPort), f.InputField(&args.Protocol), f.InputField(&args.PublishMode))
+	f.OutputField(&state.PublishedPort).DependsOn(f.InputField(&args.PublishedPort).Computed())
+	f.OutputField(&state.PortID).DependsOn(f.InputField(&args.ApplicationID).Secret(), f.InputField(&args.PublishedPort).Secret(), f.InputField(&args.TargetPort).Secret(), f.InputField(&args.Protocol).Secret(), f.InputField(&args.PublishMode).Secret())
 }

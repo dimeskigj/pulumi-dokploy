@@ -6,6 +6,7 @@ import builtins as _builtins
 from . import _utilities
 import typing
 # Export this package's modules as members:
+from ._enums import *
 from .application import *
 from .backup import *
 from .compose import *
@@ -28,6 +29,7 @@ from .maria_db import *
 from .mongo_db import *
 from .mount import *
 from .my_sql import *
+from .port import *
 from .postgres import *
 from .project import *
 from .project_tag import *
@@ -66,6 +68,7 @@ _utilities.register(
    "dokploy:index:MongoDB": "MongoDB",
    "dokploy:index:Mount": "Mount",
    "dokploy:index:MySQL": "MySQL",
+   "dokploy:index:Port": "Port",
    "dokploy:index:Postgres": "Postgres",
    "dokploy:index:Project": "Project",
    "dokploy:index:ProjectTag": "ProjectTag",

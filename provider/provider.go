@@ -2,9 +2,14 @@
 package dokploy
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/middleware/schema"
+	pschema "github.com/pulumi/pulumi/pkg/v3/codegen/schema"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 )
 
@@ -16,10 +21,10 @@ const Name = "dokploy"
 
 // Provider creates a new instance of the provider.
 func Provider() p.Provider {
-	return infer.Provider(infer.Options{
+	provider := infer.Provider(infer.Options{
 		Metadata: schema.Metadata{
 			DisplayName:       "Dokploy",
-			Description:       "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
+			Description:       "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
 			PluginDownloadURL: "github://api.github.com/dimeskigj/pulumi-dokploy",
 			LogoURL:           "https://raw.githubusercontent.com/dimeskigj/pulumi-dokploy/main/website/public/logo.svg",
 			Keywords:          []string{"category/infrastructure", "kind/native", "dokploy", "deployment", "self-hosted", "paas"},
@@ -41,6 +46,7 @@ func Provider() p.Provider {
 			infer.Resource(&Project{client: configuredClient}),
 			infer.Resource(&Environment{client: configuredClient}),
 			infer.Resource(&Application{client: configuredClient}),
+			infer.Resource(&Port{client: configuredClient}),
 			infer.Resource(&Compose{client: configuredClient}),
 			infer.Resource(&Postgres{client: configuredClient}),
 			infer.Resource(&MySQL{client: configuredClient}),
@@ -74,4 +80,35 @@ func Provider() p.Provider {
 		},
 		ModuleMap: map[tokens.ModuleName]tokens.ModuleName{"provider": "index"},
 	})
+	// infer currently drops enum-level Annotate descriptions when registering
+	// enum types. Preserve them in the served schema for all SDK/docs generators.
+	getSchema := provider.GetSchema
+	provider.GetSchema = func(ctx context.Context, req p.GetSchemaRequest) (p.GetSchemaResponse, error) {
+		resp, err := getSchema(ctx, req)
+		if err != nil {
+			return resp, err
+		}
+		var spec pschema.PackageSpec
+		if err := json.Unmarshal([]byte(resp.Schema), &spec); err != nil {
+			return p.GetSchemaResponse{}, fmt.Errorf("decode inferred schema: %w", err)
+		}
+		for token, description := range map[string]string{
+			"dokploy:index:PortProtocol":    "Port protocol: tcp or udp.",
+			"dokploy:index:PortPublishMode": "Port publish mode: ingress or host.",
+		} {
+			typ, ok := spec.Types[token]
+			if !ok {
+				return p.GetSchemaResponse{}, fmt.Errorf("missing inferred port enum type")
+			}
+			typ.Description = description
+			spec.Types[token] = typ
+		}
+		data, err := json.Marshal(spec)
+		if err != nil {
+			return p.GetSchemaResponse{}, fmt.Errorf("encode inferred schema: %w", err)
+		}
+		resp.Schema = string(data)
+		return resp, nil
+	}
+	return provider
 }
