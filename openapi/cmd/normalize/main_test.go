@@ -95,6 +95,20 @@ func normalizeRealContract(t *testing.T) *Document {
 	return output
 }
 
+func TestNotificationGotifyIntegerRequestContract(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, name := range []string{"notification.createGotify", "notification.updateGotify"} {
+		properties := operationRequestSchema(t, d, name)["properties"].(map[string]any)
+		priority := properties["priority"].(map[string]any)
+		require.Equal(t, "integer", priority["type"])
+		require.Equal(t, float64(1), priority["minimum"])
+	}
+	for _, name := range []string{"notification.createNtfy", "notification.updateNtfy", "notification.createPushover", "notification.updatePushover"} {
+		properties := operationRequestSchema(t, d, name)["properties"].(map[string]any)
+		require.Equal(t, "number", properties["priority"].(map[string]any)["type"])
+	}
+}
+
 func normalizedOperationIDs(t *testing.T, d *Document) []string {
 	t.Helper()
 	ids := make([]string, 0, len(d.Paths))

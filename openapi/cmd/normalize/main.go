@@ -111,7 +111,9 @@ func isHTTPMethod(s string) bool {
 type Corrections struct {
 	Responses map[string]string `json:"responses"`
 	Requests  map[string]string `json:"requests"`
-	Schemas   map[string]any    `json:"schemas"`
+	// Only correct known upstream request properties; retain all other request fields.
+	RequestIntegerProperties map[string][]string `json:"requestIntegerProperties"`
+	Schemas                  map[string]any      `json:"schemas"`
 }
 
 func allOperations(p *PathItem) map[string]*Operation {
@@ -273,6 +275,43 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 			return nil, fmt.Errorf("request correction %s names missing schema %s", name, schemaName)
 		}
 		applicationJSON["schema"] = schemaRef(schemaName)
+	}
+	for name, properties := range c.RequestIntegerProperties {
+		item := out.Paths["/"+name]
+		if item == nil {
+			return nil, fmt.Errorf("integer request correction %s targets missing operation", name)
+		}
+		op := operationFor(item, name)
+		if op == nil || op.OperationID != strings.Replace(name, ".", "-", 1) {
+			return nil, fmt.Errorf("integer request correction %s targets missing operation", name)
+		}
+		body, ok := op.Raw["requestBody"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("integer request correction %s has no request body", name)
+		}
+		content, ok := body["content"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("integer request correction %s has no content", name)
+		}
+		jsonContent, ok := content["application/json"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("integer request correction %s has no JSON content", name)
+		}
+		schema, ok := jsonContent["schema"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("integer request correction %s has no inline schema", name)
+		}
+		fields, ok := schema["properties"].(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("integer request correction %s has no properties", name)
+		}
+		for _, property := range properties {
+			field, ok := fields[property].(map[string]any)
+			if !ok || field["type"] != "number" {
+				return nil, fmt.Errorf("integer request correction %s.%s is not a number", name, property)
+			}
+			field["type"] = "integer"
+		}
 	}
 	var visit func(any)
 	visit = func(v any) {
