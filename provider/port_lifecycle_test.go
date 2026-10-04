@@ -17,6 +17,7 @@ import (
 )
 
 const portRow = `{"portId":"p1","applicationId":"a1","publishedPort":8081,"targetPort":80,"protocol":"tcp","publishMode":"ingress"}`
+const portUpdateOperation = "update"
 
 func portArgs() PortArgs {
 	return PortArgs{ApplicationID: "a1", PublishedPort: 8080, TargetPort: 81, Protocol: ptr(PortProtocolUDP), PublishMode: ptr(PortPublishModeHost)}
@@ -48,11 +49,11 @@ func portStep(t *testing.T, method, path, body string) func(http.ResponseWriter,
 		if path == "one" {
 			require.Equal(t, "p1", req.URL.Query().Get("portId"))
 		}
-		if path == "update" || path == "delete" {
+		if path == portUpdateOperation || path == "delete" {
 			var b map[string]any
 			require.NoError(t, json.NewDecoder(req.Body).Decode(&b))
 			require.Equal(t, "p1", b["portId"])
-			if path == "update" {
+			if path == portUpdateOperation {
 				require.Len(t, b, 5)
 				for k, v := range map[string]any{"publishedPort": float64(8080), "protocol": "udp", "publishMode": "host"} {
 					require.Equal(t, v, b[k], k)
@@ -96,7 +97,7 @@ func TestPortImportAndRefresh(t *testing.T) {
 }
 
 func TestPortUpdateAndReadBack(t *testing.T) {
-	r, calls := portFixture(t, portStep(t, "POST", "update", `{invalid`), portStep(t, "GET", "one", portRow))
+	r, calls := portFixture(t, portStep(t, "POST", portUpdateOperation, `{invalid`), portStep(t, "GET", "one", portRow))
 	got, err := r.Update(t.Context(), infer.UpdateRequest[PortArgs, PortState]{ID: "p1", Inputs: portArgs(), State: PortState{PortArgs: portArgs(), PortID: "p1"}})
 	require.NoError(t, err)
 	require.Equal(t, 8081, got.Output.PublishedPort)
@@ -145,7 +146,7 @@ func TestPortReadRejectsInvalidResponses(t *testing.T) {
 func TestPortMutationReadBackRejectsWrongOwner(t *testing.T) {
 	for _, create := range []bool{true, false} {
 		for _, observed := range []string{strings.Replace(portRow, `"a1"`, `"a2"`, 1), strings.Replace(portRow, `"p1"`, `"p2"`, 1)} {
-			r, calls := portFixture(t, portStep(t, "POST", map[bool]string{true: "create", false: "update"}[create], `{"portId":"p1"}`), portStep(t, "GET", "one", observed))
+			r, calls := portFixture(t, portStep(t, "POST", map[bool]string{true: "create", false: portUpdateOperation}[create], `{"portId":"p1"}`), portStep(t, "GET", "one", observed))
 			if create {
 				got, err := r.Create(t.Context(), infer.CreateRequest[PortArgs]{Inputs: portArgs()})
 				require.Error(t, err)
@@ -215,7 +216,7 @@ func TestPortUpdateFailureState(t *testing.T) {
 	attempted := portArgs()
 	attempted.TargetPort = 82
 	for _, acknowledged := range []bool{false, true} {
-		step := portStep(t, "POST", "update", "")
+		step := portStep(t, "POST", portUpdateOperation, "")
 		if !acknowledged {
 			step = func(w http.ResponseWriter, req *http.Request) { w.WriteHeader(403) }
 		}
@@ -237,7 +238,7 @@ func TestPortUpdateFailureState(t *testing.T) {
 
 func TestPortMutationAcknowledgmentIgnoresUnusedBody(t *testing.T) {
 	t.Run("empty update response", func(t *testing.T) {
-		r, calls := portFixture(t, portStep(t, "POST", "update", ""), portStep(t, "GET", "one", portRow))
+		r, calls := portFixture(t, portStep(t, "POST", portUpdateOperation, ""), portStep(t, "GET", "one", portRow))
 		got, err := r.Update(t.Context(), infer.UpdateRequest[PortArgs, PortState]{ID: "p1", Inputs: portArgs(), State: PortState{PortArgs: portArgs(), PortID: "p1"}})
 		require.NoError(t, err)
 		require.Equal(t, "p1", got.Output.PortID)
@@ -351,7 +352,7 @@ func TestPortCreateIdentitySurvivesCloseError(t *testing.T) {
 }
 
 func TestPortTransportErrorsDoNotLeakURLs(t *testing.T) {
-	for _, op := range []string{"create", "read", "update", "delete"} {
+	for _, op := range []string{"create", "read", portUpdateOperation, "delete"} {
 		t.Run(op, func(t *testing.T) {
 			calls := 0
 			transport := portRoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -367,7 +368,7 @@ func TestPortTransportErrorsDoNotLeakURLs(t *testing.T) {
 				_, failure = r.Create(t.Context(), infer.CreateRequest[PortArgs]{Inputs: portArgs()})
 			case "read":
 				_, failure = r.Read(t.Context(), infer.ReadRequest[PortArgs, PortState]{ID: "secret-id"})
-			case "update":
+			case portUpdateOperation:
 				_, failure = r.Update(t.Context(), infer.UpdateRequest[PortArgs, PortState]{ID: "secret-id", Inputs: portArgs(), State: PortState{PortArgs: portArgs()}})
 			case "delete":
 				_, failure = r.Delete(t.Context(), infer.DeleteRequest[PortState]{ID: "secret-id"})
