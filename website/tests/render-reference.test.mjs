@@ -3,6 +3,7 @@ import { access, mkdir, mkdtemp, readFile, readdir, rename as fsRename, rm, writ
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { loadSchema, parseSchema } from "../scripts/reference-model.mjs";
 import { renderConfiguration, renderResource, renderTypes, replaceGeneratedDirectory } from "../scripts/render-reference.mjs";
 
 test("renders generated notice and input/output metadata", () => {
@@ -21,6 +22,23 @@ test("renders generated notice and input/output metadata", () => {
   assert.match(mdx, /title: "Application"/);
   assert.match(mdx, /Generated from `schema\.json`/);
   assert.match(mdx, /\{\/\* environmentId replaceOnChanges: true \*\/\}/);
+});
+
+test("Notification reference renders secret headers", async () => {
+  const model = parseSchema(await loadSchema(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url)));
+  const notification = model.resources.find(({ token }) => token === "dokploy:index:Notification");
+  assert.ok(notification);
+  const custom = model.types.find(({ token }) => token === "dokploy:index:NotificationCustomConfig");
+  assert.ok(custom);
+  const headers = custom.properties.find(({ name }) => name === "headers");
+  assert.equal(headers.type, "map<string, string>");
+  assert.equal(headers.secret, true);
+  const typesMdx = renderTypes(model);
+  assert.match(typesMdx, /id="notification-custom-config"/);
+  assert.ok(typesMdx.includes(JSON.stringify(headers)));
+  const resourceMdx = renderResource(notification);
+  assert.match(resourceMdx, /title: "Notification"/);
+  assert.match(resourceMdx, /\.\.\/types\/#notification-custom-config/);
 });
 
 test("serializes hostile frontmatter title and description safely", () => {

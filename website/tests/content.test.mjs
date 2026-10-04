@@ -16,6 +16,7 @@ const required = [
   "guides/domains.mdx",
   "guides/backups.mdx",
   "guides/schedules.mdx",
+  "guides/notifications.mdx",
   "guides/imports.mdx",
   "guides/troubleshooting.mdx",
   "contributing.mdx",
@@ -40,7 +41,7 @@ test("secret and destructive lifecycle guidance is explicit", async () => {
 
 test("sidebar keeps the canonical resource order and base-safe links", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
-   const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Schedule", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
+  const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Schedule", "Notification", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
   const resources = config.slice(config.indexOf('label: "Resources"'), config.indexOf('label: "Examples"'));
   let previous = -1;
   for (const label of resourceOrder) {
@@ -165,9 +166,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/imports/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
-     "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/notification/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
     "/reference/schedule/",
   ]);
@@ -176,8 +177,27 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-   assert.equal((config.match(/link: "\//g) ?? []).length, 39);
-  assert.equal(curatedFiles.length, 15);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 41);
+  assert.equal(curatedFiles.length, 16);
+});
+
+test("Notification guide covers channels and safe recovery", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/notifications.mdx", import.meta.url), "utf8");
+  assert.match(guide, /^---\ntitle: Notifications\ndescription: .+\n---/);
+  for (const channel of ["slack", "telegram", "discord", "email", "resend", "gotify", "ntfy", "mattermost", "custom", "lark", "teams", "pushover"]) {
+    assert.match(guide, new RegExp(`\\b${channel}\\b`));
+  }
+  for (const marker of ["dokploy:index:Notification", "config.requireSecret(\"notificationWebhookUrl\")", "appDeploy: true", "appBuildError: true", "serverThreshold", "retry", "expire", "pulumi config set --secret", "temporary", "refresh", "read/list/create/update", "reference/notification", "reference/types", "channelId", "organizationId"]) {
+    assert.ok(guide.includes(marker), `Missing ${marker}`);
+  }
+  assert.match(guide, /all.*(?:events|subscriptions).*false/i);
+  assert.match(guide, /Gotify.*Ntfy.*serverThreshold|Gotify\/Ntfy.*serverThreshold/i);
+  assert.match(guide, /names alone.*(?:delete|deletion)|(?:delete|deletion).*names alone/i);
+  assert.match(guide, /orphan/i);
+  assert.doesNotMatch(guide, /automatically (?:send|test).*message/i);
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  assert.match(config, /label: "Schedules"[^\n]*\n\s*\{ label: "Notifications", link: "\/guides\/notifications\/"/);
+  assert.match(config, /label: "Schedule"[^\n]*\n\s*\{ label: "Notification", link: "\/reference\/notification\/"/);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {

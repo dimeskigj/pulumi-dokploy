@@ -27,3 +27,15 @@ pulumi import dokploy:index:Mount mount <mount-id>
 ```text
 pulumi import dokploy:index:ProjectTag projectTag <project-id>/<tag-id>
 ```
+
+Import a notification using its Dokploy notification ID, not the selected channel relation ID:
+
+```text
+pulumi import dokploy:index:Notification notification <notification-id>
+```
+
+The provider discovers the channel and active organization during import. Required
+secret fields omitted from Dokploy's response cannot be recovered on fresh import;
+they appear as empty secret values. Supply them from protected configuration with
+`pulumi config set --secret` before updating, never send the empty credentials.
+Refresh before repairing partial state; see the [Notifications guide](../notifications/).

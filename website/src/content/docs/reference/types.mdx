@@ -55,6 +55,84 @@ GitLab Compose source configuration.
 
 <PropertyTable properties={[{"name":"branch","type":"string","typeHref":null,"description":"The GitLab branch.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"composePath","type":"string","typeHref":null,"description":"The Compose file path.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"enableSubmodules","type":"boolean","typeHref":null,"description":"Whether to enable submodules.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"integrationId","type":"string","typeHref":null,"description":"The GitLab integration ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"namespace","type":"string","typeHref":null,"description":"The GitLab namespace.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"owner","type":"string","typeHref":null,"description":"The GitLab owner.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"projectId","type":"integer","typeHref":null,"description":"The GitLab project ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"repository","type":"string","typeHref":null,"description":"The GitLab repository.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"watchPaths","type":"string[]","typeHref":null,"description":"Paths to watch.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
 
+<h2 id="notification-custom-config">NotificationCustomConfig</h2>
+
+Custom channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"endpoint","type":"string","typeHref":null,"description":"Secret HTTP(S) destination URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"headers","type":"map<string, string>","typeHref":null,"description":"Secret custom HTTP headers; defaults to an empty map.","required":false,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-discord-config">NotificationDiscordConfig</h2>
+
+Discord channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"decoration","type":"boolean","typeHref":null,"description":"Whether to decorate messages; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"webhookUrl","type":"string","typeHref":null,"description":"Secret Discord webhook URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-email-config">NotificationEmailConfig</h2>
+
+Email channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"fromAddress","type":"string","typeHref":null,"description":"Sender address.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"password","type":"string","typeHref":null,"description":"Secret SMTP password.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"smtpPort","type":"integer","typeHref":null,"description":"SMTP port from 1 through 65535.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"smtpServer","type":"string","typeHref":null,"description":"SMTP server hostname.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"toAddresses","type":"string[]","typeHref":null,"description":"Nonempty list of recipient addresses.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"username","type":"string","typeHref":null,"description":"SMTP username.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-events">NotificationEvents</h2>
+
+Event subscriptions for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"appBuildError","type":"boolean","typeHref":null,"description":"Notify on application build error; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"appDeploy","type":"boolean","typeHref":null,"description":"Notify on application deployment; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"databaseBackup","type":"boolean","typeHref":null,"description":"Notify on database backup; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"dockerCleanup","type":"boolean","typeHref":null,"description":"Notify on Docker cleanup; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"dokployBackup","type":"boolean","typeHref":null,"description":"Notify on Dokploy backup; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"dokployRestart","type":"boolean","typeHref":null,"description":"Notify on Dokploy restart; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"serverThreshold","type":"boolean","typeHref":null,"description":"Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"volumeBackup","type":"boolean","typeHref":null,"description":"Notify on volume backup; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]}]} />
+
+<h2 id="notification-gotify-config">NotificationGotifyConfig</h2>
+
+Gotify channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"appToken","type":"string","typeHref":null,"description":"Secret Gotify application token.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"decoration","type":"boolean","typeHref":null,"description":"Whether to decorate messages; defaults to false.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":false,"environment":[]},{"name":"priority","type":"integer","typeHref":null,"description":"Message priority; defaults to 5 (minimum 1).","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":5,"environment":[]},{"name":"serverUrl","type":"string","typeHref":null,"description":"Secret Gotify server URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-lark-config">NotificationLarkConfig</h2>
+
+Lark channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"webhookUrl","type":"string","typeHref":null,"description":"Secret Lark webhook URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-mattermost-config">NotificationMattermostConfig</h2>
+
+Mattermost channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"channel","type":"string","typeHref":null,"description":"Optional routing channel; defaults to empty.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":"","environment":[]},{"name":"username","type":"string","typeHref":null,"description":"Optional display username; defaults to empty.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":"","environment":[]},{"name":"webhookUrl","type":"string","typeHref":null,"description":"Secret Mattermost webhook URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-ntfy-config">NotificationNtfyConfig</h2>
+
+Ntfy channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"accessToken","type":"string","typeHref":null,"description":"Optional secret access token; defaults to empty.","required":false,"secret":true,"replaceOnChanges":false,"defaultValue":"","environment":[]},{"name":"priority","type":"integer","typeHref":null,"description":"Message priority, 1 through 5; defaults to 3.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":3,"environment":[]},{"name":"serverUrl","type":"string","typeHref":null,"description":"Secret Ntfy server URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"topic","type":"string","typeHref":null,"description":"Ntfy topic.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-pushover-config">NotificationPushoverConfig</h2>
+
+Pushover channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"apiToken","type":"string","typeHref":null,"description":"Secret Pushover API token.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"expire","type":"integer","typeHref":null,"description":"Emergency expiry in seconds, 1 through 10800; required for priority 2.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"priority","type":"integer","typeHref":null,"description":"Priority from -2 through 2; defaults to 0.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":0,"environment":[]},{"name":"retry","type":"integer","typeHref":null,"description":"Emergency retry interval in seconds, at least 30; required for priority 2.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"userKey","type":"string","typeHref":null,"description":"Secret Pushover user key.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-resend-config">NotificationResendConfig</h2>
+
+Resend channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"apiKey","type":"string","typeHref":null,"description":"Secret Resend API key.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"fromAddress","type":"string","typeHref":null,"description":"Sender address.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"toAddresses","type":"string[]","typeHref":null,"description":"Nonempty list of recipient addresses.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-slack-config">NotificationSlackConfig</h2>
+
+Slack channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"channel","type":"string","typeHref":null,"description":"Optional routing channel; defaults to empty.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":"","environment":[]},{"name":"webhookUrl","type":"string","typeHref":null,"description":"Secret Slack webhook URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-teams-config">NotificationTeamsConfig</h2>
+
+Teams channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"webhookUrl","type":"string","typeHref":null,"description":"Secret Teams webhook URL.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+<h2 id="notification-telegram-config">NotificationTelegramConfig</h2>
+
+Telegram channel settings for a Dokploy notification.
+
+<PropertyTable properties={[{"name":"botToken","type":"string","typeHref":null,"description":"Secret Telegram bot token.","required":true,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"chatId","type":"string","typeHref":null,"description":"Telegram chat ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"messageThreadId","type":"string","typeHref":null,"description":"Optional message thread ID; defaults to empty.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":"","environment":[]}]} />
+
 <h2 id="raw-compose-source">RawComposeSource</h2>
 
 Raw Compose source configuration.

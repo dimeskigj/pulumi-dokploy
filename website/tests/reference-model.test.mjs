@@ -72,6 +72,12 @@ test("formats every schema type used by the provider", () => {
   assert.equal(formatType({ $ref: "#/types/dokploy:index:Source" }), "Source");
 });
 
+test("formats notification string maps", () => {
+  assert.equal(formatType({ type: "object", additionalProperties: { type: "string" } }), "map<string, string>");
+  assert.throws(() => formatType({ type: "object", additionalProperties: { type: "integer" } }), /Unsupported Pulumi property type/);
+  assert.throws(() => formatType({ type: "object", properties: { key: { type: "string" } } }), /Unsupported Pulumi property type/);
+});
+
 test("derives stable lowercase slugs", () => {
   assert.equal(slugFromToken("dokploy:index:Postgres"), "postgres");
 });
@@ -92,7 +98,7 @@ test("loads and validates the real provider schema", async () => {
   const model = parseSchema(
     await loadSchema(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url)),
   );
-   assert.equal(model.resources.length, 19);
+  assert.equal(model.resources.length, 20);
   assert.equal(model.config.find(({ name }) => name === "apiKey").secret, true);
    assert.equal(
     model.resources
@@ -100,7 +106,7 @@ test("loads and validates the real provider schema", async () => {
       .inputs.find(({ name }) => name === "environmentId").replaceOnChanges,
      true,
    );
-   for (const resource of ["SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule"]) {
+   for (const resource of ["SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule", "Notification"]) {
      assert.ok(model.resources.some(({ name }) => name === resource), `${resource} is published`);
    }
    assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").secret, true);
