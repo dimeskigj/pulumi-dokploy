@@ -37,6 +37,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationDiscordConfigArgs()
         {
+            Decoration = false;
         }
         public static new NotificationDiscordConfigArgs Empty => new NotificationDiscordConfigArgs();
     }

@@ -63,6 +63,14 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationEventsArgs()
         {
+            AppBuildError = false;
+            AppDeploy = false;
+            DatabaseBackup = false;
+            DockerCleanup = false;
+            DokployBackup = false;
+            DokployRestart = false;
+            ServerThreshold = false;
+            VolumeBackup = false;
         }
         public static new NotificationEventsArgs Empty => new NotificationEventsArgs();
     }

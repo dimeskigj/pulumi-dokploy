@@ -5,6 +5,8 @@ import * as pulumi from "@pulumi/pulumi";
 import * as inputs from "../types/input";
 import * as outputs from "../types/output";
 
+import * as utilities from "../utilities";
+
 /**
  * Application build configuration.
  */
@@ -266,6 +268,15 @@ export interface NotificationDiscordConfigArgs {
      */
     webhookUrl: pulumi.Input<string>;
 }
+/**
+ * notificationDiscordConfigArgsProvideDefaults sets the appropriate defaults for NotificationDiscordConfigArgs
+ */
+export function notificationDiscordConfigArgsProvideDefaults(val: NotificationDiscordConfigArgs): NotificationDiscordConfigArgs {
+    return {
+        ...val,
+        decoration: (val.decoration) ?? false,
+    };
+}
 
 export interface NotificationEmailConfigArgs {
     /**
@@ -328,6 +339,22 @@ export interface NotificationEventsArgs {
      */
     volumeBackup?: pulumi.Input<boolean | undefined>;
 }
+/**
+ * notificationEventsArgsProvideDefaults sets the appropriate defaults for NotificationEventsArgs
+ */
+export function notificationEventsArgsProvideDefaults(val: NotificationEventsArgs): NotificationEventsArgs {
+    return {
+        ...val,
+        appBuildError: (val.appBuildError) ?? false,
+        appDeploy: (val.appDeploy) ?? false,
+        databaseBackup: (val.databaseBackup) ?? false,
+        dockerCleanup: (val.dockerCleanup) ?? false,
+        dokployBackup: (val.dokployBackup) ?? false,
+        dokployRestart: (val.dokployRestart) ?? false,
+        serverThreshold: (val.serverThreshold) ?? false,
+        volumeBackup: (val.volumeBackup) ?? false,
+    };
+}
 
 export interface NotificationGotifyConfigArgs {
     /**
@@ -346,6 +373,16 @@ export interface NotificationGotifyConfigArgs {
      * Secret Gotify server URL.
      */
     serverUrl: pulumi.Input<string>;
+}
+/**
+ * notificationGotifyConfigArgsProvideDefaults sets the appropriate defaults for NotificationGotifyConfigArgs
+ */
+export function notificationGotifyConfigArgsProvideDefaults(val: NotificationGotifyConfigArgs): NotificationGotifyConfigArgs {
+    return {
+        ...val,
+        decoration: (val.decoration) ?? false,
+        priority: (val.priority) ?? 5,
+    };
 }
 
 export interface NotificationLarkConfigArgs {
@@ -369,6 +406,16 @@ export interface NotificationMattermostConfigArgs {
      */
     webhookUrl: pulumi.Input<string>;
 }
+/**
+ * notificationMattermostConfigArgsProvideDefaults sets the appropriate defaults for NotificationMattermostConfigArgs
+ */
+export function notificationMattermostConfigArgsProvideDefaults(val: NotificationMattermostConfigArgs): NotificationMattermostConfigArgs {
+    return {
+        ...val,
+        channel: (val.channel) ?? "",
+        username: (val.username) ?? "",
+    };
+}
 
 export interface NotificationNtfyConfigArgs {
     /**
@@ -387,6 +434,16 @@ export interface NotificationNtfyConfigArgs {
      * Ntfy topic.
      */
     topic: pulumi.Input<string>;
+}
+/**
+ * notificationNtfyConfigArgsProvideDefaults sets the appropriate defaults for NotificationNtfyConfigArgs
+ */
+export function notificationNtfyConfigArgsProvideDefaults(val: NotificationNtfyConfigArgs): NotificationNtfyConfigArgs {
+    return {
+        ...val,
+        accessToken: (val.accessToken) ?? "",
+        priority: (val.priority) ?? 3,
+    };
 }
 
 export interface NotificationPushoverConfigArgs {
@@ -410,6 +467,15 @@ export interface NotificationPushoverConfigArgs {
      * Secret Pushover user key.
      */
     userKey: pulumi.Input<string>;
+}
+/**
+ * notificationPushoverConfigArgsProvideDefaults sets the appropriate defaults for NotificationPushoverConfigArgs
+ */
+export function notificationPushoverConfigArgsProvideDefaults(val: NotificationPushoverConfigArgs): NotificationPushoverConfigArgs {
+    return {
+        ...val,
+        priority: (val.priority) ?? 0,
+    };
 }
 
 export interface NotificationResendConfigArgs {
@@ -437,6 +503,15 @@ export interface NotificationSlackConfigArgs {
      */
     webhookUrl: pulumi.Input<string>;
 }
+/**
+ * notificationSlackConfigArgsProvideDefaults sets the appropriate defaults for NotificationSlackConfigArgs
+ */
+export function notificationSlackConfigArgsProvideDefaults(val: NotificationSlackConfigArgs): NotificationSlackConfigArgs {
+    return {
+        ...val,
+        channel: (val.channel) ?? "",
+    };
+}
 
 export interface NotificationTeamsConfigArgs {
     /**
@@ -458,6 +533,15 @@ export interface NotificationTelegramConfigArgs {
      * Optional message thread ID; defaults to empty.
      */
     messageThreadId?: pulumi.Input<string | undefined>;
+}
+/**
+ * notificationTelegramConfigArgsProvideDefaults sets the appropriate defaults for NotificationTelegramConfigArgs
+ */
+export function notificationTelegramConfigArgsProvideDefaults(val: NotificationTelegramConfigArgs): NotificationTelegramConfigArgs {
+    return {
+        ...val,
+        messageThreadId: (val.messageThreadId) ?? "",
+    };
 }
 
 /**

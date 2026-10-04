@@ -381,7 +381,8 @@
       "properties": {
         "decoration": {
           "type": "boolean",
-          "description": "Whether to decorate messages; defaults to false."
+          "description": "Whether to decorate messages; defaults to false.",
+          "default": false
         },
         "webhookUrl": {
           "type": "string",
@@ -439,35 +440,43 @@
       "properties": {
         "appBuildError": {
           "type": "boolean",
-          "description": "Notify on application build error; defaults to false."
+          "description": "Notify on application build error; defaults to false.",
+          "default": false
         },
         "appDeploy": {
           "type": "boolean",
-          "description": "Notify on application deployment; defaults to false."
+          "description": "Notify on application deployment; defaults to false.",
+          "default": false
         },
         "databaseBackup": {
           "type": "boolean",
-          "description": "Notify on database backup; defaults to false."
+          "description": "Notify on database backup; defaults to false.",
+          "default": false
         },
         "dockerCleanup": {
           "type": "boolean",
-          "description": "Notify on Docker cleanup; defaults to false."
+          "description": "Notify on Docker cleanup; defaults to false.",
+          "default": false
         },
         "dokployBackup": {
           "type": "boolean",
-          "description": "Notify on Dokploy backup; defaults to false."
+          "description": "Notify on Dokploy backup; defaults to false.",
+          "default": false
         },
         "dokployRestart": {
           "type": "boolean",
-          "description": "Notify on Dokploy restart; defaults to false."
+          "description": "Notify on Dokploy restart; defaults to false.",
+          "default": false
         },
         "serverThreshold": {
           "type": "boolean",
-          "description": "Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false."
+          "description": "Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.",
+          "default": false
         },
         "volumeBackup": {
           "type": "boolean",
-          "description": "Notify on volume backup; defaults to false."
+          "description": "Notify on volume backup; defaults to false.",
+          "default": false
         }
       },
       "type": "object"
@@ -481,11 +490,13 @@
         },
         "decoration": {
           "type": "boolean",
-          "description": "Whether to decorate messages; defaults to false."
+          "description": "Whether to decorate messages; defaults to false.",
+          "default": false
         },
         "priority": {
           "type": "integer",
-          "description": "Message priority; defaults to 5 (minimum 1)."
+          "description": "Message priority; defaults to 5 (minimum 1).",
+          "default": 5
         },
         "serverUrl": {
           "type": "string",
@@ -516,11 +527,13 @@
       "properties": {
         "channel": {
           "type": "string",
-          "description": "Optional routing channel; defaults to empty."
+          "description": "Optional routing channel; defaults to empty.",
+          "default": ""
         },
         "username": {
           "type": "string",
-          "description": "Optional display username; defaults to empty."
+          "description": "Optional display username; defaults to empty.",
+          "default": ""
         },
         "webhookUrl": {
           "type": "string",
@@ -538,11 +551,13 @@
         "accessToken": {
           "type": "string",
           "description": "Optional secret access token; defaults to empty.",
+          "default": "",
           "secret": true
         },
         "priority": {
           "type": "integer",
-          "description": "Message priority, 1 through 5; defaults to 3."
+          "description": "Message priority, 1 through 5; defaults to 3.",
+          "default": 3
         },
         "serverUrl": {
           "type": "string",
@@ -573,7 +588,8 @@
         },
         "priority": {
           "type": "integer",
-          "description": "Priority from -2 through 2; defaults to 0."
+          "description": "Priority from -2 through 2; defaults to 0.",
+          "default": 0
         },
         "retry": {
           "type": "integer",
@@ -621,7 +637,8 @@
       "properties": {
         "channel": {
           "type": "string",
-          "description": "Optional routing channel; defaults to empty."
+          "description": "Optional routing channel; defaults to empty.",
+          "default": ""
         },
         "webhookUrl": {
           "type": "string",
@@ -660,7 +677,8 @@
         },
         "messageThreadId": {
           "type": "string",
-          "description": "Optional message thread ID; defaults to empty."
+          "description": "Optional message thread ID; defaults to empty.",
+          "default": ""
         }
       },
       "type": "object",

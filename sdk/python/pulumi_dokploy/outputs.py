@@ -879,6 +879,8 @@ class NotificationDiscordConfig(dict):
         :param _builtins.bool decoration: Whether to decorate messages; defaults to false.
         """
         pulumi.set(__self__, "webhook_url", webhook_url)
+        if decoration is None:
+            decoration = False
         if decoration is not None:
             pulumi.set(__self__, "decoration", decoration)
 
@@ -1047,20 +1049,36 @@ class NotificationEvents(dict):
         :param _builtins.bool server_threshold: Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
         :param _builtins.bool volume_backup: Notify on volume backup; defaults to false.
         """
+        if app_build_error is None:
+            app_build_error = False
         if app_build_error is not None:
             pulumi.set(__self__, "app_build_error", app_build_error)
+        if app_deploy is None:
+            app_deploy = False
         if app_deploy is not None:
             pulumi.set(__self__, "app_deploy", app_deploy)
+        if database_backup is None:
+            database_backup = False
         if database_backup is not None:
             pulumi.set(__self__, "database_backup", database_backup)
+        if docker_cleanup is None:
+            docker_cleanup = False
         if docker_cleanup is not None:
             pulumi.set(__self__, "docker_cleanup", docker_cleanup)
+        if dokploy_backup is None:
+            dokploy_backup = False
         if dokploy_backup is not None:
             pulumi.set(__self__, "dokploy_backup", dokploy_backup)
+        if dokploy_restart is None:
+            dokploy_restart = False
         if dokploy_restart is not None:
             pulumi.set(__self__, "dokploy_restart", dokploy_restart)
+        if server_threshold is None:
+            server_threshold = False
         if server_threshold is not None:
             pulumi.set(__self__, "server_threshold", server_threshold)
+        if volume_backup is None:
+            volume_backup = False
         if volume_backup is not None:
             pulumi.set(__self__, "volume_backup", volume_backup)
 
@@ -1163,8 +1181,12 @@ class NotificationGotifyConfig(dict):
         """
         pulumi.set(__self__, "app_token", app_token)
         pulumi.set(__self__, "server_url", server_url)
+        if decoration is None:
+            decoration = False
         if decoration is not None:
             pulumi.set(__self__, "decoration", decoration)
+        if priority is None:
+            priority = 5
         if priority is not None:
             pulumi.set(__self__, "priority", priority)
 
@@ -1265,8 +1287,12 @@ class NotificationMattermostConfig(dict):
         :param _builtins.str username: Optional display username; defaults to empty.
         """
         pulumi.set(__self__, "webhook_url", webhook_url)
+        if channel is None:
+            channel = ''
         if channel is not None:
             pulumi.set(__self__, "channel", channel)
+        if username is None:
+            username = ''
         if username is not None:
             pulumi.set(__self__, "username", username)
 
@@ -1329,8 +1355,12 @@ class NotificationNtfyConfig(dict):
         """
         pulumi.set(__self__, "server_url", server_url)
         pulumi.set(__self__, "topic", topic)
+        if access_token is None:
+            access_token = ''
         if access_token is not None:
             pulumi.set(__self__, "access_token", access_token)
+        if priority is None:
+            priority = 3
         if priority is not None:
             pulumi.set(__self__, "priority", priority)
 
@@ -1405,6 +1435,8 @@ class NotificationPushoverConfig(dict):
         pulumi.set(__self__, "user_key", user_key)
         if expire is not None:
             pulumi.set(__self__, "expire", expire)
+        if priority is None:
+            priority = 0
         if priority is not None:
             pulumi.set(__self__, "priority", priority)
         if retry is not None:
@@ -1539,6 +1571,8 @@ class NotificationSlackConfig(dict):
         :param _builtins.str channel: Optional routing channel; defaults to empty.
         """
         pulumi.set(__self__, "webhook_url", webhook_url)
+        if channel is None:
+            channel = ''
         if channel is not None:
             pulumi.set(__self__, "channel", channel)
 
@@ -1628,6 +1662,8 @@ class NotificationTelegramConfig(dict):
         """
         pulumi.set(__self__, "bot_token", bot_token)
         pulumi.set(__self__, "chat_id", chat_id)
+        if message_thread_id is None:
+            message_thread_id = ''
         if message_thread_id is not None:
             pulumi.set(__self__, "message_thread_id", message_thread_id)
 

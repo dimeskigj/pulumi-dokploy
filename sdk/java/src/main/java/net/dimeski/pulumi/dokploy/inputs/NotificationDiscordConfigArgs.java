@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy.inputs;
 
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
+import com.pulumi.core.internal.Codegen;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
 import java.lang.Boolean;
 import java.lang.String;
@@ -115,6 +116,7 @@ public final class NotificationDiscordConfigArgs extends com.pulumi.resources.Re
         }
 
         public NotificationDiscordConfigArgs build() {
+            $.decoration = Codegen.booleanProp("decoration").output().arg($.decoration).def(false).getNullable();
             if ($.webhookUrl == null) {
                 throw new MissingRequiredPropertyException("NotificationDiscordConfigArgs", "webhookUrl");
             }

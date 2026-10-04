@@ -69,13 +69,21 @@ func (a *NotificationArgs) Annotate(n infer.Annotator) {
 }
 func (e *NotificationEvents) Annotate(n infer.Annotator) {
 	n.Describe(&e.AppDeploy, "Notify on application deployment; defaults to false.")
+	n.SetDefault(&e.AppDeploy, false)
 	n.Describe(&e.AppBuildError, "Notify on application build error; defaults to false.")
+	n.SetDefault(&e.AppBuildError, false)
 	n.Describe(&e.DatabaseBackup, "Notify on database backup; defaults to false.")
+	n.SetDefault(&e.DatabaseBackup, false)
 	n.Describe(&e.VolumeBackup, "Notify on volume backup; defaults to false.")
+	n.SetDefault(&e.VolumeBackup, false)
 	n.Describe(&e.DokployBackup, "Notify on Dokploy backup; defaults to false.")
+	n.SetDefault(&e.DokployBackup, false)
 	n.Describe(&e.DokployRestart, "Notify on Dokploy restart; defaults to false.")
+	n.SetDefault(&e.DokployRestart, false)
 	n.Describe(&e.DockerCleanup, "Notify on Docker cleanup; defaults to false.")
+	n.SetDefault(&e.DockerCleanup, false)
 	n.Describe(&e.ServerThreshold, "Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.")
+	n.SetDefault(&e.ServerThreshold, false)
 }
 func (s *NotificationState) Annotate(n infer.Annotator) {
 	n.Describe(&s.NotificationID, "Stable Dokploy notification ID.")

@@ -124,19 +124,19 @@ export class Notification extends pulumi.CustomResource {
                 throw new Error("Missing required property 'name'");
             }
             resourceInputs["custom"] = args?.custom;
-            resourceInputs["discord"] = args?.discord;
+            resourceInputs["discord"] = args ? pulumi.output(args.discord).apply(v => v === undefined ? undefined : inputs.notificationDiscordConfigArgsProvideDefaults(v)) : undefined;
             resourceInputs["email"] = args?.email;
-            resourceInputs["events"] = args?.events;
-            resourceInputs["gotify"] = args?.gotify;
+            resourceInputs["events"] = args ? pulumi.output(args.events).apply(v => v === undefined ? undefined : inputs.notificationEventsArgsProvideDefaults(v)) : undefined;
+            resourceInputs["gotify"] = args ? pulumi.output(args.gotify).apply(v => v === undefined ? undefined : inputs.notificationGotifyConfigArgsProvideDefaults(v)) : undefined;
             resourceInputs["lark"] = args?.lark;
-            resourceInputs["mattermost"] = args?.mattermost;
+            resourceInputs["mattermost"] = args ? pulumi.output(args.mattermost).apply(v => v === undefined ? undefined : inputs.notificationMattermostConfigArgsProvideDefaults(v)) : undefined;
             resourceInputs["name"] = args?.name;
-            resourceInputs["ntfy"] = args?.ntfy;
-            resourceInputs["pushover"] = args?.pushover;
+            resourceInputs["ntfy"] = args ? pulumi.output(args.ntfy).apply(v => v === undefined ? undefined : inputs.notificationNtfyConfigArgsProvideDefaults(v)) : undefined;
+            resourceInputs["pushover"] = args ? pulumi.output(args.pushover).apply(v => v === undefined ? undefined : inputs.notificationPushoverConfigArgsProvideDefaults(v)) : undefined;
             resourceInputs["resend"] = args?.resend;
-            resourceInputs["slack"] = args?.slack;
+            resourceInputs["slack"] = args ? pulumi.output(args.slack).apply(v => v === undefined ? undefined : inputs.notificationSlackConfigArgsProvideDefaults(v)) : undefined;
             resourceInputs["teams"] = args?.teams;
-            resourceInputs["telegram"] = args?.telegram;
+            resourceInputs["telegram"] = args ? pulumi.output(args.telegram).apply(v => v === undefined ? undefined : inputs.notificationTelegramConfigArgsProvideDefaults(v)) : undefined;
             resourceInputs["channelId"] = undefined /*out*/;
             resourceInputs["notificationId"] = undefined /*out*/;
             resourceInputs["notificationType"] = undefined /*out*/;

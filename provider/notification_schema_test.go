@@ -36,6 +36,47 @@ func TestSchemaNotificationContract(t *testing.T) {
 	require.ElementsMatch(t, []string{"appDeploy", "appBuildError", "databaseBackup", "volumeBackup", "dokployBackup", "dokployRestart", "dockerCleanup", "serverThreshold"}, keysOfNotificationInputs(events.Properties))
 	for _, event := range events.Properties {
 		require.Equal(t, "boolean", event.Type)
+		require.Equal(t, false, event.Default)
+	}
+	fields := map[string][]string{
+		"slack":      {"webhookUrl", "channel"},
+		"telegram":   {"botToken", "chatId", "messageThreadId"},
+		"discord":    {"webhookUrl", "decoration"},
+		"email":      {"smtpServer", "smtpPort", "username", "password", "fromAddress", "toAddresses"},
+		"resend":     {"apiKey", "fromAddress", "toAddresses"},
+		"gotify":     {"serverUrl", "appToken", "priority", "decoration"},
+		"ntfy":       {"serverUrl", "topic", "accessToken", "priority"},
+		"mattermost": {"webhookUrl", "channel", "username"},
+		"custom":     {"endpoint", "headers"},
+		"lark":       {"webhookUrl"}, "teams": {"webhookUrl"},
+		"pushover": {"userKey", "apiToken", "priority", "retry", "expire"},
+	}
+	for channel, want := range fields {
+		typeSpec := spec.Types[trimTypeRef(r.InputProperties[channel].Ref)]
+		require.ElementsMatch(t, want, keysOfNotificationInputs(typeSpec.Properties), channel)
+	}
+	defaults := map[string]map[string]any{
+		"slack": {"channel": ""}, "telegram": {"messageThreadId": ""},
+		"discord":    {"decoration": false},
+		"gotify":     {"priority": float64(5), "decoration": false},
+		"ntfy":       {"accessToken": "", "priority": float64(3)},
+		"mattermost": {"channel": "", "username": ""},
+		"pushover":   {"priority": float64(0)},
+	}
+	require.Nil(t, spec.Types[trimTypeRef(r.InputProperties["custom"].Ref)].Properties["headers"].Default,
+		"Pulumi schema does not support map constant defaults; Check supplies an empty map")
+	require.Contains(t, spec.Types[trimTypeRef(r.InputProperties["custom"].Ref)].Properties["headers"].Description, "empty map")
+	for channel := range fields {
+		want := defaults[channel]
+		props := spec.Types[trimTypeRef(r.InputProperties[channel].Ref)].Properties
+		for field, value := range want {
+			require.Equal(t, value, props[field].Default, channel+"."+field)
+		}
+		for field, prop := range props {
+			if _, ok := want[field]; !ok {
+				require.Nil(t, prop.Default, channel+"."+field)
+			}
+		}
 	}
 	for channel, fields := range map[string][]string{
 		"slack": {"webhookUrl"}, "telegram": {"botToken"}, "discord": {"webhookUrl"},

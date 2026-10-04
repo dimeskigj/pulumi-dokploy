@@ -59,6 +59,8 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationNtfyConfigArgs()
         {
+            AccessToken = "";
+            Priority = 3;
         }
         public static new NotificationNtfyConfigArgs Empty => new NotificationNtfyConfigArgs();
     }

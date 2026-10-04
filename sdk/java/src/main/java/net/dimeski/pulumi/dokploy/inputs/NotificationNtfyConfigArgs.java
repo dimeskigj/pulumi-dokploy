@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy.inputs;
 
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
+import com.pulumi.core.internal.Codegen;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
 import java.lang.Integer;
 import java.lang.String;
@@ -189,6 +190,8 @@ public final class NotificationNtfyConfigArgs extends com.pulumi.resources.Resou
         }
 
         public NotificationNtfyConfigArgs build() {
+            $.accessToken = Codegen.stringProp("accessToken").secret().arg($.accessToken).def("").getNullable();
+            $.priority = Codegen.integerProp("priority").output().arg($.priority).def(3).getNullable();
             if ($.serverUrl == null) {
                 throw new MissingRequiredPropertyException("NotificationNtfyConfigArgs", "serverUrl");
             }

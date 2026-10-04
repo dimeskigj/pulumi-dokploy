@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy.inputs;
 
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
+import com.pulumi.core.internal.Codegen;
 import java.lang.Boolean;
 import java.util.Objects;
 import java.util.Optional;
@@ -335,6 +336,14 @@ public final class NotificationEventsArgs extends com.pulumi.resources.ResourceA
         }
 
         public NotificationEventsArgs build() {
+            $.appBuildError = Codegen.booleanProp("appBuildError").output().arg($.appBuildError).def(false).getNullable();
+            $.appDeploy = Codegen.booleanProp("appDeploy").output().arg($.appDeploy).def(false).getNullable();
+            $.databaseBackup = Codegen.booleanProp("databaseBackup").output().arg($.databaseBackup).def(false).getNullable();
+            $.dockerCleanup = Codegen.booleanProp("dockerCleanup").output().arg($.dockerCleanup).def(false).getNullable();
+            $.dokployBackup = Codegen.booleanProp("dokployBackup").output().arg($.dokployBackup).def(false).getNullable();
+            $.dokployRestart = Codegen.booleanProp("dokployRestart").output().arg($.dokployRestart).def(false).getNullable();
+            $.serverThreshold = Codegen.booleanProp("serverThreshold").output().arg($.serverThreshold).def(false).getNullable();
+            $.volumeBackup = Codegen.booleanProp("volumeBackup").output().arg($.volumeBackup).def(false).getNullable();
             return $;
         }
     }
