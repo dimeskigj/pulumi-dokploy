@@ -44,13 +44,13 @@ redacted in Pulumi diagnostics.
 
 ## Resources
 
-The provider exposes eighteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+The provider exposes twenty resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
 `dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:SSHKey`,
-`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`, and
-`dokploy:index:Mount`.
+`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
+`dokploy:index:Mount`, `dokploy:index:Schedule`, and `dokploy:index:Server`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -102,7 +102,10 @@ pulumi import dokploy:index:Registry registry <registry-id>
 pulumi import dokploy:index:Tag tag <tag-id>
 pulumi import dokploy:index:ProjectTag projectTag <project-id>/<tag-id>
 pulumi import dokploy:index:Mount mount <mount-id>
+pulumi import dokploy:index:Server server <server-id>
 ```
+
+Server import uses the Dokploy server record ID; it does not configure or bootstrap the remote host.
 
 ## Development
 

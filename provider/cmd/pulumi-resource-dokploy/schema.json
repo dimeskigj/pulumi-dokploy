@@ -1,7 +1,7 @@
 {
   "name": "dokploy",
   "displayName": "Dokploy",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, servers, backup destinations, database backups, and volume backups.",
   "keywords": [
     "category/infrastructure",
     "kind/native",
@@ -2230,6 +2230,110 @@
         "cronExpression",
         "command",
         "scheduleType"
+      ]
+    },
+    "dokploy:index:Server": {
+      "description": "A remote server record in Dokploy; does not bootstrap or destroy the remote machine.",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Optional description; omission clears the description."
+        },
+        "enableDockerCleanup": {
+          "type": "boolean",
+          "description": "Enable Dokploy's recurring Docker cleanup schedule; defaults to false.",
+          "default": false
+        },
+        "ipAddress": {
+          "type": "string",
+          "description": "Hostname or IP address of the remote server."
+        },
+        "name": {
+          "type": "string",
+          "description": "Server name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "Owning Dokploy organization ID."
+        },
+        "port": {
+          "type": "integer",
+          "description": "SSH port (1–65535); defaults to 22.",
+          "default": 22
+        },
+        "serverId": {
+          "type": "string",
+          "description": "Stable Dokploy server ID."
+        },
+        "serverType": {
+          "type": "string",
+          "description": "Server role: deploy or build; defaults to deploy.",
+          "default": "deploy"
+        },
+        "sshKeyId": {
+          "type": "string",
+          "description": "Managed SSH key ID; omission clears the key."
+        },
+        "status": {
+          "type": "string",
+          "description": "Dokploy server status (not a readiness guarantee)."
+        },
+        "username": {
+          "type": "string",
+          "description": "SSH username; defaults to root.",
+          "default": "root"
+        }
+      },
+      "required": [
+        "name",
+        "ipAddress",
+        "port",
+        "username",
+        "serverType",
+        "enableDockerCleanup",
+        "serverId"
+      ],
+      "inputProperties": {
+        "description": {
+          "type": "string",
+          "description": "Optional description; omission clears the description."
+        },
+        "enableDockerCleanup": {
+          "type": "boolean",
+          "description": "Enable Dokploy's recurring Docker cleanup schedule; defaults to false.",
+          "default": false
+        },
+        "ipAddress": {
+          "type": "string",
+          "description": "Hostname or IP address of the remote server."
+        },
+        "name": {
+          "type": "string",
+          "description": "Server name."
+        },
+        "port": {
+          "type": "integer",
+          "description": "SSH port (1–65535); defaults to 22.",
+          "default": 22
+        },
+        "serverType": {
+          "type": "string",
+          "description": "Server role: deploy or build; defaults to deploy.",
+          "default": "deploy"
+        },
+        "sshKeyId": {
+          "type": "string",
+          "description": "Managed SSH key ID; omission clears the key."
+        },
+        "username": {
+          "type": "string",
+          "description": "SSH username; defaults to root.",
+          "default": "root"
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "ipAddress"
       ]
     },
     "dokploy:index:Tag": {

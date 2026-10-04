@@ -19,6 +19,7 @@ var (
 	_ infer.ExplicitDependencies[TagArgs, TagState]                 = Tag{}
 	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]   = ProjectTag{}
 	_ infer.ExplicitDependencies[MountArgs, MountState]             = Mount{}
+	_ infer.ExplicitDependencies[ServerArgs, ServerState]           = Server{}
 )
 
 func TestProviderSchema(t *testing.T) {
