@@ -9986,6 +9986,3237 @@
         ]
       }
     },
+    "/notification.all": {
+      "get": {
+        "operationId": "notification-all",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationList"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createCustom": {
+      "post": {
+        "operationId": "notification-createCustom",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "endpoint": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "headers": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "endpoint"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createDiscord": {
+      "post": {
+        "operationId": "notification-createDiscord",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "decoration": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "webhookUrl",
+                  "decoration"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createEmail": {
+      "post": {
+        "operationId": "notification-createEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "fromAddress": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "smtpPort": {
+                    "minimum": 1,
+                    "type": "number"
+                  },
+                  "smtpServer": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "toAddresses": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "username": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "smtpServer",
+                  "smtpPort",
+                  "username",
+                  "password",
+                  "fromAddress",
+                  "toAddresses"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createGotify": {
+      "post": {
+        "operationId": "notification-createGotify",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "appToken": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "decoration": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "minimum": 1,
+                    "type": "number"
+                  },
+                  "serverUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverUrl",
+                  "appToken",
+                  "priority",
+                  "decoration"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createLark": {
+      "post": {
+        "operationId": "notification-createLark",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "webhookUrl"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createMattermost": {
+      "post": {
+        "operationId": "notification-createMattermost",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "format": "uri",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "webhookUrl"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createNtfy": {
+      "post": {
+        "operationId": "notification-createNtfy",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "accessToken": {
+                    "type": "string"
+                  },
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "minimum": 1,
+                    "type": "number"
+                  },
+                  "serverUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "topic": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverUrl",
+                  "topic",
+                  "accessToken",
+                  "priority"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createPushover": {
+      "post": {
+        "operationId": "notification-createPushover",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiToken": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "expire": {
+                    "anyOf": [
+                      {
+                        "maximum": 10800,
+                        "minimum": 1,
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "default": 0,
+                    "maximum": 2,
+                    "minimum": -2,
+                    "type": "number"
+                  },
+                  "retry": {
+                    "anyOf": [
+                      {
+                        "minimum": 30,
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "userKey": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "userKey",
+                  "apiToken"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createResend": {
+      "post": {
+        "operationId": "notification-createResend",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiKey": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "fromAddress": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "toAddresses": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "apiKey",
+                  "fromAddress",
+                  "toAddresses"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createSlack": {
+      "post": {
+        "operationId": "notification-createSlack",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "webhookUrl",
+                  "channel"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createTeams": {
+      "post": {
+        "operationId": "notification-createTeams",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "webhookUrl"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.createTelegram": {
+      "post": {
+        "operationId": "notification-createTelegram",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "botToken": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "chatId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "messageThreadId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "appBuildError",
+                  "databaseBackup",
+                  "dokployBackup",
+                  "volumeBackup",
+                  "dokployRestart",
+                  "name",
+                  "appDeploy",
+                  "dockerCleanup",
+                  "serverThreshold",
+                  "botToken",
+                  "chatId",
+                  "messageThreadId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.one": {
+      "get": {
+        "operationId": "notification-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "notificationId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notification"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.remove": {
+      "post": {
+        "operationId": "notification-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "notificationId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateCustom": {
+      "post": {
+        "operationId": "notification-updateCustom",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "customId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "endpoint": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "headers": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "customId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateDiscord": {
+      "post": {
+        "operationId": "notification-updateDiscord",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "decoration": {
+                    "type": "boolean"
+                  },
+                  "discordId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "discordId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateEmail": {
+      "post": {
+        "operationId": "notification-updateEmail",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "emailId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "fromAddress": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "smtpPort": {
+                    "minimum": 1,
+                    "type": "number"
+                  },
+                  "smtpServer": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "toAddresses": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "username": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "emailId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateGotify": {
+      "post": {
+        "operationId": "notification-updateGotify",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "appToken": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "decoration": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "gotifyId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "minimum": 1,
+                    "type": "number"
+                  },
+                  "serverUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "gotifyId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateLark": {
+      "post": {
+        "operationId": "notification-updateLark",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "larkId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "larkId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateMattermost": {
+      "post": {
+        "operationId": "notification-updateMattermost",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "mattermostId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "format": "uri",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "mattermostId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateNtfy": {
+      "post": {
+        "operationId": "notification-updateNtfy",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "accessToken": {
+                    "type": "string"
+                  },
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "ntfyId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "minimum": 1,
+                    "type": "number"
+                  },
+                  "serverUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "topic": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "ntfyId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updatePushover": {
+      "post": {
+        "operationId": "notification-updatePushover",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiToken": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "expire": {
+                    "anyOf": [
+                      {
+                        "maximum": 10800,
+                        "minimum": 1,
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "maximum": 2,
+                    "minimum": -2,
+                    "type": "number"
+                  },
+                  "pushoverId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "retry": {
+                    "anyOf": [
+                      {
+                        "minimum": 30,
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "userKey": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "pushoverId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateResend": {
+      "post": {
+        "operationId": "notification-updateResend",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiKey": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "fromAddress": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "resendId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "toAddresses": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "resendId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateSlack": {
+      "post": {
+        "operationId": "notification-updateSlack",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "slackId": {
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "slackId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateTeams": {
+      "post": {
+        "operationId": "notification-updateTeams",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "teamsId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  },
+                  "webhookUrl": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "teamsId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
+    "/notification.updateTelegram": {
+      "post": {
+        "operationId": "notification-updateTelegram",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "appBuildError": {
+                    "type": "boolean"
+                  },
+                  "appDeploy": {
+                    "type": "boolean"
+                  },
+                  "botToken": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "chatId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "databaseBackup": {
+                    "type": "boolean"
+                  },
+                  "dockerCleanup": {
+                    "type": "boolean"
+                  },
+                  "dokployBackup": {
+                    "type": "boolean"
+                  },
+                  "dokployRestart": {
+                    "type": "boolean"
+                  },
+                  "messageThreadId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "notificationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
+                  "telegramId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volumeBackup": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "notificationId",
+                  "telegramId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "notification"
+        ]
+      }
+    },
     "/organization.active": {
       "get": {
         "operationId": "organization-active",
@@ -15971,6 +19202,616 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "Notification": {
+        "additionalProperties": false,
+        "properties": {
+          "appBuildError": {
+            "type": "boolean"
+          },
+          "appDeploy": {
+            "type": "boolean"
+          },
+          "custom": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationCustom"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "databaseBackup": {
+            "type": "boolean"
+          },
+          "discord": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationDiscord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discordId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dockerCleanup": {
+            "type": "boolean"
+          },
+          "dokployBackup": {
+            "type": "boolean"
+          },
+          "dokployRestart": {
+            "type": "boolean"
+          },
+          "email": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationEmail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "emailId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gotify": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationGotify"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "gotifyId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lark": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationLark"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "larkId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mattermost": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationMattermost"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mattermostId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "notificationId": {
+            "type": "string"
+          },
+          "ntfy": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationNtfy"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ntfyId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "pushover": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationPushover"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pushoverId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resend": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationResend"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resendId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serverThreshold": {
+            "type": "boolean"
+          },
+          "slack": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationSlack"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slackId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "teams": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationTeams"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "teamsId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "telegram": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotificationTelegram"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "telegramId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "volumeBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "notificationId",
+          "organizationId"
+        ],
+        "type": "object"
+      },
+      "NotificationCustom": {
+        "additionalProperties": false,
+        "properties": {
+          "customId": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "customId"
+        ],
+        "type": "object"
+      },
+      "NotificationDiscord": {
+        "additionalProperties": false,
+        "properties": {
+          "decoration": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "discordId": {
+            "type": "string"
+          },
+          "webhookUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "discordId"
+        ],
+        "type": "object"
+      },
+      "NotificationEmail": {
+        "additionalProperties": false,
+        "properties": {
+          "emailId": {
+            "type": "string"
+          },
+          "fromAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "password": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "smtpPort": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "smtpServer": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toAddresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "username": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "emailId"
+        ],
+        "type": "object"
+      },
+      "NotificationGotify": {
+        "additionalProperties": false,
+        "properties": {
+          "appToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "decoration": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "gotifyId": {
+            "type": "string"
+          },
+          "priority": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "serverUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "gotifyId"
+        ],
+        "type": "object"
+      },
+      "NotificationLark": {
+        "additionalProperties": false,
+        "properties": {
+          "larkId": {
+            "type": "string"
+          },
+          "webhookUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "larkId"
+        ],
+        "type": "object"
+      },
+      "NotificationList": {
+        "items": {
+          "$ref": "#/components/schemas/Notification"
+        },
+        "type": "array"
+      },
+      "NotificationMattermost": {
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mattermostId": {
+            "type": "string"
+          },
+          "username": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhookUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "mattermostId"
+        ],
+        "type": "object"
+      },
+      "NotificationNtfy": {
+        "additionalProperties": false,
+        "properties": {
+          "accessToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ntfyId": {
+            "type": "string"
+          },
+          "priority": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "serverUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "topic": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ntfyId"
+        ],
+        "type": "object"
+      },
+      "NotificationPushover": {
+        "additionalProperties": false,
+        "properties": {
+          "apiToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expire": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "priority": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "pushoverId": {
+            "type": "string"
+          },
+          "retry": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "userKey": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "pushoverId"
+        ],
+        "type": "object"
+      },
+      "NotificationResend": {
+        "additionalProperties": false,
+        "properties": {
+          "apiKey": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fromAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resendId": {
+            "type": "string"
+          },
+          "toAddresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "resendId"
+        ],
+        "type": "object"
+      },
+      "NotificationSlack": {
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slackId": {
+            "type": "string"
+          },
+          "webhookUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "slackId"
+        ],
+        "type": "object"
+      },
+      "NotificationTeams": {
+        "additionalProperties": false,
+        "properties": {
+          "teamsId": {
+            "type": "string"
+          },
+          "webhookUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "teamsId"
+        ],
+        "type": "object"
+      },
+      "NotificationTelegram": {
+        "additionalProperties": false,
+        "properties": {
+          "botToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "chatId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "messageThreadId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "telegramId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "telegramId"
+        ],
         "type": "object"
       },
       "Organization": {

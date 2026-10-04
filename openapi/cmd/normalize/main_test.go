@@ -226,6 +226,52 @@ func TestRealContractIncludesScheduleCRUD(t *testing.T) {
 	require.NotContains(t, d.Paths, "/schedule.list")
 	require.NotContains(t, d.Paths, "/schedule.runManually")
 }
+
+func TestRealContractIncludesNotificationCRUD(t *testing.T) {
+	doc := normalizeRealContract(t)
+	channels := []string{"Slack", "Telegram", "Discord", "Email", "Resend", "Gotify", "Ntfy", "Mattermost", "Custom", "Lark", "Teams", "Pushover"}
+	want := []string{"notification.one", "notification.all", "notification.remove"}
+	for _, channel := range channels {
+		want = append(want, "notification.create"+channel, "notification.update"+channel)
+	}
+	ids := normalizedOperationIDs(t, doc)
+	for _, id := range want {
+		require.Contains(t, ids, strings.Replace(id, ".", "-", 1))
+	}
+	for _, channel := range channels {
+		field := strings.ToLower(channel[:1]) + channel[1:] + "Id"
+		require.Contains(t, operationRequestSchema(t, doc, "notification.update"+channel)["required"], field, "update%s must require its relation ID", channel)
+	}
+	require.Len(t, want, 27)
+	var notificationIDs []string
+	for _, id := range ids {
+		if strings.HasPrefix(id, "notification-") {
+			notificationIDs = append(notificationIDs, id)
+		}
+	}
+	require.Len(t, notificationIDs, 27)
+	for _, id := range want {
+		path, method := "/"+id, "post"
+		if id == "notification.one" || id == "notification.all" {
+			method = "get"
+		}
+		require.NotNil(t, doc.Paths[path].Methods[method], "%s must use %s", id, method)
+	}
+	require.Contains(t, doc.Paths, "/notification.one")
+	require.NotNil(t, doc.Paths["/notification.one"].Get)
+	require.Equal(t, "#/components/schemas/Notification", responseSchema(t, doc, "/notification.one", "get", "200").Ref)
+	require.Equal(t, "#/components/schemas/NotificationList", responseSchema(t, doc, "/notification.all", "get", "200").Ref)
+	require.NotContains(t, doc.Paths, "/notification.testSlackConnection")
+	require.Equal(t, []any{"notificationId"}, operationRequestSchema(t, doc, "notification.remove")["required"])
+	for _, id := range want {
+		if strings.HasPrefix(id, "notification.create") || strings.HasPrefix(id, "notification.update") || id == "notification.remove" {
+			ack := doc.Paths["/"+id].Post.Raw["responses"].(map[string]any)["200"].(map[string]any)
+			require.NotContains(t, ack, "content", "%s must be bodyless", id)
+		}
+	}
+	require.Contains(t, ids, "organization-active")
+	require.Contains(t, ids, "schedule-one")
+}
 func TestNormalizeRejectsMissingOperation(t *testing.T) {
 	_, err := normalize(contractWithout("/domain.one"), []string{"domain.one"}, corrections())
 	require.ErrorContains(t, err, "allowed operation domain.one is absent")
