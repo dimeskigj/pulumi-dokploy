@@ -99,6 +99,10 @@ mounts.create
 mounts.one
 mounts.update
 mounts.remove
+port.create
+port.one
+port.update
+port.delete
 schedule.create
 schedule.update
 schedule.delete

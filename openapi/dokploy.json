@@ -10061,6 +10061,399 @@
         ]
       }
     },
+    "/port.create": {
+      "post": {
+        "operationId": "port-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "applicationId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "protocol": {
+                    "default": "tcp",
+                    "enum": [
+                      "tcp",
+                      "udp"
+                    ],
+                    "type": "string"
+                  },
+                  "publishMode": {
+                    "default": "ingress",
+                    "enum": [
+                      "ingress",
+                      "host"
+                    ],
+                    "type": "string"
+                  },
+                  "publishedPort": {
+                    "type": "number"
+                  },
+                  "targetPort": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "publishedPort",
+                  "publishMode",
+                  "targetPort",
+                  "protocol",
+                  "applicationId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Port"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "port"
+        ]
+      }
+    },
+    "/port.delete": {
+      "post": {
+        "operationId": "port-delete",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "portId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "portId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Port"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "port"
+        ]
+      }
+    },
+    "/port.one": {
+      "get": {
+        "operationId": "port-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "portId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Port"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "port"
+        ]
+      }
+    },
+    "/port.update": {
+      "post": {
+        "operationId": "port-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "portId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "protocol": {
+                    "default": "tcp",
+                    "enum": [
+                      "tcp",
+                      "udp"
+                    ],
+                    "type": "string"
+                  },
+                  "publishMode": {
+                    "default": "ingress",
+                    "enum": [
+                      "ingress",
+                      "host"
+                    ],
+                    "type": "string"
+                  },
+                  "publishedPort": {
+                    "type": "number"
+                  },
+                  "targetPort": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "portId",
+                  "publishedPort",
+                  "publishMode",
+                  "targetPort",
+                  "protocol"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Port"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "port"
+        ]
+      }
+    },
     "/postgres.create": {
       "post": {
         "operationId": "postgres-create",
@@ -16090,6 +16483,33 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "Port": {
+        "additionalProperties": true,
+        "properties": {
+          "applicationId": {
+            "type": "string"
+          },
+          "portId": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "publishMode": {
+            "type": "string"
+          },
+          "publishedPort": {
+            "type": "integer"
+          },
+          "targetPort": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "portId"
+        ],
         "type": "object"
       },
       "Postgres": {

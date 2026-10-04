@@ -226,6 +226,48 @@ func TestRealContractIncludesScheduleCRUD(t *testing.T) {
 	require.NotContains(t, d.Paths, "/schedule.list")
 	require.NotContains(t, d.Paths, "/schedule.runManually")
 }
+
+func TestPortOpenAPIContract(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, operation := range []struct{ path, method string }{
+		{"/port.one", "get"}, {"/port.create", "post"}, {"/port.update", "post"}, {"/port.delete", "post"},
+	} {
+		p, ok := d.Paths[operation.path]
+		require.True(t, ok, "missing path %s", operation.path)
+		require.NotNil(t, p.Methods[operation.method], "missing %s method", operation.path)
+		require.Len(t, p.Methods, 1, "unexpected methods on %s", operation.path)
+		require.Equal(t, "#/components/schemas/Port", responseSchema(t, d, operation.path, operation.method, "200").Ref)
+	}
+	s := componentSchema(t, d, "Port")
+	require.Equal(t, []any{"portId"}, s["required"])
+	require.Equal(t, true, s["additionalProperties"])
+	properties := s["properties"].(map[string]any)
+	require.Equal(t, "string", properties["portId"].(map[string]any)["type"])
+	for _, field := range []string{"applicationId", "protocol", "publishMode"} {
+		require.Equal(t, "string", properties[field].(map[string]any)["type"])
+	}
+	for _, field := range []string{"publishedPort", "targetPort"} {
+		require.Equal(t, "integer", properties[field].(map[string]any)["type"])
+	}
+	create := operationRequestSchema(t, d, "port.create")
+	require.ElementsMatch(t, []any{"applicationId", "publishedPort", "targetPort", "protocol", "publishMode"}, create["required"])
+	update := operationRequestSchema(t, d, "port.update")
+	require.NotContains(t, update["properties"], "applicationId")
+	require.Contains(t, update["properties"], "portId")
+	require.ElementsMatch(t, []any{"portId", "publishedPort", "targetPort", "protocol", "publishMode"}, update["required"])
+
+	ids := normalizedOperationIDs(t, d)
+	operations, err := os.ReadFile(repositoryOpenAPIPath(t, "operations.txt"))
+	require.NoError(t, err)
+	var expected []string
+	for _, operation := range splitLines(string(operations)) {
+		if operation != "" {
+			expected = append(expected, strings.Replace(operation, ".", "-", 1))
+		}
+	}
+	require.ElementsMatch(t, expected, ids, "normalized operation set must exactly match operations.txt")
+}
+
 func TestNormalizeRejectsMissingOperation(t *testing.T) {
 	_, err := normalize(contractWithout("/domain.one"), []string{"domain.one"}, corrections())
 	require.ErrorContains(t, err, "allowed operation domain.one is absent")

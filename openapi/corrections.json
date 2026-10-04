@@ -100,6 +100,10 @@
     "mounts.one": "Mount",
     "mounts.update": "Mount",
     "mounts.remove": "",
+    "port.create": "Port",
+    "port.one": "Port",
+    "port.update": "Port",
+    "port.delete": "Port",
     "schedule.create": "",
     "schedule.update": "",
     "schedule.delete": "",
@@ -132,6 +136,7 @@
     "Tag": {"type":"object","properties":{"tagId":{"type":"string"},"name":{"type":"string"},"color":{"type":["string","null"]}},"required":["tagId"],"additionalProperties":true},
     "Mount": {"type":"object","properties":{"mountId":{"type":"string"},"type":{"type":"string"},"hostPath":{"type":["string","null"]},"volumeName":{"type":["string","null"]},"filePath":{"type":["string","null"]},"content":{"type":["string","null"]},"mountPath":{"type":"string"},"serviceType":{"type":"string"},"applicationId":{"type":["string","null"]},"composeId":{"type":["string","null"]},"postgresId":{"type":["string","null"]},"mysqlId":{"type":["string","null"]},"mariadbId":{"type":["string","null"]},"redisId":{"type":["string","null"]}},"required":["mountId"],"additionalProperties":true},
     "Schedule": {"type":"object","properties":{"scheduleId":{"type":"string"},"name":{"type":"string"},"description":{"type":["string","null"]},"cronExpression":{"type":"string"},"appName":{"type":"string"},"serviceName":{"type":["string","null"]},"shellType":{"type":"string","enum":["bash","sh"]},"scheduleType":{"type":"string","enum":["application","compose","server","dokploy-server"]},"command":{"type":"string"},"script":{"type":["string","null"]},"applicationId":{"type":["string","null"]},"composeId":{"type":["string","null"]},"serverId":{"type":["string","null"]},"organizationId":{"type":["string","null"]},"enabled":{"type":"boolean"},"timezone":{"type":["string","null"]}},"required":["scheduleId"],"additionalProperties":true},
-    "Server": {"type":"object","properties":{"serverId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"ipAddress":{"type":"string"},"port":{"type":"integer"},"username":{"type":"string"},"organizationId":{"type":"string"},"sshKeyId":{"type":"string"},"serverType":{"type":"string"},"serverStatus":{"type":"string"}},"additionalProperties":true}
+    "Server": {"type":"object","properties":{"serverId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"ipAddress":{"type":"string"},"port":{"type":"integer"},"username":{"type":"string"},"organizationId":{"type":"string"},"sshKeyId":{"type":"string"},"serverType":{"type":"string"},"serverStatus":{"type":"string"}},"additionalProperties":true},
+    "Port": {"type":"object","properties":{"portId":{"type":"string"},"applicationId":{"type":"string"},"publishedPort":{"type":"integer"},"targetPort":{"type":"integer"},"protocol":{"type":"string"},"publishMode":{"type":"string"}},"required":["portId"],"additionalProperties":true}
   }
 }
