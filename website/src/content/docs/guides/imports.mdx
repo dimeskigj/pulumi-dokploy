@@ -20,7 +20,10 @@ pulumi import dokploy:index:SSHKey key <ssh-key-id>
 pulumi import dokploy:index:Registry registry <registry-id>
 pulumi import dokploy:index:Tag tag <tag-id>
 pulumi import dokploy:index:Mount mount <mount-id>
+pulumi import dokploy:index:Server remoteServer <server-id>
 ```
+
+The Server import ID is its Dokploy server ID. See the [Servers guide](../servers/) for its configuration-only lifecycle and safety limits.
 
 `ProjectTag` is an association, so its import ID is `<project-id>/<tag-id>`:
 

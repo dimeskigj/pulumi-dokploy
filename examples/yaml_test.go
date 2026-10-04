@@ -86,8 +86,8 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 24 {
-		t.Fatalf("canonical YAML has %d managed resources, want 24", len(resources))
+	if len(resources) != 25 {
+		t.Fatalf("canonical YAML has %d managed resources, want 25", len(resources))
 	}
 	want := map[string]int{
 		"dokploy:index:Project":      1,
@@ -109,6 +109,7 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		"dokploy:index:Tag":          1,
 		"dokploy:index:ProjectTag":   1,
 		"dokploy:index:Mount":        3,
+		"dokploy:index:Server":       1,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
@@ -132,6 +133,38 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		}
 		if _, ok := schemaResources(t)[typeName]; !ok {
 			t.Errorf("%s is not present in generated provider schema", typeName)
+		}
+	}
+}
+
+func TestCanonicalServerExample(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	server := resources["remoteServer"].(map[string]any)
+	if server["type"] != "dokploy:index:Server" {
+		t.Fatalf("remoteServer type = %v", server["type"])
+	}
+	properties := server["properties"].(map[string]any)
+	for key, want := range map[string]any{"ipAddress": "192.0.2.10", "sshKeyId": "${sshKey.sshKeyId}", "serverType": "deploy", "enableDockerCleanup": false} {
+		if properties[key] != want {
+			t.Errorf("remoteServer %s = %v, want %v", key, properties[key], want)
+		}
+	}
+	outputs := document["outputs"].(map[string]any)
+	if outputs["remoteServerId"] != "${remoteServer.serverId}" {
+		t.Errorf("remoteServerId = %v", outputs["remoteServerId"])
+	}
+	for name, raw := range resources {
+		if name == "remoteServer" {
+			continue
+		}
+		resource, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		props, _ := resource["properties"].(map[string]any)
+		if props != nil && props["serverId"] == "${remoteServer.serverId}" {
+			t.Errorf("workload %q targets unready remoteServer", name)
 		}
 	}
 }

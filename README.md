@@ -63,7 +63,7 @@ integration/project/owner/namespace/repository/branch details. The referenced Gi
 by this provider; SSH keys can be managed using the `SSHKey` resource.
 
 Source type changes replace that resource rather than attempting an
-in-place conversion. Create and update operations wait for Dokploy deployment completion;
+in-place conversion. Workload deployment operations wait for Dokploy deployment completion;
 deployment errors preserve partial state so the failed resource can be inspected and repaired.
 Compose volumes are preserved on destroy by default. Set `deleteVolumesOnDestroy` only when
 those volumes should be deleted.
@@ -106,6 +106,10 @@ pulumi import dokploy:index:Server server <server-id>
 ```
 
 Server import uses the Dokploy server record ID; it does not configure or bootstrap the remote host.
+Server status is descriptive rather than a readiness guarantee. Deleting a Server removes its Dokploy
+record and associated deployment history/logs, not the remote VM or installed software; Dokploy refuses
+removal while workloads remain associated. See the [Servers guide](https://dimeskigj.github.io/pulumi-dokploy/guides/servers/)
+for safe registration, cleanup opt-in, and workload-placement guidance.
 
 ## Development
 

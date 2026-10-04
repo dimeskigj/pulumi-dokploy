@@ -1,0 +1,45 @@
+---
+title: Dokploy servers
+description: Register remote servers safely without implying bootstrap or readiness.
+---
+
+`Server` manages Dokploy's record for a remote deploy or build host. It does not bootstrap/install software, connect to or check SSH, or guarantee that the host is ready. Configure its `ipAddress`, SSH `port` (default `22`), `username` (default `root`), `serverType` (default `deploy`) and optional managed `sshKeyId`. The provider never receives private-key material through this resource.
+
+```yaml
+resources:
+  remoteServer:
+    type: dokploy:index:Server
+    properties:
+      name: example-remote
+      ipAddress: 192.0.2.10 # documentation-only reserved address; replace before use
+      sshKeyId: ${sshKey.sshKeyId}
+      serverType: deploy
+      enableDockerCleanup: false
+```
+
+The example only registers configuration. Replace the reserved address and prepare a separate, dedicated host yourself (including Dokploy-compatible software and SSH access) before workload placement. Only a separately prepared host should be wired into a workload, for example:
+
+```ts
+const app = new dokploy.Application("app", {
+  name: "app",
+  environmentId: environment.environmentId,
+  serverId: remoteServer.serverId,
+  // Configure a supported source separately.
+});
+```
+
+The returned `server.serverId` is a normal dependency reference; a status output is descriptive, not a readiness signal. Do not place existing workloads on a newly registered host just because the resource exists.
+
+`enableDockerCleanup` defaults to `false`. Setting it to `true` authorizes Dokploy's recurring Docker cleanup schedule on that host; the provider does not execute cleanup commands itself. Enable it only when that recurring effect is intended.
+
+All managed server configuration updates in place. Omitting `description` or `sshKeyId` clears it. Updates to inactive servers can fail even if the record still exists; that remains an update failure, not a successful delete or automatic recreation. If Dokploy acknowledges a write but readback fails, Pulumi retains known server identity and safe partial state for recovery.
+
+Removal deletes the Dokploy record and associated deployment history/logs according to Dokploy behavior. It does not destroy the VM or uninstall software. Dokploy refuses deletion while workloads are associated; remove or reassign those workload references first. Inspect the resulting state before retrying an inactive-server update or partial operation.
+
+Import an existing record by Dokploy server ID:
+
+```bash
+pulumi import dokploy:index:Server remoteServer <server-id>
+```
+
+See the [Server reference](../../reference/server/) for all inputs and outputs.
