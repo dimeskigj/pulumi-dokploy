@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy.inputs;
 
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
+import com.pulumi.core.internal.Codegen;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
 import java.lang.Integer;
 import java.lang.String;
@@ -229,6 +230,7 @@ public final class NotificationPushoverConfigArgs extends com.pulumi.resources.R
             if ($.apiToken == null) {
                 throw new MissingRequiredPropertyException("NotificationPushoverConfigArgs", "apiToken");
             }
+            $.priority = Codegen.integerProp("priority").output().arg($.priority).def(0).getNullable();
             if ($.userKey == null) {
                 throw new MissingRequiredPropertyException("NotificationPushoverConfigArgs", "userKey");
             }

@@ -65,6 +65,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 
         public NotificationPushoverConfigArgs()
         {
+            Priority = 0;
         }
         public static new NotificationPushoverConfigArgs Empty => new NotificationPushoverConfigArgs();
     }

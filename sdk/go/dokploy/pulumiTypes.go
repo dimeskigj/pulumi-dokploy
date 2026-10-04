@@ -1826,6 +1826,19 @@ type NotificationDiscordConfig struct {
 	WebhookUrl string `pulumi:"webhookUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationDiscordConfig
+func (val *NotificationDiscordConfig) Defaults() *NotificationDiscordConfig {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Decoration == nil {
+		decoration_ := false
+		tmp.Decoration = &decoration_
+	}
+	return &tmp
+}
+
 // NotificationDiscordConfigInput is an input type that accepts NotificationDiscordConfigArgs and NotificationDiscordConfigOutput values.
 // You can construct a concrete instance of `NotificationDiscordConfigInput` via:
 //
@@ -1844,6 +1857,17 @@ type NotificationDiscordConfigArgs struct {
 	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationDiscordConfigArgs
+func (val *NotificationDiscordConfigArgs) Defaults() *NotificationDiscordConfigArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Decoration == nil {
+		tmp.Decoration = pulumi.BoolPtr(false)
+	}
+	return &tmp
+}
 func (NotificationDiscordConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationDiscordConfig)(nil)).Elem()
 }
@@ -2226,6 +2250,47 @@ type NotificationEvents struct {
 	VolumeBackup *bool `pulumi:"volumeBackup"`
 }
 
+// Defaults sets the appropriate defaults for NotificationEvents
+func (val *NotificationEvents) Defaults() *NotificationEvents {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.AppBuildError == nil {
+		appBuildError_ := false
+		tmp.AppBuildError = &appBuildError_
+	}
+	if tmp.AppDeploy == nil {
+		appDeploy_ := false
+		tmp.AppDeploy = &appDeploy_
+	}
+	if tmp.DatabaseBackup == nil {
+		databaseBackup_ := false
+		tmp.DatabaseBackup = &databaseBackup_
+	}
+	if tmp.DockerCleanup == nil {
+		dockerCleanup_ := false
+		tmp.DockerCleanup = &dockerCleanup_
+	}
+	if tmp.DokployBackup == nil {
+		dokployBackup_ := false
+		tmp.DokployBackup = &dokployBackup_
+	}
+	if tmp.DokployRestart == nil {
+		dokployRestart_ := false
+		tmp.DokployRestart = &dokployRestart_
+	}
+	if tmp.ServerThreshold == nil {
+		serverThreshold_ := false
+		tmp.ServerThreshold = &serverThreshold_
+	}
+	if tmp.VolumeBackup == nil {
+		volumeBackup_ := false
+		tmp.VolumeBackup = &volumeBackup_
+	}
+	return &tmp
+}
+
 // NotificationEventsInput is an input type that accepts NotificationEventsArgs and NotificationEventsOutput values.
 // You can construct a concrete instance of `NotificationEventsInput` via:
 //
@@ -2256,6 +2321,38 @@ type NotificationEventsArgs struct {
 	VolumeBackup pulumi.BoolPtrInput `pulumi:"volumeBackup"`
 }
 
+// Defaults sets the appropriate defaults for NotificationEventsArgs
+func (val *NotificationEventsArgs) Defaults() *NotificationEventsArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.AppBuildError == nil {
+		tmp.AppBuildError = pulumi.BoolPtr(false)
+	}
+	if tmp.AppDeploy == nil {
+		tmp.AppDeploy = pulumi.BoolPtr(false)
+	}
+	if tmp.DatabaseBackup == nil {
+		tmp.DatabaseBackup = pulumi.BoolPtr(false)
+	}
+	if tmp.DockerCleanup == nil {
+		tmp.DockerCleanup = pulumi.BoolPtr(false)
+	}
+	if tmp.DokployBackup == nil {
+		tmp.DokployBackup = pulumi.BoolPtr(false)
+	}
+	if tmp.DokployRestart == nil {
+		tmp.DokployRestart = pulumi.BoolPtr(false)
+	}
+	if tmp.ServerThreshold == nil {
+		tmp.ServerThreshold = pulumi.BoolPtr(false)
+	}
+	if tmp.VolumeBackup == nil {
+		tmp.VolumeBackup = pulumi.BoolPtr(false)
+	}
+	return &tmp
+}
 func (NotificationEventsArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationEvents)(nil)).Elem()
 }
@@ -2488,6 +2585,23 @@ type NotificationGotifyConfig struct {
 	ServerUrl string `pulumi:"serverUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationGotifyConfig
+func (val *NotificationGotifyConfig) Defaults() *NotificationGotifyConfig {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Decoration == nil {
+		decoration_ := false
+		tmp.Decoration = &decoration_
+	}
+	if tmp.Priority == nil {
+		priority_ := 5
+		tmp.Priority = &priority_
+	}
+	return &tmp
+}
+
 // NotificationGotifyConfigInput is an input type that accepts NotificationGotifyConfigArgs and NotificationGotifyConfigOutput values.
 // You can construct a concrete instance of `NotificationGotifyConfigInput` via:
 //
@@ -2510,6 +2624,20 @@ type NotificationGotifyConfigArgs struct {
 	ServerUrl pulumi.StringInput `pulumi:"serverUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationGotifyConfigArgs
+func (val *NotificationGotifyConfigArgs) Defaults() *NotificationGotifyConfigArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Decoration == nil {
+		tmp.Decoration = pulumi.BoolPtr(false)
+	}
+	if tmp.Priority == nil {
+		tmp.Priority = pulumi.IntPtr(5)
+	}
+	return &tmp
+}
 func (NotificationGotifyConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationGotifyConfig)(nil)).Elem()
 }
@@ -2817,6 +2945,23 @@ type NotificationMattermostConfig struct {
 	WebhookUrl string `pulumi:"webhookUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationMattermostConfig
+func (val *NotificationMattermostConfig) Defaults() *NotificationMattermostConfig {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Channel == nil {
+		channel_ := ""
+		tmp.Channel = &channel_
+	}
+	if tmp.Username == nil {
+		username_ := ""
+		tmp.Username = &username_
+	}
+	return &tmp
+}
+
 // NotificationMattermostConfigInput is an input type that accepts NotificationMattermostConfigArgs and NotificationMattermostConfigOutput values.
 // You can construct a concrete instance of `NotificationMattermostConfigInput` via:
 //
@@ -2837,6 +2982,20 @@ type NotificationMattermostConfigArgs struct {
 	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationMattermostConfigArgs
+func (val *NotificationMattermostConfigArgs) Defaults() *NotificationMattermostConfigArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Channel == nil {
+		tmp.Channel = pulumi.StringPtr("")
+	}
+	if tmp.Username == nil {
+		tmp.Username = pulumi.StringPtr("")
+	}
+	return &tmp
+}
 func (NotificationMattermostConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationMattermostConfig)(nil)).Elem()
 }
@@ -2994,6 +3153,23 @@ type NotificationNtfyConfig struct {
 	Topic string `pulumi:"topic"`
 }
 
+// Defaults sets the appropriate defaults for NotificationNtfyConfig
+func (val *NotificationNtfyConfig) Defaults() *NotificationNtfyConfig {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.AccessToken == nil {
+		accessToken_ := ""
+		tmp.AccessToken = &accessToken_
+	}
+	if tmp.Priority == nil {
+		priority_ := 3
+		tmp.Priority = &priority_
+	}
+	return &tmp
+}
+
 // NotificationNtfyConfigInput is an input type that accepts NotificationNtfyConfigArgs and NotificationNtfyConfigOutput values.
 // You can construct a concrete instance of `NotificationNtfyConfigInput` via:
 //
@@ -3016,6 +3192,20 @@ type NotificationNtfyConfigArgs struct {
 	Topic pulumi.StringInput `pulumi:"topic"`
 }
 
+// Defaults sets the appropriate defaults for NotificationNtfyConfigArgs
+func (val *NotificationNtfyConfigArgs) Defaults() *NotificationNtfyConfigArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.AccessToken == nil {
+		tmp.AccessToken = pulumi.StringPtr("")
+	}
+	if tmp.Priority == nil {
+		tmp.Priority = pulumi.IntPtr(3)
+	}
+	return &tmp
+}
 func (NotificationNtfyConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationNtfyConfig)(nil)).Elem()
 }
@@ -3190,6 +3380,19 @@ type NotificationPushoverConfig struct {
 	UserKey string `pulumi:"userKey"`
 }
 
+// Defaults sets the appropriate defaults for NotificationPushoverConfig
+func (val *NotificationPushoverConfig) Defaults() *NotificationPushoverConfig {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Priority == nil {
+		priority_ := 0
+		tmp.Priority = &priority_
+	}
+	return &tmp
+}
+
 // NotificationPushoverConfigInput is an input type that accepts NotificationPushoverConfigArgs and NotificationPushoverConfigOutput values.
 // You can construct a concrete instance of `NotificationPushoverConfigInput` via:
 //
@@ -3214,6 +3417,17 @@ type NotificationPushoverConfigArgs struct {
 	UserKey pulumi.StringInput `pulumi:"userKey"`
 }
 
+// Defaults sets the appropriate defaults for NotificationPushoverConfigArgs
+func (val *NotificationPushoverConfigArgs) Defaults() *NotificationPushoverConfigArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Priority == nil {
+		tmp.Priority = pulumi.IntPtr(0)
+	}
+	return &tmp
+}
 func (NotificationPushoverConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationPushoverConfig)(nil)).Elem()
 }
@@ -3572,6 +3786,19 @@ type NotificationSlackConfig struct {
 	WebhookUrl string `pulumi:"webhookUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationSlackConfig
+func (val *NotificationSlackConfig) Defaults() *NotificationSlackConfig {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Channel == nil {
+		channel_ := ""
+		tmp.Channel = &channel_
+	}
+	return &tmp
+}
+
 // NotificationSlackConfigInput is an input type that accepts NotificationSlackConfigArgs and NotificationSlackConfigOutput values.
 // You can construct a concrete instance of `NotificationSlackConfigInput` via:
 //
@@ -3590,6 +3817,17 @@ type NotificationSlackConfigArgs struct {
 	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
 }
 
+// Defaults sets the appropriate defaults for NotificationSlackConfigArgs
+func (val *NotificationSlackConfigArgs) Defaults() *NotificationSlackConfigArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.Channel == nil {
+		tmp.Channel = pulumi.StringPtr("")
+	}
+	return &tmp
+}
 func (NotificationSlackConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationSlackConfig)(nil)).Elem()
 }
@@ -3867,6 +4105,19 @@ type NotificationTelegramConfig struct {
 	MessageThreadId *string `pulumi:"messageThreadId"`
 }
 
+// Defaults sets the appropriate defaults for NotificationTelegramConfig
+func (val *NotificationTelegramConfig) Defaults() *NotificationTelegramConfig {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.MessageThreadId == nil {
+		messageThreadId_ := ""
+		tmp.MessageThreadId = &messageThreadId_
+	}
+	return &tmp
+}
+
 // NotificationTelegramConfigInput is an input type that accepts NotificationTelegramConfigArgs and NotificationTelegramConfigOutput values.
 // You can construct a concrete instance of `NotificationTelegramConfigInput` via:
 //
@@ -3887,6 +4138,17 @@ type NotificationTelegramConfigArgs struct {
 	MessageThreadId pulumi.StringPtrInput `pulumi:"messageThreadId"`
 }
 
+// Defaults sets the appropriate defaults for NotificationTelegramConfigArgs
+func (val *NotificationTelegramConfigArgs) Defaults() *NotificationTelegramConfigArgs {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if tmp.MessageThreadId == nil {
+		tmp.MessageThreadId = pulumi.StringPtr("")
+	}
+	return &tmp
+}
 func (NotificationTelegramConfigArgs) ElementType() reflect.Type {
 	return reflect.TypeOf((*NotificationTelegramConfig)(nil)).Elem()
 }

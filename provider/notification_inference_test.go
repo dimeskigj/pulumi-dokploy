@@ -80,12 +80,34 @@ func TestNotificationInferencePreviewAndSecrets(t *testing.T) {
 		require.Equal(t, sample.want, got.Get(sample.channel).AsMap().Get(sample.defaultField).AsNumber(), sample.channel)
 		require.False(t, got.Get("events").AsMap().Get("serverThreshold").AsBool())
 	}
+	for _, sample := range []struct {
+		channel, field string
+		block          map[string]property.Value
+		secret         bool
+	}{
+		{"slack", "channel", map[string]property.Value{"webhookUrl": property.New("https://example.com/hook"), "channel": unknown}, false},
+		{"discord", "decoration", map[string]property.Value{"webhookUrl": property.New("https://example.com/hook"), "decoration": unknown}, false},
+		{"gotify", "priority", map[string]property.Value{"serverUrl": property.New("https://example.com"), "appToken": property.New("placeholder"), "priority": unknown}, false},
+		{"ntfy", "accessToken", map[string]property.Value{"serverUrl": property.New("https://example.com"), "topic": property.New("placeholder"), "accessToken": unknown}, true},
+		{"custom", "headers", map[string]property.Value{"endpoint": property.New("https://example.com/hook"), "headers": unknown}, true},
+	} {
+		got := check(map[string]property.Value{"name": property.New("example"), sample.channel: property.New(sample.block)})
+		value := got.Get(sample.channel).AsMap().Get(sample.field)
+		require.True(t, value.IsComputed(), sample.channel+"."+sample.field)
+		require.Equal(t, sample.secret, value.Secret(), sample.channel+"."+sample.field)
+	}
 	custom := check(map[string]property.Value{"name": property.New("example"), "custom": property.New(map[string]property.Value{
 		"endpoint": property.New("https://example.com/hook"),
 		"headers":  property.New(map[string]property.Value{"Authorization": property.New("placeholder")}),
 	})})
 	require.True(t, custom.Get("custom").AsMap().Get("endpoint").Secret())
 	require.True(t, custom.Get("custom").AsMap().Get("headers").Secret())
+	omittedHeaders := check(map[string]property.Value{"name": property.New("example"), "custom": property.New(map[string]property.Value{
+		"endpoint": property.New("https://example.com/hook"),
+	})})
+	require.True(t, omittedHeaders.Get("custom").AsMap().Get("headers").IsMap())
+	require.Empty(t, omittedHeaders.Get("custom").AsMap().Get("headers").AsMap().AsMap())
+	require.True(t, omittedHeaders.Get("custom").AsMap().Get("headers").Secret())
 	customPreview, err := server.Create(p.CreateRequest{Urn: urn, Properties: custom, DryRun: true})
 	require.NoError(t, err)
 	require.True(t, customPreview.Properties.Get("custom").AsMap().Get("headers").Secret())

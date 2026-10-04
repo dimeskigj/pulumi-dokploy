@@ -64,6 +64,30 @@ func NewNotification(ctx *pulumi.Context,
 	if args.Name == nil {
 		return nil, errors.New("invalid value for required argument 'Name'")
 	}
+	if args.Discord != nil {
+		args.Discord = args.Discord.ToNotificationDiscordConfigPtrOutput().ApplyT(func(v *NotificationDiscordConfig) *NotificationDiscordConfig { return v.Defaults() }).(NotificationDiscordConfigPtrOutput)
+	}
+	if args.Events != nil {
+		args.Events = args.Events.ToNotificationEventsPtrOutput().ApplyT(func(v *NotificationEvents) *NotificationEvents { return v.Defaults() }).(NotificationEventsPtrOutput)
+	}
+	if args.Gotify != nil {
+		args.Gotify = args.Gotify.ToNotificationGotifyConfigPtrOutput().ApplyT(func(v *NotificationGotifyConfig) *NotificationGotifyConfig { return v.Defaults() }).(NotificationGotifyConfigPtrOutput)
+	}
+	if args.Mattermost != nil {
+		args.Mattermost = args.Mattermost.ToNotificationMattermostConfigPtrOutput().ApplyT(func(v *NotificationMattermostConfig) *NotificationMattermostConfig { return v.Defaults() }).(NotificationMattermostConfigPtrOutput)
+	}
+	if args.Ntfy != nil {
+		args.Ntfy = args.Ntfy.ToNotificationNtfyConfigPtrOutput().ApplyT(func(v *NotificationNtfyConfig) *NotificationNtfyConfig { return v.Defaults() }).(NotificationNtfyConfigPtrOutput)
+	}
+	if args.Pushover != nil {
+		args.Pushover = args.Pushover.ToNotificationPushoverConfigPtrOutput().ApplyT(func(v *NotificationPushoverConfig) *NotificationPushoverConfig { return v.Defaults() }).(NotificationPushoverConfigPtrOutput)
+	}
+	if args.Slack != nil {
+		args.Slack = args.Slack.ToNotificationSlackConfigPtrOutput().ApplyT(func(v *NotificationSlackConfig) *NotificationSlackConfig { return v.Defaults() }).(NotificationSlackConfigPtrOutput)
+	}
+	if args.Telegram != nil {
+		args.Telegram = args.Telegram.ToNotificationTelegramConfigPtrOutput().ApplyT(func(v *NotificationTelegramConfig) *NotificationTelegramConfig { return v.Defaults() }).(NotificationTelegramConfigPtrOutput)
+	}
 	opts = internal.PkgResourceDefaultOpts(opts)
 	var resource Notification
 	err := ctx.RegisterResource("dokploy:index:Notification", name, args, &resource, opts...)

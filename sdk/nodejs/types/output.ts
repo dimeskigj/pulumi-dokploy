@@ -6,6 +6,8 @@ import * as inputs from "../types/input";
 import * as outputs from "../types/output";
 import * as enums from "../types/enums";
 
+import * as utilities from "../utilities";
+
 /**
  * Application build configuration.
  */
@@ -267,6 +269,15 @@ export interface NotificationDiscordConfig {
      */
     webhookUrl: string;
 }
+/**
+ * notificationDiscordConfigProvideDefaults sets the appropriate defaults for NotificationDiscordConfig
+ */
+export function notificationDiscordConfigProvideDefaults(val: NotificationDiscordConfig): NotificationDiscordConfig {
+    return {
+        ...val,
+        decoration: (val.decoration) ?? false,
+    };
+}
 
 export interface NotificationEmailConfig {
     /**
@@ -329,6 +340,22 @@ export interface NotificationEvents {
      */
     volumeBackup?: boolean;
 }
+/**
+ * notificationEventsProvideDefaults sets the appropriate defaults for NotificationEvents
+ */
+export function notificationEventsProvideDefaults(val: NotificationEvents): NotificationEvents {
+    return {
+        ...val,
+        appBuildError: (val.appBuildError) ?? false,
+        appDeploy: (val.appDeploy) ?? false,
+        databaseBackup: (val.databaseBackup) ?? false,
+        dockerCleanup: (val.dockerCleanup) ?? false,
+        dokployBackup: (val.dokployBackup) ?? false,
+        dokployRestart: (val.dokployRestart) ?? false,
+        serverThreshold: (val.serverThreshold) ?? false,
+        volumeBackup: (val.volumeBackup) ?? false,
+    };
+}
 
 export interface NotificationGotifyConfig {
     /**
@@ -347,6 +374,16 @@ export interface NotificationGotifyConfig {
      * Secret Gotify server URL.
      */
     serverUrl: string;
+}
+/**
+ * notificationGotifyConfigProvideDefaults sets the appropriate defaults for NotificationGotifyConfig
+ */
+export function notificationGotifyConfigProvideDefaults(val: NotificationGotifyConfig): NotificationGotifyConfig {
+    return {
+        ...val,
+        decoration: (val.decoration) ?? false,
+        priority: (val.priority) ?? 5,
+    };
 }
 
 export interface NotificationLarkConfig {
@@ -370,6 +407,16 @@ export interface NotificationMattermostConfig {
      */
     webhookUrl: string;
 }
+/**
+ * notificationMattermostConfigProvideDefaults sets the appropriate defaults for NotificationMattermostConfig
+ */
+export function notificationMattermostConfigProvideDefaults(val: NotificationMattermostConfig): NotificationMattermostConfig {
+    return {
+        ...val,
+        channel: (val.channel) ?? "",
+        username: (val.username) ?? "",
+    };
+}
 
 export interface NotificationNtfyConfig {
     /**
@@ -388,6 +435,16 @@ export interface NotificationNtfyConfig {
      * Ntfy topic.
      */
     topic: string;
+}
+/**
+ * notificationNtfyConfigProvideDefaults sets the appropriate defaults for NotificationNtfyConfig
+ */
+export function notificationNtfyConfigProvideDefaults(val: NotificationNtfyConfig): NotificationNtfyConfig {
+    return {
+        ...val,
+        accessToken: (val.accessToken) ?? "",
+        priority: (val.priority) ?? 3,
+    };
 }
 
 export interface NotificationPushoverConfig {
@@ -411,6 +468,15 @@ export interface NotificationPushoverConfig {
      * Secret Pushover user key.
      */
     userKey: string;
+}
+/**
+ * notificationPushoverConfigProvideDefaults sets the appropriate defaults for NotificationPushoverConfig
+ */
+export function notificationPushoverConfigProvideDefaults(val: NotificationPushoverConfig): NotificationPushoverConfig {
+    return {
+        ...val,
+        priority: (val.priority) ?? 0,
+    };
 }
 
 export interface NotificationResendConfig {
@@ -438,6 +504,15 @@ export interface NotificationSlackConfig {
      */
     webhookUrl: string;
 }
+/**
+ * notificationSlackConfigProvideDefaults sets the appropriate defaults for NotificationSlackConfig
+ */
+export function notificationSlackConfigProvideDefaults(val: NotificationSlackConfig): NotificationSlackConfig {
+    return {
+        ...val,
+        channel: (val.channel) ?? "",
+    };
+}
 
 export interface NotificationTeamsConfig {
     /**
@@ -459,6 +534,15 @@ export interface NotificationTelegramConfig {
      * Optional message thread ID; defaults to empty.
      */
     messageThreadId?: string;
+}
+/**
+ * notificationTelegramConfigProvideDefaults sets the appropriate defaults for NotificationTelegramConfig
+ */
+export function notificationTelegramConfigProvideDefaults(val: NotificationTelegramConfig): NotificationTelegramConfig {
+    return {
+        ...val,
+        messageThreadId: (val.messageThreadId) ?? "",
+    };
 }
 
 /**
