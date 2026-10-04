@@ -5,6 +5,14 @@ description: Adopt existing Dokploy resources into Pulumi state.
 
 Import with the Pulumi resource type token and existing Dokploy ID:
 
+`Port` imports use only the Dokploy port ID; the application relation is read from the imported resource:
+
+```bash
+pulumi import dokploy:index:Port mapping <port-id>
+```
+
+An ambiguous 400 “Port not found” response may indicate lost permission; refresh does not discard state on that response.
+
 ```bash
 pulumi import dokploy:index:Project existing p1
 ```

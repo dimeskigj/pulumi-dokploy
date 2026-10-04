@@ -42,6 +42,9 @@ REPLACEMENTS = {
         'ctx.export("gitlabNamespace0",': 'ctx.export("gitlabNamespace",',
         'ctx.export("gitlabRepository0",': 'ctx.export("gitlabRepository",',
         'ctx.export("gitBranch0",': 'ctx.export("gitBranch",',
+        'import net.dimeski.pulumi.dokploy.Port;': 'import net.dimeski.pulumi.dokploy.Port;\nimport net.dimeski.pulumi.dokploy.enums.PortProtocol;\nimport net.dimeski.pulumi.dokploy.enums.PortPublishMode;',
+        '.protocol("tcp")': '.protocol(PortProtocol.Tcp)',
+        '.publishMode("ingress")': '.publishMode(PortPublishMode.Ingress)',
     },
 }
 

@@ -1,0 +1,21 @@
+---
+title: "Port"
+description: "A Dokploy application port mapping."
+---
+
+import PropertyTable from "../../../components/PropertyTable.astro";
+
+> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.
+
+
+{/* applicationId replaceOnChanges: true */}
+
+A Dokploy application port mapping.
+
+## Inputs
+
+<PropertyTable properties={[{"name":"applicationId","type":"string","typeHref":null,"description":"The Dokploy application ID.","required":true,"secret":false,"replaceOnChanges":true,"defaultValue":null,"environment":[]},{"name":"protocol","type":"PortProtocol","typeHref":"../types/#port-protocol","description":"The port protocol: tcp or udp.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":"tcp","environment":[]},{"name":"publishMode","type":"PortPublishMode","typeHref":"../types/#port-publish-mode","description":"The port publish mode: ingress or host.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":"ingress","environment":[]},{"name":"publishedPort","type":"integer","typeHref":null,"description":"The externally published port (1-65535).","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"targetPort","type":"integer","typeHref":null,"description":"The application target port (1-65535).","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+## Outputs
+
+<PropertyTable properties={[{"name":"applicationId","type":"string","typeHref":null,"description":"The Dokploy application ID.","required":true,"secret":false,"replaceOnChanges":true,"defaultValue":null,"environment":[]},{"name":"portId","type":"string","typeHref":null,"description":"Stable Dokploy port ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"protocol","type":"PortProtocol","typeHref":"../types/#port-protocol","description":"The port protocol: tcp or udp.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":"tcp","environment":[]},{"name":"publishMode","type":"PortPublishMode","typeHref":"../types/#port-publish-mode","description":"The port publish mode: ingress or host.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":"ingress","environment":[]},{"name":"publishedPort","type":"integer","typeHref":null,"description":"The externally published port (1-65535).","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"targetPort","type":"integer","typeHref":null,"description":"The application target port (1-65535).","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />

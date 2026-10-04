@@ -68,6 +68,25 @@ return await Deployment.RunAsync(() =>
         BuildRegistryId = registry.RegistryId,
     });
 
+    var applicationSchedule = new Dokploy.Schedule("applicationSchedule", new()
+    {
+        Name = "mvp-application-schedule",
+        CronExpression = "0 0 * * *",
+        ScheduleType = "application",
+        ApplicationId = application.ApplicationId,
+        Enabled = false,
+        Command = Output.CreateSecret("echo scheduled maintenance"),
+    });
+
+    var applicationPort = new Dokploy.Port("applicationPort", new()
+    {
+        ApplicationId = application.ApplicationId,
+        PublishedPort = 8081,
+        TargetPort = 80,
+        Protocol = Dokploy.PortProtocol.Tcp,
+        PublishMode = Dokploy.PortPublishMode.Ingress,
+    });
+
     var sshKey = new Dokploy.SSHKey("sshKey", new()
     {
         Name = "mvp-git-ssh",

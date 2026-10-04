@@ -13,6 +13,12 @@ import net.dimeski.pulumi.dokploy.Application;
 import net.dimeski.pulumi.dokploy.ApplicationArgs;
 import net.dimeski.pulumi.dokploy.inputs.ApplicationSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.DockerSourceArgs;
+import net.dimeski.pulumi.dokploy.Schedule;
+import net.dimeski.pulumi.dokploy.ScheduleArgs;
+import net.dimeski.pulumi.dokploy.Port;
+import net.dimeski.pulumi.dokploy.enums.PortProtocol;
+import net.dimeski.pulumi.dokploy.enums.PortPublishMode;
+import net.dimeski.pulumi.dokploy.PortArgs;
 import net.dimeski.pulumi.dokploy.SSHKey;
 import net.dimeski.pulumi.dokploy.SSHKeyArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
@@ -113,6 +119,23 @@ public class App {
             .createEnvFile(true)
             .registryId(registry.registryId())
             .buildRegistryId(registry.registryId())
+            .build());
+
+        var applicationSchedule = new Schedule("applicationSchedule", ScheduleArgs.builder()
+            .name("mvp-application-schedule")
+            .cronExpression("0 0 * * *")
+            .scheduleType("application")
+            .applicationId(application.applicationId())
+            .enabled(false)
+            .command(Output.ofSecret("echo scheduled maintenance"))
+            .build());
+
+        var applicationPort = new Port("applicationPort", PortArgs.builder()
+            .applicationId(application.applicationId())
+            .publishedPort(8081)
+            .targetPort(80)
+            .protocol(PortProtocol.Tcp)
+            .publishMode(PortPublishMode.Ingress)
             .build());
 
         var sshKey = new SSHKey("sshKey", SSHKeyArgs.builder()

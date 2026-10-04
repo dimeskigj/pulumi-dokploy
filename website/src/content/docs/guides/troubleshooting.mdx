@@ -5,6 +5,8 @@ description: Diagnose endpoint, authorization, deployment, source, and import is
 
 ## Endpoint and authorization
 
+Port operations do not deploy applications or configure host firewalls. A 400 “Port not found” is ambiguous and may mean the operator lost permission; it is not treated as confirmed absence. If the application was deleted outside Pulumi, investigate the remote state before changing state.
+
 The endpoint is normalized before requests are made; configure the Dokploy origin such as `https://dokploy.example.com`, not a path to an API operation. A 401 or 403 usually means the API key is missing, expired, or lacks permission. Re-set it with `pulumi config set --secret dokploy:apiKey` and verify the selected stack.
 
 ## Failed deployments

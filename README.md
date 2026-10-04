@@ -48,13 +48,13 @@ Read-only ID-based lookups for projects, environments, workloads, databases, ser
 registries, and SSH keys return non-secret metadata without adopting or managing existing
 objects. See the [lookup guide](https://dimeskigj.github.io/pulumi-dokploy/guides/lookups/).
 
-The provider exposes eighteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
 `dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:SSHKey`,
-`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`, and
-`dokploy:index:Mount`.
+`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
+`dokploy:index:Mount`, and `dokploy:index:Port`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -84,6 +84,10 @@ create and credential-affecting updates through `testRegistry`. Supply `registry
 secret configuration. File mounts consume a dedicated `fileMountContent` secret configuration input;
 the canonical example has only empty non-credential placeholders required by Pulumi YAML conversion.
 MongoDB and LibSQL are documented exclusions for mounts.
+
+`Port` maps an application's published and target ports. Create, update, and delete are
+configuration-only and do not deploy or redeploy the application. See the
+[Ports guide](https://dimeskigj.github.io/pulumi-dokploy/guides/ports/) for lifecycle and import details.
 
 See the [Get Started](https://dimeskigj.github.io/pulumi-dokploy/getting-started/installation/),
 [Resources](https://dimeskigj.github.io/pulumi-dokploy/reference/project/), and

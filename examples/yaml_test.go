@@ -86,8 +86,8 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 24 {
-		t.Fatalf("canonical YAML has %d managed resources, want 24", len(resources))
+	if len(resources) != 25 {
+		t.Fatalf("canonical YAML has %d managed resources, want 25", len(resources))
 	}
 	want := map[string]int{
 		"dokploy:index:Project":      1,
@@ -109,6 +109,7 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		"dokploy:index:Tag":          1,
 		"dokploy:index:ProjectTag":   1,
 		"dokploy:index:Mount":        3,
+		"dokploy:index:Port":         1,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
@@ -133,6 +134,28 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		if _, ok := schemaResources(t)[typeName]; !ok {
 			t.Errorf("%s is not present in generated provider schema", typeName)
 		}
+	}
+}
+
+func TestCanonicalYAMLPort(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	port, ok := resources["applicationPort"].(map[string]any)
+	if !ok || port["type"] != "dokploy:index:Port" {
+		t.Fatalf("applicationPort must be a Port resource")
+	}
+	properties, ok := port["properties"].(map[string]any)
+	if !ok {
+		t.Fatal("applicationPort properties must be an object")
+	}
+	want := map[string]any{"applicationId": "${application.applicationId}", "publishedPort": 8081, "targetPort": 80, "protocol": "tcp", "publishMode": "ingress"}
+	for key, value := range want {
+		if properties[key] != value {
+			t.Errorf("%s = %v, want %v", key, properties[key], value)
+		}
+	}
+	if _, exists := properties["deploymentId"]; exists {
+		t.Error("Port must not declare a deployment property")
 	}
 }
 

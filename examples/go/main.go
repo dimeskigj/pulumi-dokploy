@@ -129,6 +129,27 @@ func main() {
 		if err != nil {
 			return err
 		}
+		_, err = dokploy.NewSchedule(ctx, "applicationSchedule", &dokploy.ScheduleArgs{
+			Name:           pulumi.String("mvp-application-schedule"),
+			CronExpression: pulumi.String("0 0 * * *"),
+			ScheduleType:   pulumi.String("application"),
+			ApplicationId:  application.ApplicationId,
+			Enabled:        pulumi.Bool(false),
+			Command:        pulumi.ToSecret("echo scheduled maintenance").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewPort(ctx, "applicationPort", &dokploy.PortArgs{
+			ApplicationId: application.ApplicationId,
+			PublishedPort: pulumi.Int(8081),
+			TargetPort:    pulumi.Int(80),
+			Protocol:      dokploy.PortProtocolTcp,
+			PublishMode:   dokploy.PortPublishModeIngress,
+		})
+		if err != nil {
+			return err
+		}
 		sshKey, err := dokploy.NewSSHKey(ctx, "sshKey", &dokploy.SSHKeyArgs{
 			Name:       pulumi.String("mvp-git-ssh"),
 			PrivateKey: pulumi.ToSecret(sshPrivateKey).(pulumi.StringOutput),
