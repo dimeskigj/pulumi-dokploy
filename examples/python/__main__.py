@@ -117,6 +117,12 @@ generic_git_application = dokploy.Application("genericGitApplication",
             },
         },
     })
+remote_server = dokploy.Server("remoteServer",
+    name="example-remote",
+    ip_address="192.0.2.10",
+    ssh_key_id=ssh_key.ssh_key_id,
+    server_type="deploy",
+    enable_docker_cleanup=False)
 compose = dokploy.Compose("compose",
     name="mvp-compose",
     environment_id=project_resource.default_environment_id,
@@ -237,3 +243,4 @@ pulumi.export("gitlabOwner", gitlab_owner)
 pulumi.export("gitlabNamespace", gitlab_namespace)
 pulumi.export("gitlabRepository", gitlab_repository)
 pulumi.export("gitBranch", git_branch)
+pulumi.export("remoteServerId", remote_server.server_id)

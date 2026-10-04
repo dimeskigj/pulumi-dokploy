@@ -89,6 +89,13 @@ const genericGitApplication = new dokploy.Application("genericGitApplication", {
         },
     },
 });
+const remoteServer = new dokploy.Server("remoteServer", {
+    name: "example-remote",
+    ipAddress: "192.0.2.10",
+    sshKeyId: sshKey.sshKeyId,
+    serverType: "deploy",
+    enableDockerCleanup: false,
+});
 const compose = new dokploy.Compose("compose", {
     name: "mvp-compose",
     environmentId: projectResource.defaultEnvironmentId,
@@ -226,3 +233,4 @@ export const gitlabOwner = gitlabOwnerConfig;
 export const gitlabNamespace = gitlabNamespaceConfig;
 export const gitlabRepository = gitlabRepositoryConfig;
 export const gitBranch = gitBranchConfig;
+export const remoteServerId = remoteServer.serverId;

@@ -114,6 +114,15 @@ return await Deployment.RunAsync(() =>
         },
     });
 
+    var remoteServer = new Dokploy.Server("remoteServer", new()
+    {
+        Name = "example-remote",
+        IpAddress = "192.0.2.10",
+        SshKeyId = sshKey.SshKeyId,
+        ServerType = "deploy",
+        EnableDockerCleanup = false,
+    });
+
     var compose = new Dokploy.Compose("compose", new()
     {
         Name = "mvp-compose",
@@ -289,5 +298,6 @@ return await Deployment.RunAsync(() =>
         ["gitlabNamespace"] = gitlabNamespace,
         ["gitlabRepository"] = gitlabRepository,
         ["gitBranch"] = gitBranch,
+        ["remoteServerId"] = remoteServer.ServerId,
     };
 });
