@@ -42,7 +42,7 @@ Tested a minimal isolated `PULUMI_HOME=/tmp/opencode/server-task3-pulumi-home` h
 - Narrow Makefile correction: `gen_examples` creates a fresh cache under `/tmp/opencode`, installs the local dev plugin there (not shared/global state), and passes that cache to each converter. It runs the new regression immediately after conversions so converter-level partial-output errors cannot silently pass.
 - GREEN: `mise exec -- make gen_examples` succeeded. Confirmed TypeScript, Python, Go, C#, and Java each instantiate Server and export `remoteServerId`; the generated files retain no workload placement onto it.
 - `mise exec -- make test_examples` passed after regeneration, including all five language compile checks. Focused website/provider/YAML and generated-example tests passed; website complete page regenerated from the five generated programs and YAML.
-- Follow-up generated drift check is to run after the follow-up commit (the first commit's post-commit `make docs_check` had already passed before these new generated program changes).
+- Post-follow-up-commit `mise exec -- make docs_check` passed: generated drift clean, website 50/50 tests, build succeeded, and built-site tests 2/2. The build emitted the existing missing `src/icons` warning.
 
 ## Remaining safety notes
 
