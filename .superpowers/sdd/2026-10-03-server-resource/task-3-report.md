@@ -23,8 +23,28 @@
 - `git diff --check`: passed before commit.
 - `mise exec -- make test_examples` passed: YAML-tagged Go tests, Go example compile, Python compile, Node TypeScript compile, .NET build, Java SDK publication to local Maven, and Java example package all succeeded. SDK/.NET/Java emitted existing compiler/Javadoc warnings but exited successfully.
 
-## Self-review / concerns
+## Follow-up: converter schema selection resolved
 
-- The canonical YAML and YAML output contain `remoteServer`, and the Server docs/reference are generated. However, the CLI could not resolve Server/Schedule during language conversion, so the five language program sources do not yet contain generated Server resources. This is an unresolved generation blocker and means the all-five-language example portion is incomplete. Do not hand-edit those generated programs; resolve provider plugin selection/schema discovery and rerun `make gen_examples`.
-- The temporary controller-owned `.mise.toml` modification was left untouched and unstaged.
-- No live compatibility testing was performed.
+The first all-language generation attempt exposed a real selection ambiguity. Exact reproduction:
+
+```text
+mise exec pulumi@3.259.0 -- pulumi plugin ls
+# dokploy resource versions present: 0.3.0, 0.2.2, 0.0.1-alpha.0+dev
+mise exec pulumi@3.259.0 -- pulumi package get-schema "$PWD/bin/pulumi-resource-dokploy" > /tmp/opencode/server-task3-local-schema.json
+# local generated schema includes both dokploy:index:Schedule and dokploy:index:Server
+mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out /tmp/opencode/server-task3-global-convert --generate-only -v=9
+# errors: unable to find Schedule and Server in resource provider "dokploy"; process still exits 0
+```
+
+Tested a minimal isolated `PULUMI_HOME=/tmp/opencode/server-task3-pulumi-home` holding only the local `0.0.1-alpha.0+dev` provider. The same conversion succeeded. Thus, with no project version constraint, the global plugin cache's higher published version was selected instead of the newly built local provider; importantly, `pulumi convert` reported errors but returned success, so Make had no error signal.
+
+- Added RED regression `TestGeneratedServerExamplesInstantiateAndExportIdentity`, which failed for all five checked-in language programs before regeneration.
+- Narrow Makefile correction: `gen_examples` creates a fresh cache under `/tmp/opencode`, installs the local dev plugin there (not shared/global state), and passes that cache to each converter. It runs the new regression immediately after conversions so converter-level partial-output errors cannot silently pass.
+- GREEN: `mise exec -- make gen_examples` succeeded. Confirmed TypeScript, Python, Go, C#, and Java each instantiate Server and export `remoteServerId`; the generated files retain no workload placement onto it.
+- `mise exec -- make test_examples` passed after regeneration, including all five language compile checks. Focused website/provider/YAML and generated-example tests passed; website complete page regenerated from the five generated programs and YAML.
+- Follow-up generated drift check is to run after the follow-up commit (the first commit's post-commit `make docs_check` had already passed before these new generated program changes).
+
+## Remaining safety notes
+
+- The temporary controller-owned `.mise.toml` modification was untouched and unstaged.
+- No live compatibility testing was performed. No `.env` or live Dokploy API was used.

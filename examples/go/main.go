@@ -129,6 +129,17 @@ func main() {
 		if err != nil {
 			return err
 		}
+		_, err = dokploy.NewSchedule(ctx, "applicationSchedule", &dokploy.ScheduleArgs{
+			Name:           pulumi.String("mvp-application-schedule"),
+			CronExpression: pulumi.String("0 0 * * *"),
+			ScheduleType:   pulumi.String("application"),
+			ApplicationId:  application.ApplicationId,
+			Enabled:        pulumi.Bool(false),
+			Command:        pulumi.ToSecret("echo scheduled maintenance").(pulumi.StringOutput),
+		})
+		if err != nil {
+			return err
+		}
 		sshKey, err := dokploy.NewSSHKey(ctx, "sshKey", &dokploy.SSHKeyArgs{
 			Name:       pulumi.String("mvp-git-ssh"),
 			PrivateKey: pulumi.ToSecret(sshPrivateKey).(pulumi.StringOutput),
@@ -151,6 +162,16 @@ func main() {
 					},
 				},
 			},
+		})
+		if err != nil {
+			return err
+		}
+		remoteServer, err := dokploy.NewServer(ctx, "remoteServer", &dokploy.ServerArgs{
+			Name:                pulumi.String("example-remote"),
+			IpAddress:           pulumi.String("192.0.2.10"),
+			SshKeyId:            sshKey.SshKeyId,
+			ServerType:          pulumi.String("deploy"),
+			EnableDockerCleanup: pulumi.Bool(false),
 		})
 		if err != nil {
 			return err
@@ -343,6 +364,7 @@ func main() {
 		ctx.Export("gitlabNamespace", pulumi.String(gitlabNamespace))
 		ctx.Export("gitlabRepository", pulumi.String(gitlabRepository))
 		ctx.Export("gitBranch", pulumi.String(gitBranch))
+		ctx.Export("remoteServerId", remoteServer.ServerId)
 		return nil
 	})
 }

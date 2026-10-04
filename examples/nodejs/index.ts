@@ -54,6 +54,14 @@ const application = new dokploy.Application("application", {
     registryId: registry.registryId,
     buildRegistryId: registry.registryId,
 });
+const applicationSchedule = new dokploy.Schedule("applicationSchedule", {
+    name: "mvp-application-schedule",
+    cronExpression: "0 0 * * *",
+    scheduleType: "application",
+    applicationId: application.applicationId,
+    enabled: false,
+    command: pulumi.secret("echo scheduled maintenance"),
+});
 const sshKey = new dokploy.SSHKey("sshKey", {
     name: "mvp-git-ssh",
     privateKey: pulumi.secret(sshPrivateKey),
@@ -73,6 +81,13 @@ const genericGitApplication = new dokploy.Application("genericGitApplication", {
             },
         },
     },
+});
+const remoteServer = new dokploy.Server("remoteServer", {
+    name: "example-remote",
+    ipAddress: "192.0.2.10",
+    sshKeyId: sshKey.sshKeyId,
+    serverType: "deploy",
+    enableDockerCleanup: false,
 });
 const compose = new dokploy.Compose("compose", {
     name: "mvp-compose",
@@ -211,3 +226,4 @@ export const gitlabOwner = gitlabOwnerConfig;
 export const gitlabNamespace = gitlabNamespaceConfig;
 export const gitlabRepository = gitlabRepositoryConfig;
 export const gitBranch = gitBranchConfig;
+export const remoteServerId = remoteServer.serverId;

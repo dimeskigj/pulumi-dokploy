@@ -90,15 +90,17 @@ install_java_sdk:
 build_sdks: build_go build_python build_nodejs build_dotnet build_java
 
 install_plugin: provider
-	mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall
+	@if [ -n "$(PULUMI_HOME)" ]; then PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; else mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; fi
 
+gen_examples: PULUMI_HOME := $(shell mktemp -d /tmp/opencode/pulumi-dokploy-examples.XXXXXX)
 gen_examples: codegen install_plugin
 	rm -rf examples/nodejs examples/python examples/go examples/dotnet examples/java
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out ../nodejs --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language python --cwd examples/yaml --out ../python --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language go --cwd examples/yaml --out ../go --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language csharp --cwd examples/yaml --out ../dotnet --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language java --cwd examples/yaml --out ../java --generate-only
+	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out ../nodejs --generate-only
+	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language python --cwd examples/yaml --out ../python --generate-only
+	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language go --cwd examples/yaml --out ../go --generate-only
+	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language csharp --cwd examples/yaml --out ../dotnet --generate-only
+	PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language java --cwd examples/yaml --out ../java --generate-only
+	mise exec -- go test ./examples -tags=yaml -run TestGeneratedServerExamplesInstantiateAndExportIdentity -count=1
 	go mod edit -require=$(PROJECT)/sdk/go/$(PACK)@v0.0.0 -replace=$(PROJECT)/sdk/go/$(PACK)=../../sdk/go/$(PACK) examples/go/go.mod
 	cd examples/go && go mod tidy
 	python3 -c 'from pathlib import Path; p=Path("examples/go/go.mod"); s=p.read_text(); s=s.replace(" => " + str(Path.cwd() / "sdk/go/$(PACK)"), " => ../../sdk/go/$(PACK)"); p.write_text(s)'

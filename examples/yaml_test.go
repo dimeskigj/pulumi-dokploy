@@ -169,6 +169,29 @@ func TestCanonicalServerExample(t *testing.T) {
 	}
 }
 
+func TestGeneratedServerExamplesInstantiateAndExportIdentity(t *testing.T) {
+	want := map[string][]string{
+		"nodejs/index.ts":    {`new dokploy.Server("remoteServer"`, `export const remoteServerId = remoteServer.serverId`},
+		"python/__main__.py": {`dokploy.Server("remoteServer"`, `pulumi.export("remoteServerId", remote_server.server_id)`},
+		"go/main.go":         {`dokploy.NewServer(ctx, "remoteServer"`, `ctx.Export("remoteServerId", remoteServer.ServerId)`},
+		"dotnet/Program.cs":  {`new Dokploy.Server("remoteServer"`, `["remoteServerId"] = remoteServer.ServerId`},
+		"java/src/main/java/generated_program/App.java": {`new Server("remoteServer", ServerArgs.builder()`, `ctx.export("remoteServerId", remoteServer.serverId())`},
+	}
+	for path, markers := range want {
+		t.Run(path, func(t *testing.T) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, marker := range markers {
+				if !strings.Contains(string(data), marker) {
+					t.Errorf("generated program %s is missing %q", path, marker)
+				}
+			}
+		})
+	}
+}
+
 func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
 	out := t.TempDir()
 	cmd := exec.Command("mise", "exec", "pulumi@3.259.0", "--", "pulumi", "convert", "--from", "yaml", "--language", "yaml", "--cwd", "yaml", "--out", out, "--generate-only")
