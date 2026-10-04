@@ -15,7 +15,7 @@ import (
 )
 
 func serverArgs() ServerArgs {
-	return ServerArgs{Name: "node", IpAddress: "192.0.2.10", Port: 22, Username: "root", ServerType: "deploy"}
+	return ServerArgs{Name: "node", IPAddress: "192.0.2.10", Port: 22, Username: "root", ServerType: "deploy"}
 }
 func TestServerCheckDefaultsAndValidation(t *testing.T) {
 	r := Server{}
@@ -31,6 +31,9 @@ func TestServerCheckDefaultsAndValidation(t *testing.T) {
 		{"zero port", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("192.0.2.10"), "port": property.New(0.0)}, "port"},
 		{"minimum port", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("::1"), "port": property.New(1.0)}, ""},
 		{"maximum port", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("::1"), "port": property.New(65535.0)}, ""},
+		{"ipv4 explicit false", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("192.0.2.10"), "enableDockerCleanup": property.New(false)}, ""},
+		{"ipv6", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("2001:db8::10")}, ""},
+		{"explicit true", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("host.example"), "enableDockerCleanup": property.New(true)}, ""},
 		{"empty username", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("::1"), "username": property.New("  ")}, "username"},
 		{"empty key", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("::1"), "sshKeyId": property.New(" ")}, "sshKeyId"},
 		{"empty type", map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("::1"), "serverType": property.New("")}, "serverType"},
@@ -57,7 +60,11 @@ func TestServerCheckDefaultsAndValidation(t *testing.T) {
 			require.Equal(t, port, got.Inputs.Port)
 			require.Equal(t, "root", got.Inputs.Username)
 			require.Equal(t, "deploy", got.Inputs.ServerType)
-			require.False(t, got.Inputs.EnableDockerCleanup)
+			wantCleanup := false
+			if v, ok := tc.values["enableDockerCleanup"]; ok {
+				wantCleanup = v.AsBool()
+			}
+			require.Equal(t, wantCleanup, got.Inputs.EnableDockerCleanup)
 		})
 	}
 }
@@ -77,7 +84,7 @@ func TestServerDiff(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, unchanged.HasChanges)
 	b := a
-	b.IpAddress = "example.test"
+	b.IPAddress = "example.test"
 	diff, err := (Server{}).Diff(t.Context(), infer.DiffRequest[ServerArgs, ServerState]{Inputs: b, State: ServerState{ServerArgs: a}})
 	require.NoError(t, err)
 	require.Equal(t, p.Update, diff.DetailedDiff["ipAddress"].Kind)
@@ -87,6 +94,7 @@ func TestServerDiff(t *testing.T) {
 	}{
 		{"name", func(a *ServerArgs) { a.Name = "after" }},
 		{"description", func(a *ServerArgs) { a.Description = ptr("") }},
+		{"ipAddress", func(a *ServerArgs) { a.IPAddress = "2001:db8::10" }},
 		{"port", func(a *ServerArgs) { a.Port = 65535 }},
 		{"username", func(a *ServerArgs) { a.Username = "admin" }},
 		{"sshKeyId", func(a *ServerArgs) { a.SSHKeyID = ptr("placeholder-key") }},
@@ -99,6 +107,29 @@ func TestServerDiff(t *testing.T) {
 			got, err := (Server{}).Diff(t.Context(), infer.DiffRequest[ServerArgs, ServerState]{Inputs: changed, State: ServerState{ServerArgs: a}})
 			require.NoError(t, err)
 			require.Equal(t, map[string]p.PropertyDiff{tc.name: {Kind: p.Update}}, got.DetailedDiff)
+		})
+	}
+	for _, tc := range []struct {
+		name string
+		old  *string
+		new  *string
+		key  string
+	}{
+		{"description absent to empty", nil, ptr(""), "description"},
+		{"description empty to absent", ptr(""), nil, "description"},
+		{"ssh key absent to present", nil, ptr("placeholder-key"), "sshKeyId"},
+		{"ssh key present to absent", ptr("placeholder-key"), nil, "sshKeyId"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			old, next := serverArgs(), serverArgs()
+			if tc.key == "description" {
+				old.Description, next.Description = tc.old, tc.new
+			} else {
+				old.SSHKeyID, next.SSHKeyID = tc.old, tc.new
+			}
+			got, err := (Server{}).Diff(t.Context(), infer.DiffRequest[ServerArgs, ServerState]{Inputs: next, State: ServerState{ServerArgs: old}})
+			require.NoError(t, err)
+			require.Equal(t, map[string]p.PropertyDiff{tc.key: {Kind: p.Update}}, got.DetailedDiff)
 		})
 	}
 }
