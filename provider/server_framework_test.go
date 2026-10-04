@@ -26,6 +26,19 @@ func TestServerFrameworkPreviewAndPartialState(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "placeholder-server", updated.Properties.Get("serverId").AsString())
 	require.Equal(t, "placeholder-org", updated.Properties.Get("organizationId").AsString())
+	require.Equal(t, "active", updated.Properties.Get("status").AsString())
+	require.True(t, updated.Properties.Get("sshKeyId").IsComputed())
+	for _, field := range []string{"serverId", "organizationId", "status"} {
+		require.False(t, updated.Properties.Get(field).IsComputed(), field)
+		require.False(t, updated.Properties.Get(field).Secret(), field)
+	}
+	secretInput := property.NewMap(map[string]property.Value{"name": property.New("node"), "ipAddress": property.New("192.0.2.10"), "sshKeyId": property.New("placeholder-key").WithSecret(true)})
+	secretUpdate, err := srv.Update(p.UpdateRequest{ID: "placeholder-server", Urn: urn, DryRun: true, State: state, OldInputs: inputs, Inputs: secretInput})
+	require.NoError(t, err)
+	for _, field := range []string{"serverId", "organizationId", "status"} {
+		require.False(t, secretUpdate.Properties.Get(field).Secret(), field)
+		require.False(t, secretUpdate.Properties.Get(field).IsComputed(), field)
+	}
 
 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
