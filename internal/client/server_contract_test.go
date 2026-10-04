@@ -29,7 +29,9 @@ func TestServerClientContract(t *testing.T) {
 			require.Equal(t, "server-1", r.URL.Query().Get("serverId"))
 			readCount++
 			description := `""`
-			if readCount == 2 { description = "null" }
+			if readCount == 2 {
+				description = "null"
+			}
 			_, _ = w.Write([]byte(`{"serverId":"server-1","name":"node","description":` + description + `,"ipAddress":"192.0.2.10","port":22,"username":"root","sshKeyId":null,"serverType":"deploy","enableDockerCleanup":false,"organizationId":"org-1","serverStatus":"active","sshKey":{"privateKey":"must-not-be-typed"},"monitoring":{"token":"must-not-be-typed"}}`))
 		case "/api/server.update":
 			require.Equal(t, http.MethodPost, r.Method)

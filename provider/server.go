@@ -16,7 +16,7 @@ import (
 type ServerArgs struct {
 	Name                string  `pulumi:"name"`
 	Description         *string `pulumi:"description,optional"`
-	IpAddress           string  `pulumi:"ipAddress"`
+	IPAddress           string  `pulumi:"ipAddress"`
 	Port                int     `pulumi:"port,optional"`
 	Username            string  `pulumi:"username,optional"`
 	SSHKeyID            *string `pulumi:"sshKeyId,optional"`
@@ -43,7 +43,7 @@ func (r *Server) Annotate(a infer.Annotator) {
 func (a *ServerArgs) Annotate(n infer.Annotator) {
 	n.Describe(&a.Name, "Server name.")
 	n.Describe(&a.Description, "Optional description; omission clears the description.")
-	n.Describe(&a.IpAddress, "Hostname or IP address of the remote server.")
+	n.Describe(&a.IPAddress, "Hostname or IP address of the remote server.")
 	n.Describe(&a.Port, "SSH port (1–65535); defaults to 22.")
 	n.SetDefault(&a.Port, 22)
 	n.Describe(&a.Username, "SSH username; defaults to root.")
@@ -78,7 +78,7 @@ func (r Server) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckR
 	if v, ok := req.NewInputs.GetOk("port"); ok && v.IsNumber() && v.AsNumber() == 0 {
 		add("port", "port must be between 1 and 65535")
 	}
-	for _, f := range []struct{ k, v string }{{"name", a.Name}, {"ipAddress", a.IpAddress}, {"username", a.Username}} {
+	for _, f := range []struct{ k, v string }{{"name", a.Name}, {"ipAddress", a.IPAddress}, {"username", a.Username}} {
 		if strings.TrimSpace(f.v) == "" {
 			add(f.k, f.k+" must not be blank")
 		}
@@ -100,7 +100,7 @@ func (r Server) Diff(_ context.Context, req infer.DiffRequest[ServerArgs, Server
 	for _, field := range []struct {
 		k       string
 		changed bool
-	}{{"name", a.Name != b.Name}, {"description", !sameOptionalString(a.Description, b.Description)}, {"ipAddress", a.IpAddress != b.IpAddress}, {"port", a.Port != b.Port}, {"username", a.Username != b.Username}, {"sshKeyId", !sameOptionalString(a.SSHKeyID, b.SSHKeyID)}, {"serverType", a.ServerType != b.ServerType}, {"enableDockerCleanup", a.EnableDockerCleanup != b.EnableDockerCleanup}} {
+	}{{"name", a.Name != b.Name}, {"description", !sameOptionalString(a.Description, b.Description)}, {"ipAddress", a.IPAddress != b.IPAddress}, {"port", a.Port != b.Port}, {"username", a.Username != b.Username}, {"sshKeyId", !sameOptionalString(a.SSHKeyID, b.SSHKeyID)}, {"serverType", a.ServerType != b.ServerType}, {"enableDockerCleanup", a.EnableDockerCleanup != b.EnableDockerCleanup}} {
 		if field.changed {
 			d[field.k] = p.PropertyDiff{Kind: p.Update}
 		}
@@ -114,7 +114,7 @@ func (r Server) Create(ctx context.Context, req infer.CreateRequest[ServerArgs])
 	}
 	a := req.Inputs
 	api := r.client(ctx)
-	resp, err := api.ServerCreateWithResponse(ctx, generated.ServerCreateJSONRequestBody{Name: a.Name, Description: serverNullable(a.Description), IpAddress: a.IpAddress, Port: a.Port, Username: a.Username, SshKeyId: serverNullable(a.SSHKeyID), ServerType: generated.ServerCreateRequestServerType(a.ServerType), EnableDockerCleanup: &a.EnableDockerCleanup})
+	resp, err := api.ServerCreateWithResponse(ctx, generated.ServerCreateJSONRequestBody{Name: a.Name, Description: serverNullable(a.Description), IpAddress: a.IPAddress, Port: a.Port, Username: a.Username, SshKeyId: serverNullable(a.SSHKeyID), ServerType: generated.ServerCreateRequestServerType(a.ServerType), EnableDockerCleanup: &a.EnableDockerCleanup})
 	if err != nil {
 		return infer.CreateResponse[ServerState]{}, fmt.Errorf("server.create failed: %w", safeServerError(err))
 	}
@@ -146,7 +146,7 @@ func (r Server) Update(ctx context.Context, req infer.UpdateRequest[ServerArgs, 
 	}
 	a := req.Inputs
 	api := r.client(ctx)
-	resp, err := api.ServerUpdateWithResponse(ctx, generated.ServerUpdateJSONRequestBody{ServerId: req.ID, Name: a.Name, Description: serverNullable(a.Description), IpAddress: a.IpAddress, Port: a.Port, Username: a.Username, SshKeyId: serverNullable(a.SSHKeyID), ServerType: generated.ServerUpdateRequestServerType(a.ServerType), EnableDockerCleanup: &a.EnableDockerCleanup})
+	resp, err := api.ServerUpdateWithResponse(ctx, generated.ServerUpdateJSONRequestBody{ServerId: req.ID, Name: a.Name, Description: serverNullable(a.Description), IpAddress: a.IPAddress, Port: a.Port, Username: a.Username, SshKeyId: serverNullable(a.SSHKeyID), ServerType: generated.ServerUpdateRequestServerType(a.ServerType), EnableDockerCleanup: &a.EnableDockerCleanup})
 	if err != nil {
 		return infer.UpdateResponse[ServerState]{Output: req.State}, fmt.Errorf("server.update failed: %w", safeServerError(err))
 	}
@@ -214,6 +214,6 @@ func readServer(ctx context.Context, api *client.Client, id string) (ServerState
 	if v.Name == nil || v.IpAddress == nil || v.Port == nil || v.Username == nil || v.ServerType == nil || v.EnableDockerCleanup == nil || v.OrganizationId == nil || v.ServerStatus == nil {
 		return ServerState{}, errors.New("server.one returned incomplete server configuration or metadata")
 	}
-	a := ServerArgs{Name: *v.Name, Description: nullableValue(v.Description), IpAddress: *v.IpAddress, Port: *v.Port, Username: *v.Username, SSHKeyID: nullableValue(v.SshKeyId), ServerType: *v.ServerType, EnableDockerCleanup: *v.EnableDockerCleanup}
+	a := ServerArgs{Name: *v.Name, Description: nullableValue(v.Description), IPAddress: *v.IpAddress, Port: *v.Port, Username: *v.Username, SSHKeyID: nullableValue(v.SshKeyId), ServerType: *v.ServerType, EnableDockerCleanup: *v.EnableDockerCleanup}
 	return ServerState{ServerArgs: a, ServerID: id, OrganizationID: v.OrganizationId, Status: v.ServerStatus}, nil
 }
