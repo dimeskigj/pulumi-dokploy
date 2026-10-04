@@ -69,3 +69,35 @@ func TestNotificationNullablePresenceRoundTrip(t *testing.T) {
 		})
 	}
 }
+
+func TestNotificationCustomHeadersPresenceRoundTrip(t *testing.T) {
+	for _, tc := range []struct {
+		name, input     string
+		specified, null bool
+		value           map[string]string
+	}{
+		{"omitted", `{"customId":"channel"}`, false, false, nil},
+		{"null", `{"customId":"channel","headers":null}`, true, true, nil},
+		{"empty", `{"customId":"channel","headers":{}}`, true, false, map[string]string{}},
+		{"filled", `{"customId":"channel","headers":{"X-Test":"value"}}`, true, false, map[string]string{"X-Test": "value"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var v generated.NotificationCustom
+			require.NoError(t, json.Unmarshal([]byte(tc.input), &v))
+			require.Equal(t, tc.specified, v.Headers.IsSpecified())
+			require.Equal(t, tc.null, v.Headers.IsNull())
+			if !tc.null && tc.specified {
+				require.Equal(t, tc.value, v.Headers.MustGet())
+			}
+			encoded, err := json.Marshal(v)
+			require.NoError(t, err)
+			var decoded generated.NotificationCustom
+			require.NoError(t, json.Unmarshal(encoded, &decoded))
+			require.Equal(t, v.Headers.IsSpecified(), decoded.Headers.IsSpecified())
+			require.Equal(t, v.Headers.IsNull(), decoded.Headers.IsNull())
+			if !tc.null && tc.specified {
+				require.Equal(t, tc.value, decoded.Headers.MustGet())
+			}
+		})
+	}
+}
