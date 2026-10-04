@@ -133,7 +133,7 @@ func notificationEmailArgsFrom(v *generated.NotificationEmail, prior *Notificati
 	if e != nil {
 		return nil, e
 	}
-	if port > 65535 {
+	if port < 1 || port > 65535 {
 		return nil, errNotificationObservation
 	}
 	user, e := notificationRequired(v.Username)
