@@ -90,7 +90,7 @@ install_java_sdk:
 build_sdks: build_go build_python build_nodejs build_dotnet build_java
 
 validate_pulumi_home:
-	@test -n "$(PULUMI_HOME)" && test -d "$(PULUMI_HOME)" || { echo "PULUMI_HOME must name an existing isolated directory" >&2; exit 1; }
+	@test -n "$(PULUMI_HOME)" && test -d "$(PULUMI_HOME)" && test -n "$(PULUMI_HOME_OWNER_TOKEN)" && test -f "$(PULUMI_HOME)/.pulumi-dokploy-example-owner" && test "$$(cat "$(PULUMI_HOME)/.pulumi-dokploy-example-owner")" = "$(PULUMI_HOME_OWNER_TOKEN)" || { echo "PULUMI_HOME must be an isolated cache allocated by gen_examples" >&2; exit 1; }
 
 install_plugin: provider
 	@if [ -n "$(PULUMI_HOME)" ]; then PULUMI_HOME="$(PULUMI_HOME)" mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; else mise exec pulumi@3.259.0 -- pulumi plugin install resource dokploy $(VERSION_GENERIC) --file bin/$(PROVIDER) --reinstall; fi

@@ -247,7 +247,7 @@ func TestGenerationHelperCleansOnlyAllocatedCache(t *testing.T) {
 	root := t.TempDir()
 	cacheRecord := filepath.Join(root, "cache-path")
 	fakeMake := filepath.Join(root, "make")
-	body := "#!/bin/sh\ntest -n \"$PULUMI_HOME\" && test -d \"$PULUMI_HOME\" || exit 9\nprintf '%s' \"$PULUMI_HOME\" > \"$CACHE_RECORD\"\n"
+	body := "#!/bin/sh\ntest -n \"$PULUMI_HOME\" && test -d \"$PULUMI_HOME\" || exit 9\ntest -n \"$PULUMI_HOME_OWNER_TOKEN\" || exit 10\ntest \"$(cat \"$PULUMI_HOME/.pulumi-dokploy-example-owner\")\" = \"$PULUMI_HOME_OWNER_TOKEN\" || exit 11\nprintf '%s' \"$PULUMI_HOME\" > \"$CACHE_RECORD\"\n"
 	if err := os.WriteFile(fakeMake, []byte(body), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -278,14 +278,32 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 		name       string
 		cacheValue string
 		unset      bool
+		populated  bool
 	}{
 		{name: "unset", unset: true},
 		{name: "empty", cacheValue: ""},
 		{name: "invalid", cacheValue: filepath.Join(t.TempDir(), "not-a-directory")},
+		{name: "existing-empty-shared-cache", cacheValue: filepath.Join(t.TempDir(), "shared-cache")},
+		{name: "existing-populated-shared-cache", cacheValue: filepath.Join(t.TempDir(), "populated-cache"), populated: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmp := t.TempDir()
+			if tt.populated || strings.Contains(tt.name, "shared-cache") {
+				if err := os.MkdirAll(tt.cacheValue, 0700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var sentinel string
+			if tt.populated {
+				sentinel = filepath.Join(tt.cacheValue, "plugins", "resource-dokploy-0.3.0")
+				if err := os.MkdirAll(filepath.Dir(sentinel), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(sentinel, []byte("shared plugin must remain untouched"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
 			marker := filepath.Join(tmp, "plugin-install-called")
 			stubBin := filepath.Join(tmp, "bin")
 			if err := os.MkdirAll(stubBin, 0755); err != nil {
@@ -318,6 +336,12 @@ func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) 
 			}
 			if _, err := os.Stat(marker); !os.IsNotExist(err) {
 				t.Fatalf("plugin installation ran before cache validation (stat error %v)", err)
+			}
+			if tt.populated {
+				got, err := os.ReadFile(sentinel)
+				if err != nil || string(got) != "shared plugin must remain untouched" {
+					t.Fatalf("shared cache fixture changed: %q, %v", got, err)
+				}
 			}
 			got, err := os.ReadFile(existing)
 			if err != nil || string(got) != string(original) {
