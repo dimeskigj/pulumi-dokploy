@@ -31,6 +31,9 @@ func notificationBodyCase(t *testing.T, kind string, create, update any, setting
 			body := notificationBodyMap(t, tc.body)
 			want := map[string]any{"name": "requested-name"}
 			for key, value := range settings {
+				if kind == notificationPushover && tc.name == "create" && (key == "retry" || key == "expire") && value == nil {
+					continue
+				}
 				want[key] = value
 			}
 			for _, key := range []string{"appDeploy", "appBuildError", "databaseBackup", "volumeBackup", "dokployBackup", "dokployRestart", "dockerCleanup"} {
@@ -52,6 +55,20 @@ func notificationBodyCase(t *testing.T, kind string, create, update any, setting
 func TestNotificationChannelEndpoints(t *testing.T) {
 	for _, kind := range notificationChannels {
 		t.Run(kind, func(t *testing.T) {
+			settings := map[string]map[string]any{
+				"slack":      {"webhookUrl": "https://example.com/hook", "channel": ""},
+				"telegram":   {"botToken": "placeholder", "chatId": "placeholder", "messageThreadId": ""},
+				"discord":    {"webhookUrl": "https://example.com/hook", "decoration": false},
+				"email":      {"smtpServer": "example.com", "smtpPort": float64(25), "username": "placeholder", "password": "placeholder", "fromAddress": "sender@example.com", "toAddresses": []any{"recipient@example.com"}},
+				"resend":     {"apiKey": "placeholder", "fromAddress": "sender@example.com", "toAddresses": []any{"recipient@example.com"}},
+				"gotify":     {"serverUrl": "https://example.com", "appToken": "placeholder", "priority": float64(5), "decoration": false},
+				"ntfy":       {"serverUrl": "https://example.com", "topic": "placeholder", "accessToken": "", "priority": float64(3)},
+				"mattermost": {"webhookUrl": "https://example.com/hook", "channel": "", "username": ""},
+				"custom":     {"endpoint": "https://example.com/hook", "headers": map[string]any{"X.A[B]": "token-like-placeholder"}},
+				"lark":       {"webhookUrl": "https://example.com/hook"},
+				"teams":      {"webhookUrl": "https://example.com/hook"},
+				"pushover":   {"userKey": "placeholder", "apiToken": "placeholder", "priority": float64(0)},
+			}
 			for _, operation := range []string{"create", "update"} {
 				t.Run(operation, func(t *testing.T) {
 					calls := 0
@@ -70,9 +87,25 @@ func TestNotificationChannelEndpoints(t *testing.T) {
 							require.Equal(t, "placeholder-channel", body[kind+"Id"])
 							require.Equal(t, true, body["appDeploy"])
 						}
-						if kind == notificationCustom {
-							require.Equal(t, map[string]any{"X.A[B]": "token-like-placeholder"}, body["headers"])
+						want := map[string]any{"name": "temporary-name"}
+						for key, value := range settings[kind] {
+							want[key] = value
 						}
+						for _, field := range notificationEventFields {
+							if field.name != "serverThreshold" || kind != notificationGotify && kind != notificationNtfy {
+								want[field.name] = operation == "update" && field.name == "appDeploy"
+							}
+						}
+						if operation == "update" {
+							want["name"] = "example"
+							want["notificationId"] = "placeholder-notification"
+							want[kind+"Id"] = "placeholder-channel"
+						}
+						if operation == "update" && kind == notificationPushover {
+							want["retry"] = nil
+							want["expire"] = nil
+						}
+						require.Equal(t, want, body)
 						if operation == "create" {
 							w.WriteHeader(http.StatusNoContent)
 						} else {
