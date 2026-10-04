@@ -9,7 +9,9 @@ import (
 	"testing"
 
 	p "github.com/pulumi/pulumi-go-provider"
+	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/pkg/v3/codegen/schema"
+	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
@@ -198,6 +200,37 @@ func TestSchemaPortContract(t *testing.T) {
 			require.NotEmpty(t, v.Description)
 		}
 		require.ElementsMatch(t, tc.values, values)
+	}
+}
+
+func TestSchemaPortSDKEnumDefaultNormalization(t *testing.T) {
+	spec := providerSchema(t)
+	r := spec.Resources["dokploy:index:Port"]
+	for key, expected := range map[string]string{"protocol": "tcp", "publishMode": "ingress"} {
+		require.Equal(t, expected, r.InputProperties[key].Default)
+		require.NotContains(t, r.RequiredInputs, key)
+	}
+	// These assertions document generated SDK behavior rather than changing it:
+	// Python None and Node.js null/undefined are treated as omission before Check.
+	python := readGenerated(t, "sdk", "python", "pulumi_dokploy", "port.py")
+	for _, fragment := range []string{"if protocol is None:\n            protocol = 'tcp'", "if publish_mode is None:\n            publish_mode = 'ingress'", "if protocol is not None:\n            pulumi.set(__self__, \"protocol\", protocol)", "if publish_mode is not None:\n            pulumi.set(__self__, \"publish_mode\", publish_mode)"} {
+		require.Contains(t, python, fragment)
+	}
+	node := readGenerated(t, "sdk", "nodejs", "port.ts")
+	require.Contains(t, node, `resourceInputs["protocol"] = (args?.protocol) ?? "tcp";`)
+	require.Contains(t, node, `resourceInputs["publishMode"] = (args?.publishMode) ?? "ingress";`)
+	require.NotContains(t, node, `(args?.protocol) || "tcp"`)
+	require.NotContains(t, node, `(args?.publishMode) || "ingress"`)
+	// Explicit empty strings remain values for the provider's Check to reject.
+	for _, key := range []string{"protocol", "publishMode"} {
+		props := map[string]property.Value{"applicationId": property.New("a1"), "publishedPort": property.New(float64(8080)), "targetPort": property.New(float64(80)), key: property.New("")}
+		checked, err := (Port{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(props)})
+		require.NoError(t, err)
+		require.Contains(t, portFailureProperties(checked.Failures), key)
+		props[key] = property.New(property.Null)
+		checked, err = (Port{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(props)})
+		require.NoError(t, err)
+		require.Contains(t, portFailureProperties(checked.Failures), key)
 	}
 }
 
