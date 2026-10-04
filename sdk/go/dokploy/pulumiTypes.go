@@ -1663,6 +1663,2376 @@ func (o GitLabComposeSourcePtrOutput) WatchPaths() pulumi.StringArrayOutput {
 	}).(pulumi.StringArrayOutput)
 }
 
+type NotificationCustomConfig struct {
+	// Secret HTTP(S) destination URL.
+	Endpoint string `pulumi:"endpoint"`
+	// Secret custom HTTP headers; defaults to an empty map.
+	Headers map[string]string `pulumi:"headers"`
+}
+
+// NotificationCustomConfigInput is an input type that accepts NotificationCustomConfigArgs and NotificationCustomConfigOutput values.
+// You can construct a concrete instance of `NotificationCustomConfigInput` via:
+//
+//	NotificationCustomConfigArgs{...}
+type NotificationCustomConfigInput interface {
+	pulumi.Input
+
+	ToNotificationCustomConfigOutput() NotificationCustomConfigOutput
+	ToNotificationCustomConfigOutputWithContext(context.Context) NotificationCustomConfigOutput
+}
+
+type NotificationCustomConfigArgs struct {
+	// Secret HTTP(S) destination URL.
+	Endpoint pulumi.StringInput `pulumi:"endpoint"`
+	// Secret custom HTTP headers; defaults to an empty map.
+	Headers pulumi.StringMapInput `pulumi:"headers"`
+}
+
+func (NotificationCustomConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationCustomConfig)(nil)).Elem()
+}
+
+func (i NotificationCustomConfigArgs) ToNotificationCustomConfigOutput() NotificationCustomConfigOutput {
+	return i.ToNotificationCustomConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationCustomConfigArgs) ToNotificationCustomConfigOutputWithContext(ctx context.Context) NotificationCustomConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationCustomConfigOutput)
+}
+
+func (i NotificationCustomConfigArgs) ToNotificationCustomConfigPtrOutput() NotificationCustomConfigPtrOutput {
+	return i.ToNotificationCustomConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationCustomConfigArgs) ToNotificationCustomConfigPtrOutputWithContext(ctx context.Context) NotificationCustomConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationCustomConfigOutput).ToNotificationCustomConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationCustomConfigPtrInput is an input type that accepts NotificationCustomConfigArgs, NotificationCustomConfigPtr and NotificationCustomConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationCustomConfigPtrInput` via:
+//
+//	        NotificationCustomConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationCustomConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationCustomConfigPtrOutput() NotificationCustomConfigPtrOutput
+	ToNotificationCustomConfigPtrOutputWithContext(context.Context) NotificationCustomConfigPtrOutput
+}
+
+type notificationCustomConfigPtrType NotificationCustomConfigArgs
+
+func NotificationCustomConfigPtr(v *NotificationCustomConfigArgs) NotificationCustomConfigPtrInput {
+	return (*notificationCustomConfigPtrType)(v)
+}
+
+func (*notificationCustomConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationCustomConfig)(nil)).Elem()
+}
+
+func (i *notificationCustomConfigPtrType) ToNotificationCustomConfigPtrOutput() NotificationCustomConfigPtrOutput {
+	return i.ToNotificationCustomConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationCustomConfigPtrType) ToNotificationCustomConfigPtrOutputWithContext(ctx context.Context) NotificationCustomConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationCustomConfigPtrOutput)
+}
+
+type NotificationCustomConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationCustomConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationCustomConfig)(nil)).Elem()
+}
+
+func (o NotificationCustomConfigOutput) ToNotificationCustomConfigOutput() NotificationCustomConfigOutput {
+	return o
+}
+
+func (o NotificationCustomConfigOutput) ToNotificationCustomConfigOutputWithContext(ctx context.Context) NotificationCustomConfigOutput {
+	return o
+}
+
+func (o NotificationCustomConfigOutput) ToNotificationCustomConfigPtrOutput() NotificationCustomConfigPtrOutput {
+	return o.ToNotificationCustomConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationCustomConfigOutput) ToNotificationCustomConfigPtrOutputWithContext(ctx context.Context) NotificationCustomConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationCustomConfig) *NotificationCustomConfig {
+		return &v
+	}).(NotificationCustomConfigPtrOutput)
+}
+
+// Secret HTTP(S) destination URL.
+func (o NotificationCustomConfigOutput) Endpoint() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationCustomConfig) string { return v.Endpoint }).(pulumi.StringOutput)
+}
+
+// Secret custom HTTP headers; defaults to an empty map.
+func (o NotificationCustomConfigOutput) Headers() pulumi.StringMapOutput {
+	return o.ApplyT(func(v NotificationCustomConfig) map[string]string { return v.Headers }).(pulumi.StringMapOutput)
+}
+
+type NotificationCustomConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationCustomConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationCustomConfig)(nil)).Elem()
+}
+
+func (o NotificationCustomConfigPtrOutput) ToNotificationCustomConfigPtrOutput() NotificationCustomConfigPtrOutput {
+	return o
+}
+
+func (o NotificationCustomConfigPtrOutput) ToNotificationCustomConfigPtrOutputWithContext(ctx context.Context) NotificationCustomConfigPtrOutput {
+	return o
+}
+
+func (o NotificationCustomConfigPtrOutput) Elem() NotificationCustomConfigOutput {
+	return o.ApplyT(func(v *NotificationCustomConfig) NotificationCustomConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationCustomConfig
+		return ret
+	}).(NotificationCustomConfigOutput)
+}
+
+// Secret HTTP(S) destination URL.
+func (o NotificationCustomConfigPtrOutput) Endpoint() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationCustomConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Endpoint
+	}).(pulumi.StringPtrOutput)
+}
+
+// Secret custom HTTP headers; defaults to an empty map.
+func (o NotificationCustomConfigPtrOutput) Headers() pulumi.StringMapOutput {
+	return o.ApplyT(func(v *NotificationCustomConfig) map[string]string {
+		if v == nil {
+			return nil
+		}
+		return v.Headers
+	}).(pulumi.StringMapOutput)
+}
+
+type NotificationDiscordConfig struct {
+	// Whether to decorate messages; defaults to false.
+	Decoration *bool `pulumi:"decoration"`
+	// Secret Discord webhook URL.
+	WebhookUrl string `pulumi:"webhookUrl"`
+}
+
+// NotificationDiscordConfigInput is an input type that accepts NotificationDiscordConfigArgs and NotificationDiscordConfigOutput values.
+// You can construct a concrete instance of `NotificationDiscordConfigInput` via:
+//
+//	NotificationDiscordConfigArgs{...}
+type NotificationDiscordConfigInput interface {
+	pulumi.Input
+
+	ToNotificationDiscordConfigOutput() NotificationDiscordConfigOutput
+	ToNotificationDiscordConfigOutputWithContext(context.Context) NotificationDiscordConfigOutput
+}
+
+type NotificationDiscordConfigArgs struct {
+	// Whether to decorate messages; defaults to false.
+	Decoration pulumi.BoolPtrInput `pulumi:"decoration"`
+	// Secret Discord webhook URL.
+	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
+}
+
+func (NotificationDiscordConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationDiscordConfig)(nil)).Elem()
+}
+
+func (i NotificationDiscordConfigArgs) ToNotificationDiscordConfigOutput() NotificationDiscordConfigOutput {
+	return i.ToNotificationDiscordConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationDiscordConfigArgs) ToNotificationDiscordConfigOutputWithContext(ctx context.Context) NotificationDiscordConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationDiscordConfigOutput)
+}
+
+func (i NotificationDiscordConfigArgs) ToNotificationDiscordConfigPtrOutput() NotificationDiscordConfigPtrOutput {
+	return i.ToNotificationDiscordConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationDiscordConfigArgs) ToNotificationDiscordConfigPtrOutputWithContext(ctx context.Context) NotificationDiscordConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationDiscordConfigOutput).ToNotificationDiscordConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationDiscordConfigPtrInput is an input type that accepts NotificationDiscordConfigArgs, NotificationDiscordConfigPtr and NotificationDiscordConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationDiscordConfigPtrInput` via:
+//
+//	        NotificationDiscordConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationDiscordConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationDiscordConfigPtrOutput() NotificationDiscordConfigPtrOutput
+	ToNotificationDiscordConfigPtrOutputWithContext(context.Context) NotificationDiscordConfigPtrOutput
+}
+
+type notificationDiscordConfigPtrType NotificationDiscordConfigArgs
+
+func NotificationDiscordConfigPtr(v *NotificationDiscordConfigArgs) NotificationDiscordConfigPtrInput {
+	return (*notificationDiscordConfigPtrType)(v)
+}
+
+func (*notificationDiscordConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationDiscordConfig)(nil)).Elem()
+}
+
+func (i *notificationDiscordConfigPtrType) ToNotificationDiscordConfigPtrOutput() NotificationDiscordConfigPtrOutput {
+	return i.ToNotificationDiscordConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationDiscordConfigPtrType) ToNotificationDiscordConfigPtrOutputWithContext(ctx context.Context) NotificationDiscordConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationDiscordConfigPtrOutput)
+}
+
+type NotificationDiscordConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationDiscordConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationDiscordConfig)(nil)).Elem()
+}
+
+func (o NotificationDiscordConfigOutput) ToNotificationDiscordConfigOutput() NotificationDiscordConfigOutput {
+	return o
+}
+
+func (o NotificationDiscordConfigOutput) ToNotificationDiscordConfigOutputWithContext(ctx context.Context) NotificationDiscordConfigOutput {
+	return o
+}
+
+func (o NotificationDiscordConfigOutput) ToNotificationDiscordConfigPtrOutput() NotificationDiscordConfigPtrOutput {
+	return o.ToNotificationDiscordConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationDiscordConfigOutput) ToNotificationDiscordConfigPtrOutputWithContext(ctx context.Context) NotificationDiscordConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationDiscordConfig) *NotificationDiscordConfig {
+		return &v
+	}).(NotificationDiscordConfigPtrOutput)
+}
+
+// Whether to decorate messages; defaults to false.
+func (o NotificationDiscordConfigOutput) Decoration() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationDiscordConfig) *bool { return v.Decoration }).(pulumi.BoolPtrOutput)
+}
+
+// Secret Discord webhook URL.
+func (o NotificationDiscordConfigOutput) WebhookUrl() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationDiscordConfig) string { return v.WebhookUrl }).(pulumi.StringOutput)
+}
+
+type NotificationDiscordConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationDiscordConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationDiscordConfig)(nil)).Elem()
+}
+
+func (o NotificationDiscordConfigPtrOutput) ToNotificationDiscordConfigPtrOutput() NotificationDiscordConfigPtrOutput {
+	return o
+}
+
+func (o NotificationDiscordConfigPtrOutput) ToNotificationDiscordConfigPtrOutputWithContext(ctx context.Context) NotificationDiscordConfigPtrOutput {
+	return o
+}
+
+func (o NotificationDiscordConfigPtrOutput) Elem() NotificationDiscordConfigOutput {
+	return o.ApplyT(func(v *NotificationDiscordConfig) NotificationDiscordConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationDiscordConfig
+		return ret
+	}).(NotificationDiscordConfigOutput)
+}
+
+// Whether to decorate messages; defaults to false.
+func (o NotificationDiscordConfigPtrOutput) Decoration() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationDiscordConfig) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.Decoration
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Secret Discord webhook URL.
+func (o NotificationDiscordConfigPtrOutput) WebhookUrl() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationDiscordConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.WebhookUrl
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationEmailConfig struct {
+	// Sender address.
+	FromAddress string `pulumi:"fromAddress"`
+	// Secret SMTP password.
+	Password string `pulumi:"password"`
+	// SMTP port from 1 through 65535.
+	SmtpPort int `pulumi:"smtpPort"`
+	// SMTP server hostname.
+	SmtpServer string `pulumi:"smtpServer"`
+	// Nonempty list of recipient addresses.
+	ToAddresses []string `pulumi:"toAddresses"`
+	// SMTP username.
+	Username string `pulumi:"username"`
+}
+
+// NotificationEmailConfigInput is an input type that accepts NotificationEmailConfigArgs and NotificationEmailConfigOutput values.
+// You can construct a concrete instance of `NotificationEmailConfigInput` via:
+//
+//	NotificationEmailConfigArgs{...}
+type NotificationEmailConfigInput interface {
+	pulumi.Input
+
+	ToNotificationEmailConfigOutput() NotificationEmailConfigOutput
+	ToNotificationEmailConfigOutputWithContext(context.Context) NotificationEmailConfigOutput
+}
+
+type NotificationEmailConfigArgs struct {
+	// Sender address.
+	FromAddress pulumi.StringInput `pulumi:"fromAddress"`
+	// Secret SMTP password.
+	Password pulumi.StringInput `pulumi:"password"`
+	// SMTP port from 1 through 65535.
+	SmtpPort pulumi.IntInput `pulumi:"smtpPort"`
+	// SMTP server hostname.
+	SmtpServer pulumi.StringInput `pulumi:"smtpServer"`
+	// Nonempty list of recipient addresses.
+	ToAddresses pulumi.StringArrayInput `pulumi:"toAddresses"`
+	// SMTP username.
+	Username pulumi.StringInput `pulumi:"username"`
+}
+
+func (NotificationEmailConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationEmailConfig)(nil)).Elem()
+}
+
+func (i NotificationEmailConfigArgs) ToNotificationEmailConfigOutput() NotificationEmailConfigOutput {
+	return i.ToNotificationEmailConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationEmailConfigArgs) ToNotificationEmailConfigOutputWithContext(ctx context.Context) NotificationEmailConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationEmailConfigOutput)
+}
+
+func (i NotificationEmailConfigArgs) ToNotificationEmailConfigPtrOutput() NotificationEmailConfigPtrOutput {
+	return i.ToNotificationEmailConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationEmailConfigArgs) ToNotificationEmailConfigPtrOutputWithContext(ctx context.Context) NotificationEmailConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationEmailConfigOutput).ToNotificationEmailConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationEmailConfigPtrInput is an input type that accepts NotificationEmailConfigArgs, NotificationEmailConfigPtr and NotificationEmailConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationEmailConfigPtrInput` via:
+//
+//	        NotificationEmailConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationEmailConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationEmailConfigPtrOutput() NotificationEmailConfigPtrOutput
+	ToNotificationEmailConfigPtrOutputWithContext(context.Context) NotificationEmailConfigPtrOutput
+}
+
+type notificationEmailConfigPtrType NotificationEmailConfigArgs
+
+func NotificationEmailConfigPtr(v *NotificationEmailConfigArgs) NotificationEmailConfigPtrInput {
+	return (*notificationEmailConfigPtrType)(v)
+}
+
+func (*notificationEmailConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationEmailConfig)(nil)).Elem()
+}
+
+func (i *notificationEmailConfigPtrType) ToNotificationEmailConfigPtrOutput() NotificationEmailConfigPtrOutput {
+	return i.ToNotificationEmailConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationEmailConfigPtrType) ToNotificationEmailConfigPtrOutputWithContext(ctx context.Context) NotificationEmailConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationEmailConfigPtrOutput)
+}
+
+type NotificationEmailConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationEmailConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationEmailConfig)(nil)).Elem()
+}
+
+func (o NotificationEmailConfigOutput) ToNotificationEmailConfigOutput() NotificationEmailConfigOutput {
+	return o
+}
+
+func (o NotificationEmailConfigOutput) ToNotificationEmailConfigOutputWithContext(ctx context.Context) NotificationEmailConfigOutput {
+	return o
+}
+
+func (o NotificationEmailConfigOutput) ToNotificationEmailConfigPtrOutput() NotificationEmailConfigPtrOutput {
+	return o.ToNotificationEmailConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationEmailConfigOutput) ToNotificationEmailConfigPtrOutputWithContext(ctx context.Context) NotificationEmailConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationEmailConfig) *NotificationEmailConfig {
+		return &v
+	}).(NotificationEmailConfigPtrOutput)
+}
+
+// Sender address.
+func (o NotificationEmailConfigOutput) FromAddress() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationEmailConfig) string { return v.FromAddress }).(pulumi.StringOutput)
+}
+
+// Secret SMTP password.
+func (o NotificationEmailConfigOutput) Password() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationEmailConfig) string { return v.Password }).(pulumi.StringOutput)
+}
+
+// SMTP port from 1 through 65535.
+func (o NotificationEmailConfigOutput) SmtpPort() pulumi.IntOutput {
+	return o.ApplyT(func(v NotificationEmailConfig) int { return v.SmtpPort }).(pulumi.IntOutput)
+}
+
+// SMTP server hostname.
+func (o NotificationEmailConfigOutput) SmtpServer() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationEmailConfig) string { return v.SmtpServer }).(pulumi.StringOutput)
+}
+
+// Nonempty list of recipient addresses.
+func (o NotificationEmailConfigOutput) ToAddresses() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v NotificationEmailConfig) []string { return v.ToAddresses }).(pulumi.StringArrayOutput)
+}
+
+// SMTP username.
+func (o NotificationEmailConfigOutput) Username() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationEmailConfig) string { return v.Username }).(pulumi.StringOutput)
+}
+
+type NotificationEmailConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationEmailConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationEmailConfig)(nil)).Elem()
+}
+
+func (o NotificationEmailConfigPtrOutput) ToNotificationEmailConfigPtrOutput() NotificationEmailConfigPtrOutput {
+	return o
+}
+
+func (o NotificationEmailConfigPtrOutput) ToNotificationEmailConfigPtrOutputWithContext(ctx context.Context) NotificationEmailConfigPtrOutput {
+	return o
+}
+
+func (o NotificationEmailConfigPtrOutput) Elem() NotificationEmailConfigOutput {
+	return o.ApplyT(func(v *NotificationEmailConfig) NotificationEmailConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationEmailConfig
+		return ret
+	}).(NotificationEmailConfigOutput)
+}
+
+// Sender address.
+func (o NotificationEmailConfigPtrOutput) FromAddress() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationEmailConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.FromAddress
+	}).(pulumi.StringPtrOutput)
+}
+
+// Secret SMTP password.
+func (o NotificationEmailConfigPtrOutput) Password() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationEmailConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Password
+	}).(pulumi.StringPtrOutput)
+}
+
+// SMTP port from 1 through 65535.
+func (o NotificationEmailConfigPtrOutput) SmtpPort() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *NotificationEmailConfig) *int {
+		if v == nil {
+			return nil
+		}
+		return &v.SmtpPort
+	}).(pulumi.IntPtrOutput)
+}
+
+// SMTP server hostname.
+func (o NotificationEmailConfigPtrOutput) SmtpServer() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationEmailConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.SmtpServer
+	}).(pulumi.StringPtrOutput)
+}
+
+// Nonempty list of recipient addresses.
+func (o NotificationEmailConfigPtrOutput) ToAddresses() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *NotificationEmailConfig) []string {
+		if v == nil {
+			return nil
+		}
+		return v.ToAddresses
+	}).(pulumi.StringArrayOutput)
+}
+
+// SMTP username.
+func (o NotificationEmailConfigPtrOutput) Username() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationEmailConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Username
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationEvents struct {
+	// Notify on application build error; defaults to false.
+	AppBuildError *bool `pulumi:"appBuildError"`
+	// Notify on application deployment; defaults to false.
+	AppDeploy *bool `pulumi:"appDeploy"`
+	// Notify on database backup; defaults to false.
+	DatabaseBackup *bool `pulumi:"databaseBackup"`
+	// Notify on Docker cleanup; defaults to false.
+	DockerCleanup *bool `pulumi:"dockerCleanup"`
+	// Notify on Dokploy backup; defaults to false.
+	DokployBackup *bool `pulumi:"dokployBackup"`
+	// Notify on Dokploy restart; defaults to false.
+	DokployRestart *bool `pulumi:"dokployRestart"`
+	// Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+	ServerThreshold *bool `pulumi:"serverThreshold"`
+	// Notify on volume backup; defaults to false.
+	VolumeBackup *bool `pulumi:"volumeBackup"`
+}
+
+// NotificationEventsInput is an input type that accepts NotificationEventsArgs and NotificationEventsOutput values.
+// You can construct a concrete instance of `NotificationEventsInput` via:
+//
+//	NotificationEventsArgs{...}
+type NotificationEventsInput interface {
+	pulumi.Input
+
+	ToNotificationEventsOutput() NotificationEventsOutput
+	ToNotificationEventsOutputWithContext(context.Context) NotificationEventsOutput
+}
+
+type NotificationEventsArgs struct {
+	// Notify on application build error; defaults to false.
+	AppBuildError pulumi.BoolPtrInput `pulumi:"appBuildError"`
+	// Notify on application deployment; defaults to false.
+	AppDeploy pulumi.BoolPtrInput `pulumi:"appDeploy"`
+	// Notify on database backup; defaults to false.
+	DatabaseBackup pulumi.BoolPtrInput `pulumi:"databaseBackup"`
+	// Notify on Docker cleanup; defaults to false.
+	DockerCleanup pulumi.BoolPtrInput `pulumi:"dockerCleanup"`
+	// Notify on Dokploy backup; defaults to false.
+	DokployBackup pulumi.BoolPtrInput `pulumi:"dokployBackup"`
+	// Notify on Dokploy restart; defaults to false.
+	DokployRestart pulumi.BoolPtrInput `pulumi:"dokployRestart"`
+	// Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+	ServerThreshold pulumi.BoolPtrInput `pulumi:"serverThreshold"`
+	// Notify on volume backup; defaults to false.
+	VolumeBackup pulumi.BoolPtrInput `pulumi:"volumeBackup"`
+}
+
+func (NotificationEventsArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationEvents)(nil)).Elem()
+}
+
+func (i NotificationEventsArgs) ToNotificationEventsOutput() NotificationEventsOutput {
+	return i.ToNotificationEventsOutputWithContext(context.Background())
+}
+
+func (i NotificationEventsArgs) ToNotificationEventsOutputWithContext(ctx context.Context) NotificationEventsOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationEventsOutput)
+}
+
+func (i NotificationEventsArgs) ToNotificationEventsPtrOutput() NotificationEventsPtrOutput {
+	return i.ToNotificationEventsPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationEventsArgs) ToNotificationEventsPtrOutputWithContext(ctx context.Context) NotificationEventsPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationEventsOutput).ToNotificationEventsPtrOutputWithContext(ctx)
+}
+
+// NotificationEventsPtrInput is an input type that accepts NotificationEventsArgs, NotificationEventsPtr and NotificationEventsPtrOutput values.
+// You can construct a concrete instance of `NotificationEventsPtrInput` via:
+//
+//	        NotificationEventsArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationEventsPtrInput interface {
+	pulumi.Input
+
+	ToNotificationEventsPtrOutput() NotificationEventsPtrOutput
+	ToNotificationEventsPtrOutputWithContext(context.Context) NotificationEventsPtrOutput
+}
+
+type notificationEventsPtrType NotificationEventsArgs
+
+func NotificationEventsPtr(v *NotificationEventsArgs) NotificationEventsPtrInput {
+	return (*notificationEventsPtrType)(v)
+}
+
+func (*notificationEventsPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationEvents)(nil)).Elem()
+}
+
+func (i *notificationEventsPtrType) ToNotificationEventsPtrOutput() NotificationEventsPtrOutput {
+	return i.ToNotificationEventsPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationEventsPtrType) ToNotificationEventsPtrOutputWithContext(ctx context.Context) NotificationEventsPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationEventsPtrOutput)
+}
+
+type NotificationEventsOutput struct{ *pulumi.OutputState }
+
+func (NotificationEventsOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationEvents)(nil)).Elem()
+}
+
+func (o NotificationEventsOutput) ToNotificationEventsOutput() NotificationEventsOutput {
+	return o
+}
+
+func (o NotificationEventsOutput) ToNotificationEventsOutputWithContext(ctx context.Context) NotificationEventsOutput {
+	return o
+}
+
+func (o NotificationEventsOutput) ToNotificationEventsPtrOutput() NotificationEventsPtrOutput {
+	return o.ToNotificationEventsPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationEventsOutput) ToNotificationEventsPtrOutputWithContext(ctx context.Context) NotificationEventsPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationEvents) *NotificationEvents {
+		return &v
+	}).(NotificationEventsPtrOutput)
+}
+
+// Notify on application build error; defaults to false.
+func (o NotificationEventsOutput) AppBuildError() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.AppBuildError }).(pulumi.BoolPtrOutput)
+}
+
+// Notify on application deployment; defaults to false.
+func (o NotificationEventsOutput) AppDeploy() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.AppDeploy }).(pulumi.BoolPtrOutput)
+}
+
+// Notify on database backup; defaults to false.
+func (o NotificationEventsOutput) DatabaseBackup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.DatabaseBackup }).(pulumi.BoolPtrOutput)
+}
+
+// Notify on Docker cleanup; defaults to false.
+func (o NotificationEventsOutput) DockerCleanup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.DockerCleanup }).(pulumi.BoolPtrOutput)
+}
+
+// Notify on Dokploy backup; defaults to false.
+func (o NotificationEventsOutput) DokployBackup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.DokployBackup }).(pulumi.BoolPtrOutput)
+}
+
+// Notify on Dokploy restart; defaults to false.
+func (o NotificationEventsOutput) DokployRestart() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.DokployRestart }).(pulumi.BoolPtrOutput)
+}
+
+// Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+func (o NotificationEventsOutput) ServerThreshold() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.ServerThreshold }).(pulumi.BoolPtrOutput)
+}
+
+// Notify on volume backup; defaults to false.
+func (o NotificationEventsOutput) VolumeBackup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationEvents) *bool { return v.VolumeBackup }).(pulumi.BoolPtrOutput)
+}
+
+type NotificationEventsPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationEventsPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationEvents)(nil)).Elem()
+}
+
+func (o NotificationEventsPtrOutput) ToNotificationEventsPtrOutput() NotificationEventsPtrOutput {
+	return o
+}
+
+func (o NotificationEventsPtrOutput) ToNotificationEventsPtrOutputWithContext(ctx context.Context) NotificationEventsPtrOutput {
+	return o
+}
+
+func (o NotificationEventsPtrOutput) Elem() NotificationEventsOutput {
+	return o.ApplyT(func(v *NotificationEvents) NotificationEvents {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationEvents
+		return ret
+	}).(NotificationEventsOutput)
+}
+
+// Notify on application build error; defaults to false.
+func (o NotificationEventsPtrOutput) AppBuildError() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.AppBuildError
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Notify on application deployment; defaults to false.
+func (o NotificationEventsPtrOutput) AppDeploy() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.AppDeploy
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Notify on database backup; defaults to false.
+func (o NotificationEventsPtrOutput) DatabaseBackup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.DatabaseBackup
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Notify on Docker cleanup; defaults to false.
+func (o NotificationEventsPtrOutput) DockerCleanup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.DockerCleanup
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Notify on Dokploy backup; defaults to false.
+func (o NotificationEventsPtrOutput) DokployBackup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.DokployBackup
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Notify on Dokploy restart; defaults to false.
+func (o NotificationEventsPtrOutput) DokployRestart() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.DokployRestart
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+func (o NotificationEventsPtrOutput) ServerThreshold() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.ServerThreshold
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Notify on volume backup; defaults to false.
+func (o NotificationEventsPtrOutput) VolumeBackup() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationEvents) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.VolumeBackup
+	}).(pulumi.BoolPtrOutput)
+}
+
+type NotificationGotifyConfig struct {
+	// Secret Gotify application token.
+	AppToken string `pulumi:"appToken"`
+	// Whether to decorate messages; defaults to false.
+	Decoration *bool `pulumi:"decoration"`
+	// Message priority; defaults to 5 (minimum 1).
+	Priority *int `pulumi:"priority"`
+	// Secret Gotify server URL.
+	ServerUrl string `pulumi:"serverUrl"`
+}
+
+// NotificationGotifyConfigInput is an input type that accepts NotificationGotifyConfigArgs and NotificationGotifyConfigOutput values.
+// You can construct a concrete instance of `NotificationGotifyConfigInput` via:
+//
+//	NotificationGotifyConfigArgs{...}
+type NotificationGotifyConfigInput interface {
+	pulumi.Input
+
+	ToNotificationGotifyConfigOutput() NotificationGotifyConfigOutput
+	ToNotificationGotifyConfigOutputWithContext(context.Context) NotificationGotifyConfigOutput
+}
+
+type NotificationGotifyConfigArgs struct {
+	// Secret Gotify application token.
+	AppToken pulumi.StringInput `pulumi:"appToken"`
+	// Whether to decorate messages; defaults to false.
+	Decoration pulumi.BoolPtrInput `pulumi:"decoration"`
+	// Message priority; defaults to 5 (minimum 1).
+	Priority pulumi.IntPtrInput `pulumi:"priority"`
+	// Secret Gotify server URL.
+	ServerUrl pulumi.StringInput `pulumi:"serverUrl"`
+}
+
+func (NotificationGotifyConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationGotifyConfig)(nil)).Elem()
+}
+
+func (i NotificationGotifyConfigArgs) ToNotificationGotifyConfigOutput() NotificationGotifyConfigOutput {
+	return i.ToNotificationGotifyConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationGotifyConfigArgs) ToNotificationGotifyConfigOutputWithContext(ctx context.Context) NotificationGotifyConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationGotifyConfigOutput)
+}
+
+func (i NotificationGotifyConfigArgs) ToNotificationGotifyConfigPtrOutput() NotificationGotifyConfigPtrOutput {
+	return i.ToNotificationGotifyConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationGotifyConfigArgs) ToNotificationGotifyConfigPtrOutputWithContext(ctx context.Context) NotificationGotifyConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationGotifyConfigOutput).ToNotificationGotifyConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationGotifyConfigPtrInput is an input type that accepts NotificationGotifyConfigArgs, NotificationGotifyConfigPtr and NotificationGotifyConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationGotifyConfigPtrInput` via:
+//
+//	        NotificationGotifyConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationGotifyConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationGotifyConfigPtrOutput() NotificationGotifyConfigPtrOutput
+	ToNotificationGotifyConfigPtrOutputWithContext(context.Context) NotificationGotifyConfigPtrOutput
+}
+
+type notificationGotifyConfigPtrType NotificationGotifyConfigArgs
+
+func NotificationGotifyConfigPtr(v *NotificationGotifyConfigArgs) NotificationGotifyConfigPtrInput {
+	return (*notificationGotifyConfigPtrType)(v)
+}
+
+func (*notificationGotifyConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationGotifyConfig)(nil)).Elem()
+}
+
+func (i *notificationGotifyConfigPtrType) ToNotificationGotifyConfigPtrOutput() NotificationGotifyConfigPtrOutput {
+	return i.ToNotificationGotifyConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationGotifyConfigPtrType) ToNotificationGotifyConfigPtrOutputWithContext(ctx context.Context) NotificationGotifyConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationGotifyConfigPtrOutput)
+}
+
+type NotificationGotifyConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationGotifyConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationGotifyConfig)(nil)).Elem()
+}
+
+func (o NotificationGotifyConfigOutput) ToNotificationGotifyConfigOutput() NotificationGotifyConfigOutput {
+	return o
+}
+
+func (o NotificationGotifyConfigOutput) ToNotificationGotifyConfigOutputWithContext(ctx context.Context) NotificationGotifyConfigOutput {
+	return o
+}
+
+func (o NotificationGotifyConfigOutput) ToNotificationGotifyConfigPtrOutput() NotificationGotifyConfigPtrOutput {
+	return o.ToNotificationGotifyConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationGotifyConfigOutput) ToNotificationGotifyConfigPtrOutputWithContext(ctx context.Context) NotificationGotifyConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationGotifyConfig) *NotificationGotifyConfig {
+		return &v
+	}).(NotificationGotifyConfigPtrOutput)
+}
+
+// Secret Gotify application token.
+func (o NotificationGotifyConfigOutput) AppToken() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationGotifyConfig) string { return v.AppToken }).(pulumi.StringOutput)
+}
+
+// Whether to decorate messages; defaults to false.
+func (o NotificationGotifyConfigOutput) Decoration() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v NotificationGotifyConfig) *bool { return v.Decoration }).(pulumi.BoolPtrOutput)
+}
+
+// Message priority; defaults to 5 (minimum 1).
+func (o NotificationGotifyConfigOutput) Priority() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v NotificationGotifyConfig) *int { return v.Priority }).(pulumi.IntPtrOutput)
+}
+
+// Secret Gotify server URL.
+func (o NotificationGotifyConfigOutput) ServerUrl() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationGotifyConfig) string { return v.ServerUrl }).(pulumi.StringOutput)
+}
+
+type NotificationGotifyConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationGotifyConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationGotifyConfig)(nil)).Elem()
+}
+
+func (o NotificationGotifyConfigPtrOutput) ToNotificationGotifyConfigPtrOutput() NotificationGotifyConfigPtrOutput {
+	return o
+}
+
+func (o NotificationGotifyConfigPtrOutput) ToNotificationGotifyConfigPtrOutputWithContext(ctx context.Context) NotificationGotifyConfigPtrOutput {
+	return o
+}
+
+func (o NotificationGotifyConfigPtrOutput) Elem() NotificationGotifyConfigOutput {
+	return o.ApplyT(func(v *NotificationGotifyConfig) NotificationGotifyConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationGotifyConfig
+		return ret
+	}).(NotificationGotifyConfigOutput)
+}
+
+// Secret Gotify application token.
+func (o NotificationGotifyConfigPtrOutput) AppToken() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationGotifyConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.AppToken
+	}).(pulumi.StringPtrOutput)
+}
+
+// Whether to decorate messages; defaults to false.
+func (o NotificationGotifyConfigPtrOutput) Decoration() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *NotificationGotifyConfig) *bool {
+		if v == nil {
+			return nil
+		}
+		return v.Decoration
+	}).(pulumi.BoolPtrOutput)
+}
+
+// Message priority; defaults to 5 (minimum 1).
+func (o NotificationGotifyConfigPtrOutput) Priority() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *NotificationGotifyConfig) *int {
+		if v == nil {
+			return nil
+		}
+		return v.Priority
+	}).(pulumi.IntPtrOutput)
+}
+
+// Secret Gotify server URL.
+func (o NotificationGotifyConfigPtrOutput) ServerUrl() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationGotifyConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.ServerUrl
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationLarkConfig struct {
+	// Secret Lark webhook URL.
+	WebhookUrl string `pulumi:"webhookUrl"`
+}
+
+// NotificationLarkConfigInput is an input type that accepts NotificationLarkConfigArgs and NotificationLarkConfigOutput values.
+// You can construct a concrete instance of `NotificationLarkConfigInput` via:
+//
+//	NotificationLarkConfigArgs{...}
+type NotificationLarkConfigInput interface {
+	pulumi.Input
+
+	ToNotificationLarkConfigOutput() NotificationLarkConfigOutput
+	ToNotificationLarkConfigOutputWithContext(context.Context) NotificationLarkConfigOutput
+}
+
+type NotificationLarkConfigArgs struct {
+	// Secret Lark webhook URL.
+	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
+}
+
+func (NotificationLarkConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationLarkConfig)(nil)).Elem()
+}
+
+func (i NotificationLarkConfigArgs) ToNotificationLarkConfigOutput() NotificationLarkConfigOutput {
+	return i.ToNotificationLarkConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationLarkConfigArgs) ToNotificationLarkConfigOutputWithContext(ctx context.Context) NotificationLarkConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationLarkConfigOutput)
+}
+
+func (i NotificationLarkConfigArgs) ToNotificationLarkConfigPtrOutput() NotificationLarkConfigPtrOutput {
+	return i.ToNotificationLarkConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationLarkConfigArgs) ToNotificationLarkConfigPtrOutputWithContext(ctx context.Context) NotificationLarkConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationLarkConfigOutput).ToNotificationLarkConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationLarkConfigPtrInput is an input type that accepts NotificationLarkConfigArgs, NotificationLarkConfigPtr and NotificationLarkConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationLarkConfigPtrInput` via:
+//
+//	        NotificationLarkConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationLarkConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationLarkConfigPtrOutput() NotificationLarkConfigPtrOutput
+	ToNotificationLarkConfigPtrOutputWithContext(context.Context) NotificationLarkConfigPtrOutput
+}
+
+type notificationLarkConfigPtrType NotificationLarkConfigArgs
+
+func NotificationLarkConfigPtr(v *NotificationLarkConfigArgs) NotificationLarkConfigPtrInput {
+	return (*notificationLarkConfigPtrType)(v)
+}
+
+func (*notificationLarkConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationLarkConfig)(nil)).Elem()
+}
+
+func (i *notificationLarkConfigPtrType) ToNotificationLarkConfigPtrOutput() NotificationLarkConfigPtrOutput {
+	return i.ToNotificationLarkConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationLarkConfigPtrType) ToNotificationLarkConfigPtrOutputWithContext(ctx context.Context) NotificationLarkConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationLarkConfigPtrOutput)
+}
+
+type NotificationLarkConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationLarkConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationLarkConfig)(nil)).Elem()
+}
+
+func (o NotificationLarkConfigOutput) ToNotificationLarkConfigOutput() NotificationLarkConfigOutput {
+	return o
+}
+
+func (o NotificationLarkConfigOutput) ToNotificationLarkConfigOutputWithContext(ctx context.Context) NotificationLarkConfigOutput {
+	return o
+}
+
+func (o NotificationLarkConfigOutput) ToNotificationLarkConfigPtrOutput() NotificationLarkConfigPtrOutput {
+	return o.ToNotificationLarkConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationLarkConfigOutput) ToNotificationLarkConfigPtrOutputWithContext(ctx context.Context) NotificationLarkConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationLarkConfig) *NotificationLarkConfig {
+		return &v
+	}).(NotificationLarkConfigPtrOutput)
+}
+
+// Secret Lark webhook URL.
+func (o NotificationLarkConfigOutput) WebhookUrl() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationLarkConfig) string { return v.WebhookUrl }).(pulumi.StringOutput)
+}
+
+type NotificationLarkConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationLarkConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationLarkConfig)(nil)).Elem()
+}
+
+func (o NotificationLarkConfigPtrOutput) ToNotificationLarkConfigPtrOutput() NotificationLarkConfigPtrOutput {
+	return o
+}
+
+func (o NotificationLarkConfigPtrOutput) ToNotificationLarkConfigPtrOutputWithContext(ctx context.Context) NotificationLarkConfigPtrOutput {
+	return o
+}
+
+func (o NotificationLarkConfigPtrOutput) Elem() NotificationLarkConfigOutput {
+	return o.ApplyT(func(v *NotificationLarkConfig) NotificationLarkConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationLarkConfig
+		return ret
+	}).(NotificationLarkConfigOutput)
+}
+
+// Secret Lark webhook URL.
+func (o NotificationLarkConfigPtrOutput) WebhookUrl() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationLarkConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.WebhookUrl
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationMattermostConfig struct {
+	// Optional routing channel; defaults to empty.
+	Channel *string `pulumi:"channel"`
+	// Optional display username; defaults to empty.
+	Username *string `pulumi:"username"`
+	// Secret Mattermost webhook URL.
+	WebhookUrl string `pulumi:"webhookUrl"`
+}
+
+// NotificationMattermostConfigInput is an input type that accepts NotificationMattermostConfigArgs and NotificationMattermostConfigOutput values.
+// You can construct a concrete instance of `NotificationMattermostConfigInput` via:
+//
+//	NotificationMattermostConfigArgs{...}
+type NotificationMattermostConfigInput interface {
+	pulumi.Input
+
+	ToNotificationMattermostConfigOutput() NotificationMattermostConfigOutput
+	ToNotificationMattermostConfigOutputWithContext(context.Context) NotificationMattermostConfigOutput
+}
+
+type NotificationMattermostConfigArgs struct {
+	// Optional routing channel; defaults to empty.
+	Channel pulumi.StringPtrInput `pulumi:"channel"`
+	// Optional display username; defaults to empty.
+	Username pulumi.StringPtrInput `pulumi:"username"`
+	// Secret Mattermost webhook URL.
+	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
+}
+
+func (NotificationMattermostConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationMattermostConfig)(nil)).Elem()
+}
+
+func (i NotificationMattermostConfigArgs) ToNotificationMattermostConfigOutput() NotificationMattermostConfigOutput {
+	return i.ToNotificationMattermostConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationMattermostConfigArgs) ToNotificationMattermostConfigOutputWithContext(ctx context.Context) NotificationMattermostConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationMattermostConfigOutput)
+}
+
+func (i NotificationMattermostConfigArgs) ToNotificationMattermostConfigPtrOutput() NotificationMattermostConfigPtrOutput {
+	return i.ToNotificationMattermostConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationMattermostConfigArgs) ToNotificationMattermostConfigPtrOutputWithContext(ctx context.Context) NotificationMattermostConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationMattermostConfigOutput).ToNotificationMattermostConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationMattermostConfigPtrInput is an input type that accepts NotificationMattermostConfigArgs, NotificationMattermostConfigPtr and NotificationMattermostConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationMattermostConfigPtrInput` via:
+//
+//	        NotificationMattermostConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationMattermostConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationMattermostConfigPtrOutput() NotificationMattermostConfigPtrOutput
+	ToNotificationMattermostConfigPtrOutputWithContext(context.Context) NotificationMattermostConfigPtrOutput
+}
+
+type notificationMattermostConfigPtrType NotificationMattermostConfigArgs
+
+func NotificationMattermostConfigPtr(v *NotificationMattermostConfigArgs) NotificationMattermostConfigPtrInput {
+	return (*notificationMattermostConfigPtrType)(v)
+}
+
+func (*notificationMattermostConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationMattermostConfig)(nil)).Elem()
+}
+
+func (i *notificationMattermostConfigPtrType) ToNotificationMattermostConfigPtrOutput() NotificationMattermostConfigPtrOutput {
+	return i.ToNotificationMattermostConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationMattermostConfigPtrType) ToNotificationMattermostConfigPtrOutputWithContext(ctx context.Context) NotificationMattermostConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationMattermostConfigPtrOutput)
+}
+
+type NotificationMattermostConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationMattermostConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationMattermostConfig)(nil)).Elem()
+}
+
+func (o NotificationMattermostConfigOutput) ToNotificationMattermostConfigOutput() NotificationMattermostConfigOutput {
+	return o
+}
+
+func (o NotificationMattermostConfigOutput) ToNotificationMattermostConfigOutputWithContext(ctx context.Context) NotificationMattermostConfigOutput {
+	return o
+}
+
+func (o NotificationMattermostConfigOutput) ToNotificationMattermostConfigPtrOutput() NotificationMattermostConfigPtrOutput {
+	return o.ToNotificationMattermostConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationMattermostConfigOutput) ToNotificationMattermostConfigPtrOutputWithContext(ctx context.Context) NotificationMattermostConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationMattermostConfig) *NotificationMattermostConfig {
+		return &v
+	}).(NotificationMattermostConfigPtrOutput)
+}
+
+// Optional routing channel; defaults to empty.
+func (o NotificationMattermostConfigOutput) Channel() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NotificationMattermostConfig) *string { return v.Channel }).(pulumi.StringPtrOutput)
+}
+
+// Optional display username; defaults to empty.
+func (o NotificationMattermostConfigOutput) Username() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NotificationMattermostConfig) *string { return v.Username }).(pulumi.StringPtrOutput)
+}
+
+// Secret Mattermost webhook URL.
+func (o NotificationMattermostConfigOutput) WebhookUrl() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationMattermostConfig) string { return v.WebhookUrl }).(pulumi.StringOutput)
+}
+
+type NotificationMattermostConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationMattermostConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationMattermostConfig)(nil)).Elem()
+}
+
+func (o NotificationMattermostConfigPtrOutput) ToNotificationMattermostConfigPtrOutput() NotificationMattermostConfigPtrOutput {
+	return o
+}
+
+func (o NotificationMattermostConfigPtrOutput) ToNotificationMattermostConfigPtrOutputWithContext(ctx context.Context) NotificationMattermostConfigPtrOutput {
+	return o
+}
+
+func (o NotificationMattermostConfigPtrOutput) Elem() NotificationMattermostConfigOutput {
+	return o.ApplyT(func(v *NotificationMattermostConfig) NotificationMattermostConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationMattermostConfig
+		return ret
+	}).(NotificationMattermostConfigOutput)
+}
+
+// Optional routing channel; defaults to empty.
+func (o NotificationMattermostConfigPtrOutput) Channel() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationMattermostConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Channel
+	}).(pulumi.StringPtrOutput)
+}
+
+// Optional display username; defaults to empty.
+func (o NotificationMattermostConfigPtrOutput) Username() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationMattermostConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Username
+	}).(pulumi.StringPtrOutput)
+}
+
+// Secret Mattermost webhook URL.
+func (o NotificationMattermostConfigPtrOutput) WebhookUrl() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationMattermostConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.WebhookUrl
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationNtfyConfig struct {
+	// Optional secret access token; defaults to empty.
+	AccessToken *string `pulumi:"accessToken"`
+	// Message priority, 1 through 5; defaults to 3.
+	Priority *int `pulumi:"priority"`
+	// Secret Ntfy server URL.
+	ServerUrl string `pulumi:"serverUrl"`
+	// Ntfy topic.
+	Topic string `pulumi:"topic"`
+}
+
+// NotificationNtfyConfigInput is an input type that accepts NotificationNtfyConfigArgs and NotificationNtfyConfigOutput values.
+// You can construct a concrete instance of `NotificationNtfyConfigInput` via:
+//
+//	NotificationNtfyConfigArgs{...}
+type NotificationNtfyConfigInput interface {
+	pulumi.Input
+
+	ToNotificationNtfyConfigOutput() NotificationNtfyConfigOutput
+	ToNotificationNtfyConfigOutputWithContext(context.Context) NotificationNtfyConfigOutput
+}
+
+type NotificationNtfyConfigArgs struct {
+	// Optional secret access token; defaults to empty.
+	AccessToken pulumi.StringPtrInput `pulumi:"accessToken"`
+	// Message priority, 1 through 5; defaults to 3.
+	Priority pulumi.IntPtrInput `pulumi:"priority"`
+	// Secret Ntfy server URL.
+	ServerUrl pulumi.StringInput `pulumi:"serverUrl"`
+	// Ntfy topic.
+	Topic pulumi.StringInput `pulumi:"topic"`
+}
+
+func (NotificationNtfyConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationNtfyConfig)(nil)).Elem()
+}
+
+func (i NotificationNtfyConfigArgs) ToNotificationNtfyConfigOutput() NotificationNtfyConfigOutput {
+	return i.ToNotificationNtfyConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationNtfyConfigArgs) ToNotificationNtfyConfigOutputWithContext(ctx context.Context) NotificationNtfyConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationNtfyConfigOutput)
+}
+
+func (i NotificationNtfyConfigArgs) ToNotificationNtfyConfigPtrOutput() NotificationNtfyConfigPtrOutput {
+	return i.ToNotificationNtfyConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationNtfyConfigArgs) ToNotificationNtfyConfigPtrOutputWithContext(ctx context.Context) NotificationNtfyConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationNtfyConfigOutput).ToNotificationNtfyConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationNtfyConfigPtrInput is an input type that accepts NotificationNtfyConfigArgs, NotificationNtfyConfigPtr and NotificationNtfyConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationNtfyConfigPtrInput` via:
+//
+//	        NotificationNtfyConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationNtfyConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationNtfyConfigPtrOutput() NotificationNtfyConfigPtrOutput
+	ToNotificationNtfyConfigPtrOutputWithContext(context.Context) NotificationNtfyConfigPtrOutput
+}
+
+type notificationNtfyConfigPtrType NotificationNtfyConfigArgs
+
+func NotificationNtfyConfigPtr(v *NotificationNtfyConfigArgs) NotificationNtfyConfigPtrInput {
+	return (*notificationNtfyConfigPtrType)(v)
+}
+
+func (*notificationNtfyConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationNtfyConfig)(nil)).Elem()
+}
+
+func (i *notificationNtfyConfigPtrType) ToNotificationNtfyConfigPtrOutput() NotificationNtfyConfigPtrOutput {
+	return i.ToNotificationNtfyConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationNtfyConfigPtrType) ToNotificationNtfyConfigPtrOutputWithContext(ctx context.Context) NotificationNtfyConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationNtfyConfigPtrOutput)
+}
+
+type NotificationNtfyConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationNtfyConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationNtfyConfig)(nil)).Elem()
+}
+
+func (o NotificationNtfyConfigOutput) ToNotificationNtfyConfigOutput() NotificationNtfyConfigOutput {
+	return o
+}
+
+func (o NotificationNtfyConfigOutput) ToNotificationNtfyConfigOutputWithContext(ctx context.Context) NotificationNtfyConfigOutput {
+	return o
+}
+
+func (o NotificationNtfyConfigOutput) ToNotificationNtfyConfigPtrOutput() NotificationNtfyConfigPtrOutput {
+	return o.ToNotificationNtfyConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationNtfyConfigOutput) ToNotificationNtfyConfigPtrOutputWithContext(ctx context.Context) NotificationNtfyConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationNtfyConfig) *NotificationNtfyConfig {
+		return &v
+	}).(NotificationNtfyConfigPtrOutput)
+}
+
+// Optional secret access token; defaults to empty.
+func (o NotificationNtfyConfigOutput) AccessToken() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NotificationNtfyConfig) *string { return v.AccessToken }).(pulumi.StringPtrOutput)
+}
+
+// Message priority, 1 through 5; defaults to 3.
+func (o NotificationNtfyConfigOutput) Priority() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v NotificationNtfyConfig) *int { return v.Priority }).(pulumi.IntPtrOutput)
+}
+
+// Secret Ntfy server URL.
+func (o NotificationNtfyConfigOutput) ServerUrl() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationNtfyConfig) string { return v.ServerUrl }).(pulumi.StringOutput)
+}
+
+// Ntfy topic.
+func (o NotificationNtfyConfigOutput) Topic() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationNtfyConfig) string { return v.Topic }).(pulumi.StringOutput)
+}
+
+type NotificationNtfyConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationNtfyConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationNtfyConfig)(nil)).Elem()
+}
+
+func (o NotificationNtfyConfigPtrOutput) ToNotificationNtfyConfigPtrOutput() NotificationNtfyConfigPtrOutput {
+	return o
+}
+
+func (o NotificationNtfyConfigPtrOutput) ToNotificationNtfyConfigPtrOutputWithContext(ctx context.Context) NotificationNtfyConfigPtrOutput {
+	return o
+}
+
+func (o NotificationNtfyConfigPtrOutput) Elem() NotificationNtfyConfigOutput {
+	return o.ApplyT(func(v *NotificationNtfyConfig) NotificationNtfyConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationNtfyConfig
+		return ret
+	}).(NotificationNtfyConfigOutput)
+}
+
+// Optional secret access token; defaults to empty.
+func (o NotificationNtfyConfigPtrOutput) AccessToken() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationNtfyConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return v.AccessToken
+	}).(pulumi.StringPtrOutput)
+}
+
+// Message priority, 1 through 5; defaults to 3.
+func (o NotificationNtfyConfigPtrOutput) Priority() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *NotificationNtfyConfig) *int {
+		if v == nil {
+			return nil
+		}
+		return v.Priority
+	}).(pulumi.IntPtrOutput)
+}
+
+// Secret Ntfy server URL.
+func (o NotificationNtfyConfigPtrOutput) ServerUrl() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationNtfyConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.ServerUrl
+	}).(pulumi.StringPtrOutput)
+}
+
+// Ntfy topic.
+func (o NotificationNtfyConfigPtrOutput) Topic() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationNtfyConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.Topic
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationPushoverConfig struct {
+	// Secret Pushover API token.
+	ApiToken string `pulumi:"apiToken"`
+	// Emergency expiry in seconds, 1 through 10800; required for priority 2.
+	Expire *int `pulumi:"expire"`
+	// Priority from -2 through 2; defaults to 0.
+	Priority *int `pulumi:"priority"`
+	// Emergency retry interval in seconds, at least 30; required for priority 2.
+	Retry *int `pulumi:"retry"`
+	// Secret Pushover user key.
+	UserKey string `pulumi:"userKey"`
+}
+
+// NotificationPushoverConfigInput is an input type that accepts NotificationPushoverConfigArgs and NotificationPushoverConfigOutput values.
+// You can construct a concrete instance of `NotificationPushoverConfigInput` via:
+//
+//	NotificationPushoverConfigArgs{...}
+type NotificationPushoverConfigInput interface {
+	pulumi.Input
+
+	ToNotificationPushoverConfigOutput() NotificationPushoverConfigOutput
+	ToNotificationPushoverConfigOutputWithContext(context.Context) NotificationPushoverConfigOutput
+}
+
+type NotificationPushoverConfigArgs struct {
+	// Secret Pushover API token.
+	ApiToken pulumi.StringInput `pulumi:"apiToken"`
+	// Emergency expiry in seconds, 1 through 10800; required for priority 2.
+	Expire pulumi.IntPtrInput `pulumi:"expire"`
+	// Priority from -2 through 2; defaults to 0.
+	Priority pulumi.IntPtrInput `pulumi:"priority"`
+	// Emergency retry interval in seconds, at least 30; required for priority 2.
+	Retry pulumi.IntPtrInput `pulumi:"retry"`
+	// Secret Pushover user key.
+	UserKey pulumi.StringInput `pulumi:"userKey"`
+}
+
+func (NotificationPushoverConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationPushoverConfig)(nil)).Elem()
+}
+
+func (i NotificationPushoverConfigArgs) ToNotificationPushoverConfigOutput() NotificationPushoverConfigOutput {
+	return i.ToNotificationPushoverConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationPushoverConfigArgs) ToNotificationPushoverConfigOutputWithContext(ctx context.Context) NotificationPushoverConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationPushoverConfigOutput)
+}
+
+func (i NotificationPushoverConfigArgs) ToNotificationPushoverConfigPtrOutput() NotificationPushoverConfigPtrOutput {
+	return i.ToNotificationPushoverConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationPushoverConfigArgs) ToNotificationPushoverConfigPtrOutputWithContext(ctx context.Context) NotificationPushoverConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationPushoverConfigOutput).ToNotificationPushoverConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationPushoverConfigPtrInput is an input type that accepts NotificationPushoverConfigArgs, NotificationPushoverConfigPtr and NotificationPushoverConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationPushoverConfigPtrInput` via:
+//
+//	        NotificationPushoverConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationPushoverConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationPushoverConfigPtrOutput() NotificationPushoverConfigPtrOutput
+	ToNotificationPushoverConfigPtrOutputWithContext(context.Context) NotificationPushoverConfigPtrOutput
+}
+
+type notificationPushoverConfigPtrType NotificationPushoverConfigArgs
+
+func NotificationPushoverConfigPtr(v *NotificationPushoverConfigArgs) NotificationPushoverConfigPtrInput {
+	return (*notificationPushoverConfigPtrType)(v)
+}
+
+func (*notificationPushoverConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationPushoverConfig)(nil)).Elem()
+}
+
+func (i *notificationPushoverConfigPtrType) ToNotificationPushoverConfigPtrOutput() NotificationPushoverConfigPtrOutput {
+	return i.ToNotificationPushoverConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationPushoverConfigPtrType) ToNotificationPushoverConfigPtrOutputWithContext(ctx context.Context) NotificationPushoverConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationPushoverConfigPtrOutput)
+}
+
+type NotificationPushoverConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationPushoverConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationPushoverConfig)(nil)).Elem()
+}
+
+func (o NotificationPushoverConfigOutput) ToNotificationPushoverConfigOutput() NotificationPushoverConfigOutput {
+	return o
+}
+
+func (o NotificationPushoverConfigOutput) ToNotificationPushoverConfigOutputWithContext(ctx context.Context) NotificationPushoverConfigOutput {
+	return o
+}
+
+func (o NotificationPushoverConfigOutput) ToNotificationPushoverConfigPtrOutput() NotificationPushoverConfigPtrOutput {
+	return o.ToNotificationPushoverConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationPushoverConfigOutput) ToNotificationPushoverConfigPtrOutputWithContext(ctx context.Context) NotificationPushoverConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationPushoverConfig) *NotificationPushoverConfig {
+		return &v
+	}).(NotificationPushoverConfigPtrOutput)
+}
+
+// Secret Pushover API token.
+func (o NotificationPushoverConfigOutput) ApiToken() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationPushoverConfig) string { return v.ApiToken }).(pulumi.StringOutput)
+}
+
+// Emergency expiry in seconds, 1 through 10800; required for priority 2.
+func (o NotificationPushoverConfigOutput) Expire() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v NotificationPushoverConfig) *int { return v.Expire }).(pulumi.IntPtrOutput)
+}
+
+// Priority from -2 through 2; defaults to 0.
+func (o NotificationPushoverConfigOutput) Priority() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v NotificationPushoverConfig) *int { return v.Priority }).(pulumi.IntPtrOutput)
+}
+
+// Emergency retry interval in seconds, at least 30; required for priority 2.
+func (o NotificationPushoverConfigOutput) Retry() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v NotificationPushoverConfig) *int { return v.Retry }).(pulumi.IntPtrOutput)
+}
+
+// Secret Pushover user key.
+func (o NotificationPushoverConfigOutput) UserKey() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationPushoverConfig) string { return v.UserKey }).(pulumi.StringOutput)
+}
+
+type NotificationPushoverConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationPushoverConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationPushoverConfig)(nil)).Elem()
+}
+
+func (o NotificationPushoverConfigPtrOutput) ToNotificationPushoverConfigPtrOutput() NotificationPushoverConfigPtrOutput {
+	return o
+}
+
+func (o NotificationPushoverConfigPtrOutput) ToNotificationPushoverConfigPtrOutputWithContext(ctx context.Context) NotificationPushoverConfigPtrOutput {
+	return o
+}
+
+func (o NotificationPushoverConfigPtrOutput) Elem() NotificationPushoverConfigOutput {
+	return o.ApplyT(func(v *NotificationPushoverConfig) NotificationPushoverConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationPushoverConfig
+		return ret
+	}).(NotificationPushoverConfigOutput)
+}
+
+// Secret Pushover API token.
+func (o NotificationPushoverConfigPtrOutput) ApiToken() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationPushoverConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.ApiToken
+	}).(pulumi.StringPtrOutput)
+}
+
+// Emergency expiry in seconds, 1 through 10800; required for priority 2.
+func (o NotificationPushoverConfigPtrOutput) Expire() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *NotificationPushoverConfig) *int {
+		if v == nil {
+			return nil
+		}
+		return v.Expire
+	}).(pulumi.IntPtrOutput)
+}
+
+// Priority from -2 through 2; defaults to 0.
+func (o NotificationPushoverConfigPtrOutput) Priority() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *NotificationPushoverConfig) *int {
+		if v == nil {
+			return nil
+		}
+		return v.Priority
+	}).(pulumi.IntPtrOutput)
+}
+
+// Emergency retry interval in seconds, at least 30; required for priority 2.
+func (o NotificationPushoverConfigPtrOutput) Retry() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v *NotificationPushoverConfig) *int {
+		if v == nil {
+			return nil
+		}
+		return v.Retry
+	}).(pulumi.IntPtrOutput)
+}
+
+// Secret Pushover user key.
+func (o NotificationPushoverConfigPtrOutput) UserKey() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationPushoverConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.UserKey
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationResendConfig struct {
+	// Secret Resend API key.
+	ApiKey string `pulumi:"apiKey"`
+	// Sender address.
+	FromAddress string `pulumi:"fromAddress"`
+	// Nonempty list of recipient addresses.
+	ToAddresses []string `pulumi:"toAddresses"`
+}
+
+// NotificationResendConfigInput is an input type that accepts NotificationResendConfigArgs and NotificationResendConfigOutput values.
+// You can construct a concrete instance of `NotificationResendConfigInput` via:
+//
+//	NotificationResendConfigArgs{...}
+type NotificationResendConfigInput interface {
+	pulumi.Input
+
+	ToNotificationResendConfigOutput() NotificationResendConfigOutput
+	ToNotificationResendConfigOutputWithContext(context.Context) NotificationResendConfigOutput
+}
+
+type NotificationResendConfigArgs struct {
+	// Secret Resend API key.
+	ApiKey pulumi.StringInput `pulumi:"apiKey"`
+	// Sender address.
+	FromAddress pulumi.StringInput `pulumi:"fromAddress"`
+	// Nonempty list of recipient addresses.
+	ToAddresses pulumi.StringArrayInput `pulumi:"toAddresses"`
+}
+
+func (NotificationResendConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationResendConfig)(nil)).Elem()
+}
+
+func (i NotificationResendConfigArgs) ToNotificationResendConfigOutput() NotificationResendConfigOutput {
+	return i.ToNotificationResendConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationResendConfigArgs) ToNotificationResendConfigOutputWithContext(ctx context.Context) NotificationResendConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationResendConfigOutput)
+}
+
+func (i NotificationResendConfigArgs) ToNotificationResendConfigPtrOutput() NotificationResendConfigPtrOutput {
+	return i.ToNotificationResendConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationResendConfigArgs) ToNotificationResendConfigPtrOutputWithContext(ctx context.Context) NotificationResendConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationResendConfigOutput).ToNotificationResendConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationResendConfigPtrInput is an input type that accepts NotificationResendConfigArgs, NotificationResendConfigPtr and NotificationResendConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationResendConfigPtrInput` via:
+//
+//	        NotificationResendConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationResendConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationResendConfigPtrOutput() NotificationResendConfigPtrOutput
+	ToNotificationResendConfigPtrOutputWithContext(context.Context) NotificationResendConfigPtrOutput
+}
+
+type notificationResendConfigPtrType NotificationResendConfigArgs
+
+func NotificationResendConfigPtr(v *NotificationResendConfigArgs) NotificationResendConfigPtrInput {
+	return (*notificationResendConfigPtrType)(v)
+}
+
+func (*notificationResendConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationResendConfig)(nil)).Elem()
+}
+
+func (i *notificationResendConfigPtrType) ToNotificationResendConfigPtrOutput() NotificationResendConfigPtrOutput {
+	return i.ToNotificationResendConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationResendConfigPtrType) ToNotificationResendConfigPtrOutputWithContext(ctx context.Context) NotificationResendConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationResendConfigPtrOutput)
+}
+
+type NotificationResendConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationResendConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationResendConfig)(nil)).Elem()
+}
+
+func (o NotificationResendConfigOutput) ToNotificationResendConfigOutput() NotificationResendConfigOutput {
+	return o
+}
+
+func (o NotificationResendConfigOutput) ToNotificationResendConfigOutputWithContext(ctx context.Context) NotificationResendConfigOutput {
+	return o
+}
+
+func (o NotificationResendConfigOutput) ToNotificationResendConfigPtrOutput() NotificationResendConfigPtrOutput {
+	return o.ToNotificationResendConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationResendConfigOutput) ToNotificationResendConfigPtrOutputWithContext(ctx context.Context) NotificationResendConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationResendConfig) *NotificationResendConfig {
+		return &v
+	}).(NotificationResendConfigPtrOutput)
+}
+
+// Secret Resend API key.
+func (o NotificationResendConfigOutput) ApiKey() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationResendConfig) string { return v.ApiKey }).(pulumi.StringOutput)
+}
+
+// Sender address.
+func (o NotificationResendConfigOutput) FromAddress() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationResendConfig) string { return v.FromAddress }).(pulumi.StringOutput)
+}
+
+// Nonempty list of recipient addresses.
+func (o NotificationResendConfigOutput) ToAddresses() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v NotificationResendConfig) []string { return v.ToAddresses }).(pulumi.StringArrayOutput)
+}
+
+type NotificationResendConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationResendConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationResendConfig)(nil)).Elem()
+}
+
+func (o NotificationResendConfigPtrOutput) ToNotificationResendConfigPtrOutput() NotificationResendConfigPtrOutput {
+	return o
+}
+
+func (o NotificationResendConfigPtrOutput) ToNotificationResendConfigPtrOutputWithContext(ctx context.Context) NotificationResendConfigPtrOutput {
+	return o
+}
+
+func (o NotificationResendConfigPtrOutput) Elem() NotificationResendConfigOutput {
+	return o.ApplyT(func(v *NotificationResendConfig) NotificationResendConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationResendConfig
+		return ret
+	}).(NotificationResendConfigOutput)
+}
+
+// Secret Resend API key.
+func (o NotificationResendConfigPtrOutput) ApiKey() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationResendConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.ApiKey
+	}).(pulumi.StringPtrOutput)
+}
+
+// Sender address.
+func (o NotificationResendConfigPtrOutput) FromAddress() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationResendConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.FromAddress
+	}).(pulumi.StringPtrOutput)
+}
+
+// Nonempty list of recipient addresses.
+func (o NotificationResendConfigPtrOutput) ToAddresses() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *NotificationResendConfig) []string {
+		if v == nil {
+			return nil
+		}
+		return v.ToAddresses
+	}).(pulumi.StringArrayOutput)
+}
+
+type NotificationSlackConfig struct {
+	// Optional routing channel; defaults to empty.
+	Channel *string `pulumi:"channel"`
+	// Secret Slack webhook URL.
+	WebhookUrl string `pulumi:"webhookUrl"`
+}
+
+// NotificationSlackConfigInput is an input type that accepts NotificationSlackConfigArgs and NotificationSlackConfigOutput values.
+// You can construct a concrete instance of `NotificationSlackConfigInput` via:
+//
+//	NotificationSlackConfigArgs{...}
+type NotificationSlackConfigInput interface {
+	pulumi.Input
+
+	ToNotificationSlackConfigOutput() NotificationSlackConfigOutput
+	ToNotificationSlackConfigOutputWithContext(context.Context) NotificationSlackConfigOutput
+}
+
+type NotificationSlackConfigArgs struct {
+	// Optional routing channel; defaults to empty.
+	Channel pulumi.StringPtrInput `pulumi:"channel"`
+	// Secret Slack webhook URL.
+	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
+}
+
+func (NotificationSlackConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationSlackConfig)(nil)).Elem()
+}
+
+func (i NotificationSlackConfigArgs) ToNotificationSlackConfigOutput() NotificationSlackConfigOutput {
+	return i.ToNotificationSlackConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationSlackConfigArgs) ToNotificationSlackConfigOutputWithContext(ctx context.Context) NotificationSlackConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationSlackConfigOutput)
+}
+
+func (i NotificationSlackConfigArgs) ToNotificationSlackConfigPtrOutput() NotificationSlackConfigPtrOutput {
+	return i.ToNotificationSlackConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationSlackConfigArgs) ToNotificationSlackConfigPtrOutputWithContext(ctx context.Context) NotificationSlackConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationSlackConfigOutput).ToNotificationSlackConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationSlackConfigPtrInput is an input type that accepts NotificationSlackConfigArgs, NotificationSlackConfigPtr and NotificationSlackConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationSlackConfigPtrInput` via:
+//
+//	        NotificationSlackConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationSlackConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationSlackConfigPtrOutput() NotificationSlackConfigPtrOutput
+	ToNotificationSlackConfigPtrOutputWithContext(context.Context) NotificationSlackConfigPtrOutput
+}
+
+type notificationSlackConfigPtrType NotificationSlackConfigArgs
+
+func NotificationSlackConfigPtr(v *NotificationSlackConfigArgs) NotificationSlackConfigPtrInput {
+	return (*notificationSlackConfigPtrType)(v)
+}
+
+func (*notificationSlackConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationSlackConfig)(nil)).Elem()
+}
+
+func (i *notificationSlackConfigPtrType) ToNotificationSlackConfigPtrOutput() NotificationSlackConfigPtrOutput {
+	return i.ToNotificationSlackConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationSlackConfigPtrType) ToNotificationSlackConfigPtrOutputWithContext(ctx context.Context) NotificationSlackConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationSlackConfigPtrOutput)
+}
+
+type NotificationSlackConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationSlackConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationSlackConfig)(nil)).Elem()
+}
+
+func (o NotificationSlackConfigOutput) ToNotificationSlackConfigOutput() NotificationSlackConfigOutput {
+	return o
+}
+
+func (o NotificationSlackConfigOutput) ToNotificationSlackConfigOutputWithContext(ctx context.Context) NotificationSlackConfigOutput {
+	return o
+}
+
+func (o NotificationSlackConfigOutput) ToNotificationSlackConfigPtrOutput() NotificationSlackConfigPtrOutput {
+	return o.ToNotificationSlackConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationSlackConfigOutput) ToNotificationSlackConfigPtrOutputWithContext(ctx context.Context) NotificationSlackConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationSlackConfig) *NotificationSlackConfig {
+		return &v
+	}).(NotificationSlackConfigPtrOutput)
+}
+
+// Optional routing channel; defaults to empty.
+func (o NotificationSlackConfigOutput) Channel() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NotificationSlackConfig) *string { return v.Channel }).(pulumi.StringPtrOutput)
+}
+
+// Secret Slack webhook URL.
+func (o NotificationSlackConfigOutput) WebhookUrl() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationSlackConfig) string { return v.WebhookUrl }).(pulumi.StringOutput)
+}
+
+type NotificationSlackConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationSlackConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationSlackConfig)(nil)).Elem()
+}
+
+func (o NotificationSlackConfigPtrOutput) ToNotificationSlackConfigPtrOutput() NotificationSlackConfigPtrOutput {
+	return o
+}
+
+func (o NotificationSlackConfigPtrOutput) ToNotificationSlackConfigPtrOutputWithContext(ctx context.Context) NotificationSlackConfigPtrOutput {
+	return o
+}
+
+func (o NotificationSlackConfigPtrOutput) Elem() NotificationSlackConfigOutput {
+	return o.ApplyT(func(v *NotificationSlackConfig) NotificationSlackConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationSlackConfig
+		return ret
+	}).(NotificationSlackConfigOutput)
+}
+
+// Optional routing channel; defaults to empty.
+func (o NotificationSlackConfigPtrOutput) Channel() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationSlackConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return v.Channel
+	}).(pulumi.StringPtrOutput)
+}
+
+// Secret Slack webhook URL.
+func (o NotificationSlackConfigPtrOutput) WebhookUrl() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationSlackConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.WebhookUrl
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationTeamsConfig struct {
+	// Secret Teams webhook URL.
+	WebhookUrl string `pulumi:"webhookUrl"`
+}
+
+// NotificationTeamsConfigInput is an input type that accepts NotificationTeamsConfigArgs and NotificationTeamsConfigOutput values.
+// You can construct a concrete instance of `NotificationTeamsConfigInput` via:
+//
+//	NotificationTeamsConfigArgs{...}
+type NotificationTeamsConfigInput interface {
+	pulumi.Input
+
+	ToNotificationTeamsConfigOutput() NotificationTeamsConfigOutput
+	ToNotificationTeamsConfigOutputWithContext(context.Context) NotificationTeamsConfigOutput
+}
+
+type NotificationTeamsConfigArgs struct {
+	// Secret Teams webhook URL.
+	WebhookUrl pulumi.StringInput `pulumi:"webhookUrl"`
+}
+
+func (NotificationTeamsConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationTeamsConfig)(nil)).Elem()
+}
+
+func (i NotificationTeamsConfigArgs) ToNotificationTeamsConfigOutput() NotificationTeamsConfigOutput {
+	return i.ToNotificationTeamsConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationTeamsConfigArgs) ToNotificationTeamsConfigOutputWithContext(ctx context.Context) NotificationTeamsConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationTeamsConfigOutput)
+}
+
+func (i NotificationTeamsConfigArgs) ToNotificationTeamsConfigPtrOutput() NotificationTeamsConfigPtrOutput {
+	return i.ToNotificationTeamsConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationTeamsConfigArgs) ToNotificationTeamsConfigPtrOutputWithContext(ctx context.Context) NotificationTeamsConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationTeamsConfigOutput).ToNotificationTeamsConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationTeamsConfigPtrInput is an input type that accepts NotificationTeamsConfigArgs, NotificationTeamsConfigPtr and NotificationTeamsConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationTeamsConfigPtrInput` via:
+//
+//	        NotificationTeamsConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationTeamsConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationTeamsConfigPtrOutput() NotificationTeamsConfigPtrOutput
+	ToNotificationTeamsConfigPtrOutputWithContext(context.Context) NotificationTeamsConfigPtrOutput
+}
+
+type notificationTeamsConfigPtrType NotificationTeamsConfigArgs
+
+func NotificationTeamsConfigPtr(v *NotificationTeamsConfigArgs) NotificationTeamsConfigPtrInput {
+	return (*notificationTeamsConfigPtrType)(v)
+}
+
+func (*notificationTeamsConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationTeamsConfig)(nil)).Elem()
+}
+
+func (i *notificationTeamsConfigPtrType) ToNotificationTeamsConfigPtrOutput() NotificationTeamsConfigPtrOutput {
+	return i.ToNotificationTeamsConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationTeamsConfigPtrType) ToNotificationTeamsConfigPtrOutputWithContext(ctx context.Context) NotificationTeamsConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationTeamsConfigPtrOutput)
+}
+
+type NotificationTeamsConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationTeamsConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationTeamsConfig)(nil)).Elem()
+}
+
+func (o NotificationTeamsConfigOutput) ToNotificationTeamsConfigOutput() NotificationTeamsConfigOutput {
+	return o
+}
+
+func (o NotificationTeamsConfigOutput) ToNotificationTeamsConfigOutputWithContext(ctx context.Context) NotificationTeamsConfigOutput {
+	return o
+}
+
+func (o NotificationTeamsConfigOutput) ToNotificationTeamsConfigPtrOutput() NotificationTeamsConfigPtrOutput {
+	return o.ToNotificationTeamsConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationTeamsConfigOutput) ToNotificationTeamsConfigPtrOutputWithContext(ctx context.Context) NotificationTeamsConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationTeamsConfig) *NotificationTeamsConfig {
+		return &v
+	}).(NotificationTeamsConfigPtrOutput)
+}
+
+// Secret Teams webhook URL.
+func (o NotificationTeamsConfigOutput) WebhookUrl() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationTeamsConfig) string { return v.WebhookUrl }).(pulumi.StringOutput)
+}
+
+type NotificationTeamsConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationTeamsConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationTeamsConfig)(nil)).Elem()
+}
+
+func (o NotificationTeamsConfigPtrOutput) ToNotificationTeamsConfigPtrOutput() NotificationTeamsConfigPtrOutput {
+	return o
+}
+
+func (o NotificationTeamsConfigPtrOutput) ToNotificationTeamsConfigPtrOutputWithContext(ctx context.Context) NotificationTeamsConfigPtrOutput {
+	return o
+}
+
+func (o NotificationTeamsConfigPtrOutput) Elem() NotificationTeamsConfigOutput {
+	return o.ApplyT(func(v *NotificationTeamsConfig) NotificationTeamsConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationTeamsConfig
+		return ret
+	}).(NotificationTeamsConfigOutput)
+}
+
+// Secret Teams webhook URL.
+func (o NotificationTeamsConfigPtrOutput) WebhookUrl() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationTeamsConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.WebhookUrl
+	}).(pulumi.StringPtrOutput)
+}
+
+type NotificationTelegramConfig struct {
+	// Secret Telegram bot token.
+	BotToken string `pulumi:"botToken"`
+	// Telegram chat ID.
+	ChatId string `pulumi:"chatId"`
+	// Optional message thread ID; defaults to empty.
+	MessageThreadId *string `pulumi:"messageThreadId"`
+}
+
+// NotificationTelegramConfigInput is an input type that accepts NotificationTelegramConfigArgs and NotificationTelegramConfigOutput values.
+// You can construct a concrete instance of `NotificationTelegramConfigInput` via:
+//
+//	NotificationTelegramConfigArgs{...}
+type NotificationTelegramConfigInput interface {
+	pulumi.Input
+
+	ToNotificationTelegramConfigOutput() NotificationTelegramConfigOutput
+	ToNotificationTelegramConfigOutputWithContext(context.Context) NotificationTelegramConfigOutput
+}
+
+type NotificationTelegramConfigArgs struct {
+	// Secret Telegram bot token.
+	BotToken pulumi.StringInput `pulumi:"botToken"`
+	// Telegram chat ID.
+	ChatId pulumi.StringInput `pulumi:"chatId"`
+	// Optional message thread ID; defaults to empty.
+	MessageThreadId pulumi.StringPtrInput `pulumi:"messageThreadId"`
+}
+
+func (NotificationTelegramConfigArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationTelegramConfig)(nil)).Elem()
+}
+
+func (i NotificationTelegramConfigArgs) ToNotificationTelegramConfigOutput() NotificationTelegramConfigOutput {
+	return i.ToNotificationTelegramConfigOutputWithContext(context.Background())
+}
+
+func (i NotificationTelegramConfigArgs) ToNotificationTelegramConfigOutputWithContext(ctx context.Context) NotificationTelegramConfigOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationTelegramConfigOutput)
+}
+
+func (i NotificationTelegramConfigArgs) ToNotificationTelegramConfigPtrOutput() NotificationTelegramConfigPtrOutput {
+	return i.ToNotificationTelegramConfigPtrOutputWithContext(context.Background())
+}
+
+func (i NotificationTelegramConfigArgs) ToNotificationTelegramConfigPtrOutputWithContext(ctx context.Context) NotificationTelegramConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationTelegramConfigOutput).ToNotificationTelegramConfigPtrOutputWithContext(ctx)
+}
+
+// NotificationTelegramConfigPtrInput is an input type that accepts NotificationTelegramConfigArgs, NotificationTelegramConfigPtr and NotificationTelegramConfigPtrOutput values.
+// You can construct a concrete instance of `NotificationTelegramConfigPtrInput` via:
+//
+//	        NotificationTelegramConfigArgs{...}
+//
+//	or:
+//
+//	        nil
+type NotificationTelegramConfigPtrInput interface {
+	pulumi.Input
+
+	ToNotificationTelegramConfigPtrOutput() NotificationTelegramConfigPtrOutput
+	ToNotificationTelegramConfigPtrOutputWithContext(context.Context) NotificationTelegramConfigPtrOutput
+}
+
+type notificationTelegramConfigPtrType NotificationTelegramConfigArgs
+
+func NotificationTelegramConfigPtr(v *NotificationTelegramConfigArgs) NotificationTelegramConfigPtrInput {
+	return (*notificationTelegramConfigPtrType)(v)
+}
+
+func (*notificationTelegramConfigPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationTelegramConfig)(nil)).Elem()
+}
+
+func (i *notificationTelegramConfigPtrType) ToNotificationTelegramConfigPtrOutput() NotificationTelegramConfigPtrOutput {
+	return i.ToNotificationTelegramConfigPtrOutputWithContext(context.Background())
+}
+
+func (i *notificationTelegramConfigPtrType) ToNotificationTelegramConfigPtrOutputWithContext(ctx context.Context) NotificationTelegramConfigPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NotificationTelegramConfigPtrOutput)
+}
+
+type NotificationTelegramConfigOutput struct{ *pulumi.OutputState }
+
+func (NotificationTelegramConfigOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*NotificationTelegramConfig)(nil)).Elem()
+}
+
+func (o NotificationTelegramConfigOutput) ToNotificationTelegramConfigOutput() NotificationTelegramConfigOutput {
+	return o
+}
+
+func (o NotificationTelegramConfigOutput) ToNotificationTelegramConfigOutputWithContext(ctx context.Context) NotificationTelegramConfigOutput {
+	return o
+}
+
+func (o NotificationTelegramConfigOutput) ToNotificationTelegramConfigPtrOutput() NotificationTelegramConfigPtrOutput {
+	return o.ToNotificationTelegramConfigPtrOutputWithContext(context.Background())
+}
+
+func (o NotificationTelegramConfigOutput) ToNotificationTelegramConfigPtrOutputWithContext(ctx context.Context) NotificationTelegramConfigPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v NotificationTelegramConfig) *NotificationTelegramConfig {
+		return &v
+	}).(NotificationTelegramConfigPtrOutput)
+}
+
+// Secret Telegram bot token.
+func (o NotificationTelegramConfigOutput) BotToken() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationTelegramConfig) string { return v.BotToken }).(pulumi.StringOutput)
+}
+
+// Telegram chat ID.
+func (o NotificationTelegramConfigOutput) ChatId() pulumi.StringOutput {
+	return o.ApplyT(func(v NotificationTelegramConfig) string { return v.ChatId }).(pulumi.StringOutput)
+}
+
+// Optional message thread ID; defaults to empty.
+func (o NotificationTelegramConfigOutput) MessageThreadId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v NotificationTelegramConfig) *string { return v.MessageThreadId }).(pulumi.StringPtrOutput)
+}
+
+type NotificationTelegramConfigPtrOutput struct{ *pulumi.OutputState }
+
+func (NotificationTelegramConfigPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**NotificationTelegramConfig)(nil)).Elem()
+}
+
+func (o NotificationTelegramConfigPtrOutput) ToNotificationTelegramConfigPtrOutput() NotificationTelegramConfigPtrOutput {
+	return o
+}
+
+func (o NotificationTelegramConfigPtrOutput) ToNotificationTelegramConfigPtrOutputWithContext(ctx context.Context) NotificationTelegramConfigPtrOutput {
+	return o
+}
+
+func (o NotificationTelegramConfigPtrOutput) Elem() NotificationTelegramConfigOutput {
+	return o.ApplyT(func(v *NotificationTelegramConfig) NotificationTelegramConfig {
+		if v != nil {
+			return *v
+		}
+		var ret NotificationTelegramConfig
+		return ret
+	}).(NotificationTelegramConfigOutput)
+}
+
+// Secret Telegram bot token.
+func (o NotificationTelegramConfigPtrOutput) BotToken() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationTelegramConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.BotToken
+	}).(pulumi.StringPtrOutput)
+}
+
+// Telegram chat ID.
+func (o NotificationTelegramConfigPtrOutput) ChatId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationTelegramConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return &v.ChatId
+	}).(pulumi.StringPtrOutput)
+}
+
+// Optional message thread ID; defaults to empty.
+func (o NotificationTelegramConfigPtrOutput) MessageThreadId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *NotificationTelegramConfig) *string {
+		if v == nil {
+			return nil
+		}
+		return v.MessageThreadId
+	}).(pulumi.StringPtrOutput)
+}
+
 // Raw Compose source configuration.
 type RawComposeSource struct {
 	// The raw Compose file.
@@ -1818,6 +4188,32 @@ func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabAppSourcePtrInput)(nil)).Elem(), GitLabAppSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabComposeSourceInput)(nil)).Elem(), GitLabComposeSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*GitLabComposeSourcePtrInput)(nil)).Elem(), GitLabComposeSourceArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationCustomConfigInput)(nil)).Elem(), NotificationCustomConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationCustomConfigPtrInput)(nil)).Elem(), NotificationCustomConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationDiscordConfigInput)(nil)).Elem(), NotificationDiscordConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationDiscordConfigPtrInput)(nil)).Elem(), NotificationDiscordConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationEmailConfigInput)(nil)).Elem(), NotificationEmailConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationEmailConfigPtrInput)(nil)).Elem(), NotificationEmailConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationEventsInput)(nil)).Elem(), NotificationEventsArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationEventsPtrInput)(nil)).Elem(), NotificationEventsArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationGotifyConfigInput)(nil)).Elem(), NotificationGotifyConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationGotifyConfigPtrInput)(nil)).Elem(), NotificationGotifyConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationLarkConfigInput)(nil)).Elem(), NotificationLarkConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationLarkConfigPtrInput)(nil)).Elem(), NotificationLarkConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationMattermostConfigInput)(nil)).Elem(), NotificationMattermostConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationMattermostConfigPtrInput)(nil)).Elem(), NotificationMattermostConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationNtfyConfigInput)(nil)).Elem(), NotificationNtfyConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationNtfyConfigPtrInput)(nil)).Elem(), NotificationNtfyConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationPushoverConfigInput)(nil)).Elem(), NotificationPushoverConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationPushoverConfigPtrInput)(nil)).Elem(), NotificationPushoverConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationResendConfigInput)(nil)).Elem(), NotificationResendConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationResendConfigPtrInput)(nil)).Elem(), NotificationResendConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationSlackConfigInput)(nil)).Elem(), NotificationSlackConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationSlackConfigPtrInput)(nil)).Elem(), NotificationSlackConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationTeamsConfigInput)(nil)).Elem(), NotificationTeamsConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationTeamsConfigPtrInput)(nil)).Elem(), NotificationTeamsConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationTelegramConfigInput)(nil)).Elem(), NotificationTelegramConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NotificationTelegramConfigPtrInput)(nil)).Elem(), NotificationTelegramConfigArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*RawComposeSourceInput)(nil)).Elem(), RawComposeSourceArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*RawComposeSourcePtrInput)(nil)).Elem(), RawComposeSourceArgs{})
 	pulumi.RegisterOutputType(ApplicationBuildOutput{})
@@ -1834,6 +4230,32 @@ func init() {
 	pulumi.RegisterOutputType(GitLabAppSourcePtrOutput{})
 	pulumi.RegisterOutputType(GitLabComposeSourceOutput{})
 	pulumi.RegisterOutputType(GitLabComposeSourcePtrOutput{})
+	pulumi.RegisterOutputType(NotificationCustomConfigOutput{})
+	pulumi.RegisterOutputType(NotificationCustomConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationDiscordConfigOutput{})
+	pulumi.RegisterOutputType(NotificationDiscordConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationEmailConfigOutput{})
+	pulumi.RegisterOutputType(NotificationEmailConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationEventsOutput{})
+	pulumi.RegisterOutputType(NotificationEventsPtrOutput{})
+	pulumi.RegisterOutputType(NotificationGotifyConfigOutput{})
+	pulumi.RegisterOutputType(NotificationGotifyConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationLarkConfigOutput{})
+	pulumi.RegisterOutputType(NotificationLarkConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationMattermostConfigOutput{})
+	pulumi.RegisterOutputType(NotificationMattermostConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationNtfyConfigOutput{})
+	pulumi.RegisterOutputType(NotificationNtfyConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationPushoverConfigOutput{})
+	pulumi.RegisterOutputType(NotificationPushoverConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationResendConfigOutput{})
+	pulumi.RegisterOutputType(NotificationResendConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationSlackConfigOutput{})
+	pulumi.RegisterOutputType(NotificationSlackConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationTeamsConfigOutput{})
+	pulumi.RegisterOutputType(NotificationTeamsConfigPtrOutput{})
+	pulumi.RegisterOutputType(NotificationTelegramConfigOutput{})
+	pulumi.RegisterOutputType(NotificationTelegramConfigPtrOutput{})
 	pulumi.RegisterOutputType(RawComposeSourceOutput{})
 	pulumi.RegisterOutputType(RawComposeSourcePtrOutput{})
 }

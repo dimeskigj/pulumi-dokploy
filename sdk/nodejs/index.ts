@@ -115,6 +115,11 @@ export type MySQL = import("./mySQL").MySQL;
 export const MySQL: typeof import("./mySQL").MySQL = null as any;
 utilities.lazyLoad(exports, ["MySQL"], () => require("./mySQL"));
 
+export { NotificationArgs } from "./notification";
+export type Notification = import("./notification").Notification;
+export const Notification: typeof import("./notification").Notification = null as any;
+utilities.lazyLoad(exports, ["Notification"], () => require("./notification"));
+
 export { PortArgs } from "./port";
 export type Port = import("./port").Port;
 export const Port: typeof import("./port").Port = null as any;
@@ -207,6 +212,8 @@ const _module = {
                 return new Mount(name, <any>undefined, { urn })
             case "dokploy:index:MySQL":
                 return new MySQL(name, <any>undefined, { urn })
+            case "dokploy:index:Notification":
+                return new Notification(name, <any>undefined, { urn })
             case "dokploy:index:Port":
                 return new Port(name, <any>undefined, { urn })
             case "dokploy:index:Postgres":

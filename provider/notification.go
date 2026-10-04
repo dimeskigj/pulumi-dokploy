@@ -3,6 +3,7 @@ package dokploy
 import (
 	"context"
 	"reflect"
+	"strings"
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -170,4 +171,49 @@ func notificationConfigDiff(d map[string]p.PropertyDiff, kind string, a, b Notif
 		// A containing-property diff avoids unescaped user-controlled header keys.
 		d[kind+"."+name] = p.PropertyDiff{Kind: p.Update}
 	}
+}
+
+// Identities depend on the selected channel but not its secret contents.
+// Keeping the input blocks as computed-only dependencies avoids leaking secret
+// metadata into public identity fields while deferring them for unknown blocks.
+func (r Notification) WireDependencies(f infer.FieldSelector, a *NotificationArgs, s *NotificationState) {
+	blocks := []infer.InputField{
+		f.InputField(&a.Slack), f.InputField(&a.Telegram), f.InputField(&a.Discord),
+		f.InputField(&a.Email), f.InputField(&a.Resend), f.InputField(&a.Gotify),
+		f.InputField(&a.Ntfy), f.InputField(&a.Mattermost), f.InputField(&a.Custom),
+		f.InputField(&a.Lark), f.InputField(&a.Teams), f.InputField(&a.Pushover),
+	}
+	// Known settings changes do not change identity on an in-place update.
+	// An absent typed block may represent a computed whole block during preview;
+	// a zero required field similarly represents a computed nested input.
+	var identity []infer.InputField
+	for i, kind := range notificationChannels {
+		v := notificationBlock(*a, kind)
+		if !notificationSelected(*a, kind) || notificationMissingRequiredValue(v) {
+			identity = append(identity, blocks[i].Computed())
+		}
+	}
+	for _, output := range []infer.OutputField{f.OutputField(&s.NotificationID), f.OutputField(&s.NotificationType), f.OutputField(&s.ChannelID), f.OutputField(&s.OrganizationID)} {
+		output.DependsOn(identity...)
+	}
+	f.OutputField(&s.Name).DependsOn(f.InputField(&a.Name))
+	f.OutputField(&s.Events).DependsOn(f.InputField(&a.Events))
+	for i, output := range []infer.OutputField{
+		f.OutputField(&s.Slack), f.OutputField(&s.Telegram), f.OutputField(&s.Discord),
+		f.OutputField(&s.Email), f.OutputField(&s.Resend), f.OutputField(&s.Gotify),
+		f.OutputField(&s.Ntfy), f.OutputField(&s.Mattermost), f.OutputField(&s.Custom),
+		f.OutputField(&s.Lark), f.OutputField(&s.Teams), f.OutputField(&s.Pushover),
+	} {
+		output.DependsOn(blocks[i])
+	}
+}
+
+func notificationMissingRequiredValue(block any) bool {
+	v := reflect.ValueOf(block).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		if !strings.Contains(v.Type().Field(i).Tag.Get("pulumi"), ",optional") && v.Field(i).IsZero() {
+			return true
+		}
+	}
+	return false
 }
