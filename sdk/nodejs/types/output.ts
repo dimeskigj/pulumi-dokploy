@@ -245,6 +245,221 @@ export interface GitLabComposeSource {
     watchPaths?: string[];
 }
 
+export interface NotificationCustomConfig {
+    /**
+     * Secret HTTP(S) destination URL.
+     */
+    endpoint: string;
+    /**
+     * Secret custom HTTP headers; defaults to an empty map.
+     */
+    headers?: {[key: string]: string};
+}
+
+export interface NotificationDiscordConfig {
+    /**
+     * Whether to decorate messages; defaults to false.
+     */
+    decoration?: boolean;
+    /**
+     * Secret Discord webhook URL.
+     */
+    webhookUrl: string;
+}
+
+export interface NotificationEmailConfig {
+    /**
+     * Sender address.
+     */
+    fromAddress: string;
+    /**
+     * Secret SMTP password.
+     */
+    password: string;
+    /**
+     * SMTP port from 1 through 65535.
+     */
+    smtpPort: number;
+    /**
+     * SMTP server hostname.
+     */
+    smtpServer: string;
+    /**
+     * Nonempty list of recipient addresses.
+     */
+    toAddresses: string[];
+    /**
+     * SMTP username.
+     */
+    username: string;
+}
+
+export interface NotificationEvents {
+    /**
+     * Notify on application build error; defaults to false.
+     */
+    appBuildError?: boolean;
+    /**
+     * Notify on application deployment; defaults to false.
+     */
+    appDeploy?: boolean;
+    /**
+     * Notify on database backup; defaults to false.
+     */
+    databaseBackup?: boolean;
+    /**
+     * Notify on Docker cleanup; defaults to false.
+     */
+    dockerCleanup?: boolean;
+    /**
+     * Notify on Dokploy backup; defaults to false.
+     */
+    dokployBackup?: boolean;
+    /**
+     * Notify on Dokploy restart; defaults to false.
+     */
+    dokployRestart?: boolean;
+    /**
+     * Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+     */
+    serverThreshold?: boolean;
+    /**
+     * Notify on volume backup; defaults to false.
+     */
+    volumeBackup?: boolean;
+}
+
+export interface NotificationGotifyConfig {
+    /**
+     * Secret Gotify application token.
+     */
+    appToken: string;
+    /**
+     * Whether to decorate messages; defaults to false.
+     */
+    decoration?: boolean;
+    /**
+     * Message priority; defaults to 5 (minimum 1).
+     */
+    priority?: number;
+    /**
+     * Secret Gotify server URL.
+     */
+    serverUrl: string;
+}
+
+export interface NotificationLarkConfig {
+    /**
+     * Secret Lark webhook URL.
+     */
+    webhookUrl: string;
+}
+
+export interface NotificationMattermostConfig {
+    /**
+     * Optional routing channel; defaults to empty.
+     */
+    channel?: string;
+    /**
+     * Optional display username; defaults to empty.
+     */
+    username?: string;
+    /**
+     * Secret Mattermost webhook URL.
+     */
+    webhookUrl: string;
+}
+
+export interface NotificationNtfyConfig {
+    /**
+     * Optional secret access token; defaults to empty.
+     */
+    accessToken?: string;
+    /**
+     * Message priority, 1 through 5; defaults to 3.
+     */
+    priority?: number;
+    /**
+     * Secret Ntfy server URL.
+     */
+    serverUrl: string;
+    /**
+     * Ntfy topic.
+     */
+    topic: string;
+}
+
+export interface NotificationPushoverConfig {
+    /**
+     * Secret Pushover API token.
+     */
+    apiToken: string;
+    /**
+     * Emergency expiry in seconds, 1 through 10800; required for priority 2.
+     */
+    expire?: number;
+    /**
+     * Priority from -2 through 2; defaults to 0.
+     */
+    priority?: number;
+    /**
+     * Emergency retry interval in seconds, at least 30; required for priority 2.
+     */
+    retry?: number;
+    /**
+     * Secret Pushover user key.
+     */
+    userKey: string;
+}
+
+export interface NotificationResendConfig {
+    /**
+     * Secret Resend API key.
+     */
+    apiKey: string;
+    /**
+     * Sender address.
+     */
+    fromAddress: string;
+    /**
+     * Nonempty list of recipient addresses.
+     */
+    toAddresses: string[];
+}
+
+export interface NotificationSlackConfig {
+    /**
+     * Optional routing channel; defaults to empty.
+     */
+    channel?: string;
+    /**
+     * Secret Slack webhook URL.
+     */
+    webhookUrl: string;
+}
+
+export interface NotificationTeamsConfig {
+    /**
+     * Secret Teams webhook URL.
+     */
+    webhookUrl: string;
+}
+
+export interface NotificationTelegramConfig {
+    /**
+     * Secret Telegram bot token.
+     */
+    botToken: string;
+    /**
+     * Telegram chat ID.
+     */
+    chatId: string;
+    /**
+     * Optional message thread ID; defaults to empty.
+     */
+    messageThreadId?: string;
+}
+
 /**
  * Raw Compose source configuration.
  */

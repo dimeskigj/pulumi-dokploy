@@ -245,6 +245,221 @@ export interface GitLabComposeSourceArgs {
     watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
 }
 
+export interface NotificationCustomConfigArgs {
+    /**
+     * Secret HTTP(S) destination URL.
+     */
+    endpoint: pulumi.Input<string>;
+    /**
+     * Secret custom HTTP headers; defaults to an empty map.
+     */
+    headers?: pulumi.Input<{[key: string]: pulumi.Input<string>} | undefined>;
+}
+
+export interface NotificationDiscordConfigArgs {
+    /**
+     * Whether to decorate messages; defaults to false.
+     */
+    decoration?: pulumi.Input<boolean | undefined>;
+    /**
+     * Secret Discord webhook URL.
+     */
+    webhookUrl: pulumi.Input<string>;
+}
+
+export interface NotificationEmailConfigArgs {
+    /**
+     * Sender address.
+     */
+    fromAddress: pulumi.Input<string>;
+    /**
+     * Secret SMTP password.
+     */
+    password: pulumi.Input<string>;
+    /**
+     * SMTP port from 1 through 65535.
+     */
+    smtpPort: pulumi.Input<number>;
+    /**
+     * SMTP server hostname.
+     */
+    smtpServer: pulumi.Input<string>;
+    /**
+     * Nonempty list of recipient addresses.
+     */
+    toAddresses: pulumi.Input<pulumi.Input<string>[]>;
+    /**
+     * SMTP username.
+     */
+    username: pulumi.Input<string>;
+}
+
+export interface NotificationEventsArgs {
+    /**
+     * Notify on application build error; defaults to false.
+     */
+    appBuildError?: pulumi.Input<boolean | undefined>;
+    /**
+     * Notify on application deployment; defaults to false.
+     */
+    appDeploy?: pulumi.Input<boolean | undefined>;
+    /**
+     * Notify on database backup; defaults to false.
+     */
+    databaseBackup?: pulumi.Input<boolean | undefined>;
+    /**
+     * Notify on Docker cleanup; defaults to false.
+     */
+    dockerCleanup?: pulumi.Input<boolean | undefined>;
+    /**
+     * Notify on Dokploy backup; defaults to false.
+     */
+    dokployBackup?: pulumi.Input<boolean | undefined>;
+    /**
+     * Notify on Dokploy restart; defaults to false.
+     */
+    dokployRestart?: pulumi.Input<boolean | undefined>;
+    /**
+     * Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+     */
+    serverThreshold?: pulumi.Input<boolean | undefined>;
+    /**
+     * Notify on volume backup; defaults to false.
+     */
+    volumeBackup?: pulumi.Input<boolean | undefined>;
+}
+
+export interface NotificationGotifyConfigArgs {
+    /**
+     * Secret Gotify application token.
+     */
+    appToken: pulumi.Input<string>;
+    /**
+     * Whether to decorate messages; defaults to false.
+     */
+    decoration?: pulumi.Input<boolean | undefined>;
+    /**
+     * Message priority; defaults to 5 (minimum 1).
+     */
+    priority?: pulumi.Input<number | undefined>;
+    /**
+     * Secret Gotify server URL.
+     */
+    serverUrl: pulumi.Input<string>;
+}
+
+export interface NotificationLarkConfigArgs {
+    /**
+     * Secret Lark webhook URL.
+     */
+    webhookUrl: pulumi.Input<string>;
+}
+
+export interface NotificationMattermostConfigArgs {
+    /**
+     * Optional routing channel; defaults to empty.
+     */
+    channel?: pulumi.Input<string | undefined>;
+    /**
+     * Optional display username; defaults to empty.
+     */
+    username?: pulumi.Input<string | undefined>;
+    /**
+     * Secret Mattermost webhook URL.
+     */
+    webhookUrl: pulumi.Input<string>;
+}
+
+export interface NotificationNtfyConfigArgs {
+    /**
+     * Optional secret access token; defaults to empty.
+     */
+    accessToken?: pulumi.Input<string | undefined>;
+    /**
+     * Message priority, 1 through 5; defaults to 3.
+     */
+    priority?: pulumi.Input<number | undefined>;
+    /**
+     * Secret Ntfy server URL.
+     */
+    serverUrl: pulumi.Input<string>;
+    /**
+     * Ntfy topic.
+     */
+    topic: pulumi.Input<string>;
+}
+
+export interface NotificationPushoverConfigArgs {
+    /**
+     * Secret Pushover API token.
+     */
+    apiToken: pulumi.Input<string>;
+    /**
+     * Emergency expiry in seconds, 1 through 10800; required for priority 2.
+     */
+    expire?: pulumi.Input<number | undefined>;
+    /**
+     * Priority from -2 through 2; defaults to 0.
+     */
+    priority?: pulumi.Input<number | undefined>;
+    /**
+     * Emergency retry interval in seconds, at least 30; required for priority 2.
+     */
+    retry?: pulumi.Input<number | undefined>;
+    /**
+     * Secret Pushover user key.
+     */
+    userKey: pulumi.Input<string>;
+}
+
+export interface NotificationResendConfigArgs {
+    /**
+     * Secret Resend API key.
+     */
+    apiKey: pulumi.Input<string>;
+    /**
+     * Sender address.
+     */
+    fromAddress: pulumi.Input<string>;
+    /**
+     * Nonempty list of recipient addresses.
+     */
+    toAddresses: pulumi.Input<pulumi.Input<string>[]>;
+}
+
+export interface NotificationSlackConfigArgs {
+    /**
+     * Optional routing channel; defaults to empty.
+     */
+    channel?: pulumi.Input<string | undefined>;
+    /**
+     * Secret Slack webhook URL.
+     */
+    webhookUrl: pulumi.Input<string>;
+}
+
+export interface NotificationTeamsConfigArgs {
+    /**
+     * Secret Teams webhook URL.
+     */
+    webhookUrl: pulumi.Input<string>;
+}
+
+export interface NotificationTelegramConfigArgs {
+    /**
+     * Secret Telegram bot token.
+     */
+    botToken: pulumi.Input<string>;
+    /**
+     * Telegram chat ID.
+     */
+    chatId: pulumi.Input<string>;
+    /**
+     * Optional message thread ID; defaults to empty.
+     */
+    messageThreadId?: pulumi.Input<string | undefined>;
+}
+
 /**
  * Raw Compose source configuration.
  */

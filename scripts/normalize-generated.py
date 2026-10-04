@@ -3,6 +3,7 @@
 
 import json
 from pathlib import Path
+import re
 import sys
 
 
@@ -17,6 +18,9 @@ def normalize_sdks(root: Path) -> None:
         if path.is_file() and path.suffix in {".cs", ".go", ".java", ".py", ".ts"}:
             content = path.read_text()
             normalized = "\n".join(line.rstrip() for line in content.splitlines()).rstrip() + "\n"
+            if path.suffix == ".java" and path.stem.startswith("Notification"):
+                # Pulumi's Notification Java emitter mixes leading spaces before a tab.
+                normalized = re.sub(r"(?m)^ +\t", "\t", normalized)
             if normalized != content:
                 path.write_text(normalized)
 
