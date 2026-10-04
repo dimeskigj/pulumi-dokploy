@@ -80,6 +80,93 @@ func TestNotificationCreateDryRunNoCalls(t *testing.T) {
 	require.Empty(t, got.ID)
 }
 
+func TestNotificationGotifyLargePriorityLifecycle(t *testing.T) {
+	const priority = 16777217
+	a := notificationTestArgs("gotify")
+	a.Gotify.Priority = ptr(priority)
+	settings := `{"gotifyId":"channel","serverUrl":"https://example.com","appToken":"placeholder","priority":16777217,"decoration":false}`
+	v := observedNotification(t, "gotify", settings)
+	var marker string
+	createPosts, updatePosts := 0, 0
+	r := notificationTestResource(t, func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch req.URL.Path {
+		case "/api/organization.active":
+			_, _ = w.Write([]byte(`{"id":"org"}`))
+		case "/api/notification.all":
+			if marker == "" {
+				_, _ = w.Write([]byte(`[]`))
+			} else {
+				_ = json.NewEncoder(w).Encode([]generated.Notification{v})
+			}
+		case "/api/notification.createGotify", "/api/notification.updateGotify":
+			var body map[string]any
+			decoder := json.NewDecoder(req.Body)
+			decoder.UseNumber()
+			require.NoError(t, decoder.Decode(&body))
+			require.Equal(t, "16777217", body["priority"].(json.Number).String())
+			if req.URL.Path == "/api/notification.createGotify" {
+				createPosts++
+				marker = body["name"].(string)
+				v.Name = &marker
+			} else {
+				updatePosts++
+				v.Name = ptr(a.Name)
+			}
+			w.WriteHeader(http.StatusNoContent)
+		case "/api/notification.one":
+			_ = json.NewEncoder(w).Encode(v)
+		default:
+			t.Errorf("unexpected endpoint")
+		}
+	})
+	got, err := r.Create(t.Context(), infer.CreateRequest[NotificationArgs]{Inputs: a})
+	require.NoError(t, err)
+	require.Equal(t, priority, *got.Output.Gotify.Priority)
+	require.Equal(t, 1, createPosts)
+	require.Equal(t, 1, updatePosts)
+}
+
+func TestNotificationCreateTransportAndDefiniteRejection(t *testing.T) {
+	for _, transport := range []bool{true, false} {
+		t.Run(map[bool]string{true: "transport", false: "definite 4xx"}[transport], func(t *testing.T) {
+			posts, afterLists := 0, 0
+			r := notificationTestResource(t, func(w http.ResponseWriter, req *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch req.URL.Path {
+				case "/api/organization.active":
+					_, _ = w.Write([]byte(`{"id":"org"}`))
+				case "/api/notification.all":
+					afterLists++
+					_, _ = w.Write([]byte(`[]`))
+				case "/api/notification.createSlack":
+					posts++
+					if transport {
+						conn, _, err := w.(http.Hijacker).Hijack()
+						require.NoError(t, err)
+						_ = conn.Close()
+					} else {
+						w.WriteHeader(http.StatusBadRequest)
+					}
+				default:
+					t.Errorf("unexpected endpoint")
+				}
+			})
+			got, err := r.Create(t.Context(), infer.CreateRequest[NotificationArgs]{Inputs: notificationTestArgs("slack")})
+			require.Error(t, err)
+			require.Empty(t, got.ID)
+			require.Equal(t, 1, posts)
+			if transport {
+				require.Equal(t, 4, afterLists)
+				require.Contains(t, err.Error(), "inspect disabled records")
+			} else {
+				require.Equal(t, 1, afterLists)
+				require.NotContains(t, err.Error(), "inspect disabled records")
+			}
+		})
+	}
+}
+
 func TestNotificationCreateFailureStates(t *testing.T) {
 	for _, tc := range []struct {
 		name                                                                                                                                     string
@@ -401,6 +488,33 @@ func TestNotificationReadUpdateDelete(t *testing.T) {
 			if tc.wrongOrg {
 				require.Zero(t, reads)
 			}
+		})
+	}
+}
+
+func TestNotificationReadRejectsEmptyRecipientsWithoutMutation(t *testing.T) {
+	for _, kind := range []string{"email", "resend"} {
+		t.Run(kind, func(t *testing.T) {
+			settings := `{"resendId":"channel","apiKey":"placeholder","fromAddress":"sender@example.com","toAddresses":[]}`
+			if kind == "email" {
+				settings = `{"emailId":"channel","smtpServer":"smtp.example.com","smtpPort":25,"username":"user","password":"placeholder","fromAddress":"sender@example.com","toAddresses":[]}`
+			}
+			v := observedNotification(t, kind, settings)
+			posts := 0
+			r := notificationTestResource(t, func(w http.ResponseWriter, req *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch req.URL.Path {
+				case "/api/organization.active":
+					_, _ = w.Write([]byte(`{"id":"org"}`))
+				case "/api/notification.one":
+					_ = json.NewEncoder(w).Encode(v)
+				default:
+					posts++
+				}
+			})
+			_, err := r.Read(t.Context(), infer.ReadRequest[NotificationArgs, NotificationState]{ID: v.NotificationId})
+			require.Error(t, err)
+			require.Zero(t, posts)
 		})
 	}
 }

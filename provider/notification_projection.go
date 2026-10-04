@@ -148,6 +148,9 @@ func notificationEmailArgsFrom(v *generated.NotificationEmail, prior *Notificati
 	if e != nil {
 		return nil, e
 	}
+	if len(to) == 0 {
+		return nil, errNotificationObservation
+	}
 	for _, recipient := range to {
 		if recipient == "" {
 			return nil, errNotificationObservation
@@ -170,6 +173,9 @@ func notificationResendArgsFrom(v *generated.NotificationResend, prior *Notifica
 	to, e := notificationRequired(v.ToAddresses)
 	if e != nil {
 		return nil, e
+	}
+	if len(to) == 0 {
+		return nil, errNotificationObservation
 	}
 	for _, recipient := range to {
 		if recipient == "" {

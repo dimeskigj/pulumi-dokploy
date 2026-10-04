@@ -10475,7 +10475,7 @@
                   },
                   "priority": {
                     "minimum": 1,
-                    "type": "number"
+                    "type": "integer"
                   },
                   "serverUrl": {
                     "minLength": 1,
@@ -12140,7 +12140,7 @@
                   },
                   "priority": {
                     "minimum": 1,
-                    "type": "number"
+                    "type": "integer"
                   },
                   "serverUrl": {
                     "minLength": 1,

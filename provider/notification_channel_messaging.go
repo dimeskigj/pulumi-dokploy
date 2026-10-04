@@ -23,13 +23,13 @@ func notificationTelegramUpdateBody(id, channelID string, a NotificationArgs) ge
 func notificationGotifyCreateBody(name string, a NotificationArgs) generated.NotificationCreateGotifyJSONRequestBody {
 	a = normalizeNotificationArgs(a)
 	v := a.Gotify
-	return generated.NotificationCreateGotifyJSONRequestBody{Name: name, ServerUrl: v.ServerURL, AppToken: v.AppToken, Priority: float32(*v.Priority), Decoration: *v.Decoration}
+	return generated.NotificationCreateGotifyJSONRequestBody{Name: name, ServerUrl: v.ServerURL, AppToken: v.AppToken, Priority: *v.Priority, Decoration: *v.Decoration}
 }
 func notificationGotifyUpdateBody(id, channelID string, a NotificationArgs) generated.NotificationUpdateGotifyJSONRequestBody {
 	a = normalizeNotificationArgs(a)
 	e, v := a.Events, a.Gotify
 	return generated.NotificationUpdateGotifyJSONRequestBody{
-		NotificationId: id, GotifyId: channelID, Name: ptr(a.Name), ServerUrl: ptr(v.ServerURL), AppToken: ptr(v.AppToken), Priority: ptr(float32(*v.Priority)), Decoration: v.Decoration,
+		NotificationId: id, GotifyId: channelID, Name: ptr(a.Name), ServerUrl: ptr(v.ServerURL), AppToken: ptr(v.AppToken), Priority: v.Priority, Decoration: v.Decoration,
 		AppDeploy: ptr(e.AppDeploy), AppBuildError: ptr(e.AppBuildError), DatabaseBackup: ptr(e.DatabaseBackup), VolumeBackup: ptr(e.VolumeBackup),
 		DokployBackup: ptr(e.DokployBackup), DokployRestart: ptr(e.DokployRestart), DockerCleanup: ptr(e.DockerCleanup),
 	}

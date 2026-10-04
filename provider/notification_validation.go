@@ -287,6 +287,10 @@ func validateNotificationKnown(a NotificationArgs, raw property.Map) []p.CheckFa
 		if a.Gotify.Priority != nil && *a.Gotify.Priority < 1 {
 			add("gotify.priority", "gotify.priority must be at least 1")
 		}
+		// Dokploy's JSON number runtime cannot preserve integers above this bound.
+		if a.Gotify.Priority != nil && *a.Gotify.Priority > 9007199254740991 {
+			add("gotify.priority", "gotify.priority must not exceed 9007199254740991 (maximum safe JSON integer)")
+		}
 	}
 	if a.Ntfy != nil {
 		address("ntfy.serverUrl", a.Ntfy.ServerURL)

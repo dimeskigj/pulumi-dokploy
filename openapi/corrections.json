@@ -135,6 +135,10 @@
   "requests": {
     "registry.update": "RegistryUpdateRequest"
   },
+  "requestIntegerProperties": {
+    "notification.createGotify": ["priority"],
+    "notification.updateGotify": ["priority"]
+  },
   "schemas": {
     "CreateProjectResult": {"type":"object","required":["project","environment"],"properties":{"project":{"$ref":"#/components/schemas/Project"},"environment":{"$ref":"#/components/schemas/Environment"}},"additionalProperties":true},
     "Project": {"type":"object","properties":{"projectId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"defaultEnvironmentId":{"type":"string"},"projectTags":{"type":"array","items":{"type":"object","required":["tagId"],"properties":{"tagId":{"type":"string"}},"additionalProperties":true}}},"additionalProperties":true},

@@ -187,6 +187,27 @@ test("Notification guide covers channels and safe recovery", async () => {
   for (const channel of ["slack", "telegram", "discord", "email", "resend", "gotify", "ntfy", "mattermost", "custom", "lark", "teams", "pushover"]) {
     assert.match(guide, new RegExp(`\\b${channel}\\b`));
   }
+  const rows = [...guide.matchAll(/^\| `(\w+)` \| ([^|]+) \| ([^|]+) \|$/gm)];
+  const expected = new Map([
+    ["slack", ["`webhookUrl`", "`channel`: empty string"]],
+    ["telegram", ["`botToken`, `chatId`", "`messageThreadId`: empty string"]],
+    ["discord", ["`webhookUrl`", "`decoration`: false"]],
+    ["email", ["`smtpServer`, `smtpPort`, `username`, `password`, `fromAddress`, `toAddresses`", "None"]],
+    ["resend", ["`apiKey`, `fromAddress`, `toAddresses`", "None"]],
+    ["gotify", ["`serverUrl`, `appToken`", "`priority`: 5; `decoration`: false"]],
+    ["ntfy", ["`serverUrl`, `topic`", "`accessToken`: empty string; `priority`: 3"]],
+    ["mattermost", ["`webhookUrl`", "`channel`, `username`: empty strings"]],
+    ["custom", ["`endpoint`", "`headers`: empty map of string keys to string values"]],
+    ["lark", ["`webhookUrl`", "None"]],
+    ["teams", ["`webhookUrl`", "None"]],
+    ["pushover", ["`userKey`, `apiToken`", "`priority`: 0; `retry`, `expire`: absent"]],
+  ]);
+  assert.equal(rows.length, expected.size);
+  for (const [, channel, required, optional] of rows) {
+    assert.deepEqual([required.trim(), optional.trim()], expected.get(channel), `incorrect settings for ${channel}`);
+    expected.delete(channel);
+  }
+  assert.equal(expected.size, 0);
   for (const marker of ["dokploy:index:Notification", "config.requireSecret(\"notificationWebhookUrl\")", "appDeploy: true", "appBuildError: true", "serverThreshold", "retry", "expire", "pulumi config set --secret", "temporary", "refresh", "read/list/create/update", "reference/notification", "reference/types", "channelId", "organizationId"]) {
     assert.ok(guide.includes(marker), `Missing ${marker}`);
   }

@@ -41,3 +41,11 @@ func TestNotificationChannelPushoverEmergencySettings(t *testing.T) {
 		require.Equal(t, float64(10800), fields["expire"])
 	}
 }
+
+func TestNotificationGotifyLargeIntegerBodies(t *testing.T) {
+	a := notificationTestArgs(notificationGotify)
+	a.Gotify.Priority = ptr(16777217)
+	for _, body := range []any{notificationGotifyCreateBody("temporary", a), notificationGotifyUpdateBody("id", "channel", a)} {
+		require.Equal(t, float64(16777217), notificationBodyMap(t, body)["priority"])
+	}
+}

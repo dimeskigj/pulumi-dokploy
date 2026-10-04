@@ -62,7 +62,8 @@ credential values; optional defaults are applied when absent.
 
 The [generated types](../../reference/types/#notification-events) describe every
 event and setting. Recipient arrays must be nonempty and contain nonempty strings;
-`smtpPort` is 1–65535. Gotify priority is at least 1, Ntfy priority is 1–5,
+`smtpPort` is 1–65535. Gotify priority is 1–9007199254740991 (the maximum
+integer safely representable by Dokploy's JSON number runtime); Ntfy priority is 1–5,
 and Pushover priority is -2–2. For Pushover emergency priority 2, set both
 `retry` (at least 30 seconds) and `expire` (1–10800 seconds):
 

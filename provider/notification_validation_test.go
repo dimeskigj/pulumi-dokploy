@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/blang/semver"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/integration"
@@ -47,6 +48,11 @@ func TestNotificationResolvedDefaultsAndValidation(t *testing.T) {
 		{"smtp", func() NotificationArgs { a := notificationTestArgs("email"); a.Email.SMTPPort = 65536; return a }(), "email.smtpPort"},
 		{"priority", func() NotificationArgs { a := notificationTestArgs("ntfy"); a.Ntfy.Priority = ptr(6); return a }(), "ntfy.priority"},
 		{"gotify priority minimum", func() NotificationArgs { a := notificationTestArgs("gotify"); a.Gotify.Priority = ptr(0); return a }(), "gotify.priority"},
+		{"gotify priority unsafe integer", func() NotificationArgs {
+			a := notificationTestArgs("gotify")
+			a.Gotify.Priority = ptr(9007199254740992)
+			return a
+		}(), "gotify.priority"},
 		{"pushover retry minimum", func() NotificationArgs { a := notificationTestArgs("pushover"); a.Pushover.Retry = ptr(29); return a }(), "pushover.retry"},
 		{"pushover expire minimum", func() NotificationArgs { a := notificationTestArgs("pushover"); a.Pushover.Expire = ptr(0); return a }(), "pushover.expire"},
 		{"pushover expire maximum", func() NotificationArgs {
@@ -62,6 +68,17 @@ func TestNotificationResolvedDefaultsAndValidation(t *testing.T) {
 			require.Contains(t, failurePaths(failures), tc.path)
 		})
 	}
+}
+
+func TestNotificationGotifyUnsafePriorityBeforeHTTP(t *testing.T) {
+	a := notificationTestArgs("gotify")
+	a.Gotify.Priority = ptr(9007199254740992)
+	r := Notification{client: func(context.Context) *client.Client { t.Fatal("unsafe priority touched HTTP"); return nil }}
+	_, err := r.Create(t.Context(), infer.CreateRequest[NotificationArgs]{Inputs: a})
+	require.Error(t, err)
+	state := NotificationState{NotificationArgs: notificationTestArgs("gotify"), NotificationID: "placeholder-id", ChannelID: "placeholder-channel", OrganizationID: "org", NotificationType: "gotify"}
+	_, err = r.Update(t.Context(), infer.UpdateRequest[NotificationArgs, NotificationState]{ID: state.NotificationID, State: state, Inputs: a})
+	require.Error(t, err)
 }
 
 // Only used for inference Check encoding; production lifecycle stays unimplemented.

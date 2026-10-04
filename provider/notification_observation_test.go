@@ -188,6 +188,23 @@ func TestNotificationDiscoveryAllChannels(t *testing.T) {
 	}
 }
 
+func TestNotificationEmptyRecipientsAreMalformed(t *testing.T) {
+	for _, kind := range []string{"email", "resend"} {
+		t.Run(kind, func(t *testing.T) {
+			settings := `{"` + kind + `Id":"channel","fromAddress":"sender@example.com","toAddresses":[]}`
+			if kind == "email" {
+				settings = `{"emailId":"channel","smtpServer":"smtp.example.com","smtpPort":25,"username":"user","password":"password","fromAddress":"sender@example.com","toAddresses":[]}`
+			}
+			v := observedNotification(t, kind, settings)
+			_, err := notificationStateFrom(&v, nil, notificationIdentity{NotificationID: v.NotificationId, OrganizationID: "org"})
+			require.Error(t, err)
+			_, match, err := notificationCandidate(&v, "marker", "org", notificationProjectionCases()[kind].want, nil)
+			require.Error(t, err)
+			require.False(t, match)
+		})
+	}
+}
+
 func TestNotificationDiscoveryCandidates(t *testing.T) {
 	v := observedNotification(t, "slack", `{"slackId":"channel","webhookUrl":"https://example.com/hook","channel":""}`)
 	state, match, err := notificationCandidate(&v, "marker", "org", NotificationArgs{Slack: &NotificationSlackConfig{WebhookURL: "https://example.com/hook"}}, map[string]struct{}{})
