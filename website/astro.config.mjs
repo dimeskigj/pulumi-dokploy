@@ -46,6 +46,7 @@ export default defineConfig({
             { label: "Domains", link: "/guides/domains/" },
             { label: "Backups", link: "/guides/backups/" },
             { label: "Schedules", link: "/guides/schedules/" },
+            { label: "Servers", link: "/guides/servers/" },
             { label: "Imports", link: "/guides/imports/" },
             { label: "Troubleshooting", link: "/guides/troubleshooting/" },
           ],
@@ -55,6 +56,7 @@ export default defineConfig({
           items: [
             { label: "Project", link: "/reference/project/" },
             { label: "Environment", link: "/reference/environment/" },
+            { label: "Server", link: "/reference/server/" },
             { label: "Application", link: "/reference/application/" },
             { label: "Compose", link: "/reference/compose/" },
             { label: "Postgres", link: "/reference/postgres/" },

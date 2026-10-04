@@ -102,3 +102,7 @@ schedule.create
 schedule.update
 schedule.delete
 schedule.one
+server.create
+server.one
+server.remove
+server.update

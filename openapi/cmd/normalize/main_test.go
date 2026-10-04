@@ -226,6 +226,82 @@ func TestRealContractIncludesScheduleCRUD(t *testing.T) {
 	require.NotContains(t, d.Paths, "/schedule.list")
 	require.NotContains(t, d.Paths, "/schedule.runManually")
 }
+
+func TestRealContractIncludesServerCRUD(t *testing.T) {
+	d := normalizeRealContract(t)
+	require.Contains(t, d.Paths, "/server.one")
+	require.NotNil(t, d.Paths["/server.one"].Get)
+	for _, operation := range []string{"server.create", "server.update", "server.remove"} {
+		require.Contains(t, d.Paths, "/"+operation)
+		require.NotNil(t, d.Paths["/"+operation].Post)
+	}
+	require.Equal(t, "#/components/schemas/Server", responseSchema(t, d, "/server.one", "get", "200").Ref)
+	require.Equal(t, "#/components/schemas/ServerMutationResult", responseSchema(t, d, "/server.create", "post", "200").Ref)
+	require.Equal(t, "#/components/schemas/ServerMutationResult", responseSchema(t, d, "/server.update", "post", "200").Ref)
+	removeResponse := d.Paths["/server.remove"].Post.Raw["responses"].(map[string]any)["200"].(map[string]any)
+	require.NotContains(t, removeResponse, "content")
+	for _, operation := range []string{"server.setup", "server.validate", "server.security", "server.setupMonitoring", "server.updateBuildsConcurrency"} {
+		require.NotContains(t, d.Paths, "/"+operation)
+	}
+	server := componentSchema(t, d, "Server")
+	require.ElementsMatch(t, []string{"serverId", "name", "description", "ipAddress", "port", "username", "sshKeyId", "serverType", "enableDockerCleanup", "organizationId", "serverStatus"}, mapKeys(server["properties"].(map[string]any)))
+	require.Equal(t, []any{"serverId"}, server["required"])
+	require.Equal(t, false, server["additionalProperties"])
+	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, server, "description"))
+	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, server, "sshKeyId"))
+	require.Equal(t, "integer", componentSchemaPropertyType(t, server, "port"))
+	require.Equal(t, []string{"string", "string"}, []string{componentSchemaPropertyType(t, server, "serverStatus"), componentSchemaPropertyType(t, server, "serverType")})
+	ack := componentSchema(t, d, "ServerMutationResult")
+	require.Equal(t, []any{"serverId"}, ack["required"])
+	require.Equal(t, false, ack["additionalProperties"])
+	for _, operation := range []string{"server.create", "server.update"} {
+		req := operationRequestSchema(t, d, operation)
+		require.Equal(t, "integer", componentSchemaPropertyType(t, req, "port"))
+		require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, req, "description"))
+		require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, req, "sshKeyId"))
+		require.Equal(t, []any{"deploy", "build"}, req["properties"].(map[string]any)["serverType"].(map[string]any)["enum"])
+		require.Equal(t, true, req["properties"].(map[string]any)["enableDockerCleanup"].(map[string]any)["default"])
+		required := req["required"].([]any)
+		require.Contains(t, required, "description")
+		require.Contains(t, required, "sshKeyId")
+	}
+	require.Contains(t, operationRequestSchema(t, d, "server.update")["properties"], "command")
+	for _, operation := range []string{"server.one", "server.update", "server.remove"} {
+		rawOp := d.Paths["/"+operation]
+		var parameters []any
+		if operation == "server.one" {
+			parameters = rawOp.Get.Raw["parameters"].([]any)
+		} else if operation == "server.update" || operation == "server.remove" {
+			req := operationRequestSchema(t, d, operation)
+			require.Contains(t, req["properties"], "serverId")
+			require.Contains(t, req["required"], "serverId")
+			continue
+		}
+		require.Len(t, parameters, 1)
+		require.Equal(t, "serverId", parameters[0].(map[string]any)["name"])
+		require.Equal(t, true, parameters[0].(map[string]any)["required"])
+	}
+	for _, operation := range []string{"application.create", "project.one", "schedule.one", "sshKey.one"} {
+		require.Contains(t, d.Paths, "/"+operation)
+	}
+}
+
+func mapKeys(m map[string]any) []string {
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
+func componentSchemaPropertyType(t *testing.T, schema map[string]any, property string) string {
+	t.Helper()
+	propertySchema, ok := schema["properties"].(map[string]any)[property].(map[string]any)
+	require.True(t, ok, "schema property %s is missing", property)
+	typ, ok := propertySchema["type"].(string)
+	require.True(t, ok, "schema property %s type is not a string", property)
+	return typ
+}
 func TestNormalizeRejectsMissingOperation(t *testing.T) {
 	_, err := normalize(contractWithout("/domain.one"), []string{"domain.one"}, corrections())
 	require.ErrorContains(t, err, "allowed operation domain.one is absent")

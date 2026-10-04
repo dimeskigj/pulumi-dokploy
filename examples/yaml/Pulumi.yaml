@@ -10,6 +10,7 @@ outputs:
   gitlabNamespace: ${gitlabNamespace}
   gitlabRepository: ${gitlabRepository}
   gitBranch: ${gitBranch}
+  remoteServerId: ${remoteServer.serverId}
 
 config:
   dokploy:endpoint: https://dokploy.example.invalid
@@ -160,6 +161,17 @@ resources:
           sshKeyId: ${sshKey.sshKeyId}
           build:
             type: nixpacks
+
+  # Registration only; 192.0.2.10 is reserved for documentation and is not reachable.
+  # Prepare a separate remote host before ever assigning workloads to its serverId.
+  remoteServer:
+    type: dokploy:index:Server
+    properties:
+      name: example-remote
+      ipAddress: 192.0.2.10
+      sshKeyId: ${sshKey.sshKeyId}
+      serverType: deploy
+      enableDockerCleanup: false
 
   compose:
     type: dokploy:index:Compose

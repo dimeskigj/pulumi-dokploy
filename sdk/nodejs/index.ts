@@ -90,6 +90,11 @@ export type Schedule = import("./schedule").Schedule;
 export const Schedule: typeof import("./schedule").Schedule = null as any;
 utilities.lazyLoad(exports, ["Schedule"], () => require("./schedule"));
 
+export { ServerArgs } from "./server";
+export type Server = import("./server").Server;
+export const Server: typeof import("./server").Server = null as any;
+utilities.lazyLoad(exports, ["Server"], () => require("./server"));
+
 export { SSHKeyArgs } from "./sshkey";
 export type SSHKey = import("./sshkey").SSHKey;
 export const SSHKey: typeof import("./sshkey").SSHKey = null as any;
@@ -153,6 +158,8 @@ const _module = {
                 return new SSHKey(name, <any>undefined, { urn })
             case "dokploy:index:Schedule":
                 return new Schedule(name, <any>undefined, { urn })
+            case "dokploy:index:Server":
+                return new Server(name, <any>undefined, { urn })
             case "dokploy:index:Tag":
                 return new Tag(name, <any>undefined, { urn })
             case "dokploy:index:VolumeBackup":

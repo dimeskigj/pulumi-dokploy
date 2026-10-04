@@ -1,5 +1,13 @@
 # Dokploy MVP example source notes
 
+The `remoteServer` resource is registration-only, not a host bootstrap or readiness
+check. Its `192.0.2.10` address is reserved for documentation: replace it with an
+appropriate address only after separately preparing a dedicated remote host.
+The example deliberately does not assign any existing workload to this unready
+Server. Use `${remoteServer.serverId}` only after that independent preparation.
+Cleanup is explicitly disabled; setting `enableDockerCleanup: true` authorizes
+Dokploy's recurring Docker cleanup schedule.
+
 The generated examples in each language are produced from this canonical YAML
 program. These inactive alternatives document the supported source shapes:
 

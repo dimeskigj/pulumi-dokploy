@@ -16,6 +16,7 @@ const required = [
   "guides/domains.mdx",
   "guides/backups.mdx",
   "guides/schedules.mdx",
+  "guides/servers.mdx",
   "guides/imports.mdx",
   "guides/troubleshooting.mdx",
   "contributing.mdx",
@@ -40,7 +41,7 @@ test("secret and destructive lifecycle guidance is explicit", async () => {
 
 test("sidebar keeps the canonical resource order and base-safe links", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
-   const resourceOrder = ["Project", "Environment", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Schedule", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
+   const resourceOrder = ["Project", "Environment", "Server", "Application", "Compose", "Postgres", "Redis", "Domain", "Destination", "Backup", "VolumeBackup", "Schedule", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Configuration", "Complex Types"];
   const resources = config.slice(config.indexOf('label: "Resources"'), config.indexOf('label: "Examples"'));
   let previous = -1;
   for (const label of resourceOrder) {
@@ -165,9 +166,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/servers/", "/guides/imports/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
-     "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
+      "/reference/project/", "/reference/environment/", "/reference/server/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
     "/reference/schedule/",
   ]);
@@ -176,8 +177,8 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-   assert.equal((config.match(/link: "\//g) ?? []).length, 39);
-  assert.equal(curatedFiles.length, 15);
+    assert.equal((config.match(/link: "\//g) ?? []).length, 41);
+   assert.equal(curatedFiles.length, 16);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
@@ -299,4 +300,40 @@ test("Schedule guide distinguishes schema secrecy from Java builder outputs", as
   assert.match(guide, /\.command\(Output\.ofSecret/);
   assert.match(guide, /\.script\(Output\.ofSecret/);
   assert.doesNotMatch(guide, /secret inputs in every generated SDK/);
+});
+
+test("Server guide documents configuration-only lifecycle and safe placement", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/servers.mdx", import.meta.url), "utf8");
+  for (const marker of ["enableDockerCleanup", "server.serverId", "pulumi import dokploy:index:Server", "workloads", "deployment history", "partial", "inactive", "reserved address"]) assert.match(guide, new RegExp(marker, "i"));
+  assert.match(guide, /defaults to [`'\"]?false/i);
+  assert.match(guide, /does not bootstrap|no bootstrap/i);
+  assert.match(guide, /does not.*SSH|no SSH.*check/i);
+  assert.match(guide, /status.*descriptive/i);
+  assert.match(guide, /updates.*in place/i);
+  assert.match(guide, /does not destroy.*VM/i);
+  assert.match(guide, /prepar.*host.*before.*placement/i);
+  const placementStart = guide.indexOf("Only a separately prepared host");
+  const placement = guide.slice(guide.indexOf("```ts", placementStart), guide.indexOf("The returned `server.serverId`"));
+  assert.match(placement, /\/\/.*separate.*prepared/i);
+  assert.match(placement, /separatelyPreparedServer\.serverId/);
+  assert.match(placement, /source:/);
+  assert.doesNotMatch(placement, /remoteServer\.serverId/);
+  assert.doesNotMatch(placement.replace(/^\s*\/\/.*$/gm, "").replace(/```ts|```/g, ""), /\S/, "placement example must be entirely commented out");
+  const imports = await readFile(new URL("../src/content/docs/guides/imports.mdx", import.meta.url), "utf8");
+  assert.match(imports, /pulumi import dokploy:index:Server/);
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  assert.match(config, /link: "\/reference\/server\/"/);
+  assert.match(config, /link: "\/guides\/servers\/"/);
+});
+
+test("lifecycle and troubleshooting docs scope deployment polling to workloads", async () => {
+  const lifecycle = await readFile(new URL("../src/content/docs/concepts/lifecycle-and-state.mdx", import.meta.url), "utf8");
+  assert.match(lifecycle, /workload.*poll.*deployment|poll.*deployment.*workload/i);
+  assert.match(lifecycle, /Server.{0,20}do not poll|Server.{0,30}no deployment.*poll/i);
+  assert.doesNotMatch(lifecycle, /During create and update, the provider .*polls deployment status/);
+  const troubleshooting = await readFile(new URL("../src/content/docs/guides/troubleshooting.mdx", import.meta.url), "utf8");
+  assert.match(troubleshooting, /workload.*poll.*deployment|poll.*deployment.*workload/i);
+  assert.match(troubleshooting, /Server.{0,20}do not poll|Server.{0,30}no deployment.*poll/i);
+  assert.match(troubleshooting, /\.\.\/servers\//);
+  assert.doesNotMatch(troubleshooting, /Create and update operations poll Dokploy deployment status/);
 });

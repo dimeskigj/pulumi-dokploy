@@ -72,6 +72,27 @@ test("formats every schema type used by the provider", () => {
   assert.equal(formatType({ $ref: "#/types/dokploy:index:Source" }), "Source");
 });
 
+test("normalizes Server defaults, flat outputs, and mutable fields", () => {
+  const server = {
+    name: "dokploy",
+    resources: { "dokploy:index:Server": {
+      description: "Remote server record.",
+      inputProperties: Object.fromEntries(Object.entries({
+        name: "string", description: "string", ipAddress: "string", port: "integer", username: "string", sshKeyId: "string", serverType: "string", enableDockerCleanup: "boolean",
+      }).map(([name, type]) => [name, { type, description: `${name}.`, ...( { port: 22, username: "root", serverType: "deploy", enableDockerCleanup: false }[name] === undefined ? {} : { default: { port: 22, username: "root", serverType: "deploy", enableDockerCleanup: false }[name] }) }])),
+      requiredInputs: ["name", "ipAddress"],
+      properties: Object.fromEntries(Object.entries({ name: "string", description: "string", ipAddress: "string", port: "integer", username: "string", sshKeyId: "string", serverType: "string", enableDockerCleanup: "boolean", serverId: "string", organizationId: "string", status: "string" }).map(([name, type]) => [name, { type, description: `${name}.` }])),
+      required: ["name", "ipAddress", "port", "username", "serverType", "enableDockerCleanup", "serverId"],
+    } },
+  };
+  const model = parseSchema(server, { expectedResources: new Set(["Server"]) });
+  const resource = model.resources[0];
+  assert.equal(resource.slug, "server");
+  for (const [name, value] of [["port", 22], ["username", "root"], ["serverType", "deploy"], ["enableDockerCleanup", false]]) assert.equal(resource.inputs.find((item) => item.name === name).defaultValue, value);
+  assert.deepEqual(resource.outputs.map(({ name }) => name), ["description", "enableDockerCleanup", "ipAddress", "name", "organizationId", "port", "serverId", "serverType", "sshKeyId", "status", "username"]);
+  assert.ok([...resource.inputs, ...resource.outputs].every(({ replaceOnChanges }) => !replaceOnChanges));
+});
+
 test("derives stable lowercase slugs", () => {
   assert.equal(slugFromToken("dokploy:index:Postgres"), "postgres");
 });
@@ -92,7 +113,8 @@ test("loads and validates the real provider schema", async () => {
   const model = parseSchema(
     await loadSchema(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url)),
   );
-   assert.equal(model.resources.length, 19);
+   assert.equal(model.resources.length, 20);
+   assert.ok(model.resources.some(({ name }) => name === "Server"));
   assert.equal(model.config.find(({ name }) => name === "apiKey").secret, true);
    assert.equal(
     model.resources

@@ -86,8 +86,8 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 24 {
-		t.Fatalf("canonical YAML has %d managed resources, want 24", len(resources))
+	if len(resources) != 25 {
+		t.Fatalf("canonical YAML has %d managed resources, want 25", len(resources))
 	}
 	want := map[string]int{
 		"dokploy:index:Project":      1,
@@ -109,6 +109,7 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		"dokploy:index:Tag":          1,
 		"dokploy:index:ProjectTag":   1,
 		"dokploy:index:Mount":        3,
+		"dokploy:index:Server":       1,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
@@ -133,6 +134,282 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		if _, ok := schemaResources(t)[typeName]; !ok {
 			t.Errorf("%s is not present in generated provider schema", typeName)
 		}
+	}
+}
+
+func TestCanonicalServerExample(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	server := resources["remoteServer"].(map[string]any)
+	if server["type"] != "dokploy:index:Server" {
+		t.Fatalf("remoteServer type = %v", server["type"])
+	}
+	properties := server["properties"].(map[string]any)
+	for key, want := range map[string]any{"ipAddress": "192.0.2.10", "sshKeyId": "${sshKey.sshKeyId}", "serverType": "deploy", "enableDockerCleanup": false} {
+		if properties[key] != want {
+			t.Errorf("remoteServer %s = %v, want %v", key, properties[key], want)
+		}
+	}
+	outputs := document["outputs"].(map[string]any)
+	if outputs["remoteServerId"] != "${remoteServer.serverId}" {
+		t.Errorf("remoteServerId = %v", outputs["remoteServerId"])
+	}
+	for name, raw := range resources {
+		if name == "remoteServer" {
+			continue
+		}
+		resource, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		props, _ := resource["properties"].(map[string]any)
+		if props != nil && props["serverId"] == "${remoteServer.serverId}" {
+			t.Errorf("workload %q targets unready remoteServer", name)
+		}
+	}
+}
+
+func TestGeneratedServerExamplesInstantiateAndExportIdentity(t *testing.T) {
+	want := map[string][]string{
+		"nodejs/index.ts":    {`new dokploy.Server("remoteServer"`, `export const remoteServerId = remoteServer.serverId`},
+		"python/__main__.py": {`dokploy.Server("remoteServer"`, `pulumi.export("remoteServerId", remote_server.server_id)`},
+		"go/main.go":         {`dokploy.NewServer(ctx, "remoteServer"`, `ctx.Export("remoteServerId", remoteServer.ServerId)`},
+		"dotnet/Program.cs":  {`new Dokploy.Server("remoteServer"`, `["remoteServerId"] = remoteServer.ServerId`},
+		"java/src/main/java/generated_program/App.java": {`new Server("remoteServer", ServerArgs.builder()`, `ctx.export("remoteServerId", remoteServer.serverId())`},
+	}
+	for path, markers := range want {
+		t.Run(path, func(t *testing.T) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, marker := range markers {
+				if !strings.Contains(string(data), marker) {
+					t.Errorf("generated program %s is missing %q", path, marker)
+				}
+			}
+		})
+	}
+}
+
+func TestGenerationDoesNotAllocateCacheForOtherMakeTargets(t *testing.T) {
+	dir := t.TempDir()
+	marker := filepath.Join(dir, "mktemp-called")
+	stub := filepath.Join(dir, "mktemp")
+	if err := os.WriteFile(stub, []byte("#!/bin/sh\nprintf called > \"$MKTemp_MARKER\"\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	path := dir + string(os.PathListSeparator) + os.Getenv("PATH")
+	cmd := exec.Command("make", "--no-print-directory", "-n", "provider")
+	cmd.Dir = ".."
+	cmd.Env = append(os.Environ(), "PATH="+path, "MKTemp_MARKER="+marker)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("make provider dry run: %v\n%s", err, out)
+	}
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatalf("non-generation target invoked mktemp (stat error %v)", err)
+	}
+}
+
+func TestGenerationCacheFailurePreservesExistingExamples(t *testing.T) {
+	root := t.TempDir()
+	existing := filepath.Join(root, "examples", "nodejs", "index.ts")
+	if err := os.MkdirAll(filepath.Dir(existing), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(existing, []byte("preserve me"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	makeMarker := filepath.Join(root, "make-called")
+	shared := filepath.Join(root, "shared-cache", "plugins", "published-plugin")
+	if err := os.MkdirAll(filepath.Dir(shared), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(shared, []byte("untouched"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	fakeMake := filepath.Join(root, "make")
+	if err := os.WriteFile(fakeMake, []byte("#!/bin/sh\nprintf called > \"$MAKE_MARKER\"\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	script, err := filepath.Abs("../scripts/gen-examples.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("sh", script, fakeMake, root, "github.com/dimeskigj/pulumi-dokploy", "dokploy", "0.0.1-alpha.0+dev")
+	cmd.Env = append(os.Environ(), "TMPDIR="+filepath.Join(root, "does-not-exist"), "MAKE_MARKER="+makeMarker, "PULUMI_HOME="+filepath.Dir(filepath.Dir(shared)))
+	if out, err := cmd.CombinedOutput(); err == nil {
+		t.Fatalf("cache allocation unexpectedly succeeded: %s", out)
+	}
+	data, err := os.ReadFile(existing)
+	if err != nil || string(data) != "preserve me" {
+		t.Fatalf("existing example was changed: %q, %v", data, err)
+	}
+	if _, err := os.Stat(makeMarker); !os.IsNotExist(err) {
+		t.Fatalf("make was invoked after cache allocation failure (stat error %v)", err)
+	}
+	if got, err := os.ReadFile(shared); err != nil || string(got) != "untouched" {
+		t.Fatalf("shared cache changed on allocation failure: %q, %v", got, err)
+	}
+}
+
+func TestGenerationHelperCleansOnlyAllocatedCache(t *testing.T) {
+	root := t.TempDir()
+	cacheRecord := filepath.Join(root, "cache-path")
+	fakeMake := filepath.Join(root, "make")
+	body := "#!/bin/sh\ntest -n \"$PULUMI_HOME\" && test -d \"$PULUMI_HOME\" || exit 9\ntest \"$PULUMI_HOME\" != \"$SHARED_CACHE\" || exit 10\nprintf '%s' \"$PULUMI_HOME\" > \"$CACHE_RECORD\"\nexit 42\n"
+	if err := os.WriteFile(fakeMake, []byte(body), 0755); err != nil {
+		t.Fatal(err)
+	}
+	script, err := filepath.Abs("../scripts/gen-examples.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, populated := range []bool{false, true} {
+		t.Run(fmt.Sprintf("populated=%t", populated), func(t *testing.T) {
+			shared := filepath.Join(root, fmt.Sprintf("shared-%t", populated))
+			if err := os.Mkdir(shared, 0700); err != nil {
+				t.Fatal(err)
+			}
+			if populated {
+				if err := os.WriteFile(filepath.Join(shared, "published-plugin"), []byte("untouched"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			cmd := exec.Command("sh", script, fakeMake, root, "github.com/dimeskigj/pulumi-dokploy", "dokploy", "0.0.1-alpha.0+dev")
+			cmd.Env = append(os.Environ(), "TMPDIR="+root, "CACHE_RECORD="+cacheRecord, "PULUMI_HOME="+shared, "SHARED_CACHE="+shared)
+			if out, err := cmd.CombinedOutput(); err == nil {
+				t.Fatalf("fake installer unexpectedly succeeded: %s", out)
+			}
+			data, err := os.ReadFile(cacheRecord)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := os.Stat(string(data)); !os.IsNotExist(err) {
+				t.Fatalf("owned temporary cache remains or was not cleaned: %q (stat %v)", data, err)
+			}
+			if info, err := os.Stat(shared); err != nil || !info.IsDir() {
+				t.Fatalf("inherited shared cache was removed: %v", err)
+			}
+			if populated {
+				if got, err := os.ReadFile(filepath.Join(shared, "published-plugin")); err != nil || string(got) != "untouched" {
+					t.Fatalf("inherited shared cache was changed: %q, %v", got, err)
+				}
+			}
+		})
+	}
+}
+
+func TestInnerGenerationTargetRejectsUnsafeCacheBeforeSideEffects(t *testing.T) {
+	root, err := filepath.Abs("..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name          string
+		cacheValue    string
+		unset         bool
+		populated     bool
+		matchingOwner bool
+	}{
+		{name: "unset", unset: true},
+		{name: "empty", cacheValue: ""},
+		{name: "invalid", cacheValue: filepath.Join(t.TempDir(), "not-a-directory")},
+		{name: "existing-empty-shared-cache", cacheValue: filepath.Join(t.TempDir(), "shared-cache")},
+		{name: "existing-populated-shared-cache", cacheValue: filepath.Join(t.TempDir(), "populated-cache"), populated: true},
+		{name: "empty-shared-cache-with-matching-owner", cacheValue: filepath.Join(t.TempDir(), "empty-owned-cache"), matchingOwner: true},
+		{name: "populated-shared-cache-with-matching-owner", cacheValue: filepath.Join(t.TempDir(), "published-plugin-cache"), populated: true, matchingOwner: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmp := t.TempDir()
+			if tt.populated || strings.Contains(tt.name, "shared-cache") || tt.matchingOwner {
+				if err := os.MkdirAll(tt.cacheValue, 0700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var sentinel string
+			if tt.populated {
+				sentinel = filepath.Join(tt.cacheValue, "plugins", "resource-dokploy-0.3.0")
+				if err := os.MkdirAll(filepath.Dir(sentinel), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(sentinel, []byte("shared plugin must remain untouched"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			const ownerToken = "copied-owner-token"
+			if tt.matchingOwner {
+				if err := os.WriteFile(filepath.Join(tt.cacheValue, ".pulumi-dokploy-example-owner"), []byte(ownerToken), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			marker := filepath.Join(tmp, "plugin-install-called")
+			stubBin := filepath.Join(tmp, "bin")
+			if err := os.MkdirAll(stubBin, 0755); err != nil {
+				t.Fatal(err)
+			}
+			mise := filepath.Join(stubBin, "mise")
+			if err := os.WriteFile(mise, []byte("#!/bin/sh\nprintf called > \"$PLUGIN_MARKER\"\nexit 1\n"), 0755); err != nil {
+				t.Fatal(err)
+			}
+			existing := filepath.Join(root, "examples", "nodejs", "index.ts")
+			original, err := os.ReadFile(existing)
+			if err != nil {
+				t.Fatal(err)
+			}
+			overrides := filepath.Join(tmp, "override.mk")
+			if err := os.WriteFile(overrides, []byte("provider:\n\t@true\n"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			args := []string{"-j4", "--no-print-directory", "-C", root, "-f", "Makefile", "-f", overrides, "gen_examples_in_cache"}
+			if !tt.unset {
+				args = append(args, "PULUMI_HOME="+tt.cacheValue)
+			}
+			if tt.matchingOwner {
+				args = append(args, "PULUMI_HOME_OWNER_TOKEN="+ownerToken)
+			}
+			cmd := exec.Command("make", args...)
+			cmd.Env = append(os.Environ(), "PATH="+stubBin+string(os.PathListSeparator)+os.Getenv("PATH"), "PLUGIN_MARKER="+marker)
+			if tt.unset {
+				cmd.Env = append(cmd.Env, "PULUMI_HOME=")
+			}
+			if out, err := cmd.CombinedOutput(); err == nil || !strings.Contains(string(out), "No rule to make target 'gen_examples_in_cache'") {
+				t.Fatalf("unsafe cache accepted: %s", out)
+			}
+			if _, err := os.Stat(marker); !os.IsNotExist(err) {
+				t.Fatalf("plugin installation ran before cache validation (stat error %v)", err)
+			}
+			if tt.populated {
+				got, err := os.ReadFile(sentinel)
+				if err != nil || string(got) != "shared plugin must remain untouched" {
+					t.Fatalf("shared cache fixture changed: %q, %v", got, err)
+				}
+			}
+			if tt.matchingOwner {
+				got, err := os.ReadFile(filepath.Join(tt.cacheValue, ".pulumi-dokploy-example-owner"))
+				if err != nil || string(got) != ownerToken {
+					t.Fatalf("shared cache owner marker changed: %q, %v", got, err)
+				}
+			}
+			got, err := os.ReadFile(existing)
+			if err != nil || string(got) != string(original) {
+				t.Fatalf("existing generated example changed: %v", err)
+			}
+		})
+	}
+}
+
+func TestRemovedCacheTargetsAreUnavailable(t *testing.T) {
+	for _, target := range []string{"gen_examples_in_cache", "validate_pulumi_home", "install_plugin_in_cache"} {
+		t.Run(target, func(t *testing.T) {
+			cmd := exec.Command("make", "--no-print-directory", "-n", target)
+			cmd.Dir = ".."
+			out, err := cmd.CombinedOutput()
+			if err == nil || !strings.Contains(string(out), "No rule to make target '"+target+"'") {
+				t.Fatalf("removed target remains available: %v\n%s", err, out)
+			}
+		})
 	}
 }
 

@@ -68,6 +68,16 @@ return await Deployment.RunAsync(() =>
         BuildRegistryId = registry.RegistryId,
     });
 
+    var applicationSchedule = new Dokploy.Schedule("applicationSchedule", new()
+    {
+        Name = "mvp-application-schedule",
+        CronExpression = "0 0 * * *",
+        ScheduleType = "application",
+        ApplicationId = application.ApplicationId,
+        Enabled = false,
+        Command = Output.CreateSecret("echo scheduled maintenance"),
+    });
+
     var sshKey = new Dokploy.SSHKey("sshKey", new()
     {
         Name = "mvp-git-ssh",
@@ -93,6 +103,15 @@ return await Deployment.RunAsync(() =>
                 },
             },
         },
+    });
+
+    var remoteServer = new Dokploy.Server("remoteServer", new()
+    {
+        Name = "example-remote",
+        IpAddress = "192.0.2.10",
+        SshKeyId = sshKey.SshKeyId,
+        ServerType = "deploy",
+        EnableDockerCleanup = false,
     });
 
     var compose = new Dokploy.Compose("compose", new()
@@ -270,5 +289,6 @@ return await Deployment.RunAsync(() =>
         ["gitlabNamespace"] = gitlabNamespace,
         ["gitlabRepository"] = gitlabRepository,
         ["gitBranch"] = gitBranch,
+        ["remoteServerId"] = remoteServer.ServerId,
     };
 });

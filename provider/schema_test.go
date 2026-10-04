@@ -39,7 +39,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
 		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount",
-		"dokploy:index:Schedule",
+		"dokploy:index:Schedule", "dokploy:index:Server",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -115,6 +115,32 @@ func TestSchemaScheduleContract(t *testing.T) {
 	require.Contains(t, r.Properties, "scheduleId")
 	require.NotContains(t, r.InputProperties, "scheduleId")
 	require.NotContains(t, r.Properties, "createdAt")
+}
+
+func TestSchemaServerContract(t *testing.T) {
+	spec := providerSchema(t)
+	r := spec.Resources["dokploy:index:Server"]
+	require.NotEmpty(t, r.Description)
+	require.ElementsMatch(t, []string{"name", "ipAddress"}, r.RequiredInputs)
+	require.ElementsMatch(t, []string{"name", "description", "ipAddress", "port", "username", "sshKeyId", "serverType", "enableDockerCleanup"}, keysOfServerProperties(r.InputProperties))
+	for k, v := range map[string]any{"port": float64(22), "username": "root", "serverType": "deploy", "enableDockerCleanup": false} {
+		require.Equal(t, v, r.InputProperties[k].Default)
+	}
+	for k := range r.InputProperties {
+		require.False(t, r.InputProperties[k].ReplaceOnChanges, k)
+	}
+	for _, k := range []string{"serverId", "organizationId", "status"} {
+		require.Contains(t, r.Properties, k)
+		require.NotContains(t, r.InputProperties, k)
+	}
+}
+
+func keysOfServerProperties(m map[string]schema.PropertySpec) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func TestSchemaPublishingMetadata(t *testing.T) {

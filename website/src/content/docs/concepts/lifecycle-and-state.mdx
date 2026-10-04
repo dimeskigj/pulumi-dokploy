@@ -3,7 +3,7 @@ title: Lifecycle and state
 description: Understand previews, deployment polling, replacement, imports, and partial state.
 ---
 
-Pulumi previews calculate the planned operation without applying it. During create and update, the provider submits the Dokploy operation and polls deployment status until it completes or fails.
+Pulumi previews calculate the planned operation without applying it. Workload creates and updates that trigger a deployment poll Dokploy's deployment status until it completes or fails. Configuration-only resources such as `Server` do not poll deployments: Server registers Dokploy configuration but does not bootstrap a host or signal readiness. See the [Servers guide](../../guides/servers/).
 
 Fields such as `environmentId` and `serverId` are replacement-only where shown in the generated reference. A source discriminator change also replaces the resource. Review the [resource reference](../../reference/project/) before changing these fields.
 
