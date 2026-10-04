@@ -1,7 +1,9 @@
 package dokploy
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -123,6 +125,7 @@ func (r Server) Create(ctx context.Context, req infer.CreateRequest[ServerArgs])
 	}
 	id := resp.JSON200.ServerId
 	s.ServerID = id
+	s = serverMutationOverlay(resp.Body, id, s)
 	observed, err := readServer(ctx, api, id)
 	if err != nil {
 		return infer.CreateResponse[ServerState]{ID: id, Output: s}, initFailed(fmt.Errorf("server.create acknowledged but readback failed: %w", safeServerError(err)))
@@ -153,6 +156,7 @@ func (r Server) Update(ctx context.Context, req infer.UpdateRequest[ServerArgs, 
 	if resp.JSON200 == nil || resp.JSON200.ServerId != req.ID {
 		return infer.UpdateResponse[ServerState]{Output: req.State}, errors.New("server.update returned an unconfirmed server identity")
 	}
+	s = serverMutationOverlay(resp.Body, req.ID, s)
 	observed, err := readServer(ctx, api, req.ID)
 	if err != nil {
 		return infer.UpdateResponse[ServerState]{Output: s}, initFailed(fmt.Errorf("server.update acknowledged but readback failed: %w", safeServerError(err)))
@@ -189,6 +193,74 @@ func serverNullable(v *string) nullable.Nullable[string] {
 	}
 	return nullable.NewNullableWithValue(*v)
 }
+
+// The typed mutation acknowledgment deliberately exposes only identity. Inspect
+// the same successful response's flat, allowlisted fields independently when
+// preparing fallback state for an acknowledged write with failed readback.
+// Malformed, nested, absent, or null nonnullable fields retain the fallback.
+func serverMutationOverlay(body []byte, id string, state ServerState) ServerState {
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(body, &fields) != nil {
+		return state
+	}
+	responseID, ok := serverMutationField[string](fields, "serverId")
+	if !ok || responseID != id || state.ServerID != id {
+		return state
+	}
+	if v, ok := serverMutationField[string](fields, "name"); ok {
+		state.Name = v
+	}
+	if v, ok := serverMutationOptionalString(fields, "description"); ok {
+		state.Description = v
+	}
+	if v, ok := serverMutationField[string](fields, "ipAddress"); ok {
+		state.IPAddress = v
+	}
+	if v, ok := serverMutationField[int](fields, "port"); ok && v >= 1 && v <= 65535 {
+		state.Port = v
+	}
+	if v, ok := serverMutationField[string](fields, "username"); ok {
+		state.Username = v
+	}
+	if v, ok := serverMutationOptionalString(fields, "sshKeyId"); ok {
+		state.SSHKeyID = v
+	}
+	if v, ok := serverMutationField[string](fields, "serverType"); ok {
+		state.ServerType = v
+	}
+	if v, ok := serverMutationField[bool](fields, "enableDockerCleanup"); ok {
+		state.EnableDockerCleanup = v
+	}
+	if v, ok := serverMutationField[string](fields, "organizationId"); ok {
+		state.OrganizationID = &v
+	}
+	if v, ok := serverMutationField[string](fields, "serverStatus"); ok {
+		state.Status = &v
+	}
+	return state
+}
+
+func serverMutationField[T any](fields map[string]json.RawMessage, key string) (T, bool) {
+	var value T
+	raw, ok := fields[key]
+	if !ok || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &value) != nil {
+		return value, false
+	}
+	return value, true
+}
+
+func serverMutationOptionalString(fields map[string]json.RawMessage, key string) (*string, bool) {
+	raw, ok := fields[key]
+	if !ok {
+		return nil, false
+	}
+	if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+		return nil, true
+	}
+	v, ok := serverMutationField[string](fields, key)
+	return &v, ok
+}
+
 func safeServerError(err error) error {
 	if errors.Is(err, context.Canceled) {
 		return context.Canceled
