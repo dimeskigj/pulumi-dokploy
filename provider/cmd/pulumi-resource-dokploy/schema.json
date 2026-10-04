@@ -1,7 +1,7 @@
 {
   "name": "dokploy",
   "displayName": "Dokploy",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
   "keywords": [
     "category/infrastructure",
     "kind/native",
@@ -354,6 +354,38 @@
         "namespace",
         "repository",
         "branch"
+      ]
+    },
+    "dokploy:index:PortProtocol": {
+      "description": "Port protocol: tcp or udp.",
+      "type": "string",
+      "enum": [
+        {
+          "name": "Tcp",
+          "description": "TCP protocol (tcp).",
+          "value": "tcp"
+        },
+        {
+          "name": "Udp",
+          "description": "UDP protocol (udp).",
+          "value": "udp"
+        }
+      ]
+    },
+    "dokploy:index:PortPublishMode": {
+      "description": "Port publish mode: ingress or host.",
+      "type": "string",
+      "enum": [
+        {
+          "name": "Ingress",
+          "description": "Ingress publish mode (ingress).",
+          "value": "ingress"
+        },
+        {
+          "name": "Host",
+          "description": "Host publish mode (host).",
+          "value": "host"
+        }
       ]
     },
     "dokploy:index:RawComposeSource": {
@@ -1614,6 +1646,76 @@
         "databaseName",
         "databaseUser",
         "databasePassword"
+      ]
+    },
+    "dokploy:index:Port": {
+      "description": "A Dokploy application port mapping.",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The Dokploy application ID.",
+          "replaceOnChanges": true
+        },
+        "portId": {
+          "type": "string",
+          "description": "Stable Dokploy port ID."
+        },
+        "protocol": {
+          "$ref": "#/types/dokploy:index:PortProtocol",
+          "description": "The port protocol: tcp or udp.",
+          "default": "tcp"
+        },
+        "publishMode": {
+          "$ref": "#/types/dokploy:index:PortPublishMode",
+          "description": "The port publish mode: ingress or host.",
+          "default": "ingress"
+        },
+        "publishedPort": {
+          "type": "integer",
+          "description": "The externally published port (1-65535)."
+        },
+        "targetPort": {
+          "type": "integer",
+          "description": "The application target port (1-65535)."
+        }
+      },
+      "required": [
+        "applicationId",
+        "publishedPort",
+        "targetPort",
+        "protocol",
+        "publishMode",
+        "portId"
+      ],
+      "inputProperties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The Dokploy application ID.",
+          "replaceOnChanges": true
+        },
+        "protocol": {
+          "$ref": "#/types/dokploy:index:PortProtocol",
+          "description": "The port protocol: tcp or udp.",
+          "default": "tcp"
+        },
+        "publishMode": {
+          "$ref": "#/types/dokploy:index:PortPublishMode",
+          "description": "The port publish mode: ingress or host.",
+          "default": "ingress"
+        },
+        "publishedPort": {
+          "type": "integer",
+          "description": "The externally published port (1-65535)."
+        },
+        "targetPort": {
+          "type": "integer",
+          "description": "The application target port (1-65535)."
+        }
+      },
+      "requiredInputs": [
+        "applicationId",
+        "publishedPort",
+        "targetPort"
       ]
     },
     "dokploy:index:Postgres": {

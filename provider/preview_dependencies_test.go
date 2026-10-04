@@ -1,15 +1,40 @@
 package dokploy
 
 import (
+	"context"
 	"testing"
 
 	"github.com/blang/semver"
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi-go-provider/integration"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
+
+func TestPortPreviewIdentity(t *testing.T) {
+	r := Port{client: func(context.Context) *client.Client { t.Fatal("preview accessed client"); return nil }}
+	a := portArgs()
+	created, err := r.Create(t.Context(), infer.CreateRequest[PortArgs]{Inputs: a, DryRun: true})
+	require.NoError(t, err)
+	require.Empty(t, created.ID)
+	updated, err := r.Update(t.Context(), infer.UpdateRequest[PortArgs, PortState]{ID: "p1", Inputs: a, State: PortState{PortArgs: a, PortID: "p1"}, DryRun: true})
+	require.NoError(t, err)
+	require.Equal(t, "p1", updated.Output.PortID)
+	provider, err := integration.NewServer(t.Context(), Name, semver.Version{}, integration.WithProvider(Provider()))
+	require.NoError(t, err)
+	urn := lifecycleURN("Port", "preview-port")
+	inputs := property.NewMap(map[string]property.Value{"applicationId": property.New("a1"), "publishedPort": property.New(float64(8080)), "targetPort": property.New(float64(80)), "protocol": property.New("tcp"), "publishMode": property.New("ingress")})
+	preview, err := provider.Create(p.CreateRequest{Urn: urn, DryRun: true, Properties: inputs})
+	require.NoError(t, err)
+	require.True(t, preview.Properties.Get("portId").IsComputed())
+	state := inputs.Set("portId", property.New("p1"))
+	newInputs := inputs.Set("publishedPort", property.New(float64(8081)))
+	change, err := provider.Update(p.UpdateRequest{ID: "p1", Urn: urn, State: state, OldInputs: inputs, Inputs: newInputs, DryRun: true})
+	require.NoError(t, err)
+	require.Equal(t, "p1", change.Properties.Get("portId").AsString())
+}
 
 func TestProjectPreviewIDIsComputedOnCreateAndKnownAfterDescriptionUpdate(t *testing.T) {
 	provider, err := integration.NewServer(t.Context(), Name, semver.Version{}, integration.WithProvider(Provider()))

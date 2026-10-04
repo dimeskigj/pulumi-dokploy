@@ -21,7 +21,7 @@ def readme():
 setup(name='pulumi_dokploy',
       python_requires='>=3.9',
       version=VERSION,
-      description="Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
+      description="Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
       long_description=readme(),
       long_description_content_type='text/markdown',
       keywords='category/infrastructure kind/native dokploy deployment self-hosted paas',

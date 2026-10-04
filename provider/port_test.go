@@ -13,8 +13,8 @@ func TestPortCheckDefaults(t *testing.T) {
 	checked, err := (Port{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{"applicationId": property.New("a1"), "publishedPort": property.New(float64(8081)), "targetPort": property.New(float64(80))})})
 	require.NoError(t, err)
 	require.Empty(t, checked.Failures)
-	require.Equal(t, PortProtocolTCP, checked.Inputs.Protocol)
-	require.Equal(t, PortPublishModeIngress, checked.Inputs.PublishMode)
+	require.Equal(t, ptr(PortProtocolTCP), checked.Inputs.Protocol)
+	require.Equal(t, ptr(PortPublishModeIngress), checked.Inputs.PublishMode)
 }
 func TestPortCheckRejectsInvalidInputs(t *testing.T) {
 	for _, tc := range []struct {
@@ -98,7 +98,7 @@ func TestPortCheckDefersOnlyComputedFields(t *testing.T) {
 	require.NotContains(t, portFailureProperties(got.Failures), "publishedPort")
 }
 func TestPortDiff(t *testing.T) {
-	old := PortArgs{ApplicationID: "a", PublishedPort: 80, TargetPort: 80, Protocol: PortProtocolTCP, PublishMode: PortPublishModeIngress}
+	old := PortArgs{ApplicationID: "a", PublishedPort: 80, TargetPort: 80, Protocol: ptr(PortProtocolTCP), PublishMode: ptr(PortPublishModeIngress)}
 	next := old
 	next.PublishedPort = 81
 	d, err := (Port{}).Diff(t.Context(), infer.DiffRequest[PortArgs, PortState]{Inputs: next, State: PortState{PortArgs: old}})
@@ -115,7 +115,7 @@ func TestPortDiff(t *testing.T) {
 	replaceDiff, err := (Port{}).Diff(t.Context(), infer.DiffRequest[PortArgs, PortState]{Inputs: replaceOnly, State: PortState{PortArgs: old}})
 	require.NoError(t, err)
 	require.Equal(t, map[string]p.PropertyDiff{"applicationId": {Kind: p.UpdateReplace}}, replaceDiff.DetailedDiff)
-	for name, change := range map[string]func(*PortArgs){"publishedPort": func(a *PortArgs) { a.PublishedPort++ }, "targetPort": func(a *PortArgs) { a.TargetPort++ }, "protocol": func(a *PortArgs) { a.Protocol = PortProtocolUDP }, "publishMode": func(a *PortArgs) { a.PublishMode = PortPublishModeHost }} {
+	for name, change := range map[string]func(*PortArgs){"publishedPort": func(a *PortArgs) { a.PublishedPort++ }, "targetPort": func(a *PortArgs) { a.TargetPort++ }, "protocol": func(a *PortArgs) { a.Protocol = ptr(PortProtocolUDP) }, "publishMode": func(a *PortArgs) { a.PublishMode = ptr(PortPublishModeHost) }} {
 		t.Run(name, func(t *testing.T) {
 			changed := old
 			change(&changed)
@@ -131,13 +131,31 @@ func TestPortDiff(t *testing.T) {
 	require.Empty(t, unchanged.DetailedDiff)
 }
 func TestValidatePortArgs(t *testing.T) {
-	a := PortArgs{ApplicationID: "opaque", PublishedPort: 65535, TargetPort: 1, Protocol: PortProtocolUDP, PublishMode: PortPublishModeHost}
+	a := PortArgs{ApplicationID: "opaque", PublishedPort: 65535, TargetPort: 1, Protocol: ptr(PortProtocolUDP), PublishMode: ptr(PortPublishModeHost)}
 	require.NoError(t, validatePortArgs(a))
 	a.TargetPort = 0
 	require.Error(t, validatePortArgs(a))
-	for _, mutate := range []func(*PortArgs){func(v *PortArgs) { v.ApplicationID = "" }, func(v *PortArgs) { v.PublishedPort = 0 }, func(v *PortArgs) { v.PublishedPort = -1 }, func(v *PortArgs) { v.PublishedPort = 65536 }, func(v *PortArgs) { v.TargetPort = 0 }, func(v *PortArgs) { v.TargetPort = -1 }, func(v *PortArgs) { v.TargetPort = 65536 }, func(v *PortArgs) { v.Protocol = "" }, func(v *PortArgs) { v.Protocol = "sctp" }, func(v *PortArgs) { v.PublishMode = "" }, func(v *PortArgs) { v.PublishMode = "direct" }} {
-		bad := PortArgs{ApplicationID: "x", PublishedPort: 1, TargetPort: 65535, Protocol: PortProtocolTCP, PublishMode: PortPublishModeIngress}
+	for _, mutate := range []func(*PortArgs){func(v *PortArgs) { v.ApplicationID = "" }, func(v *PortArgs) { v.PublishedPort = 0 }, func(v *PortArgs) { v.PublishedPort = -1 }, func(v *PortArgs) { v.PublishedPort = 65536 }, func(v *PortArgs) { v.TargetPort = 0 }, func(v *PortArgs) { v.TargetPort = -1 }, func(v *PortArgs) { v.TargetPort = 65536 }, func(v *PortArgs) { v.Protocol = ptr(PortProtocol("")) }, func(v *PortArgs) { v.Protocol = ptr(PortProtocol("sctp")) }, func(v *PortArgs) { v.PublishMode = ptr(PortPublishMode("")) }, func(v *PortArgs) { v.PublishMode = ptr(PortPublishMode("direct")) }} {
+		bad := PortArgs{ApplicationID: "x", PublishedPort: 1, TargetPort: 65535, Protocol: ptr(PortProtocolTCP), PublishMode: ptr(PortPublishModeIngress)}
 		mutate(&bad)
 		require.Error(t, validatePortArgs(bad))
 	}
+}
+
+func TestPortPointerEnumsDefaultAndDiffByValue(t *testing.T) {
+	a := PortArgs{ApplicationID: "a1", PublishedPort: 80, TargetPort: 81}
+	require.NoError(t, validatePortArgs(a))
+	require.Equal(t, ptr(PortProtocolTCP), portDefaults(a).Protocol)
+	require.Equal(t, ptr(PortPublishModeIngress), portDefaults(a).PublishMode)
+	b := portDefaults(a)
+	d, err := (Port{}).Diff(t.Context(), infer.DiffRequest[PortArgs, PortState]{Inputs: b, State: PortState{PortArgs: a}})
+	require.NoError(t, err)
+	require.False(t, d.HasChanges)
+	b.Protocol = ptr(PortProtocolTCP)
+	b.PublishMode = ptr(PortPublishModeIngress)
+	d, err = (Port{}).Diff(t.Context(), infer.DiffRequest[PortArgs, PortState]{Inputs: b, State: PortState{PortArgs: portDefaults(a)}})
+	require.NoError(t, err)
+	require.False(t, d.HasChanges)
+	a.ApplicationID = " \t "
+	require.Error(t, validatePortArgs(a))
 }

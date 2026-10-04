@@ -87,7 +87,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
 		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount",
-		"dokploy:index:Schedule",
+		"dokploy:index:Schedule", "dokploy:index:Port",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -163,6 +163,42 @@ func TestSchemaScheduleContract(t *testing.T) {
 	require.Contains(t, r.Properties, "scheduleId")
 	require.NotContains(t, r.InputProperties, "scheduleId")
 	require.NotContains(t, r.Properties, "createdAt")
+}
+
+func TestSchemaPortContract(t *testing.T) {
+	spec := providerSchema(t)
+	r, ok := spec.Resources["dokploy:index:Port"]
+	require.True(t, ok)
+	require.Contains(t, spec.Description, "application ports")
+	require.ElementsMatch(t, []string{"applicationId", "publishedPort", "targetPort"}, r.RequiredInputs)
+	require.Contains(t, r.Properties, "portId")
+	require.NotContains(t, r.InputProperties, "portId")
+	for _, key := range []string{"applicationId", "publishedPort", "targetPort", "protocol", "publishMode"} {
+		require.NotEmpty(t, r.InputProperties[key].Description, key)
+		require.False(t, r.InputProperties[key].Secret, key)
+		require.False(t, r.Properties[key].Secret, key)
+		require.Equal(t, key == "applicationId", r.InputProperties[key].ReplaceOnChanges, key)
+	}
+	for _, key := range []string{"publishedPort", "targetPort"} {
+		require.Equal(t, "integer", r.InputProperties[key].Type)
+		require.Equal(t, "integer", r.Properties[key].Type)
+	}
+	for key, tc := range map[string]struct {
+		def    string
+		values []any
+	}{"protocol": {"tcp", []any{"tcp", "udp"}}, "publishMode": {"ingress", []any{"ingress", "host"}}} {
+		require.Equal(t, tc.def, r.InputProperties[key].Default)
+		typ := spec.Types[trimTypeRef(r.InputProperties[key].Ref)]
+		require.NotEmpty(t, typ.Description)
+		require.Contains(t, typ.Description, tc.values[0])
+		require.Contains(t, typ.Description, tc.values[1])
+		values := []any{}
+		for _, v := range typ.Enum {
+			values = append(values, v.Value)
+			require.NotEmpty(t, v.Description)
+		}
+		require.ElementsMatch(t, tc.values, values)
+	}
 }
 
 func TestSchemaPublishingMetadata(t *testing.T) {
