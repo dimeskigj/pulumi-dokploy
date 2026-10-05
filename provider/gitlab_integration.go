@@ -85,12 +85,16 @@ func (r GitLabIntegration) Check(ctx context.Context, req infer.CheckRequest) (i
 		if name == "redirectUri" {
 			value = in.RedirectURI
 		}
-		if (specified && (v.IsNull() || (v.IsString() && v.AsString() == ""))) || !validWebURL(value, false) {
+		valid := validWebURL(value, false)
+		if name == "gitlabUrl" {
+			valid = validGitLabBaseURL(value, false)
+		}
+		if (specified && (v.IsNull() || (v.IsString() && v.AsString() == ""))) || !valid {
 			add(name, name+" must be an absolute HTTP(S) URL with a host and no userinfo")
 		}
 	}
 	if v, specified := req.NewInputs.GetOk("gitlabInternalUrl"); specified && !v.IsNull() && !v.HasComputed() {
-		if in.GitlabInternalURL == nil || !validWebURL(*in.GitlabInternalURL, true) {
+		if in.GitlabInternalURL == nil || !validGitLabBaseURL(*in.GitlabInternalURL, true) {
 			add("gitlabInternalUrl", "gitlabInternalUrl must be an absolute HTTP(S) URL with a host")
 		}
 	}
@@ -105,13 +109,13 @@ func validateGitLabIntegrationArgs(a GitLabIntegrationArgs) error {
 			return fmt.Errorf("%s must not be empty", field.name)
 		}
 	}
-	if !validWebURL(a.GitlabURL, false) {
+	if !validGitLabBaseURL(a.GitlabURL, false) {
 		return fmt.Errorf("gitlabUrl must be an absolute HTTP(S) URL with a host and no userinfo")
 	}
 	if !validWebURL(a.RedirectURI, false) {
 		return fmt.Errorf("redirectUri must be an absolute HTTP(S) URL with a host and no userinfo")
 	}
-	if a.GitlabInternalURL != nil && (*a.GitlabInternalURL == "" || !validWebURL(*a.GitlabInternalURL, true)) {
+	if a.GitlabInternalURL != nil && (*a.GitlabInternalURL == "" || !validGitLabBaseURL(*a.GitlabInternalURL, true)) {
 		return fmt.Errorf("gitlabInternalUrl must be an absolute HTTP(S) URL with a host")
 	}
 	return nil
@@ -123,6 +127,14 @@ func validWebURL(raw string, allowUserinfo bool) bool {
 		return false
 	}
 	return allowUserinfo || u.User == nil
+}
+
+func validGitLabBaseURL(raw string, allowUserinfo bool) bool {
+	if !validWebURL(raw, allowUserinfo) {
+		return false
+	}
+	u, _ := url.Parse(raw)
+	return !u.ForceQuery && u.RawQuery == "" && u.Fragment == "" && !strings.Contains(raw, "#")
 }
 
 func (r GitLabIntegration) Diff(_ context.Context, req infer.DiffRequest[GitLabIntegrationArgs, GitLabIntegrationState]) (infer.DiffResponse, error) {

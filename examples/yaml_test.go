@@ -175,8 +175,10 @@ func TestCanonicalYAMLGitLabIntegration(t *testing.T) {
 	if properties["applicationId"] != "${gitlabApplicationId}" || properties["redirectUri"] != "${gitlabRedirectUri}" || properties["gitlabUrl"] != "https://gitlab.com" {
 		t.Fatalf("managed integration properties are not mapped to safe config: %#v", properties)
 	}
-	if _, ok := properties["accessToken"]; ok {
-		t.Fatal("managed integration must not accept OAuth tokens")
+	for _, token := range []string{"accessToken", "refreshToken"} {
+		if _, ok := properties[token]; ok {
+			t.Fatalf("managed integration must not accept %s", token)
+		}
 	}
 	outputs, ok := document["outputs"].(map[string]any)
 	if !ok {

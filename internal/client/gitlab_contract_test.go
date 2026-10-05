@@ -19,10 +19,10 @@ func TestGitLabGeneratedClientContract(t *testing.T) {
 		switch r.URL.Path {
 		case "/api/gitlab.create":
 			require.NoError(t, json.NewDecoder(r.Body).Decode(&createBody))
-			_, _ = w.Write([]byte(`{}`))
+			// Successful mutations may acknowledge without a response body.
 		case "/api/gitlab.update":
 			require.NoError(t, json.NewDecoder(r.Body).Decode(&updateBody))
-			_, _ = w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{not-json`))
 		case "/api/gitProvider.remove":
 			require.NoError(t, json.NewDecoder(r.Body).Decode(&removeBody))
 			_, _ = w.Write([]byte(`{}`))
@@ -75,6 +75,8 @@ func TestGitLabGeneratedClientContract(t *testing.T) {
 	require.True(t, one.JSON200.GitlabInternalUrl.IsNull())
 	require.True(t, one.JSON200.AccessToken.IsNull())
 	require.False(t, one.JSON200.RefreshToken.IsNull())
+	require.True(t, one.JSON200.RefreshToken.IsSpecified())
+	require.Equal(t, "refresh-value", one.JSON200.RefreshToken.MustGet())
 	require.Equal(t, "ignored", one.JSON200.AdditionalProperties["privateEmail"])
 	omitted, err := c.GitlabOneWithResponse(t.Context(), &generated.GitlabOneParams{GitlabId: "omitted-token"})
 	require.NoError(t, err)
