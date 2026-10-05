@@ -244,3 +244,60 @@ func TestGitLabIntegrationDeleteAmbiguousFailure(t *testing.T) {
 	require.Error(t, err)
 	require.NotContains(t, err.Error(), "access-token-sentinel")
 }
+
+func TestGitLabIntegrationDeleteFailedRemoveReadback(t *testing.T) {
+	for _, tt := range []struct {
+		name      string
+		status    int
+		absent    bool
+		uncertain bool
+	}{
+		{"BAD_REQUEST then absent", http.StatusBadRequest, true, false},
+		{"forbidden still present", http.StatusForbidden, false, false},
+		{"transient still present", http.StatusServiceUnavailable, false, false},
+		{"transient uncertain readback", http.StatusServiceUnavailable, false, true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			oneCalls, removeCalls := 0, 0
+			c := gitLabFixture(t, func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/organization.active":
+					fmt.Fprint(w, `{"id":"org"}`)
+				case "/api/gitlab.one":
+					oneCalls++
+					if oneCalls > 1 && tt.uncertain {
+						w.WriteHeader(http.StatusServiceUnavailable)
+						fmt.Fprint(w, `{"message":"access-token-sentinel"}`)
+					} else if oneCalls > 1 && tt.absent {
+						w.WriteHeader(http.StatusNotFound)
+						fmt.Fprint(w, `{}`)
+					} else {
+						fmt.Fprint(w, gitLabRecord)
+					}
+				case "/api/gitProvider.remove":
+					removeCalls++
+					var body map[string]any
+					require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+					require.Equal(t, map[string]any{"gitProviderId": "parent"}, body)
+					w.WriteHeader(tt.status)
+					fmt.Fprint(w, `{"message":"access-token-sentinel"}`)
+				default:
+					t.Errorf("unexpected request %s", r.URL.Path)
+				}
+			})
+			_, err := (GitLabIntegration{client: func(context.Context) *client.Client { return c }}).Delete(t.Context(), infer.DeleteRequest[GitLabIntegrationState]{ID: "relation", State: gitLabPrior()})
+			if tt.absent {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				require.NotContains(t, err.Error(), "access-token-sentinel")
+				if tt.uncertain {
+					require.Contains(t, err.Error(), "absence unconfirmed")
+				}
+			}
+			require.Equal(t, 1, removeCalls, "never retry remove")
+			require.Equal(t, 2, oneCalls, "pre-read and one readback only")
+		})
+	}
+}
