@@ -5683,6 +5683,383 @@
         ]
       }
     },
+    "/gitProvider.getAll": {
+      "get": {
+        "operationId": "gitProvider-getAll",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitProviderList"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitProvider"
+        ]
+      }
+    },
+    "/gitProvider.remove": {
+      "post": {
+        "operationId": "gitProvider-remove",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "gitProviderId": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "gitProviderId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitProvider"
+        ]
+      }
+    },
+    "/gitlab.create": {
+      "post": {
+        "operationId": "gitlab-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitLabCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitlab"
+        ]
+      }
+    },
+    "/gitlab.one": {
+      "get": {
+        "operationId": "gitlab-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "gitlabId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitLabIntegrationRecord"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitlab"
+        ]
+      }
+    },
+    "/gitlab.update": {
+      "post": {
+        "operationId": "gitlab-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitLabUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitlab"
+        ]
+      }
+    },
     "/mariadb.create": {
       "post": {
         "operationId": "mariadb-create",
@@ -14893,6 +15270,81 @@
         ]
       }
     },
+    "/user.get": {
+      "get": {
+        "operationId": "user-get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticatedGitProviderMember"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    },
     "/volumeBackups.create": {
       "post": {
         "operationId": "volumeBackups-create",
@@ -15582,6 +16034,28 @@
         },
         "type": "object"
       },
+      "AuthenticatedGitProviderMember": {
+        "additionalProperties": true,
+        "properties": {
+          "organizationId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/GitProviderUserIdentity"
+          },
+          "userId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "organizationId",
+          "user"
+        ],
+        "type": "object"
+      },
       "Backup": {
         "additionalProperties": true,
         "properties": {
@@ -15773,6 +16247,249 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "GitLabCreateRequest": {
+        "additionalProperties": true,
+        "properties": {
+          "applicationId": {
+            "type": "string"
+          },
+          "authId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitlabInternalUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gitlabUrl": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "redirectUri": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "authId",
+          "name",
+          "gitlabUrl"
+        ],
+        "type": "object"
+      },
+      "GitLabIntegrationRecord": {
+        "additionalProperties": true,
+        "properties": {
+          "accessToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "applicationId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gitProvider": {
+            "$ref": "#/components/schemas/GitLabProviderIdentity"
+          },
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitlabId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitlabInternalUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gitlabUrl": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "groupName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "redirectUri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "refreshToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "secret": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "gitlabId",
+          "gitProviderId",
+          "gitlabUrl",
+          "gitProvider"
+        ],
+        "type": "object"
+      },
+      "GitLabProviderIdentity": {
+        "additionalProperties": true,
+        "properties": {
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "gitProviderId"
+        ],
+        "type": "object"
+      },
+      "GitLabProviderSummary": {
+        "additionalProperties": true,
+        "properties": {
+          "applicationId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gitlabId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitlabUrl": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "isConfigured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gitlabId",
+          "gitlabUrl",
+          "isConfigured"
+        ],
+        "type": "object"
+      },
+      "GitLabUpdateRequest": {
+        "additionalProperties": true,
+        "properties": {
+          "applicationId": {
+            "type": "string"
+          },
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitlabId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitlabInternalUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gitlabUrl": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "redirectUri": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "gitlabId",
+          "gitlabUrl",
+          "gitProviderId"
+        ],
+        "type": "object"
+      },
+      "GitProviderList": {
+        "items": {
+          "$ref": "#/components/schemas/GitProviderListEntry"
+        },
+        "type": "array"
+      },
+      "GitProviderListEntry": {
+        "additionalProperties": true,
+        "properties": {
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gitlab": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GitLabProviderSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "gitProviderId"
+        ],
+        "type": "object"
+      },
+      "GitProviderUserIdentity": {
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
         "type": "object"
       },
       "MariaDB": {

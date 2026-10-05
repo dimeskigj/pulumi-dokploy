@@ -927,6 +927,14 @@ type Application struct {
 	AdditionalProperties map[string]interface{}    `json:"-"`
 }
 
+// AuthenticatedGitProviderMember defines model for AuthenticatedGitProviderMember.
+type AuthenticatedGitProviderMember struct {
+	OrganizationId       string                  `json:"organizationId"`
+	User                 GitProviderUserIdentity `json:"user"`
+	UserId               string                  `json:"userId"`
+	AdditionalProperties map[string]interface{}  `json:"-"`
+}
+
 // Backup defines model for Backup.
 type Backup struct {
 	BackupId             *string                `json:"backupId,omitempty"`
@@ -1004,6 +1012,81 @@ type Environment struct {
 	EnvironmentId        *string                `json:"environmentId,omitempty"`
 	Name                 *string                `json:"name,omitempty"`
 	ProjectId            *string                `json:"projectId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// GitLabCreateRequest defines model for GitLabCreateRequest.
+type GitLabCreateRequest struct {
+	ApplicationId        *string                   `json:"applicationId,omitempty"`
+	AuthId               string                    `json:"authId"`
+	GitProviderId        *string                   `json:"gitProviderId,omitempty"`
+	GitlabInternalUrl    nullable.Nullable[string] `json:"gitlabInternalUrl,omitempty"`
+	GitlabUrl            string                    `json:"gitlabUrl"`
+	GroupName            *string                   `json:"groupName,omitempty"`
+	Name                 string                    `json:"name"`
+	RedirectUri          *string                   `json:"redirectUri,omitempty"`
+	Secret               *string                   `json:"secret,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// GitLabIntegrationRecord defines model for GitLabIntegrationRecord.
+type GitLabIntegrationRecord struct {
+	AccessToken          nullable.Nullable[string] `json:"accessToken,omitempty"`
+	ApplicationId        nullable.Nullable[string] `json:"applicationId,omitempty"`
+	GitProvider          GitLabProviderIdentity    `json:"gitProvider"`
+	GitProviderId        string                    `json:"gitProviderId"`
+	GitlabId             string                    `json:"gitlabId"`
+	GitlabInternalUrl    nullable.Nullable[string] `json:"gitlabInternalUrl,omitempty"`
+	GitlabUrl            string                    `json:"gitlabUrl"`
+	GroupName            nullable.Nullable[string] `json:"groupName,omitempty"`
+	RedirectUri          nullable.Nullable[string] `json:"redirectUri,omitempty"`
+	RefreshToken         nullable.Nullable[string] `json:"refreshToken,omitempty"`
+	Secret               nullable.Nullable[string] `json:"secret,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// GitLabProviderIdentity defines model for GitLabProviderIdentity.
+type GitLabProviderIdentity struct {
+	GitProviderId        string                 `json:"gitProviderId"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// GitLabProviderSummary defines model for GitLabProviderSummary.
+type GitLabProviderSummary struct {
+	ApplicationId        nullable.Nullable[string] `json:"applicationId,omitempty"`
+	GitlabId             string                    `json:"gitlabId"`
+	GitlabUrl            string                    `json:"gitlabUrl"`
+	IsConfigured         bool                      `json:"isConfigured"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// GitLabUpdateRequest defines model for GitLabUpdateRequest.
+type GitLabUpdateRequest struct {
+	ApplicationId        *string                   `json:"applicationId,omitempty"`
+	GitProviderId        string                    `json:"gitProviderId"`
+	GitlabId             string                    `json:"gitlabId"`
+	GitlabInternalUrl    nullable.Nullable[string] `json:"gitlabInternalUrl,omitempty"`
+	GitlabUrl            string                    `json:"gitlabUrl"`
+	GroupName            *string                   `json:"groupName,omitempty"`
+	Name                 string                    `json:"name"`
+	RedirectUri          *string                   `json:"redirectUri,omitempty"`
+	Secret               *string                   `json:"secret,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// GitProviderList defines model for GitProviderList.
+type GitProviderList = []GitProviderListEntry
+
+// GitProviderListEntry defines model for GitProviderListEntry.
+type GitProviderListEntry struct {
+	GitProviderId        string                                   `json:"gitProviderId"`
+	Gitlab               nullable.Nullable[GitLabProviderSummary] `json:"gitlab,omitempty"`
+	AdditionalProperties map[string]interface{}                   `json:"-"`
+}
+
+// GitProviderUserIdentity defines model for GitProviderUserIdentity.
+type GitProviderUserIdentity struct {
+	Id                   string                 `json:"id"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -1866,6 +1949,16 @@ type EnvironmentUpdateJSONBody struct {
 	EnvironmentId string  `json:"environmentId"`
 	Name          *string `json:"name,omitempty"`
 	ProjectId     *string `json:"projectId,omitempty"`
+}
+
+// GitProviderRemoveJSONBody defines parameters for GitProviderRemove.
+type GitProviderRemoveJSONBody struct {
+	GitProviderId string `json:"gitProviderId"`
+}
+
+// GitlabOneParams defines parameters for GitlabOne.
+type GitlabOneParams struct {
+	GitlabId string `form:"gitlabId" json:"gitlabId"`
 }
 
 // MariadbCreateJSONBody defines parameters for MariadbCreate.
@@ -2985,6 +3078,15 @@ type EnvironmentRemoveJSONRequestBody EnvironmentRemoveJSONBody
 // EnvironmentUpdateJSONRequestBody defines body for EnvironmentUpdate for application/json ContentType.
 type EnvironmentUpdateJSONRequestBody EnvironmentUpdateJSONBody
 
+// GitProviderRemoveJSONRequestBody defines body for GitProviderRemove for application/json ContentType.
+type GitProviderRemoveJSONRequestBody GitProviderRemoveJSONBody
+
+// GitlabCreateJSONRequestBody defines body for GitlabCreate for application/json ContentType.
+type GitlabCreateJSONRequestBody = GitLabCreateRequest
+
+// GitlabUpdateJSONRequestBody defines body for GitlabUpdate for application/json ContentType.
+type GitlabUpdateJSONRequestBody = GitLabUpdateRequest
+
 // MariadbCreateJSONRequestBody defines body for MariadbCreate for application/json ContentType.
 type MariadbCreateJSONRequestBody MariadbCreateJSONBody
 
@@ -3384,6 +3486,98 @@ func (a Application) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'serverId': %w", err)
 		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for AuthenticatedGitProviderMember. Returns the specified
+// element and whether it was found
+func (a AuthenticatedGitProviderMember) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for AuthenticatedGitProviderMember
+func (a *AuthenticatedGitProviderMember) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for AuthenticatedGitProviderMember to handle AdditionalProperties
+func (a *AuthenticatedGitProviderMember) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+		delete(object, "organizationId")
+	}
+
+	if raw, found := object["user"]; found {
+		err = json.Unmarshal(raw, &a.User)
+		if err != nil {
+			return fmt.Errorf("error reading 'user': %w", err)
+		}
+		delete(object, "user")
+	}
+
+	if raw, found := object["userId"]; found {
+		err = json.Unmarshal(raw, &a.UserId)
+		if err != nil {
+			return fmt.Errorf("error reading 'userId': %w", err)
+		}
+		delete(object, "userId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for AuthenticatedGitProviderMember to handle AdditionalProperties
+func (a AuthenticatedGitProviderMember) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["organizationId"], err = json.Marshal(a.OrganizationId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
+	}
+
+	object["user"], err = json.Marshal(a.User)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'user': %w", err)
+	}
+
+	object["userId"], err = json.Marshal(a.UserId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'userId': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -4448,6 +4642,898 @@ func (a Environment) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GitLabCreateRequest. Returns the specified
+// element and whether it was found
+func (a GitLabCreateRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GitLabCreateRequest
+func (a *GitLabCreateRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GitLabCreateRequest to handle AdditionalProperties
+func (a *GitLabCreateRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["applicationId"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationId': %w", err)
+		}
+		delete(object, "applicationId")
+	}
+
+	if raw, found := object["authId"]; found {
+		err = json.Unmarshal(raw, &a.AuthId)
+		if err != nil {
+			return fmt.Errorf("error reading 'authId': %w", err)
+		}
+		delete(object, "authId")
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["gitlabInternalUrl"]; found {
+		err = json.Unmarshal(raw, &a.GitlabInternalUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabInternalUrl': %w", err)
+		}
+		delete(object, "gitlabInternalUrl")
+	}
+
+	if raw, found := object["gitlabUrl"]; found {
+		err = json.Unmarshal(raw, &a.GitlabUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabUrl': %w", err)
+		}
+		delete(object, "gitlabUrl")
+	}
+
+	if raw, found := object["groupName"]; found {
+		err = json.Unmarshal(raw, &a.GroupName)
+		if err != nil {
+			return fmt.Errorf("error reading 'groupName': %w", err)
+		}
+		delete(object, "groupName")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["redirectUri"]; found {
+		err = json.Unmarshal(raw, &a.RedirectUri)
+		if err != nil {
+			return fmt.Errorf("error reading 'redirectUri': %w", err)
+		}
+		delete(object, "redirectUri")
+	}
+
+	if raw, found := object["secret"]; found {
+		err = json.Unmarshal(raw, &a.Secret)
+		if err != nil {
+			return fmt.Errorf("error reading 'secret': %w", err)
+		}
+		delete(object, "secret")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GitLabCreateRequest to handle AdditionalProperties
+func (a GitLabCreateRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ApplicationId != nil {
+		object["applicationId"], err = json.Marshal(a.ApplicationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	object["authId"], err = json.Marshal(a.AuthId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'authId': %w", err)
+	}
+
+	if a.GitProviderId != nil {
+		object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+		}
+	}
+
+	if a.GitlabInternalUrl != nil {
+		object["gitlabInternalUrl"], err = json.Marshal(a.GitlabInternalUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'gitlabInternalUrl': %w", err)
+		}
+	}
+
+	object["gitlabUrl"], err = json.Marshal(a.GitlabUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitlabUrl': %w", err)
+	}
+
+	if a.GroupName != nil {
+		object["groupName"], err = json.Marshal(a.GroupName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'groupName': %w", err)
+		}
+	}
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	if a.RedirectUri != nil {
+		object["redirectUri"], err = json.Marshal(a.RedirectUri)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'redirectUri': %w", err)
+		}
+	}
+
+	if a.Secret != nil {
+		object["secret"], err = json.Marshal(a.Secret)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'secret': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GitLabIntegrationRecord. Returns the specified
+// element and whether it was found
+func (a GitLabIntegrationRecord) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GitLabIntegrationRecord
+func (a *GitLabIntegrationRecord) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GitLabIntegrationRecord to handle AdditionalProperties
+func (a *GitLabIntegrationRecord) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["accessToken"]; found {
+		err = json.Unmarshal(raw, &a.AccessToken)
+		if err != nil {
+			return fmt.Errorf("error reading 'accessToken': %w", err)
+		}
+		delete(object, "accessToken")
+	}
+
+	if raw, found := object["applicationId"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationId': %w", err)
+		}
+		delete(object, "applicationId")
+	}
+
+	if raw, found := object["gitProvider"]; found {
+		err = json.Unmarshal(raw, &a.GitProvider)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProvider': %w", err)
+		}
+		delete(object, "gitProvider")
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["gitlabId"]; found {
+		err = json.Unmarshal(raw, &a.GitlabId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabId': %w", err)
+		}
+		delete(object, "gitlabId")
+	}
+
+	if raw, found := object["gitlabInternalUrl"]; found {
+		err = json.Unmarshal(raw, &a.GitlabInternalUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabInternalUrl': %w", err)
+		}
+		delete(object, "gitlabInternalUrl")
+	}
+
+	if raw, found := object["gitlabUrl"]; found {
+		err = json.Unmarshal(raw, &a.GitlabUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabUrl': %w", err)
+		}
+		delete(object, "gitlabUrl")
+	}
+
+	if raw, found := object["groupName"]; found {
+		err = json.Unmarshal(raw, &a.GroupName)
+		if err != nil {
+			return fmt.Errorf("error reading 'groupName': %w", err)
+		}
+		delete(object, "groupName")
+	}
+
+	if raw, found := object["redirectUri"]; found {
+		err = json.Unmarshal(raw, &a.RedirectUri)
+		if err != nil {
+			return fmt.Errorf("error reading 'redirectUri': %w", err)
+		}
+		delete(object, "redirectUri")
+	}
+
+	if raw, found := object["refreshToken"]; found {
+		err = json.Unmarshal(raw, &a.RefreshToken)
+		if err != nil {
+			return fmt.Errorf("error reading 'refreshToken': %w", err)
+		}
+		delete(object, "refreshToken")
+	}
+
+	if raw, found := object["secret"]; found {
+		err = json.Unmarshal(raw, &a.Secret)
+		if err != nil {
+			return fmt.Errorf("error reading 'secret': %w", err)
+		}
+		delete(object, "secret")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GitLabIntegrationRecord to handle AdditionalProperties
+func (a GitLabIntegrationRecord) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AccessToken != nil {
+		object["accessToken"], err = json.Marshal(a.AccessToken)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'accessToken': %w", err)
+		}
+	}
+
+	if a.ApplicationId != nil {
+		object["applicationId"], err = json.Marshal(a.ApplicationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	object["gitProvider"], err = json.Marshal(a.GitProvider)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProvider': %w", err)
+	}
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	object["gitlabId"], err = json.Marshal(a.GitlabId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitlabId': %w", err)
+	}
+
+	if a.GitlabInternalUrl != nil {
+		object["gitlabInternalUrl"], err = json.Marshal(a.GitlabInternalUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'gitlabInternalUrl': %w", err)
+		}
+	}
+
+	object["gitlabUrl"], err = json.Marshal(a.GitlabUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitlabUrl': %w", err)
+	}
+
+	if a.GroupName != nil {
+		object["groupName"], err = json.Marshal(a.GroupName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'groupName': %w", err)
+		}
+	}
+
+	if a.RedirectUri != nil {
+		object["redirectUri"], err = json.Marshal(a.RedirectUri)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'redirectUri': %w", err)
+		}
+	}
+
+	if a.RefreshToken != nil {
+		object["refreshToken"], err = json.Marshal(a.RefreshToken)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'refreshToken': %w", err)
+		}
+	}
+
+	if a.Secret != nil {
+		object["secret"], err = json.Marshal(a.Secret)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'secret': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GitLabProviderIdentity. Returns the specified
+// element and whether it was found
+func (a GitLabProviderIdentity) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GitLabProviderIdentity
+func (a *GitLabProviderIdentity) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GitLabProviderIdentity to handle AdditionalProperties
+func (a *GitLabProviderIdentity) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GitLabProviderIdentity to handle AdditionalProperties
+func (a GitLabProviderIdentity) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GitLabProviderSummary. Returns the specified
+// element and whether it was found
+func (a GitLabProviderSummary) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GitLabProviderSummary
+func (a *GitLabProviderSummary) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GitLabProviderSummary to handle AdditionalProperties
+func (a *GitLabProviderSummary) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["applicationId"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationId': %w", err)
+		}
+		delete(object, "applicationId")
+	}
+
+	if raw, found := object["gitlabId"]; found {
+		err = json.Unmarshal(raw, &a.GitlabId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabId': %w", err)
+		}
+		delete(object, "gitlabId")
+	}
+
+	if raw, found := object["gitlabUrl"]; found {
+		err = json.Unmarshal(raw, &a.GitlabUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabUrl': %w", err)
+		}
+		delete(object, "gitlabUrl")
+	}
+
+	if raw, found := object["isConfigured"]; found {
+		err = json.Unmarshal(raw, &a.IsConfigured)
+		if err != nil {
+			return fmt.Errorf("error reading 'isConfigured': %w", err)
+		}
+		delete(object, "isConfigured")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GitLabProviderSummary to handle AdditionalProperties
+func (a GitLabProviderSummary) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ApplicationId != nil {
+		object["applicationId"], err = json.Marshal(a.ApplicationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	object["gitlabId"], err = json.Marshal(a.GitlabId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitlabId': %w", err)
+	}
+
+	object["gitlabUrl"], err = json.Marshal(a.GitlabUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitlabUrl': %w", err)
+	}
+
+	object["isConfigured"], err = json.Marshal(a.IsConfigured)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'isConfigured': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GitLabUpdateRequest. Returns the specified
+// element and whether it was found
+func (a GitLabUpdateRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GitLabUpdateRequest
+func (a *GitLabUpdateRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GitLabUpdateRequest to handle AdditionalProperties
+func (a *GitLabUpdateRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["applicationId"]; found {
+		err = json.Unmarshal(raw, &a.ApplicationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'applicationId': %w", err)
+		}
+		delete(object, "applicationId")
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["gitlabId"]; found {
+		err = json.Unmarshal(raw, &a.GitlabId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabId': %w", err)
+		}
+		delete(object, "gitlabId")
+	}
+
+	if raw, found := object["gitlabInternalUrl"]; found {
+		err = json.Unmarshal(raw, &a.GitlabInternalUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabInternalUrl': %w", err)
+		}
+		delete(object, "gitlabInternalUrl")
+	}
+
+	if raw, found := object["gitlabUrl"]; found {
+		err = json.Unmarshal(raw, &a.GitlabUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlabUrl': %w", err)
+		}
+		delete(object, "gitlabUrl")
+	}
+
+	if raw, found := object["groupName"]; found {
+		err = json.Unmarshal(raw, &a.GroupName)
+		if err != nil {
+			return fmt.Errorf("error reading 'groupName': %w", err)
+		}
+		delete(object, "groupName")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["redirectUri"]; found {
+		err = json.Unmarshal(raw, &a.RedirectUri)
+		if err != nil {
+			return fmt.Errorf("error reading 'redirectUri': %w", err)
+		}
+		delete(object, "redirectUri")
+	}
+
+	if raw, found := object["secret"]; found {
+		err = json.Unmarshal(raw, &a.Secret)
+		if err != nil {
+			return fmt.Errorf("error reading 'secret': %w", err)
+		}
+		delete(object, "secret")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GitLabUpdateRequest to handle AdditionalProperties
+func (a GitLabUpdateRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ApplicationId != nil {
+		object["applicationId"], err = json.Marshal(a.ApplicationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'applicationId': %w", err)
+		}
+	}
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	object["gitlabId"], err = json.Marshal(a.GitlabId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitlabId': %w", err)
+	}
+
+	if a.GitlabInternalUrl != nil {
+		object["gitlabInternalUrl"], err = json.Marshal(a.GitlabInternalUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'gitlabInternalUrl': %w", err)
+		}
+	}
+
+	object["gitlabUrl"], err = json.Marshal(a.GitlabUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitlabUrl': %w", err)
+	}
+
+	if a.GroupName != nil {
+		object["groupName"], err = json.Marshal(a.GroupName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'groupName': %w", err)
+		}
+	}
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	if a.RedirectUri != nil {
+		object["redirectUri"], err = json.Marshal(a.RedirectUri)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'redirectUri': %w", err)
+		}
+	}
+
+	if a.Secret != nil {
+		object["secret"], err = json.Marshal(a.Secret)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'secret': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GitProviderListEntry. Returns the specified
+// element and whether it was found
+func (a GitProviderListEntry) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GitProviderListEntry
+func (a *GitProviderListEntry) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GitProviderListEntry to handle AdditionalProperties
+func (a *GitProviderListEntry) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["gitlab"]; found {
+		err = json.Unmarshal(raw, &a.Gitlab)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitlab': %w", err)
+		}
+		delete(object, "gitlab")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GitProviderListEntry to handle AdditionalProperties
+func (a GitProviderListEntry) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	if a.Gitlab != nil {
+		object["gitlab"], err = json.Marshal(a.Gitlab)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'gitlab': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GitProviderUserIdentity. Returns the specified
+// element and whether it was found
+func (a GitProviderUserIdentity) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GitProviderUserIdentity
+func (a *GitProviderUserIdentity) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GitProviderUserIdentity to handle AdditionalProperties
+func (a *GitProviderUserIdentity) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["id"]; found {
+		err = json.Unmarshal(raw, &a.Id)
+		if err != nil {
+			return fmt.Errorf("error reading 'id': %w", err)
+		}
+		delete(object, "id")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GitProviderUserIdentity to handle AdditionalProperties
+func (a GitProviderUserIdentity) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["id"], err = json.Marshal(a.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'id': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -7567,6 +8653,36 @@ type ClientInterface interface {
 	// Takes a body of the `application/json` content type.
 	EnvironmentUpdate(ctx context.Context, body EnvironmentUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GitProviderGetAll performs a GET /gitProvider.getAll (the `GitProviderGetAll` operationId) request.
+	GitProviderGetAll(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GitProviderRemoveWithBody performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request,
+	// with any type of body and a specified content type.
+	GitProviderRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GitProviderRemove performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	GitProviderRemove(ctx context.Context, body GitProviderRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GitlabCreateWithBody performs a POST /gitlab.create (the `GitlabCreate` operationId) request,
+	// with any type of body and a specified content type.
+	GitlabCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GitlabCreate performs a POST /gitlab.create (the `GitlabCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	GitlabCreate(ctx context.Context, body GitlabCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GitlabOne performs a GET /gitlab.one (the `GitlabOne` operationId) request.
+	GitlabOne(ctx context.Context, params *GitlabOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GitlabUpdateWithBody performs a POST /gitlab.update (the `GitlabUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	GitlabUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GitlabUpdate performs a POST /gitlab.update (the `GitlabUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	GitlabUpdate(ctx context.Context, body GitlabUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MariadbCreateWithBody performs a POST /mariadb.create (the `MariadbCreate` operationId) request,
 	// with any type of body and a specified content type.
 	MariadbCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8013,6 +9129,9 @@ type ClientInterface interface {
 	// TagUpdate performs a POST /tag.update (the `TagUpdate` operationId) request.
 	// Takes a body of the `application/json` content type.
 	TagUpdate(ctx context.Context, body TagUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UserGet performs a GET /user.get (the `UserGet` operationId) request.
+	UserGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// VolumeBackupsCreateWithBody performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -8950,6 +10069,116 @@ func (c *Client) EnvironmentUpdateWithBody(ctx context.Context, contentType stri
 // Takes a body of the `application/json` content type.
 func (c *Client) EnvironmentUpdate(ctx context.Context, body EnvironmentUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnvironmentUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitProviderGetAll performs a GET /gitProvider.getAll (the `GitProviderGetAll` operationId) request.
+func (c *Client) GitProviderGetAll(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitProviderGetAllRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitProviderRemoveWithBody performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) GitProviderRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitProviderRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitProviderRemove performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) GitProviderRemove(ctx context.Context, body GitProviderRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitProviderRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitlabCreateWithBody performs a POST /gitlab.create (the `GitlabCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) GitlabCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitlabCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitlabCreate performs a POST /gitlab.create (the `GitlabCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) GitlabCreate(ctx context.Context, body GitlabCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitlabCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitlabOne performs a GET /gitlab.one (the `GitlabOne` operationId) request.
+func (c *Client) GitlabOne(ctx context.Context, params *GitlabOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitlabOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitlabUpdateWithBody performs a POST /gitlab.update (the `GitlabUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) GitlabUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitlabUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GitlabUpdate performs a POST /gitlab.update (the `GitlabUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) GitlabUpdate(ctx context.Context, body GitlabUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGitlabUpdateRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -10557,6 +11786,19 @@ func (c *Client) TagUpdate(ctx context.Context, body TagUpdateJSONRequestBody, r
 	return c.Client.Do(req)
 }
 
+// UserGet performs a GET /user.get (the `UserGet` operationId) request.
+func (c *Client) UserGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUserGetRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // VolumeBackupsCreateWithBody performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
 // with any type of body and a specified content type.
 func (c *Client) VolumeBackupsCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -12135,6 +13377,203 @@ func NewEnvironmentUpdateRequestWithBody(server string, contentType string, body
 	}
 
 	operationPath := fmt.Sprintf("/environment.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGitProviderGetAllRequest constructs an http.Request for the GitProviderGetAll method
+func NewGitProviderGetAllRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitProvider.getAll")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGitProviderRemoveRequest calls the generic GitProviderRemove builder with application/json body
+func NewGitProviderRemoveRequest(server string, body GitProviderRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGitProviderRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGitProviderRemoveRequestWithBody constructs an http.Request for the GitProviderRemove method, with any body, and a specified content type
+func NewGitProviderRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitProvider.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGitlabCreateRequest calls the generic GitlabCreate builder with application/json body
+func NewGitlabCreateRequest(server string, body GitlabCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGitlabCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGitlabCreateRequestWithBody constructs an http.Request for the GitlabCreate method, with any body, and a specified content type
+func NewGitlabCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitlab.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGitlabOneRequest constructs an http.Request for the GitlabOne method
+func NewGitlabOneRequest(server string, params *GitlabOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitlab.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "gitlabId", params.GitlabId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGitlabUpdateRequest calls the generic GitlabUpdate builder with application/json body
+func NewGitlabUpdateRequest(server string, body GitlabUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGitlabUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGitlabUpdateRequestWithBody constructs an http.Request for the GitlabUpdate method, with any body, and a specified content type
+func NewGitlabUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitlab.update")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -14798,6 +16237,33 @@ func NewTagUpdateRequestWithBody(server string, contentType string, body io.Read
 	return req, nil
 }
 
+// NewUserGetRequest constructs an http.Request for the UserGet method
+func NewUserGetRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/user.get")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewVolumeBackupsCreateRequest calls the generic VolumeBackupsCreate builder with application/json body
 func NewVolumeBackupsCreateRequest(server string, body VolumeBackupsCreateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -15341,6 +16807,46 @@ type ClientWithResponsesInterface interface {
 	// EnvironmentUpdateWithResponse performs a POST /environment.update (the `EnvironmentUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	EnvironmentUpdateWithResponse(ctx context.Context, body EnvironmentUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*EnvironmentUpdateResponse, error)
+
+	// GitProviderGetAllWithResponse performs a GET /gitProvider.getAll (the `GitProviderGetAll` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GitProviderGetAllWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GitProviderGetAllResponse, error)
+
+	// GitProviderRemoveWithBodyWithResponse performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GitProviderRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GitProviderRemoveResponse, error)
+
+	// GitProviderRemoveWithResponse performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	GitProviderRemoveWithResponse(ctx context.Context, body GitProviderRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*GitProviderRemoveResponse, error)
+
+	// GitlabCreateWithBodyWithResponse performs a POST /gitlab.create (the `GitlabCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GitlabCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GitlabCreateResponse, error)
+
+	// GitlabCreateWithResponse performs a POST /gitlab.create (the `GitlabCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	GitlabCreateWithResponse(ctx context.Context, body GitlabCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*GitlabCreateResponse, error)
+
+	// GitlabOneWithResponse performs a GET /gitlab.one (the `GitlabOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GitlabOneWithResponse(ctx context.Context, params *GitlabOneParams, reqEditors ...RequestEditorFn) (*GitlabOneResponse, error)
+
+	// GitlabUpdateWithBodyWithResponse performs a POST /gitlab.update (the `GitlabUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GitlabUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GitlabUpdateResponse, error)
+
+	// GitlabUpdateWithResponse performs a POST /gitlab.update (the `GitlabUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	GitlabUpdateWithResponse(ctx context.Context, body GitlabUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*GitlabUpdateResponse, error)
 
 	// MariadbCreateWithBodyWithResponse performs a POST /mariadb.create (the `MariadbCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -15916,6 +17422,11 @@ type ClientWithResponsesInterface interface {
 	// TagUpdateWithResponse performs a POST /tag.update (the `TagUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	TagUpdateWithResponse(ctx context.Context, body TagUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TagUpdateResponse, error)
+
+	// UserGetWithResponse performs a GET /user.get (the `UserGet` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	UserGetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UserGetResponse, error)
 
 	// VolumeBackupsCreateWithBodyWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
 	// with any type of body and a specified content type.
@@ -18389,6 +19900,344 @@ func (r EnvironmentUpdateResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r EnvironmentUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GitProviderGetAllResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GitProviderList
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GitProviderGetAllResponse) GetJSON200() *GitProviderList {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GitProviderGetAllResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GitProviderGetAllResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GitProviderGetAllResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GitProviderGetAllResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GitProviderGetAllResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GitProviderGetAllResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GitProviderGetAllResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GitProviderGetAllResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GitProviderGetAllResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GitProviderRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GitProviderRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GitProviderRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GitProviderRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GitProviderRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GitProviderRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GitProviderRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GitProviderRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GitProviderRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GitlabCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GitlabCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GitlabCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GitlabCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GitlabCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GitlabCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GitlabCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GitlabCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GitlabCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GitlabOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GitLabIntegrationRecord
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GitlabOneResponse) GetJSON200() *GitLabIntegrationRecord {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GitlabOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GitlabOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GitlabOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GitlabOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GitlabOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GitlabOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GitlabOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GitlabOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GitlabOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GitlabUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GitlabUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GitlabUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GitlabUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GitlabUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GitlabUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GitlabUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GitlabUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GitlabUpdateResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -22748,6 +24597,82 @@ func (r TagUpdateResponse) ContentType() string {
 	return ""
 }
 
+type UserGetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *AuthenticatedGitProviderMember
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UserGetResponse) GetJSON200() *AuthenticatedGitProviderMember {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UserGetResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UserGetResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UserGetResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UserGetResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r UserGetResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r UserGetResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UserGetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UserGetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UserGetResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type VolumeBackupsCreateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -23748,6 +25673,94 @@ func (c *ClientWithResponses) EnvironmentUpdateWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseEnvironmentUpdateResponse(rsp)
+}
+
+// GitProviderGetAllWithResponse performs a GET /gitProvider.getAll (the `GitProviderGetAll` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitProviderGetAllWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GitProviderGetAllResponse, error) {
+	rsp, err := c.GitProviderGetAll(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitProviderGetAllResponse(rsp)
+}
+
+// GitProviderRemoveWithBodyWithResponse performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitProviderRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GitProviderRemoveResponse, error) {
+	rsp, err := c.GitProviderRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitProviderRemoveResponse(rsp)
+}
+
+// GitProviderRemoveWithResponse performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitProviderRemoveWithResponse(ctx context.Context, body GitProviderRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*GitProviderRemoveResponse, error) {
+	rsp, err := c.GitProviderRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitProviderRemoveResponse(rsp)
+}
+
+// GitlabCreateWithBodyWithResponse performs a POST /gitlab.create (the `GitlabCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitlabCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GitlabCreateResponse, error) {
+	rsp, err := c.GitlabCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitlabCreateResponse(rsp)
+}
+
+// GitlabCreateWithResponse performs a POST /gitlab.create (the `GitlabCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitlabCreateWithResponse(ctx context.Context, body GitlabCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*GitlabCreateResponse, error) {
+	rsp, err := c.GitlabCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitlabCreateResponse(rsp)
+}
+
+// GitlabOneWithResponse performs a GET /gitlab.one (the `GitlabOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitlabOneWithResponse(ctx context.Context, params *GitlabOneParams, reqEditors ...RequestEditorFn) (*GitlabOneResponse, error) {
+	rsp, err := c.GitlabOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitlabOneResponse(rsp)
+}
+
+// GitlabUpdateWithBodyWithResponse performs a POST /gitlab.update (the `GitlabUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitlabUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GitlabUpdateResponse, error) {
+	rsp, err := c.GitlabUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitlabUpdateResponse(rsp)
+}
+
+// GitlabUpdateWithResponse performs a POST /gitlab.update (the `GitlabUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GitlabUpdateWithResponse(ctx context.Context, body GitlabUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*GitlabUpdateResponse, error) {
+	rsp, err := c.GitlabUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGitlabUpdateResponse(rsp)
 }
 
 // MariadbCreateWithBodyWithResponse performs a POST /mariadb.create (the `MariadbCreate` operationId) request,
@@ -25013,6 +27026,17 @@ func (c *ClientWithResponses) TagUpdateWithResponse(ctx context.Context, body Ta
 		return nil, err
 	}
 	return ParseTagUpdateResponse(rsp)
+}
+
+// UserGetWithResponse performs a GET /user.get (the `UserGet` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) UserGetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UserGetResponse, error) {
+	rsp, err := c.UserGet(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUserGetResponse(rsp)
 }
 
 // VolumeBackupsCreateWithBodyWithResponse performs a POST /volumeBackups.create (the `VolumeBackupsCreate` operationId) request,
@@ -26996,6 +29020,278 @@ func ParseEnvironmentUpdateResponse(rsp *http.Response) (*EnvironmentUpdateRespo
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGitProviderGetAllResponse parses an HTTP response from a GitProviderGetAllWithResponse call
+func ParseGitProviderGetAllResponse(rsp *http.Response) (*GitProviderGetAllResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GitProviderGetAllResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GitProviderList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGitProviderRemoveResponse parses an HTTP response from a GitProviderRemoveWithResponse call
+func ParseGitProviderRemoveResponse(rsp *http.Response) (*GitProviderRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GitProviderRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGitlabCreateResponse parses an HTTP response from a GitlabCreateWithResponse call
+func ParseGitlabCreateResponse(rsp *http.Response) (*GitlabCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GitlabCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGitlabOneResponse parses an HTTP response from a GitlabOneWithResponse call
+func ParseGitlabOneResponse(rsp *http.Response) (*GitlabOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GitlabOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GitLabIntegrationRecord
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGitlabUpdateResponse parses an HTTP response from a GitlabUpdateWithResponse call
+func ParseGitlabUpdateResponse(rsp *http.Response) (*GitlabUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GitlabUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorBADREQUEST
@@ -30489,6 +32785,67 @@ func ParseTagUpdateResponse(rsp *http.Response) (*TagUpdateResponse, error) {
 	return response, nil
 }
 
+// ParseUserGetResponse parses an HTTP response from a UserGetWithResponse call
+func ParseUserGetResponse(rsp *http.Response) (*UserGetResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UserGetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AuthenticatedGitProviderMember
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseVolumeBackupsCreateResponse parses an HTTP response from a VolumeBackupsCreateWithResponse call
 func ParseVolumeBackupsCreateResponse(rsp *http.Response) (*VolumeBackupsCreateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -30713,148 +33070,157 @@ func ParseVolumeBackupsUpdateResponse(rsp *http.Response) (*VolumeBackupsUpdateR
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
-	"QZo0h/ghR76ND23qvUABETTsfwIAAP//",
+	"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",
+	"//8=",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

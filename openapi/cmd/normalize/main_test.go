@@ -328,6 +328,59 @@ func TestNormalizeEnvironmentUpdateDescriptionIsOptionalString(t *testing.T) {
 	require.NotContains(t, required, "description")
 }
 
+func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, operation := range []struct{ path, method string }{
+		{"/gitlab.one", httpMethodGet}, {"/gitProvider.getAll", httpMethodGet},
+		{"/user.get", httpMethodGet}, {"/gitlab.create", httpMethodPost},
+		{"/gitlab.update", httpMethodPost}, {"/gitProvider.remove", httpMethodPost},
+	} {
+		path, ok := d.Paths[operation.path]
+		require.True(t, ok, "missing path %s", operation.path)
+		require.NotNil(t, path.Methods[operation.method], "missing %s operation at %s", operation.method, operation.path)
+	}
+	require.Len(t, d.Paths, 110, "the six GitLab integration operations are the only operations added")
+	require.Equal(t, "#/components/schemas/GitLabIntegrationRecord", responseSchema(t, d, "/gitlab.one", httpMethodGet, "200").Ref)
+	require.Equal(t, "#/components/schemas/GitProviderList", responseSchema(t, d, "/gitProvider.getAll", httpMethodGet, "200").Ref)
+	require.Equal(t, "#/components/schemas/AuthenticatedGitProviderMember", responseSchema(t, d, "/user.get", httpMethodGet, "200").Ref)
+
+	create := operationRequestSchema(t, d, "gitlab.create")
+	require.Contains(t, create["required"], "authId")
+	for _, field := range []string{"applicationId", "secret", "redirectUri", "gitlabUrl", "gitlabInternalUrl", "groupName"} {
+		require.Contains(t, create["properties"], field)
+	}
+	update := operationRequestSchema(t, d, "gitlab.update")
+	require.Contains(t, update["required"], "gitlabId")
+	require.Contains(t, update["required"], "gitProviderId")
+	require.NotContains(t, update["properties"], "accessToken")
+	remove := operationRequestSchema(t, d, "gitProvider.remove")
+	require.Contains(t, remove["required"], "gitProviderId")
+	record := componentSchema(t, d, "GitLabIntegrationRecord")
+	require.ElementsMatch(t, []any{"gitlabId", "gitProviderId", "gitlabUrl", "gitProvider"}, record["required"])
+	require.Equal(t, true, record["additionalProperties"])
+	for _, field := range []string{"gitlabInternalUrl", "secret", "accessToken", "refreshToken"} {
+		require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, record, field), "nullable %s", field)
+	}
+	identity := componentSchema(t, d, "GitLabProviderIdentity")
+	require.Equal(t, []any{"gitProviderId"}, identity["required"])
+	identityProperties := identity["properties"].(map[string]any)
+	require.Equal(t, float64(1), identityProperties["gitProviderId"].(map[string]any)["minLength"])
+	entry := componentSchema(t, d, "GitProviderListEntry")
+	entryProperties := entry["properties"].(map[string]any)
+	gitlabSummary := entryProperties["gitlab"].(map[string]any)
+	require.Contains(t, gitlabSummary, "anyOf", "GitLab summary must allow explicit null")
+	member := componentSchema(t, d, "AuthenticatedGitProviderMember")
+	require.ElementsMatch(t, []any{"userId", "organizationId", "user"}, member["required"])
+	for _, operation := range []string{"gitlab.create", "gitlab.update", "gitProvider.remove"} {
+		responses := d.Paths["/"+operation].Post.Raw["responses"].(map[string]any)
+		ack := responses["200"].(map[string]any)
+		require.NotContains(t, ack, "content", "%s acknowledgment must be bodyless", operation)
+	}
+	for _, path := range []string{"/gitlab.gitlabProviders", "/gitlab.testConnection", "/gitlab.callback"} {
+		require.NotContains(t, d.Paths, path)
+	}
+}
+
 func TestNormalizeUsesProductionOperationsAndCorrections(t *testing.T) {
 	output := normalizeRealContract(t)
 	ids := normalizedOperationIDs(t, output)
