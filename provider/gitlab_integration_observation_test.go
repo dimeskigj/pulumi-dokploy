@@ -124,14 +124,15 @@ func TestGitLabIntegrationReadMalformedAndMissing(t *testing.T) {
 }
 
 func TestGitLabIntegrationProviderListValidation(t *testing.T) {
-	valid := `[{"gitProviderId":"parent","name":"old","type":"gitlab","organizationId":"org","userId":"user","gitlab":{"gitlabId":"relation","gitlabUrl":"https://gitlab.example","isConfigured":false}},{"gitProviderId":"other","name":"github","type":"github","organizationId":"org","userId":"user","gitlab":null}]`
+	valid := `[{"gitProviderId":"parent","name":"old","type":"gitlab","organizationId":"org","userId":"user","gitlab":{"gitlabId":"relation","applicationId":null,"gitlabUrl":"https://gitlab.example","isConfigured":false}},{"gitProviderId":"other","name":"github","type":"github","organizationId":"org","userId":"user","gitlab":null}]`
 	for _, tt := range []struct {
 		name, body string
 		valid      bool
 	}{
 		{"valid", valid, true},
+		{"missing application ID", strings.Replace(valid, `"applicationId":null,`, "", 1), false},
 		{"duplicate parent", strings.Replace(valid, `"gitProviderId":"other"`, `"gitProviderId":"parent"`, 1), false},
-		{"duplicate relation", strings.Replace(strings.Replace(valid, `"type":"github"`, `"type":"gitlab"`, 1), `"gitlab":null`, `"gitlab":{"gitlabId":"relation","gitlabUrl":"https://gitlab.example","isConfigured":false}`, 1), false},
+		{"duplicate relation", strings.Replace(strings.Replace(valid, `"type":"github"`, `"type":"gitlab"`, 1), `"gitlab":null`, `"gitlab":{"gitlabId":"relation","applicationId":null,"gitlabUrl":"https://gitlab.example","isConfigured":false}`, 1), false},
 		{"missing owner", strings.Replace(valid, `"userId":"user"`, `"userId":""`, 1), false},
 		{"wrong organization", strings.Replace(valid, `"organizationId":"org"`, `"organizationId":"other"`, 1), false},
 		{"wrong type", strings.Replace(valid, `"type":"gitlab"`, `"type":"github"`, 1), false},

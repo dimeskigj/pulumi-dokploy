@@ -159,7 +159,7 @@ func readGitLabProviderList(ctx context.Context, api *client.Client, organizatio
 			return nil, gitLabMalformed("gitProvider.getAll")
 		}
 		summary, err := entry.Gitlab.Get()
-		if err != nil || summary.GitlabId == "" || summary.GitlabUrl == "" || relations[summary.GitlabId] {
+		if err != nil || summary.GitlabId == "" || summary.GitlabUrl == "" || !summary.ApplicationId.IsSpecified() || relations[summary.GitlabId] {
 			return nil, gitLabMalformed("gitProvider.getAll")
 		}
 		relations[summary.GitlabId] = true
