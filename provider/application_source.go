@@ -116,6 +116,10 @@ func (b *ApplicationBuild) Annotate(a infer.Annotator) {
 }
 
 func (s ApplicationSource) validate() error {
+	return s.validateWithGitLabReferenceComputed(false)
+}
+
+func (s ApplicationSource) validateWithGitLabReferenceComputed(integrationIDComputed bool) error {
 	count := 0
 	if s.Docker != nil {
 		count++
@@ -163,7 +167,7 @@ func (s ApplicationSource) validate() error {
 		if s.Git != nil {
 			return fmt.Errorf("source.git must be omitted when source.type is gitlab")
 		}
-		if s.GitLab.IntegrationID == "" {
+		if s.GitLab.IntegrationID == "" && !integrationIDComputed {
 			return fmt.Errorf("source.gitlab.integrationId must not be empty")
 		}
 		if s.GitLab.ProjectID == 0 {
