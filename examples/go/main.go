@@ -45,6 +45,18 @@ func main() {
 		if param := cfg.Get("gitBranch"); param != "" {
 			gitBranch = param
 		}
+		gitlabApplicationId := "replace-with-gitlab-oauth-application-id"
+		if param := cfg.Get("gitlabApplicationId"); param != "" {
+			gitlabApplicationId = param
+		}
+		gitlabApplicationSecret := ""
+		if param := cfg.Get("gitlabApplicationSecret"); param != "" {
+			gitlabApplicationSecret = param
+		}
+		gitlabRedirectUri := "https://dokploy.example.invalid/api/providers/gitlab/callback"
+		if param := cfg.Get("gitlabRedirectUri"); param != "" {
+			gitlabRedirectUri = param
+		}
 		sshPrivateKey := ""
 		if param := cfg.Get("sshPrivateKey"); param != "" {
 			sshPrivateKey = param
@@ -84,6 +96,16 @@ func main() {
 		destinationSecretAccessKey := "replace-with-a-destination-secret-access-key"
 		if param := cfg.Get("destinationSecretAccessKey"); param != "" {
 			destinationSecretAccessKey = param
+		}
+		managedGitlabIntegration, err := dokploy.NewGitLabIntegration(ctx, "managedGitlabIntegration", &dokploy.GitLabIntegrationArgs{
+			Name:              pulumi.String("example-gitlab-integration"),
+			ApplicationId:     pulumi.String(gitlabApplicationId),
+			ApplicationSecret: pulumi.ToSecret(gitlabApplicationSecret).(pulumi.StringOutput),
+			RedirectUri:       pulumi.String(gitlabRedirectUri),
+			GitlabUrl:         pulumi.String("https://gitlab.com"),
+		})
+		if err != nil {
+			return err
 		}
 		projectResource, err := dokploy.NewProject(ctx, "project", &dokploy.ProjectArgs{
 			Name:        pulumi.String("dokploy-mvp"),
@@ -150,6 +172,7 @@ func main() {
 		if err != nil {
 			return err
 		}
+>>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 		sshKey, err := dokploy.NewSSHKey(ctx, "sshKey", &dokploy.SSHKeyArgs{
 			Name:       pulumi.String("mvp-git-ssh"),
 			PrivateKey: pulumi.ToSecret(sshPrivateKey).(pulumi.StringOutput),
@@ -374,7 +397,10 @@ func main() {
 		ctx.Export("gitlabNamespace", pulumi.String(gitlabNamespace))
 		ctx.Export("gitlabRepository", pulumi.String(gitlabRepository))
 		ctx.Export("gitBranch", pulumi.String(gitBranch))
+<<<<<<< HEAD
 		ctx.Export("remoteServerId", remoteServer.ServerId)
+=======
+		ctx.Export("managedGitlabIntegrationId", managedGitlabIntegration.GitlabId)
 		return nil
 	})
 }

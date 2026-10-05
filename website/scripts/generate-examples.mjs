@@ -61,6 +61,8 @@ This page embeds the tracked language programs produced by \`make gen_examples\`
 
 The generated examples use invalid placeholders for endpoints and credentials. Supply real values through secret configuration before deployment.
 
+The canonical program keeps Docker, generic Git, and raw Compose workloads active by default. If you use its managed GitLab integration, authorize GitLab in Dokploy before switching workloads to GitLab in a later deployment; see the [GitLab integrations guide](../../guides/gitlab-integrations/).
+
 export const examples = ${serialized};
 
 <LanguageTabs examples={examples} />

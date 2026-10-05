@@ -28,6 +28,15 @@ if gitlab_repository is None:
 git_branch = config.get("gitBranch")
 if git_branch is None:
     git_branch = "main"
+gitlab_application_id = config.get("gitlabApplicationId")
+if gitlab_application_id is None:
+    gitlab_application_id = "replace-with-gitlab-oauth-application-id"
+gitlab_application_secret = config.get_secret("gitlabApplicationSecret")
+if gitlab_application_secret is None:
+    gitlab_application_secret = ""
+gitlab_redirect_uri = config.get("gitlabRedirectUri")
+if gitlab_redirect_uri is None:
+    gitlab_redirect_uri = "https://dokploy.example.invalid/api/providers/gitlab/callback"
 ssh_private_key = config.get_secret("sshPrivateKey")
 if ssh_private_key is None:
     ssh_private_key = ""
@@ -58,6 +67,12 @@ if destination_access_key is None:
 destination_secret_access_key = config.get_secret("destinationSecretAccessKey")
 if destination_secret_access_key is None:
     destination_secret_access_key = "replace-with-a-destination-secret-access-key"
+managed_gitlab_integration = dokploy.GitLabIntegration("managedGitlabIntegration",
+    name="example-gitlab-integration",
+    application_id=gitlab_application_id,
+    application_secret=pulumi.Output.secret(gitlab_application_secret),
+    redirect_uri=gitlab_redirect_uri,
+    gitlab_url="https://gitlab.com")
 project_resource = dokploy.Project("project",
     name="dokploy-mvp",
     description="Canonical Dokploy provider example")
@@ -99,6 +114,7 @@ application_port = dokploy.Port("applicationPort",
     target_port=80,
     protocol=dokploy.PortProtocol.TCP,
     publish_mode=dokploy.PortPublishMode.INGRESS)
+>>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 ssh_key = dokploy.SSHKey("sshKey",
     name="mvp-git-ssh",
     private_key=pulumi.Output.secret(ssh_private_key),
@@ -243,4 +259,7 @@ pulumi.export("gitlabOwner", gitlab_owner)
 pulumi.export("gitlabNamespace", gitlab_namespace)
 pulumi.export("gitlabRepository", gitlab_repository)
 pulumi.export("gitBranch", git_branch)
+<<<<<<< HEAD
 pulumi.export("remoteServerId", remote_server.server_id)
+=======
+pulumi.export("managedGitlabIntegrationId", managed_gitlab_integration.gitlab_id)

@@ -3,6 +3,8 @@ package generated_program;
 import com.pulumi.Context;
 import com.pulumi.Pulumi;
 import com.pulumi.core.Output;
+import net.dimeski.pulumi.dokploy.GitLabIntegration;
+import net.dimeski.pulumi.dokploy.GitLabIntegrationArgs;
 import net.dimeski.pulumi.dokploy.Project;
 import net.dimeski.pulumi.dokploy.ProjectArgs;
 import net.dimeski.pulumi.dokploy.Environment;
@@ -19,6 +21,7 @@ import net.dimeski.pulumi.dokploy.Port;
 import net.dimeski.pulumi.dokploy.enums.PortProtocol;
 import net.dimeski.pulumi.dokploy.enums.PortPublishMode;
 import net.dimeski.pulumi.dokploy.PortArgs;
+>>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 import net.dimeski.pulumi.dokploy.SSHKey;
 import net.dimeski.pulumi.dokploy.SSHKeyArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
@@ -77,6 +80,9 @@ public class App {
         final var gitlabNamespace = config.get("gitlabNamespace").orElse("platform");
         final var gitlabRepository = config.get("gitlabRepository").orElse("application");
         final var gitBranch = config.get("gitBranch").orElse("main");
+        final var gitlabApplicationId = config.get("gitlabApplicationId").orElse("replace-with-gitlab-oauth-application-id");
+        final var gitlabApplicationSecret = config.getSecret("gitlabApplicationSecret").applyValue(v -> v.orElse(""));
+        final var gitlabRedirectUri = config.get("gitlabRedirectUri").orElse("https://dokploy.example.invalid/api/providers/gitlab/callback");
         final var sshPrivateKey = config.getSecret("sshPrivateKey").applyValue(v -> v.orElse(""));
         final var fileMountContent = config.getSecret("fileMountContent").applyValue(v -> v.orElse(""));
         final var registryPassword = config.getSecret("registryPassword").applyValue(v -> v.orElse(""));
@@ -87,6 +93,14 @@ public class App {
         final var redisPassword = config.getSecret("redisPassword").applyValue(v -> v.orElse("replace-with-a-redis-password"));
         final var destinationAccessKey = config.get("destinationAccessKey").orElse("replace-with-a-destination-access-key");
         final var destinationSecretAccessKey = config.getSecret("destinationSecretAccessKey").applyValue(v -> v.orElse("replace-with-a-destination-secret-access-key"));
+        var managedGitlabIntegration = new GitLabIntegration("managedGitlabIntegration", GitLabIntegrationArgs.builder()
+            .name("example-gitlab-integration")
+            .applicationId(gitlabApplicationId)
+            .applicationSecret(gitlabApplicationSecret.asSecret())
+            .redirectUri(gitlabRedirectUri)
+            .gitlabUrl("https://gitlab.com")
+            .build());
+
         var projectResource = new Project("projectResource", ProjectArgs.builder()
             .name("dokploy-mvp")
             .description("Canonical Dokploy provider example")
@@ -132,6 +146,7 @@ public class App {
             .command(Output.ofSecret("echo scheduled maintenance"))
             .build());
 
+<<<<<<< HEAD
         var applicationPort = new Port("applicationPort", PortArgs.builder()
             .applicationId(application.applicationId())
             .publishedPort(8081)
@@ -140,6 +155,7 @@ public class App {
             .publishMode(PortPublishMode.Ingress)
             .build());
 
+=======
         var sshKey = new SSHKey("sshKey", SSHKeyArgs.builder()
             .name("mvp-git-ssh")
             .privateKey(sshPrivateKey.asSecret())
@@ -326,5 +342,6 @@ services:
         ctx.export("gitlabRepository", gitlabRepository);
         ctx.export("gitBranch", gitBranch);
         ctx.export("remoteServerId", remoteServer.serverId());
+        ctx.export("managedGitlabIntegrationId", managedGitlabIntegration.gitlabId());
     }
 }

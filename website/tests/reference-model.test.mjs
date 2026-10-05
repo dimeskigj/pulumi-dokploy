@@ -127,6 +127,7 @@ test("derives stable lowercase slugs", () => {
   assert.equal(slugFromToken("dokploy:index:Postgres"), "postgres");
   assert.equal(slugFromToken("dokploy:index:getSSHKey"), "get-ssh-key");
   assert.equal(slugFromToken("dokploy:index:getMySQL"), "get-mysql");
+  assert.equal(slugFromToken("dokploy:index:GitLabIntegration"), "git-lab-integration");
 });
 
 test("rejects tokens that are not exactly dokploy:index:identifier", () => {
@@ -147,6 +148,7 @@ test("loads and validates the real provider schema", async () => {
   );
   assert.equal(model.resources.length, 22);
   assert.ok(model.resources.some(({ name }) => name === "Server"));
+   assert.equal(model.resources.length, 20);
   assert.equal(model.config.find(({ name }) => name === "apiKey").secret, true);
    assert.equal(
     model.resources
@@ -155,6 +157,7 @@ test("loads and validates the real provider schema", async () => {
      true,
    );
    for (const resource of ["SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule", "Port", "Notification"]) {
+    for (const resource of ["SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule", "GitLabIntegration"]) {
      assert.ok(model.resources.some(({ name }) => name === resource), `${resource} is published`);
    }
    assert.equal(model.resources.find(({ name }) => name === "SSHKey").inputs.find(({ name }) => name === "privateKey").secret, true);

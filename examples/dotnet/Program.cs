@@ -16,6 +16,9 @@ return await Deployment.RunAsync(() =>
     var gitlabNamespace = config.Get("gitlabNamespace") ?? "platform";
     var gitlabRepository = config.Get("gitlabRepository") ?? "application";
     var gitBranch = config.Get("gitBranch") ?? "main";
+    var gitlabApplicationId = config.Get("gitlabApplicationId") ?? "replace-with-gitlab-oauth-application-id";
+    var gitlabApplicationSecret = config.GetSecret("gitlabApplicationSecret") ?? Output.CreateSecret("");
+    var gitlabRedirectUri = config.Get("gitlabRedirectUri") ?? "https://dokploy.example.invalid/api/providers/gitlab/callback";
     var sshPrivateKey = config.GetSecret("sshPrivateKey") ?? Output.CreateSecret("");
     var fileMountContent = config.GetSecret("fileMountContent") ?? Output.CreateSecret("");
     var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("");
@@ -26,6 +29,15 @@ return await Deployment.RunAsync(() =>
     var redisPassword = config.GetSecret("redisPassword") ?? Output.CreateSecret("replace-with-a-redis-password");
     var destinationAccessKey = config.Get("destinationAccessKey") ?? "replace-with-a-destination-access-key";
     var destinationSecretAccessKey = config.GetSecret("destinationSecretAccessKey") ?? Output.CreateSecret("replace-with-a-destination-secret-access-key");
+    var managedGitlabIntegration = new Dokploy.GitLabIntegration("managedGitlabIntegration", new()
+    {
+        Name = "example-gitlab-integration",
+        ApplicationId = gitlabApplicationId,
+        ApplicationSecret = Output.CreateSecret(gitlabApplicationSecret),
+        RedirectUri = gitlabRedirectUri,
+        GitlabUrl = "https://gitlab.com",
+    });
+
     var projectResource = new Dokploy.Project("project", new()
     {
         Name = "dokploy-mvp",
@@ -87,6 +99,7 @@ return await Deployment.RunAsync(() =>
         PublishMode = Dokploy.PortPublishMode.Ingress,
     });
 
+>>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
     var sshKey = new Dokploy.SSHKey("sshKey", new()
     {
         Name = "mvp-git-ssh",
@@ -298,6 +311,9 @@ return await Deployment.RunAsync(() =>
         ["gitlabNamespace"] = gitlabNamespace,
         ["gitlabRepository"] = gitlabRepository,
         ["gitBranch"] = gitBranch,
+<<<<<<< HEAD
         ["remoteServerId"] = remoteServer.ServerId,
+=======
+        ["managedGitlabIntegrationId"] = managedGitlabIntegration.GitlabId,
     };
 });
