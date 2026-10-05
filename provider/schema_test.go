@@ -39,7 +39,7 @@ func TestSchemaHasExactlyTheMVPResources(t *testing.T) {
 		"dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain",
 		"dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup",
 		"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount",
-		"dokploy:index:Schedule",
+		"dokploy:index:Schedule", "dokploy:index:GitLabIntegration",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
@@ -115,6 +115,34 @@ func TestSchemaScheduleContract(t *testing.T) {
 	require.Contains(t, r.Properties, "scheduleId")
 	require.NotContains(t, r.InputProperties, "scheduleId")
 	require.NotContains(t, r.Properties, "createdAt")
+}
+
+func TestSchemaGitLabIntegrationContract(t *testing.T) {
+	spec := providerSchema(t)
+	r, ok := spec.Resources["dokploy:index:GitLabIntegration"]
+	require.True(t, ok)
+	require.ElementsMatch(t, []string{"name", "applicationId", "applicationSecret", "redirectUri"}, r.RequiredInputs)
+	require.Len(t, r.InputProperties, 7)
+	require.Len(t, r.Properties, 11)
+	require.Equal(t, "https://gitlab.com", r.InputProperties["gitlabUrl"].Default)
+	require.Equal(t, "", r.InputProperties["groupName"].Default)
+	for _, field := range []string{"name", "applicationId", "applicationSecret", "redirectUri", "gitlabUrl", "groupName", "gitlabInternalUrl"} {
+		require.Contains(t, r.InputProperties, field)
+		require.Contains(t, r.Properties, field)
+		require.False(t, r.InputProperties[field].ReplaceOnChanges)
+	}
+	for _, field := range []string{"applicationSecret", "gitlabInternalUrl"} {
+		require.True(t, r.InputProperties[field].Secret)
+		require.True(t, r.Properties[field].Secret)
+	}
+	for _, field := range []string{"gitlabId", "gitProviderId", "organizationId", "isConfigured"} {
+		require.False(t, r.Properties[field].Secret)
+		require.NotContains(t, r.InputProperties, field)
+	}
+	for _, field := range []string{"token", "accessToken", "refreshToken", "authId", "isShared"} {
+		require.NotContains(t, r.Properties, field)
+		require.NotContains(t, r.InputProperties, field)
+	}
 }
 
 func TestSchemaPublishingMetadata(t *testing.T) {

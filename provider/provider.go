@@ -19,7 +19,7 @@ func Provider() p.Provider {
 	return infer.Provider(infer.Options{
 		Metadata: schema.Metadata{
 			DisplayName:       "Dokploy",
-			Description:       "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups.",
+			Description:       "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, GitLab integrations, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups.",
 			PluginDownloadURL: "github://api.github.com/dimeskigj/pulumi-dokploy",
 			LogoURL:           "https://raw.githubusercontent.com/dimeskigj/pulumi-dokploy/main/website/public/logo.svg",
 			Keywords:          []string{"category/infrastructure", "kind/native", "dokploy", "deployment", "self-hosted", "paas"},
@@ -53,6 +53,7 @@ func Provider() p.Provider {
 			infer.Resource(&VolumeBackup{client: configuredClient}),
 			infer.Resource(&SSHKey{client: configuredClient}),
 			infer.Resource(&Registry{client: configuredClient}),
+			infer.Resource(&GitLabIntegration{client: configuredClient}),
 			infer.Resource(&Tag{client: configuredClient}),
 			infer.Resource(&ProjectTag{client: configuredClient}),
 			infer.Resource(&Mount{client: configuredClient}),

@@ -27,6 +27,7 @@
         "destination.ts",
         "domain.ts",
         "environment.ts",
+        "gitLabIntegration.ts",
         "index.ts",
         "mariaDB.ts",
         "mongoDB.ts",

@@ -9,16 +9,17 @@ import (
 )
 
 var (
-	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]         = Project{}
-	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState] = Environment{}
-	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState] = Application{}
-	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]       = Postgres{}
-	_ infer.ExplicitDependencies[RedisArgs, RedisState]             = Redis{}
-	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]           = SSHKey{}
-	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]       = Registry{}
-	_ infer.ExplicitDependencies[TagArgs, TagState]                 = Tag{}
-	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]   = ProjectTag{}
-	_ infer.ExplicitDependencies[MountArgs, MountState]             = Mount{}
+	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]                     = Project{}
+	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState]             = Environment{}
+	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState]             = Application{}
+	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]                   = Postgres{}
+	_ infer.ExplicitDependencies[RedisArgs, RedisState]                         = Redis{}
+	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]                       = SSHKey{}
+	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]                   = Registry{}
+	_ infer.ExplicitDependencies[TagArgs, TagState]                             = Tag{}
+	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]               = ProjectTag{}
+	_ infer.ExplicitDependencies[MountArgs, MountState]                         = Mount{}
+	_ infer.ExplicitDependencies[GitLabIntegrationArgs, GitLabIntegrationState] = GitLabIntegration{}
 )
 
 func TestProviderSchema(t *testing.T) {

@@ -20,6 +20,8 @@ type GitLabIntegrationArgs struct {
 	GitlabInternalURL *string `pulumi:"gitlabInternalUrl,optional" provider:"secret"`
 }
 
+const gitLabHTTPSScheme = "https"
+
 type GitLabIntegrationState struct {
 	GitLabIntegrationArgs
 	GitLabID       string `pulumi:"gitlabId"`
@@ -49,6 +51,8 @@ func (a *GitLabIntegrationArgs) Annotate(n infer.Annotator) {
 	n.Describe(&a.RedirectURI, "The OAuth callback URI configured for the application.")
 	n.Describe(&a.GitlabURL, "The public GitLab base URL; defaults to https://gitlab.com.")
 	n.Describe(&a.GroupName, "The optional GitLab group name; defaults to an empty string.")
+	n.SetDefault(&a.GitlabURL, "https://gitlab.com")
+	n.SetDefault(&a.GroupName, "")
 	n.Describe(&a.GitlabInternalURL, "An optional internal GitLab URL override, which may include basic-auth credentials.")
 }
 
@@ -81,7 +85,7 @@ func (r GitLabIntegration) Check(ctx context.Context, req infer.CheckRequest) (i
 		if name == "redirectUri" {
 			value = in.RedirectURI
 		}
-		if (specified && v.IsNull()) || !validWebURL(value, false) {
+		if (specified && (v.IsNull() || (v.IsString() && v.AsString() == ""))) || !validWebURL(value, false) {
 			add(name, name+" must be an absolute HTTP(S) URL with a host and no userinfo")
 		}
 	}
@@ -115,7 +119,7 @@ func validateGitLabIntegrationArgs(a GitLabIntegrationArgs) error {
 
 func validWebURL(raw string, allowUserinfo bool) bool {
 	u, err := url.Parse(raw)
-	if err != nil || u.Hostname() == "" || (u.Scheme != "http" && u.Scheme != "https") || strings.TrimSpace(raw) != raw {
+	if err != nil || u.Hostname() == "" || (u.Scheme != "http" && u.Scheme != gitLabHTTPSScheme) || strings.TrimSpace(raw) != raw {
 		return false
 	}
 	return allowUserinfo || u.User == nil
@@ -145,10 +149,17 @@ func (r GitLabIntegration) WireDependencies(f infer.FieldSelector, args *GitLabI
 		f.InputField(&args.Name), f.InputField(&args.ApplicationID),
 		f.InputField(&args.RedirectURI), f.InputField(&args.GitlabURL), f.InputField(&args.GroupName),
 	}
-	f.OutputField(&state.GitLabID).DependsOn(publicInputs...)
-	f.OutputField(&state.GitProviderID).DependsOn(publicInputs...)
-	f.OutputField(&state.OrganizationID).DependsOn(publicInputs...)
-	f.OutputField(&state.IsConfigured).DependsOn(publicInputs...)
+	// The identity is generated on create, but in-place configuration changes
+	// cannot change any of these IDs during an update preview.
+	f.OutputField(&state.GitLabID).DependsOn()
+	f.OutputField(&state.GitProviderID).DependsOn()
+	f.OutputField(&state.OrganizationID).DependsOn()
+	f.OutputField(&state.GitLabID).NeverSecret()
+	f.OutputField(&state.GitProviderID).NeverSecret()
+	f.OutputField(&state.OrganizationID).NeverSecret()
+	readinessInputs := append(publicInputs, f.InputField(&args.ApplicationSecret).Computed(), f.InputField(&args.GitlabInternalURL).Computed())
+	f.OutputField(&state.IsConfigured).DependsOn(readinessInputs...)
+	f.OutputField(&state.IsConfigured).NeverSecret()
 	f.OutputField(&state.ApplicationSecret).DependsOn(f.InputField(&args.ApplicationSecret).Secret())
 	f.OutputField(&state.GitlabInternalURL).DependsOn(f.InputField(&args.GitlabInternalURL).Secret())
 }

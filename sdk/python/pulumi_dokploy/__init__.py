@@ -12,6 +12,7 @@ from .compose import *
 from .destination import *
 from .domain import *
 from .environment import *
+from .git_lab_integration import *
 from .maria_db import *
 from .mongo_db import *
 from .mount import *
@@ -50,6 +51,7 @@ _utilities.register(
    "dokploy:index:Destination": "Destination",
    "dokploy:index:Domain": "Domain",
    "dokploy:index:Environment": "Environment",
+   "dokploy:index:GitLabIntegration": "GitLabIntegration",
    "dokploy:index:MariaDB": "MariaDB",
    "dokploy:index:MongoDB": "MongoDB",
    "dokploy:index:Mount": "Mount",

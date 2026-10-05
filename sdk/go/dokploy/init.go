@@ -33,6 +33,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &Domain{}
 	case "dokploy:index:Environment":
 		r = &Environment{}
+	case "dokploy:index:GitLabIntegration":
+		r = &GitLabIntegration{}
 	case "dokploy:index:MariaDB":
 		r = &MariaDB{}
 	case "dokploy:index:MongoDB":

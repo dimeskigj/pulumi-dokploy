@@ -1,7 +1,7 @@
 {
   "name": "dokploy",
   "displayName": "Dokploy",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, GitLab integrations, tags, project-tag associations, mounts, schedules, backup destinations, database backups, and volume backups.",
   "keywords": [
     "category/infrastructure",
     "kind/native",
@@ -1074,6 +1074,111 @@
       "requiredInputs": [
         "projectId",
         "name"
+      ]
+    },
+    "dokploy:index:GitLabIntegration": {
+      "description": "A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The GitLab OAuth application ID."
+        },
+        "applicationSecret": {
+          "type": "string",
+          "description": "The GitLab OAuth application secret.",
+          "secret": true
+        },
+        "gitProviderId": {
+          "type": "string",
+          "description": "The Dokploy Git provider ID associated with this integration."
+        },
+        "gitlabId": {
+          "type": "string",
+          "description": "The stable GitLab integration ID used as the Pulumi resource identity."
+        },
+        "gitlabInternalUrl": {
+          "type": "string",
+          "description": "An optional internal GitLab URL override, which may include basic-auth credentials.",
+          "secret": true
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "description": "The public GitLab base URL; defaults to https://gitlab.com.",
+          "default": "https://gitlab.com"
+        },
+        "groupName": {
+          "type": "string",
+          "description": "The optional GitLab group name; defaults to an empty string.",
+          "default": ""
+        },
+        "isConfigured": {
+          "type": "boolean",
+          "description": "Whether access and refresh tokens are present; this does not indicate connectivity or authorization validity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The integration name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "The Dokploy organization ID associated with this integration."
+        },
+        "redirectUri": {
+          "type": "string",
+          "description": "The OAuth callback URI configured for the application."
+        }
+      },
+      "required": [
+        "name",
+        "applicationId",
+        "applicationSecret",
+        "redirectUri",
+        "gitlabUrl",
+        "groupName",
+        "gitlabId",
+        "gitProviderId",
+        "organizationId",
+        "isConfigured"
+      ],
+      "inputProperties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The GitLab OAuth application ID."
+        },
+        "applicationSecret": {
+          "type": "string",
+          "description": "The GitLab OAuth application secret.",
+          "secret": true
+        },
+        "gitlabInternalUrl": {
+          "type": "string",
+          "description": "An optional internal GitLab URL override, which may include basic-auth credentials.",
+          "secret": true
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "description": "The public GitLab base URL; defaults to https://gitlab.com.",
+          "default": "https://gitlab.com"
+        },
+        "groupName": {
+          "type": "string",
+          "description": "The optional GitLab group name; defaults to an empty string.",
+          "default": ""
+        },
+        "name": {
+          "type": "string",
+          "description": "The integration name."
+        },
+        "redirectUri": {
+          "type": "string",
+          "description": "The OAuth callback URI configured for the application."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "applicationId",
+        "applicationSecret",
+        "redirectUri"
       ]
     },
     "dokploy:index:MariaDB": {
