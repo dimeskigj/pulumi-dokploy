@@ -47,7 +47,7 @@ func gitLabCommon(fields map[string]interface{}) (name, org, user string, ok boo
 	org, orgOK := fields["organizationId"].(string)
 	user, userOK := fields["userId"].(string)
 	providerType, typeOK := fields["type"].(string)
-	return name, org, user, nameOK && orgOK && userOK && typeOK && name != "" && org != "" && user != "" && providerType == "gitlab"
+	return name, org, user, nameOK && orgOK && userOK && typeOK && name != "" && org != "" && user != "" && providerType == string(SourceGitLab)
 }
 
 func gitLabListCommon(fields map[string]interface{}) (org string, gitlab bool, ok bool) {
@@ -55,7 +55,7 @@ func gitLabListCommon(fields map[string]interface{}) (org string, gitlab bool, o
 	org, orgOK := fields["organizationId"].(string)
 	user, userOK := fields["userId"].(string)
 	providerType, typeOK := fields["type"].(string)
-	return org, providerType == "gitlab", nameOK && orgOK && userOK && typeOK && name != "" && org != "" && user != "" && providerType != ""
+	return org, providerType == string(SourceGitLab), nameOK && orgOK && userOK && typeOK && name != "" && org != "" && user != "" && providerType != ""
 }
 
 func gitLabNullable(v nullable.Nullable[string]) string {
