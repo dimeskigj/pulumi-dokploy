@@ -154,6 +154,18 @@ resources:
       #     branch: ${config.gitBranch}
       #     build:
       #       type: nixpacks
+      # Or use an existing external integration (not managed by this program):
+      # source:
+      #   type: gitlab
+      #   gitlab:
+      #     integrationId: ${gitlabIntegration}
+      #     projectId: ${config.gitlabProject}
+      #     owner: ${config.gitlabOwner}
+      #     namespace: ${config.gitlabNamespace}
+      #     repository: ${config.gitlabRepository}
+      #     branch: ${config.gitBranch}
+      #     build:
+      #       type: nixpacks
 
   # Disabled by default: enabling schedules executes shell commands on the target.
   # Validate the unverified live Schedule contract on a dedicated test server first.
@@ -204,6 +216,16 @@ resources:
       #   type: gitlab
       #   gitlab:
       #     integrationId: ${managedGitlabIntegration.gitlabId}
+      #     projectId: ${config.gitlabProject}
+      #     owner: ${config.gitlabOwner}
+      #     namespace: ${config.gitlabNamespace}
+      #     repository: ${config.gitlabRepository}
+      #     branch: ${config.gitBranch}
+      # Or use an existing external integration (not managed by this program):
+      # source:
+      #   type: gitlab
+      #   gitlab:
+      #     integrationId: ${gitlabIntegration}
       #     projectId: ${config.gitlabProject}
       #     owner: ${config.gitlabOwner}
       #     namespace: ${config.gitlabNamespace}

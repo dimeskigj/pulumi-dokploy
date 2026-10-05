@@ -31,6 +31,13 @@ source:
       type: nixpacks
 ```
 
+For an existing, externally managed integration, use
+`integrationId: ${gitlabIntegration}` instead of the managed `gitlabId` in
+either the Application or Compose GitLab source. This external ID is not
+created or managed by the canonical program; it must already exist in Dokploy.
+OAuth authorization is still required separately before deploying workloads
+with either integration.
+
 The canonical program deliberately enables Docker, generic Git, and raw Compose
 sources instead; the alternatives above are documentation only. The managed
 `GitLabIntegration` configures Dokploy but does not authorize GitLab OAuth.

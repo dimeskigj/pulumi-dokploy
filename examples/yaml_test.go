@@ -200,6 +200,44 @@ func TestCanonicalYAMLGitLabIntegration(t *testing.T) {
 	}
 }
 
+func TestCanonicalYAMLGitLabSourceAlternatives(t *testing.T) {
+	canonical, err := os.ReadFile("yaml/Pulumi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	program := string(canonical)
+	for _, section := range []struct{ name, start, end string }{
+		{"Application", "  application:\n", "  applicationSchedule:\n"},
+		{"Compose", "  compose:\n", "  sshKey:\n"},
+	} {
+		start := strings.Index(program, section.start)
+		end := strings.Index(program, section.end)
+		if start < 0 || end <= start {
+			t.Fatalf("%s alternative section missing", section.name)
+		}
+		for _, reference := range []string{
+			"#     integrationId: ${managedGitlabIntegration.gitlabId}",
+			"#     integrationId: ${gitlabIntegration}",
+		} {
+			if !strings.Contains(program[start:end], reference) {
+				t.Errorf("%s alternative missing workload reference %q", section.name, reference)
+			}
+		}
+	}
+	readme, err := os.ReadFile("yaml/README.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, reference := range []string{
+		"integrationId: ${managedGitlabIntegration.gitlabId}",
+		"integrationId: ${gitlabIntegration}",
+	} {
+		if !strings.Contains(string(readme), reference) {
+			t.Errorf("README missing documented workload reference %q", reference)
+		}
+	}
+}
+
 func TestCanonicalYAMLActuallyBindsWithPulumi(t *testing.T) {
 	out := t.TempDir()
 	cmd := exec.Command("mise", "exec", "pulumi@3.259.0", "--", "pulumi", "convert", "--from", "yaml", "--language", "yaml", "--cwd", "yaml", "--out", out, "--generate-only")
