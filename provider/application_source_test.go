@@ -7,6 +7,7 @@ import (
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
@@ -292,6 +293,40 @@ func TestApplicationSourceValidate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestApplicationComputedGitLabIntegrationReference(t *testing.T) {
+	gitlab := func(integrationID property.Value, branch property.Value, projectID property.Value, buildType property.Value, includeGit bool) property.Value {
+		fields := map[string]property.Value{
+			"integrationId": integrationID, "projectId": projectID,
+			"owner": property.New("owner"), "namespace": property.New("namespace"),
+			"repository": property.New("repo"), "branch": branch,
+			"build": property.New(map[string]property.Value{"type": buildType, "dockerfile": property.New("Dockerfile")}),
+		}
+		source := map[string]property.Value{"type": property.New("gitlab"), "gitlab": property.New(fields)}
+		if includeGit {
+			source["git"] = property.New(map[string]property.Value{"url": property.New("https://example.test/repo"), "branch": property.New("main"), "build": property.New(map[string]property.Value{"type": property.New("nixpacks")})})
+		}
+		return property.New(source)
+	}
+	check := func(source property.Value) infer.CheckResponse[ApplicationArgs] {
+		got, err := (Application{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+			"name": property.New("demo"), "environmentId": property.New("environment"), "source": source,
+		})})
+		require.NoError(t, err)
+		return got
+	}
+	computed := property.New(property.Computed)
+	valid := func(id, branch, project, build property.Value) property.Value {
+		return gitlab(id, branch, project, build, false)
+	}
+	require.Empty(t, check(valid(computed, property.New("main"), property.New(float64(42)), property.New("dockerfile"))).Failures)
+	require.Empty(t, check(valid(property.New("external-id"), property.New("main"), property.New(float64(42)), property.New("dockerfile"))).Failures)
+	require.NotEmpty(t, check(valid(property.New(""), property.New("main"), property.New(float64(42)), property.New("dockerfile"))).Failures)
+	require.NotEmpty(t, check(valid(computed, property.New(""), property.New(float64(42)), property.New("dockerfile"))).Failures)
+	require.NotEmpty(t, check(valid(computed, property.New("main"), property.New(float64(0)), property.New("dockerfile"))).Failures)
+	require.NotEmpty(t, check(gitlab(computed, property.New("main"), property.New(float64(42)), property.New("dockerfile"), true)).Failures)
+	require.NotEmpty(t, check(valid(computed, property.New("main"), property.New(float64(42)), property.New("invalid-build"))).Failures)
 }
 
 func appStringPtr(s string) *string { return &s }

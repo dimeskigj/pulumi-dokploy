@@ -182,6 +182,32 @@ func TestComposeGitLabSourceDefaultsComposePath(t *testing.T) {
 	}
 }
 
+func TestComposeComputedGitLabIntegrationReference(t *testing.T) {
+	check := func(id, branch, project property.Value, includeGit bool) infer.CheckResponse[ComposeArgs] {
+		gitlab := map[string]property.Value{
+			"integrationId": id, "projectId": project,
+			"owner": property.New("owner"), "namespace": property.New("namespace"),
+			"repository": property.New("repo"), "branch": branch,
+		}
+		source := map[string]property.Value{"type": property.New("gitlab"), "gitlab": property.New(gitlab)}
+		if includeGit {
+			source["git"] = property.New(map[string]property.Value{"url": property.New("https://example.test/repo"), "branch": property.New("main")})
+		}
+		got, err := (Compose{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{
+			"name": property.New("demo"), "environmentId": property.New("environment"), "source": property.New(source),
+		})})
+		require.NoError(t, err)
+		return got
+	}
+	computed := property.New(property.Computed)
+	require.Empty(t, check(computed, property.New("main"), property.New(float64(42)), false).Failures)
+	require.Empty(t, check(property.New("external-id"), property.New("main"), property.New(float64(42)), false).Failures)
+	require.NotEmpty(t, check(property.New(""), property.New("main"), property.New(float64(42)), false).Failures)
+	require.NotEmpty(t, check(computed, property.New(""), property.New(float64(42)), false).Failures)
+	require.NotEmpty(t, check(computed, property.New("main"), property.New(float64(0)), false).Failures)
+	require.NotEmpty(t, check(computed, property.New("main"), property.New(float64(42)), true).Failures)
+}
+
 func TestComposeCheckAllowsComputedEnvironmentIdDuringPreview(t *testing.T) {
 	source := property.New(map[string]property.Value{"type": property.New("raw"), "raw": property.New(map[string]property.Value{"composeFile": property.New("services: {}")})})
 	got, err := (Compose{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(map[string]property.Value{"name": property.New("demo"), "environmentId": property.New(property.Computed), "source": source})})

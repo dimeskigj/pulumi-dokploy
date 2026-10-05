@@ -90,6 +90,10 @@ func (s *GitLabComposeSource) Annotate(a infer.Annotator) {
 }
 
 func (s ComposeSource) validate() error {
+	return s.validateWithGitLabReferenceComputed(false)
+}
+
+func (s ComposeSource) validateWithGitLabReferenceComputed(integrationIDComputed bool) error {
 	switch s.Type {
 	case ComposeSourceRaw:
 		if s.Raw == nil {
@@ -130,7 +134,7 @@ func (s ComposeSource) validate() error {
 		if s.Git != nil {
 			return fmt.Errorf("source.git must be omitted when source.type is gitlab")
 		}
-		if s.GitLab.IntegrationID == "" {
+		if s.GitLab.IntegrationID == "" && !integrationIDComputed {
 			return fmt.Errorf("source.gitlab.integrationId must not be empty")
 		}
 		if s.GitLab.ProjectID == 0 {

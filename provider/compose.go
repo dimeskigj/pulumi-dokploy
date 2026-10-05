@@ -77,7 +77,7 @@ func (r Compose) Check(ctx context.Context, req infer.CheckRequest) (infer.Check
 	if in.EnvironmentID == "" && !req.NewInputs.Get("environmentId").HasComputed() {
 		failures = append(failures, p.CheckFailure{Property: "environmentId", Reason: "environmentId must not be empty"})
 	}
-	if err := in.Source.validate(); err != nil {
+	if err := in.Source.validateWithGitLabReferenceComputed(gitLabIntegrationIDIsComputed(req.NewInputs)); err != nil {
 		failures = append(failures, p.CheckFailure{Property: "source", Reason: err.Error()})
 	}
 	return infer.CheckResponse[ComposeArgs]{Inputs: in, Failures: failures}, nil
