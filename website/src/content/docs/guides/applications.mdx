@@ -28,7 +28,7 @@ const gitApp = new dokploy.Application("git-web", {
 
 ## Repository sources and builders
 
-Use exactly one source variant. `github`, `gitea`, `bitbucket`, and `gitlab` refer to existing Dokploy integrations; this provider does not create or manage those integrations. For an existing GitLab integration, set `type: "gitlab"` and provide the project metadata. GitHub's optional `triggerType` accepts `push` (the default) or `tag`. Bitbucket requires `repositorySlug` in addition to the integration, owner, repository, and branch. Keep integration and repository identifiers in Pulumi configuration rather than source code.
+Use exactly one source variant. `github`, `gitea`, `bitbucket`, and `gitlab` refer to existing Dokploy integrations. For an existing GitLab integration, set `type: "gitlab"` and provide the project metadata. Supply an external integration ID or the `gitlabId` output of a managed `GitLabIntegration`. GitHub's optional `triggerType` accepts `push` (the default) or `tag`. Bitbucket requires `repositorySlug` in addition to the integration, owner, repository, and branch. Keep integration and repository identifiers in Pulumi configuration rather than source code.
 
 All six builders are available for Git, GitLab, GitHub, Gitea, and Bitbucket repository sources. Builder-specific options are:
 
@@ -86,6 +86,9 @@ const gitlabExample = new dokploy.Application("gitlab-example", {
 Creates and runtime source/build updates fetch the selected source and wait for deployment completion. A source discriminator change replaces the Application; `environmentId` and `serverId` are also replacement-only. Other metadata and source settings update through the normal Pulumi diff. The Project/Environment is a dependency; external integrations remain unmanaged, while SSH keys can be managed by this provider. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).
 
 The optional live Application configuration coverage creates bare fixtures and tests configuration persistence only: it never clones, fetches, builds, deploys, or redeploys. Generic Git covers all six builders; GitHub, Gitea, Bitbucket, and GitLab cases run only when their protected integration/repository prerequisites are supplied, and otherwise skip individually. A configuration-only pass does not establish compatibility with external repository cloning or builds.
+Managed integration configuration does not perform OAuth. Authorize it in the
+Dokploy UI before deploying a GitLab-backed Application; keep Docker or generic
+Git active until that second stage. See the [GitLab integrations guide](../gitlab-integrations/).
 
 For a generic Git source, supply an existing `SSHKey` through its `sshKeyId`.
 For published application ports, use the configuration-only [`Port` resource](../ports/); a Port change does not trigger deployment.

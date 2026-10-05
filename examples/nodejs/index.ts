@@ -12,6 +12,9 @@ const gitlabOwnerConfig = config.get("gitlabOwner") || "example";
 const gitlabNamespaceConfig = config.get("gitlabNamespace") || "platform";
 const gitlabRepositoryConfig = config.get("gitlabRepository") || "application";
 const gitBranchConfig = config.get("gitBranch") || "main";
+const gitlabApplicationId = config.get("gitlabApplicationId") || "replace-with-gitlab-oauth-application-id";
+const gitlabApplicationSecret = config.getSecret("gitlabApplicationSecret") || pulumi.secret("");
+const gitlabRedirectUri = config.get("gitlabRedirectUri") || "https://dokploy.example.invalid/api/providers/gitlab/callback";
 const sshPrivateKey = config.getSecret("sshPrivateKey") || pulumi.secret("");
 const fileMountContent = config.getSecret("fileMountContent") || pulumi.secret("");
 const registryPassword = config.getSecret("registryPassword") || pulumi.secret("");
@@ -22,6 +25,13 @@ const mongodbPassword = config.getSecret("mongodbPassword") || pulumi.secret("re
 const redisPassword = config.getSecret("redisPassword") || pulumi.secret("replace-with-a-redis-password");
 const destinationAccessKey = config.get("destinationAccessKey") || "replace-with-a-destination-access-key";
 const destinationSecretAccessKey = config.getSecret("destinationSecretAccessKey") || pulumi.secret("replace-with-a-destination-secret-access-key");
+const managedGitlabIntegration = new dokploy.GitLabIntegration("managedGitlabIntegration", {
+    name: "example-gitlab-integration",
+    applicationId: gitlabApplicationId,
+    applicationSecret: pulumi.secret(gitlabApplicationSecret),
+    redirectUri: gitlabRedirectUri,
+    gitlabUrl: "https://gitlab.com",
+});
 const projectResource = new dokploy.Project("project", {
     name: "dokploy-mvp",
     description: "Canonical Dokploy provider example",
@@ -69,6 +79,7 @@ const applicationPort = new dokploy.Port("applicationPort", {
     protocol: dokploy.PortProtocol.Tcp,
     publishMode: dokploy.PortPublishMode.Ingress,
 });
+>>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 const sshKey = new dokploy.SSHKey("sshKey", {
     name: "mvp-git-ssh",
     privateKey: pulumi.secret(sshPrivateKey),
@@ -233,4 +244,7 @@ export const gitlabOwner = gitlabOwnerConfig;
 export const gitlabNamespace = gitlabNamespaceConfig;
 export const gitlabRepository = gitlabRepositoryConfig;
 export const gitBranch = gitBranchConfig;
+<<<<<<< HEAD
 export const remoteServerId = remoteServer.serverId;
+=======
+export const managedGitlabIntegrationId = managedGitlabIntegration.gitlabId;
