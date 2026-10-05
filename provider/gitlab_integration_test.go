@@ -1,9 +1,11 @@
 package dokploy
 
 import (
+	"context"
 	"strings"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
@@ -77,6 +79,9 @@ func TestGitLabIntegrationURLValidation(t *testing.T) {
 		edit func(*GitLabIntegrationArgs)
 	}{
 		{"empty name", func(a *GitLabIntegrationArgs) { a.Name = "" }},
+		{"empty application ID", func(a *GitLabIntegrationArgs) { a.ApplicationID = "" }},
+		{"empty application secret", func(a *GitLabIntegrationArgs) { a.ApplicationSecret = "" }},
+		{"empty callback", func(a *GitLabIntegrationArgs) { a.RedirectURI = "" }},
 		{"empty public URL", func(a *GitLabIntegrationArgs) { a.GitlabURL = "" }},
 		{"public URL without host", func(a *GitLabIntegrationArgs) { a.GitlabURL = "https:///path" }},
 		{"public URL with userinfo", func(a *GitLabIntegrationArgs) { a.GitlabURL = "https://user:pass@gitlab.example.com" }},
@@ -89,7 +94,9 @@ func TestGitLabIntegrationURLValidation(t *testing.T) {
 			tt.edit(&args)
 			err := validateGitLabIntegrationArgs(args)
 			require.Error(t, err)
-			require.NotContains(t, strings.ToLower(err.Error()), "secret")
+			if args.ApplicationSecret != "" {
+				require.NotContains(t, strings.ToLower(err.Error()), "secret")
+			}
 			require.NotContains(t, err.Error(), "gitlab.example.com")
 		})
 	}
@@ -105,6 +112,72 @@ func TestGitLabIntegrationURLValidation(t *testing.T) {
 		require.Error(t, err)
 		require.NotContains(t, err.Error(), "gitlab.internal.example.com")
 	})
+}
+
+func TestGitLabIntegrationBaseURLComponents(t *testing.T) {
+	base := GitLabIntegrationArgs{Name: "gitlab", ApplicationID: "app-id", ApplicationSecret: "secret", RedirectURI: "https://callback.example/callback?code=ok#state", GitlabURL: "https://gitlab.example/path%3Fpart%23section"}
+	internal := "https://user:password@gitlab.internal.example/path%3Fpart%23section"
+	base.GitlabInternalURL = &internal
+	for _, tt := range []struct {
+		name, field, raw string
+	}{
+		{"public query", "gitlabUrl", "https://gitlab.example/path?private=sentinel"},
+		{"public empty query", "gitlabUrl", "https://gitlab.example/path?"},
+		{"public fragment", "gitlabUrl", "https://gitlab.example/path#sentinel"},
+		{"public empty fragment", "gitlabUrl", "https://gitlab.example/path#"},
+		{"internal query", "gitlabInternalUrl", "https://user:password@gitlab.internal.example/path?private=sentinel"},
+		{"internal empty query", "gitlabInternalUrl", "https://user:password@gitlab.internal.example/path?"},
+		{"internal fragment", "gitlabInternalUrl", "https://user:password@gitlab.internal.example/path#sentinel"},
+		{"internal empty fragment", "gitlabInternalUrl", "https://user:password@gitlab.internal.example/path#"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			args := base
+			if tt.field == "gitlabUrl" {
+				args.GitlabURL = tt.raw
+			} else {
+				args.GitlabInternalURL = &tt.raw
+			}
+			inputs := property.NewMap(map[string]property.Value{
+				"name": property.New(args.Name), "applicationId": property.New(args.ApplicationID),
+				"applicationSecret": property.New(args.ApplicationSecret), "redirectUri": property.New(args.RedirectURI),
+				"gitlabUrl": property.New(args.GitlabURL), "gitlabInternalUrl": property.New(*args.GitlabInternalURL),
+			})
+			checked, err := (GitLabIntegration{}).Check(t.Context(), infer.CheckRequest{NewInputs: inputs})
+			require.NoError(t, err)
+			require.NotEmpty(t, checked.Failures)
+			require.Equal(t, tt.field, checked.Failures[0].Property)
+			require.NotContains(t, checked.Failures[0].Reason, "sentinel")
+			require.NotContains(t, checked.Failures[0].Reason, "password")
+			require.NotContains(t, checked.Failures[0].Reason, "gitlab.internal.example")
+			for _, apply := range []struct {
+				name string
+				run  func() error
+			}{
+				{"create", func() error {
+					_, err := (GitLabIntegration{client: func(context.Context) *client.Client { t.Fatal("invalid create contacted client"); return nil }}).Create(t.Context(), infer.CreateRequest[GitLabIntegrationArgs]{Inputs: args})
+					return err
+				}},
+				{"update", func() error {
+					_, err := (GitLabIntegration{client: func(context.Context) *client.Client { t.Fatal("invalid update contacted client"); return nil }}).Update(t.Context(), infer.UpdateRequest[GitLabIntegrationArgs, GitLabIntegrationState]{ID: "relation", Inputs: args, State: gitLabPrior()})
+					return err
+				}},
+			} {
+				t.Run(apply.name, func(t *testing.T) {
+					err := apply.run()
+					require.Error(t, err)
+					require.Contains(t, err.Error(), tt.field)
+					require.NotContains(t, err.Error(), "sentinel")
+					require.NotContains(t, err.Error(), "password")
+					require.NotContains(t, err.Error(), "gitlab.internal.example")
+				})
+			}
+		})
+	}
+	inputs := property.NewMap(map[string]property.Value{"name": property.New(base.Name), "applicationId": property.New(base.ApplicationID), "applicationSecret": property.New(base.ApplicationSecret), "redirectUri": property.New(base.RedirectURI), "gitlabUrl": property.New(base.GitlabURL), "gitlabInternalUrl": property.New(internal)})
+	checked, err := (GitLabIntegration{}).Check(t.Context(), infer.CheckRequest{NewInputs: inputs})
+	require.NoError(t, err)
+	require.Empty(t, checked.Failures)
+	require.NoError(t, validateGitLabIntegrationArgs(base))
 }
 
 func TestGitLabIntegrationDiff(t *testing.T) {
