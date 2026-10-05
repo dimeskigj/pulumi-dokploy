@@ -10,6 +10,18 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-04-gitlab-integration-design.md` (approved).
 
+## Phase-one baseline refresh (2026-10-13)
+
+This plan is the GitLab-first phase of the broader Git-provider integration work.
+Gitea, Bitbucket, and GitHub remain separate follow-up designs and plans. The
+workspace was clean before the controller's documentation refresh, and
+`provider/provider.go` registers 22 resources; GitLabIntegration brings the count
+to 23. Preserve any actual changes present at execution time. Existing committed
+GitLab implementation work has been discovered on `feat/gitlab-integration`;
+reuse and validate it rather than repeat completed development. Keep this plan
+and spec; do not replay the prior branch's working-document cleanup commit.
+Use current `.mise.toml` versions, including Go `1.26.9`, without loading `.env`.
+
 ## Global Constraints
 
 - Token `dokploy:index:GitLabIntegration`; Pulumi/import identity is `gitlabId`, never `gitProviderId`.
@@ -22,7 +34,7 @@
 - Diagnostics retain safe operation/status/context classification only; no arbitrary server prose, tokens, credentials, IDs, markers, private URLs, or response bodies.
 - Preserve external `source.gitlab.integrationId` support and all unrelated resources/functions. Workload lifecycle is unchanged.
 - Preserve OpenAPI pin `cebd3808565ea9bed0791961bc25c60513d94c5a` and hash. No new dependencies; regenerate rather than hand-edit output.
-- Use `.mise.toml` tool versions, including Go `1.26.6`, Pulumi `3.259.0`, Node `24.18.0`, oapi-codegen `v2.8.0`, and existing Java 11/17 selectors.
+- Use `.mise.toml` tool versions, including Go `1.26.9`, Pulumi `3.259.0`, Node `24.18.0`, oapi-codegen `v2.8.0`, and existing Java 11/17 selectors.
 - No live acceptance, release, publication, push, or merge commands. All tests must have live opt-in disabled and credentials absent, including nested Makefile commands.
 - Preserve pre-existing README and website guide edits. Stage explicit task paths, never `git add .`.
 - At implementation completion, ask whether to retain/delete this task's spec/plan. Remove only approved related documents.
