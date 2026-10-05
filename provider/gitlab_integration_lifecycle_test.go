@@ -56,27 +56,40 @@ func gitLabPrior() GitLabIntegrationState {
 func TestGitLabIntegrationUpdateVerified(t *testing.T) {
 	var body map[string]any
 	calls := 0
-	c, paths := gitLabRouter(t, gitLabRecord, func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/gitlab.update" {
+	observations := 0
+	c := gitLabFixture(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/organization.active":
+			fmt.Fprint(w, `{"id":"org"}`)
+		case "/api/gitlab.one":
+			observations++
+			record := gitLabRecord
+			if observations > 1 {
+				record = strings.Replace(record, `"name":"old"`, `"name":"changed"`, 1)
+			}
+			fmt.Fprint(w, record)
+		case "/api/gitlab.update":
+			calls++
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			fmt.Fprint(w, `{"untrusted":"access-token-sentinel"}`)
+		default:
 			t.Errorf("unexpected %s", r.URL.Path)
-			return
 		}
-		calls++
-		require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
-		fmt.Fprint(w, `{"untrusted":"access-token-sentinel"}`)
 	})
 	r := GitLabIntegration{client: func(context.Context) *client.Client { return c }}
 	in := gitLabPrior().GitLabIntegrationArgs
-	in.GroupName = ""
-	_, err := r.Update(t.Context(), infer.UpdateRequest[GitLabIntegrationArgs, GitLabIntegrationState]{ID: "relation", Inputs: in, State: gitLabPrior()})
+	in.Name = "changed"
+	result, err := r.Update(t.Context(), infer.UpdateRequest[GitLabIntegrationArgs, GitLabIntegrationState]{ID: "relation", Inputs: in, State: gitLabPrior()})
 	require.NoError(t, err)
 	require.Equal(t, 1, calls)
+	require.Equal(t, 2, observations)
+	require.Equal(t, "changed", result.Output.Name)
 	require.Equal(t, map[string]any{
-		"gitlabId": "relation", "gitProviderId": "parent", "name": "old",
+		"gitlabId": "relation", "gitProviderId": "parent", "name": "changed",
 		"applicationId": "app", "secret": "prior-secret", "redirectUri": "https://callback.example",
 		"gitlabUrl": "https://gitlab.example", "groupName": "", "gitlabInternalUrl": nil,
 	}, body)
-	require.Equal(t, []string{"/api/organization.active", "/api/gitlab.one", "/api/gitlab.update", "/api/gitlab.one"}, *paths)
 }
 
 func TestGitLabIntegrationUpdatePartialState(t *testing.T) {
