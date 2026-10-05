@@ -36,10 +36,20 @@ func gitLabCreateParentMatches(entry generated.GitProviderListEntry, name, organ
 		fields["organizationId"] == organizationID && fields["userId"] == userID
 }
 
+// Keep the parent and GitLab relation ID domains separate: their textual IDs
+// can coincide without referring to the same existing resource.
+type gitLabCreateParentIDs map[string]struct{}
+type gitLabCreateRelationIDs map[string]struct{}
+
+type gitLabCreateSnapshot struct {
+	parentIDs   gitLabCreateParentIDs
+	relationIDs gitLabCreateRelationIDs
+}
+
 // discoverGitLabIntegration only accepts a new marker-matched parent with a
 // matching relation and fully observed OAuth settings. It never adopts by name
 // alone, list order, or a partially observable configuration.
-func discoverGitLabIntegration(ctx context.Context, api *client.Client, args GitLabIntegrationArgs, marker, organizationID, userID string, priorIDs map[string]struct{}) (gitLabObservation, error) {
+func discoverGitLabIntegration(ctx context.Context, api *client.Client, args GitLabIntegrationArgs, marker, organizationID, userID string, prior gitLabCreateSnapshot) (gitLabObservation, error) {
 	if marker == "" || organizationID == "" || userID == "" {
 		return gitLabObservation{}, errors.New("GitLab creation discovery has incomplete identity")
 	}
@@ -60,13 +70,16 @@ func discoverGitLabIntegration(ctx context.Context, api *client.Client, args Git
 			if !gitLabCreateParentMatches(*entry, marker, organizationID, userID) || entry.GitProviderId == "" || !entry.Gitlab.IsSpecified() || entry.Gitlab.IsNull() {
 				return gitLabObservation{}, errors.New("GitLab creation discovery found an inconsistent marker")
 			}
-			if _, exists := priorIDs[entry.GitProviderId]; exists || candidate != nil {
+			if _, exists := prior.parentIDs[entry.GitProviderId]; exists || candidate != nil {
 				return gitLabObservation{}, errors.New("GitLab creation discovery found an ambiguous marker")
 			}
 			candidate = entry
 		}
 		if candidate != nil {
 			summary := candidate.Gitlab.MustGet()
+			if _, exists := prior.relationIDs[summary.GitlabId]; exists {
+				return gitLabObservation{}, errors.New("GitLab creation discovery found a pre-existing relation")
+			}
 			if summary.GitlabId == "" || summary.GitlabUrl != args.GitlabURL ||
 				!summary.ApplicationId.IsSpecified() || summary.ApplicationId.IsNull() || summary.ApplicationId.MustGet() != args.ApplicationID {
 				return gitLabObservation{}, errors.New("GitLab creation discovery found incomplete configuration")
@@ -126,15 +139,21 @@ func (r GitLabIntegration) Create(ctx context.Context, req infer.CreateRequest[G
 	if err != nil {
 		return infer.CreateResponse[GitLabIntegrationState]{}, gitLabCreateFailure(err)
 	}
-	priorIDs := make(map[string]struct{}, len(before))
+	prior := gitLabCreateSnapshot{
+		parentIDs:   make(gitLabCreateParentIDs, len(before)),
+		relationIDs: make(gitLabCreateRelationIDs, len(before)),
+	}
 	for _, entry := range before {
 		if entry.GitProviderId == "" {
 			return infer.CreateResponse[GitLabIntegrationState]{}, errors.New("GitLab creation snapshot has incomplete identity")
 		}
-		if _, exists := priorIDs[entry.GitProviderId]; exists {
+		if _, exists := prior.parentIDs[entry.GitProviderId]; exists {
 			return infer.CreateResponse[GitLabIntegrationState]{}, errors.New("GitLab creation snapshot has duplicate identity")
 		}
-		priorIDs[entry.GitProviderId] = struct{}{}
+		prior.parentIDs[entry.GitProviderId] = struct{}{}
+		if entry.Gitlab.IsSpecified() && !entry.Gitlab.IsNull() {
+			prior.relationIDs[entry.Gitlab.MustGet().GitlabId] = struct{}{}
+		}
 	}
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -164,7 +183,7 @@ func (r GitLabIntegration) Create(ctx context.Context, req infer.CreateRequest[G
 			return infer.CreateResponse[GitLabIntegrationState]{}, gitLabCreateFailure(createErr)
 		}
 	}
-	observed, err := discoverGitLabIntegration(ctx, api, req.Inputs, marker, organizationID, userID, priorIDs)
+	observed, err := discoverGitLabIntegration(ctx, api, req.Inputs, marker, organizationID, userID, prior)
 	if err != nil {
 		if createErr != nil {
 			return infer.CreateResponse[GitLabIntegrationState]{}, gitLabCreateFailure(createErr)

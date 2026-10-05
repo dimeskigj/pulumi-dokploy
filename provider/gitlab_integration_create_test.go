@@ -237,7 +237,7 @@ func TestGitLabIntegrationCreateDiscoveryFailures(t *testing.T) {
 			if tc.detail != nil {
 				f.detailBody = tc.detail(f.marker)
 			}
-			observed, err := discoverGitLabIntegration(t.Context(), f.api(), gitLabCreateArgs(), f.marker, "org-fixture", "member-fixture", tc.prior)
+			observed, err := discoverGitLabIntegration(t.Context(), f.api(), gitLabCreateArgs(), f.marker, "org-fixture", "member-fixture", gitLabCreateSnapshot{parentIDs: gitLabCreateParentIDs(tc.prior)})
 			require.Error(t, err)
 			require.Empty(t, observed.State.GitLabID)
 			require.Equal(t, tc.attempts, f.postListCount)
@@ -252,11 +252,48 @@ func TestGitLabIntegrationCreateDiscoveryFailures(t *testing.T) {
 		f.marker, f.listBody = "pulumi-gitlab-fixture-marker", `[]`
 		ctx, cancel := context.WithTimeout(t.Context(), 40*time.Millisecond)
 		defer cancel()
-		observed, err := discoverGitLabIntegration(ctx, f.api(), gitLabCreateArgs(), f.marker, "org-fixture", "member-fixture", nil)
+		observed, err := discoverGitLabIntegration(ctx, f.api(), gitLabCreateArgs(), f.marker, "org-fixture", "member-fixture", gitLabCreateSnapshot{})
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 		require.Empty(t, observed.State.GitLabID)
 		require.Equal(t, 1, f.postListCount)
 	})
+}
+
+func TestGitLabIntegrationCreateRejectsExistingRelationUnderNewParent(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		status int
+	}{
+		{"acknowledged create", http.StatusOK},
+		{"uncertain create after commit", http.StatusBadRequest},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := gitLabCreateServer(t)
+			f.beforeBody = gitLabCreateReplace(gitLabCreateList("existing-name"), `"parent-fixture"`, `"old-parent"`)
+			f.createStatus = tc.status
+			created, err := (GitLabIntegration{client: fixedClient(f.api())}).Create(t.Context(), infer.CreateRequest[GitLabIntegrationArgs]{Inputs: gitLabCreateArgs()})
+			require.Error(t, err)
+			require.Empty(t, created.ID)
+			require.Empty(t, created.Output.GitLabID)
+			require.NotContains(t, f.requests, "GET /api/gitlab.one")
+			require.NotContains(t, f.requests, "POST /api/gitlab.update")
+			require.NotContains(t, f.requests, "POST /api/gitProvider.remove")
+			require.Equal(t, 1, f.postListCount)
+		})
+	}
+}
+
+func TestGitLabIntegrationCreateDoesNotMixParentAndRelationIDs(t *testing.T) {
+	f := gitLabCreateServer(t)
+	// Same bytes in different ID domains do not imply that the new relation
+	// was previously observed: only an old parent carried these bytes.
+	f.beforeBody = gitLabCreateReplace(gitLabCreateList("existing-name"), `"parent-fixture"`, `"gitlab-fixture"`)
+	f.beforeBody = gitLabCreateReplace(f.beforeBody, `"gitlabId":"gitlab-fixture"`, `"gitlabId":"old-relation"`)
+	created, err := (GitLabIntegration{client: fixedClient(f.api())}).Create(t.Context(), infer.CreateRequest[GitLabIntegrationArgs]{Inputs: gitLabCreateArgs()})
+	require.NoError(t, err)
+	require.Equal(t, "gitlab-fixture", created.ID)
+	require.Equal(t, "parent-fixture", created.Output.GitProviderID)
+	require.Equal(t, "requested-name", created.Output.Name)
 }
 
 func gitLabCreateReplace(text, before, after string) string {
