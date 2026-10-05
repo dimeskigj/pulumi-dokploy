@@ -15,3 +15,10 @@ Changing a Mount triggers automatic mount redeployment for its target workload. 
 changes and mount type changes replace the resource, while mount path and
 content changes update it before redeployment. File mount content and registry
 credentials remain secret in Pulumi state.
+
+`GitLabIntegration` state contains configuration and verified relation identity,
+never OAuth access or refresh tokens. Imported incomplete configuration may
+require the OAuth client secret to be supplied again before an update. Creating
+the integration does not authorize it: authorize in Dokploy before switching
+workloads to GitLab, and inspect Dokploy before retrying if creation could not be
+verified. See the [GitLab integrations guide](../../guides/gitlab-integrations/).

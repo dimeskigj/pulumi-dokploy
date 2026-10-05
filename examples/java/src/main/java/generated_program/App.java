@@ -3,6 +3,8 @@ package generated_program;
 import com.pulumi.Context;
 import com.pulumi.Pulumi;
 import com.pulumi.core.Output;
+import net.dimeski.pulumi.dokploy.GitLabIntegration;
+import net.dimeski.pulumi.dokploy.GitLabIntegrationArgs;
 import net.dimeski.pulumi.dokploy.Project;
 import net.dimeski.pulumi.dokploy.ProjectArgs;
 import net.dimeski.pulumi.dokploy.Environment;
@@ -13,6 +15,8 @@ import net.dimeski.pulumi.dokploy.Application;
 import net.dimeski.pulumi.dokploy.ApplicationArgs;
 import net.dimeski.pulumi.dokploy.inputs.ApplicationSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.DockerSourceArgs;
+import net.dimeski.pulumi.dokploy.Schedule;
+import net.dimeski.pulumi.dokploy.ScheduleArgs;
 import net.dimeski.pulumi.dokploy.SSHKey;
 import net.dimeski.pulumi.dokploy.SSHKeyArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
@@ -69,6 +73,9 @@ public class App {
         final var gitlabNamespace = config.get("gitlabNamespace").orElse("platform");
         final var gitlabRepository = config.get("gitlabRepository").orElse("application");
         final var gitBranch = config.get("gitBranch").orElse("main");
+        final var gitlabApplicationId = config.get("gitlabApplicationId").orElse("replace-with-gitlab-oauth-application-id");
+        final var gitlabApplicationSecret = config.getSecret("gitlabApplicationSecret").applyValue(v -> v.orElse(""));
+        final var gitlabRedirectUri = config.get("gitlabRedirectUri").orElse("https://dokploy.example.invalid/api/providers/gitlab/callback");
         final var sshPrivateKey = config.getSecret("sshPrivateKey").applyValue(v -> v.orElse(""));
         final var fileMountContent = config.getSecret("fileMountContent").applyValue(v -> v.orElse(""));
         final var registryPassword = config.getSecret("registryPassword").applyValue(v -> v.orElse(""));
@@ -79,6 +86,14 @@ public class App {
         final var redisPassword = config.getSecret("redisPassword").applyValue(v -> v.orElse("replace-with-a-redis-password"));
         final var destinationAccessKey = config.get("destinationAccessKey").orElse("replace-with-a-destination-access-key");
         final var destinationSecretAccessKey = config.getSecret("destinationSecretAccessKey").applyValue(v -> v.orElse("replace-with-a-destination-secret-access-key"));
+        var managedGitlabIntegration = new GitLabIntegration("managedGitlabIntegration", GitLabIntegrationArgs.builder()
+            .name("example-gitlab-integration")
+            .applicationId(gitlabApplicationId)
+            .applicationSecret(gitlabApplicationSecret.asSecret())
+            .redirectUri(gitlabRedirectUri)
+            .gitlabUrl("https://gitlab.com")
+            .build());
+
         var projectResource = new Project("projectResource", ProjectArgs.builder()
             .name("dokploy-mvp")
             .description("Canonical Dokploy provider example")
@@ -113,6 +128,15 @@ public class App {
             .createEnvFile(true)
             .registryId(registry.registryId())
             .buildRegistryId(registry.registryId())
+            .build());
+
+        var applicationSchedule = new Schedule("applicationSchedule", ScheduleArgs.builder()
+            .name("mvp-application-schedule")
+            .cronExpression("0 0 * * *")
+            .scheduleType("application")
+            .applicationId(application.applicationId())
+            .enabled(false)
+            .command(Output.ofSecret("echo scheduled maintenance"))
             .build());
 
         var sshKey = new SSHKey("sshKey", SSHKeyArgs.builder()
@@ -292,5 +316,6 @@ services:
         ctx.export("gitlabNamespace", gitlabNamespace);
         ctx.export("gitlabRepository", gitlabRepository);
         ctx.export("gitBranch", gitBranch);
+        ctx.export("managedGitlabIntegrationId", managedGitlabIntegration.gitlabId());
     }
 }

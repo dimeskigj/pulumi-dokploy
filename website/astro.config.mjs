@@ -48,6 +48,7 @@ export default defineConfig({
             { label: "Schedules", link: "/guides/schedules/" },
             { label: "Imports", link: "/guides/imports/" },
             { label: "Troubleshooting", link: "/guides/troubleshooting/" },
+            { label: "GitLab integrations", link: "/guides/gitlab-integrations/" },
           ],
         },
         {
@@ -72,6 +73,7 @@ export default defineConfig({
             { label: "Tag", link: "/reference/tag/" },
             { label: "ProjectTag", link: "/reference/project-tag/" },
             { label: "Mount", link: "/reference/mount/" },
+            { label: "GitLabIntegration", link: "/reference/git-lab-integration/" },
             { label: "Configuration", link: "/reference/configuration/" },
             { label: "Complex Types", link: "/reference/types/" },
           ],

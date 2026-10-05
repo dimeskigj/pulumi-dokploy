@@ -86,29 +86,30 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 24 {
-		t.Fatalf("canonical YAML has %d managed resources, want 24", len(resources))
+	if len(resources) != 25 {
+		t.Fatalf("canonical YAML has %d managed resources, want 25", len(resources))
 	}
 	want := map[string]int{
-		"dokploy:index:Project":      1,
-		"dokploy:index:Environment":  1,
-		"dokploy:index:Application":  2,
-		"dokploy:index:Compose":      1,
-		"dokploy:index:Postgres":     1,
-		"dokploy:index:MySQL":        1,
-		"dokploy:index:MariaDB":      1,
-		"dokploy:index:MongoDB":      1,
-		"dokploy:index:Redis":        1,
-		"dokploy:index:Domain":       2,
-		"dokploy:index:Destination":  1,
-		"dokploy:index:Backup":       1,
-		"dokploy:index:VolumeBackup": 2,
-		"dokploy:index:Schedule":     1,
-		"dokploy:index:SSHKey":       1,
-		"dokploy:index:Registry":     1,
-		"dokploy:index:Tag":          1,
-		"dokploy:index:ProjectTag":   1,
-		"dokploy:index:Mount":        3,
+		"dokploy:index:Project":           1,
+		"dokploy:index:Environment":       1,
+		"dokploy:index:Application":       2,
+		"dokploy:index:Compose":           1,
+		"dokploy:index:Postgres":          1,
+		"dokploy:index:MySQL":             1,
+		"dokploy:index:MariaDB":           1,
+		"dokploy:index:MongoDB":           1,
+		"dokploy:index:Redis":             1,
+		"dokploy:index:Domain":            2,
+		"dokploy:index:Destination":       1,
+		"dokploy:index:Backup":            1,
+		"dokploy:index:VolumeBackup":      2,
+		"dokploy:index:Schedule":          1,
+		"dokploy:index:SSHKey":            1,
+		"dokploy:index:Registry":          1,
+		"dokploy:index:Tag":               1,
+		"dokploy:index:ProjectTag":        1,
+		"dokploy:index:Mount":             3,
+		"dokploy:index:GitLabIntegration": 1,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
@@ -133,6 +134,69 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		if _, ok := schemaResources(t)[typeName]; !ok {
 			t.Errorf("%s is not present in generated provider schema", typeName)
 		}
+	}
+}
+
+func TestCanonicalYAMLGitLabIntegration(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	if err := validateYAMLResourceProperties(document, schemaResources(t)); err != nil {
+		t.Fatalf("canonical GitLab YAML does not bind against the generated schema: %v", err)
+	}
+	config, ok := document["config"].(map[string]any)
+	if !ok {
+		t.Fatal("canonical YAML has no config object")
+	}
+	secret, ok := config["gitlabApplicationSecret"].(map[string]any)
+	if !ok {
+		t.Fatal("GitLab application secret config is missing or malformed")
+	}
+	if secret["secret"] != true || secret["default"] != "" {
+		t.Fatalf("GitLab application secret config must be secret with an empty placeholder: %#v", secret)
+	}
+	resources, ok := document["resources"].(map[string]any)
+	if !ok {
+		t.Fatal("canonical YAML has no resources object")
+	}
+	managed, ok := resources["managedGitlabIntegration"].(map[string]any)
+	if !ok {
+		t.Fatal("managed GitLab integration resource is missing or malformed")
+	}
+	if managed["type"] != "dokploy:index:GitLabIntegration" {
+		t.Fatalf("managed integration type = %v", managed["type"])
+	}
+	properties, ok := managed["properties"].(map[string]any)
+	if !ok {
+		t.Fatal("managed GitLab integration properties are missing")
+	}
+	secretInput, ok := properties["applicationSecret"].(map[string]any)
+	if !ok || secretInput["fn::secret"] != "${gitlabApplicationSecret}" {
+		t.Fatalf("managed client secret must preserve secret taint through translation: %#v", properties["applicationSecret"])
+	}
+	if properties["applicationId"] != "${gitlabApplicationId}" || properties["redirectUri"] != "${gitlabRedirectUri}" || properties["gitlabUrl"] != "https://gitlab.com" {
+		t.Fatalf("managed integration properties are not mapped to safe config: %#v", properties)
+	}
+	if _, ok := properties["accessToken"]; ok {
+		t.Fatal("managed integration must not accept OAuth tokens")
+	}
+	outputs, ok := document["outputs"].(map[string]any)
+	if !ok {
+		t.Fatal("canonical YAML has no outputs object")
+	}
+	if outputs["managedGitlabIntegrationId"] != "${managedGitlabIntegration.gitlabId}" {
+		t.Fatalf("managed integration output = %v", outputs["managedGitlabIntegrationId"])
+	}
+	canonical, err := os.ReadFile("yaml/Pulumi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Count(string(canonical), "integrationId: ${managedGitlabIntegration.gitlabId}"); got != 2 {
+		t.Fatalf("canonical Application and Compose alternatives reference managed relation ID %d times, want 2", got)
+	}
+	if !strings.Contains(string(canonical), "default: gitlab-integration-id") {
+		t.Fatal("existing external integration config alternative must remain documented")
+	}
+	if got := len(resources); got != 25 {
+		t.Fatalf("canonical YAML has %d resources, want 25", got)
 	}
 }
 

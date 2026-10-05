@@ -26,7 +26,7 @@ const gitApp = new dokploy.Application("git-web", {
 });
 ```
 
-For an existing GitLab integration, select `type: "gitlab"` and pass its integration and repository metadata. The integration itself remains unmanaged:
+For an existing GitLab integration, select `type: "gitlab"` and pass its integration and repository metadata. Supply an external integration ID or the `gitlabId` output of a managed `GitLabIntegration`:
 
 ```typescript
 const gitlabApp = new dokploy.Application("gitlab-web", {
@@ -35,14 +35,18 @@ const gitlabApp = new dokploy.Application("gitlab-web", {
   source: {
     type: "gitlab",
     gitlab: {
-      integrationId: "integration-1", projectId: 42, owner: "example",
+      integrationId: managedGitlabIntegration.gitlabId, projectId: 42, owner: "example",
       namespace: "platform", repository: "web", branch: "main", build: { type: "nixpacks" },
     },
   },
 });
 ```
 
-Creates and updates fetch the selected source and wait for deployment completion. A source discriminator change replaces the Application; `environmentId` and `serverId` are also replacement-only. Other metadata and source settings update through the normal Pulumi diff. The Project/Environment is a dependency; GitLab integrations are external, while SSH keys can be managed by this provider. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).
+Creates and updates fetch the selected source and wait for deployment completion. A source discriminator change replaces the Application; `environmentId` and `serverId` are also replacement-only. Other metadata and source settings update through the normal Pulumi diff. The Project/Environment is a dependency; GitLab integrations can be managed or external, and SSH keys can be managed by this provider. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).
+
+Managed integration configuration does not perform OAuth. Authorize it in the
+Dokploy UI before deploying a GitLab-backed Application; keep Docker or generic
+Git active until that second stage. See the [GitLab integrations guide](../gitlab-integrations/).
 
 For a generic Git source, supply an existing `SSHKey` through its `sshKeyId`.
 Applications may reference a managed `Registry` with `registryId` for deployment

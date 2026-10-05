@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 const EXPECTED_RESOURCES = new Set([
   "Application", "Compose", "Domain", "Environment", "Postgres", "MySQL", "MariaDB", "MongoDB", "Project", "Redis",
-  "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule",
+  "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule", "GitLabIntegration",
 ]);
 const SOURCE_PATH = Symbol("schema source path");
 
@@ -24,7 +24,7 @@ export async function loadSchema(path) {
 // the generic camelCase-to-kebab split below would produce (my-sql,
 // maria-db, mongo-db) because they pack multiple capitalized segments,
 // including an acronym, together.
-const SLUG_OVERRIDES = { MySQL: "mysql", MariaDB: "mariadb", MongoDB: "mongodb" };
+const SLUG_OVERRIDES = { MySQL: "mysql", MariaDB: "mariadb", MongoDB: "mongodb", GitLabIntegration: "git-lab-integration" };
 
 export function slugFromToken(token) {
   if (typeof token !== "string" || !/^dokploy:index:[A-Za-z][A-Za-z0-9_-]*$/.test(token)) {

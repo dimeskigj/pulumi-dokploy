@@ -10,6 +10,7 @@ outputs:
   gitlabNamespace: ${gitlabNamespace}
   gitlabRepository: ${gitlabRepository}
   gitBranch: ${gitBranch}
+  managedGitlabIntegrationId: ${managedGitlabIntegration.gitlabId}
 
 config:
   dokploy:endpoint: https://dokploy.example.invalid
@@ -40,6 +41,16 @@ config:
   gitBranch:
     type: string
     default: main
+  gitlabApplicationId:
+    type: string
+    default: replace-with-gitlab-oauth-application-id
+  gitlabApplicationSecret:
+    type: string
+    secret: true
+    default: ""
+  gitlabRedirectUri:
+    type: string
+    default: https://dokploy.example.invalid/api/providers/gitlab/callback
   sshPrivateKey:
     type: string
     secret: true
@@ -81,6 +92,16 @@ config:
     default: replace-with-a-destination-secret-access-key
 
 resources:
+  managedGitlabIntegration:
+    type: dokploy:index:GitLabIntegration
+    properties:
+      name: example-gitlab-integration
+      applicationId: ${gitlabApplicationId}
+      applicationSecret:
+        fn::secret: ${gitlabApplicationSecret}
+      redirectUri: ${gitlabRedirectUri}
+      gitlabUrl: https://gitlab.com
+
   project:
     type: dokploy:index:Project
     properties:
@@ -125,7 +146,7 @@ resources:
       # source:
       #   type: gitlab
       #   gitlab:
-      #     integrationId: ${config.gitlabIntegration}
+      #     integrationId: ${managedGitlabIntegration.gitlabId}
       #     projectId: ${config.gitlabProject}
       #     owner: ${config.gitlabOwner}
       #     namespace: ${config.gitlabNamespace}
@@ -178,6 +199,16 @@ resources:
       environment:
         fn::secret: COMPOSE_HOST=${composeHost}
       createEnvFile: true
+      # Stage-two alternative after authorizing managedGitlabIntegration in Dokploy:
+      # source:
+      #   type: gitlab
+      #   gitlab:
+      #     integrationId: ${managedGitlabIntegration.gitlabId}
+      #     projectId: ${config.gitlabProject}
+      #     owner: ${config.gitlabOwner}
+      #     namespace: ${config.gitlabNamespace}
+      #     repository: ${config.gitlabRepository}
+      #     branch: ${config.gitBranch}
 
   sshKey:
     type: dokploy:index:SSHKey

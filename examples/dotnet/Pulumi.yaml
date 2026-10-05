@@ -31,6 +31,13 @@ config:
   gitBranch:
     type: string
     default: main
+  gitlabApplicationId:
+    type: string
+    default: replace-with-gitlab-oauth-application-id
+  gitlabApplicationSecret:
+    type: string
+    default: ""
+    secret: true
   gitlabIntegration:
     type: string
     default: gitlab-integration-id
@@ -43,6 +50,9 @@ config:
   gitlabProject:
     type: integer
     default: 42
+  gitlabRedirectUri:
+    type: string
+    default: https://dokploy.example.invalid/api/providers/gitlab/callback
   gitlabRepository:
     type: string
     default: application

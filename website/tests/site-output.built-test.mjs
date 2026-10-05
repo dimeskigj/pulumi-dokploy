@@ -67,3 +67,9 @@ test("built component output preserves accessibility semantics", async () => {
     assert.ok(panelId.startsWith("tab-panel-"));
   }
 });
+
+test("built site publishes both GitLab integration routes", async () => {
+  for (const route of ["guides/gitlab-integrations", "reference/git-lab-integration"]) {
+    assert.ok(await exists(path.join(DIST, route, "index.html")), `built route ${route} must exist`);
+  }
+});

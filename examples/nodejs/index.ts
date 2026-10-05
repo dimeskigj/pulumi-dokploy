@@ -12,6 +12,9 @@ const gitlabOwnerConfig = config.get("gitlabOwner") || "example";
 const gitlabNamespaceConfig = config.get("gitlabNamespace") || "platform";
 const gitlabRepositoryConfig = config.get("gitlabRepository") || "application";
 const gitBranchConfig = config.get("gitBranch") || "main";
+const gitlabApplicationId = config.get("gitlabApplicationId") || "replace-with-gitlab-oauth-application-id";
+const gitlabApplicationSecret = config.getSecret("gitlabApplicationSecret") || pulumi.secret("");
+const gitlabRedirectUri = config.get("gitlabRedirectUri") || "https://dokploy.example.invalid/api/providers/gitlab/callback";
 const sshPrivateKey = config.getSecret("sshPrivateKey") || pulumi.secret("");
 const fileMountContent = config.getSecret("fileMountContent") || pulumi.secret("");
 const registryPassword = config.getSecret("registryPassword") || pulumi.secret("");
@@ -22,6 +25,13 @@ const mongodbPassword = config.getSecret("mongodbPassword") || pulumi.secret("re
 const redisPassword = config.getSecret("redisPassword") || pulumi.secret("replace-with-a-redis-password");
 const destinationAccessKey = config.get("destinationAccessKey") || "replace-with-a-destination-access-key";
 const destinationSecretAccessKey = config.getSecret("destinationSecretAccessKey") || pulumi.secret("replace-with-a-destination-secret-access-key");
+const managedGitlabIntegration = new dokploy.GitLabIntegration("managedGitlabIntegration", {
+    name: "example-gitlab-integration",
+    applicationId: gitlabApplicationId,
+    applicationSecret: pulumi.secret(gitlabApplicationSecret),
+    redirectUri: gitlabRedirectUri,
+    gitlabUrl: "https://gitlab.com",
+});
 const projectResource = new dokploy.Project("project", {
     name: "dokploy-mvp",
     description: "Canonical Dokploy provider example",
@@ -53,6 +63,14 @@ const application = new dokploy.Application("application", {
     createEnvFile: true,
     registryId: registry.registryId,
     buildRegistryId: registry.registryId,
+});
+const applicationSchedule = new dokploy.Schedule("applicationSchedule", {
+    name: "mvp-application-schedule",
+    cronExpression: "0 0 * * *",
+    scheduleType: "application",
+    applicationId: application.applicationId,
+    enabled: false,
+    command: pulumi.secret("echo scheduled maintenance"),
 });
 const sshKey = new dokploy.SSHKey("sshKey", {
     name: "mvp-git-ssh",
@@ -211,3 +229,4 @@ export const gitlabOwner = gitlabOwnerConfig;
 export const gitlabNamespace = gitlabNamespaceConfig;
 export const gitlabRepository = gitlabRepositoryConfig;
 export const gitBranch = gitBranchConfig;
+export const managedGitlabIntegrationId = managedGitlabIntegration.gitlabId;

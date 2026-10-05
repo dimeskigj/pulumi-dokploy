@@ -1,0 +1,92 @@
+---
+title: GitLab integrations
+description: Configure a Dokploy GitLab integration, authorize it manually, and use it safely from workloads.
+---
+
+`GitLabIntegration` manages Dokploy's configuration for a GitLab OAuth
+application. It does not create the GitLab application, perform OAuth, manage
+tokens, share the integration with organizations, or verify connectivity.
+Continue to use an externally managed integration ID when that better fits your
+workflow.
+
+## Configure the integration
+
+Provide the OAuth application/client ID, client secret, and the callback URL
+registered on the GitLab application. The callback is normally Dokploy's
+`/api/providers/gitlab/callback` URL. Use Pulumi secret configuration for the
+client secret (and any internal URL containing basic-auth credentials); never
+put credentials in source control or logs.
+
+```yaml
+resources:
+  managedGitlabIntegration:
+    type: dokploy:index:GitLabIntegration
+    properties:
+      name: production-gitlab
+      applicationId: ${gitlabApplicationId}
+      applicationSecret:
+        fn::secret: ${gitlabApplicationSecret}
+      redirectUri: ${gitlabRedirectUri}
+      gitlabUrl: https://gitlab.com
+```
+
+The managing user must be able to read the current `user` identity and
+`gitProviders` in Dokploy. Apply this integration configuration first. Then
+open Dokploy and complete the GitLab authorization flow manually. Only after
+authorization should you deploy GitLab-backed Applications or Compose services
+as a second stage. Keep ordinary Docker and generic Git workloads as the active
+default until that authorization is complete.
+
+The `gitlabId` output is the relation ID to pass to a workload's
+`source.gitlab.integrationId`; it is not the parent `gitProviderId`. For example,
+an Application source can use:
+
+```ts
+source: {
+  type: "gitlab",
+  gitlab: {
+    integrationId: managedGitlabIntegration.gitlabId,
+    projectId: 42,
+    owner: "example",
+    namespace: "platform",
+    repository: "application",
+    branch: "main",
+  },
+}
+```
+
+Compose uses the same `integrationId: managedGitlabIntegration.gitlabId`
+reference inside its GitLab source. Keep the existing external
+`source.gitlab.integrationId` input for integrations managed outside Pulumi.
+
+## Readiness and credential changes
+
+`isConfigured` reports whether Dokploy observed both access and refresh tokens.
+It does not establish that authorization is currently valid, that GitLab is
+reachable, or that a workload can deploy. OAuth authorization remains a manual
+step in Dokploy. Changing OAuth credentials or URLs may require reauthorization;
+review the Dokploy UI after such a change. No access or refresh token is exposed
+in Pulumi state or outputs.
+
+## Import and recovery
+
+Import with the GitLab relation ID, not the OAuth application ID or parent
+Git-provider ID:
+
+```sh
+pulumi import dokploy:index:GitLabIntegration integration <gitlab-id>
+```
+
+An imported integration with incomplete configuration may need its OAuth
+application credentials resupplied before an update. Import does not change
+existing sharing. Deleting a managed integration does not delete workloads,
+but unmanaged workload references may be left unusable; inspect those workloads
+before deletion.
+
+Creation can be uncertain if Dokploy accepts a request but the provider cannot
+verify the resulting integration. Inspect Dokploy for the integration before
+retrying, rather than creating another one blindly. The provider does not
+automatically authorize OAuth or test the connection.
+
+See the [GitLabIntegration resource reference](../../reference/git-lab-integration/),
+[Application guide](../applications/), and [Compose guide](../compose/).

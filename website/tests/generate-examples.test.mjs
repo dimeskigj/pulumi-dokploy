@@ -33,6 +33,8 @@ test("renders one synchronized six-language component", async () => {
   const mdx = renderCompleteExamples(examples);
   assert.equal((mdx.match(/language:/g) ?? []).length, 6);
   assert.match(mdx, /<LanguageTabs examples=\{examples\} \/>/);
+  assert.match(mdx, /authorize GitLab in Dokploy before switching workloads/i);
+  assert.match(mdx, /\]\(\.\.\/\.\.\/guides\/gitlab-integrations\/\)/);
   assert.doesNotMatch(mdx, /dokploy\.example\.com|x-api-key:/);
 });
 

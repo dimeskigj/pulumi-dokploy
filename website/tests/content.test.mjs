@@ -11,6 +11,7 @@ const required = [
   "concepts/lifecycle-and-state.mdx",
   "concepts/secrets.mdx",
   "guides/applications.mdx",
+  "guides/gitlab-integrations.mdx",
   "guides/compose.mdx",
   "guides/databases.mdx",
   "guides/domains.mdx",
@@ -165,9 +166,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/", "/guides/gitlab-integrations/",
     "/examples/", "/examples/complete/",
-     "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/configuration/", "/reference/types/",
+      "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/git-lab-integration/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
     "/reference/schedule/",
   ]);
@@ -176,8 +177,8 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-   assert.equal((config.match(/link: "\//g) ?? []).length, 39);
-  assert.equal(curatedFiles.length, 15);
+   assert.equal((config.match(/link: "\//g) ?? []).length, 41);
+  assert.equal(curatedFiles.length, 16);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
@@ -299,4 +300,57 @@ test("Schedule guide distinguishes schema secrecy from Java builder outputs", as
   assert.match(guide, /\.command\(Output\.ofSecret/);
   assert.match(guide, /\.script\(Output\.ofSecret/);
   assert.doesNotMatch(guide, /secret inputs in every generated SDK/);
+});
+
+test("GitLab authorization remains separate from workload deployment", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/gitlab-integrations.mdx", import.meta.url), "utf8");
+  assert.match(guide, /authorize.*GitLab|GitLab.*authorize/i);
+  assert.match(guide, /\]\(\.\.\/applications\/\)/);
+  assert.match(guide, /\]\(\.\.\/compose\/\)/);
+  assert.match(guide, /`user`/);
+  assert.match(guide, /`gitProviders`/);
+  assert.match(guide, /reauthoriz/i);
+  assert.match(guide, /isConfigured[\s\S]*reachable/i);
+  assert.match(guide, /stage two|second stage|after.*authoriz/i);
+  assert.doesNotMatch(guide, /accessToken|refreshToken/);
+});
+
+test("GitLab import and recovery guidance is safe", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/gitlab-integrations.mdx", import.meta.url), "utf8");
+  assert.match(guide, /pulumi import dokploy:index:GitLabIntegration integration <gitlab-id>/);
+  assert.match(guide, /relation ID.*not.*(application|parent)/i);
+  assert.match(guide, /credentials resupplied/i);
+  assert.match(guide, /Import does not change\s+existing sharing/i);
+  assert.match(guide, /Deleting a managed integration[\s\S]*unmanaged workload references/i);
+  assert.match(guide, /Inspect Dokploy[\s\S]*retrying/i);
+});
+
+test("GitLab lifecycle, source alternatives, and troubleshooting explain recovery boundaries", async () => {
+  const sources = await readFile(new URL("../src/content/docs/concepts/sources.mdx", import.meta.url), "utf8");
+  assert.match(sources, /external.*relation ID/i);
+  assert.match(sources, /authorize[\s\S]*second stage/i);
+  const lifecycle = await readFile(new URL("../src/content/docs/concepts/lifecycle-and-state.mdx", import.meta.url), "utf8");
+  assert.match(lifecycle, /GitLabIntegration/);
+  assert.match(lifecycle, /never OAuth access or refresh tokens/i);
+  const troubleshooting = await readFile(new URL("../src/content/docs/guides/troubleshooting.mdx", import.meta.url), "utf8");
+  assert.match(troubleshooting, /GitLabIntegration/);
+  assert.match(troubleshooting, /isConfigured[\s\S]*validity/i);
+  assert.match(troubleshooting, /Inspect Dokploy[\s\S]*retry/i);
+});
+
+test("GitLabIntegration reference and guide are published", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  assert.match(config, /label: "GitLab integrations", link: "\/guides\/gitlab-integrations\/"/);
+  assert.match(config, /label: "GitLabIntegration", link: "\/reference\/git-lab-integration\/"/);
+  const reference = await readFile(new URL("../src/content/docs/reference/git-lab-integration.mdx", import.meta.url), "utf8");
+  assert.match(reference, /title: "GitLabIntegration"/);
+  const model = await import("../scripts/reference-model.mjs");
+  assert.equal(model.slugFromToken("dokploy:index:GitLabIntegration"), "git-lab-integration");
+  const schema = JSON.parse(await readFile(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url), "utf8"));
+  const resource = schema.resources["dokploy:index:GitLabIntegration"];
+  assert.ok(resource, "GitLabIntegration must be in provider schema");
+  assert.equal(resource.inputProperties.applicationSecret.secret, true);
+  assert.equal(resource.inputProperties.gitlabUrl.default, "https://gitlab.com");
+  const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
+  assert.match(yaml, /integrationId: \$\{managedGitlabIntegration\.gitlabId\}/g);
 });

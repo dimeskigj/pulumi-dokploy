@@ -28,6 +28,15 @@ if gitlab_repository is None:
 git_branch = config.get("gitBranch")
 if git_branch is None:
     git_branch = "main"
+gitlab_application_id = config.get("gitlabApplicationId")
+if gitlab_application_id is None:
+    gitlab_application_id = "replace-with-gitlab-oauth-application-id"
+gitlab_application_secret = config.get_secret("gitlabApplicationSecret")
+if gitlab_application_secret is None:
+    gitlab_application_secret = ""
+gitlab_redirect_uri = config.get("gitlabRedirectUri")
+if gitlab_redirect_uri is None:
+    gitlab_redirect_uri = "https://dokploy.example.invalid/api/providers/gitlab/callback"
 ssh_private_key = config.get_secret("sshPrivateKey")
 if ssh_private_key is None:
     ssh_private_key = ""
@@ -58,6 +67,12 @@ if destination_access_key is None:
 destination_secret_access_key = config.get_secret("destinationSecretAccessKey")
 if destination_secret_access_key is None:
     destination_secret_access_key = "replace-with-a-destination-secret-access-key"
+managed_gitlab_integration = dokploy.GitLabIntegration("managedGitlabIntegration",
+    name="example-gitlab-integration",
+    application_id=gitlab_application_id,
+    application_secret=pulumi.Output.secret(gitlab_application_secret),
+    redirect_uri=gitlab_redirect_uri,
+    gitlab_url="https://gitlab.com")
 project_resource = dokploy.Project("project",
     name="dokploy-mvp",
     description="Canonical Dokploy provider example")
@@ -86,6 +101,13 @@ application = dokploy.Application("application",
     create_env_file=True,
     registry_id=registry.registry_id,
     build_registry_id=registry.registry_id)
+application_schedule = dokploy.Schedule("applicationSchedule",
+    name="mvp-application-schedule",
+    cron_expression="0 0 * * *",
+    schedule_type="application",
+    application_id=application.application_id,
+    enabled=False,
+    command=pulumi.Output.secret("echo scheduled maintenance"))
 ssh_key = dokploy.SSHKey("sshKey",
     name="mvp-git-ssh",
     private_key=pulumi.Output.secret(ssh_private_key),
@@ -224,3 +246,4 @@ pulumi.export("gitlabOwner", gitlab_owner)
 pulumi.export("gitlabNamespace", gitlab_namespace)
 pulumi.export("gitlabRepository", gitlab_repository)
 pulumi.export("gitBranch", git_branch)
+pulumi.export("managedGitlabIntegrationId", managed_gitlab_integration.gitlab_id)

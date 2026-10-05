@@ -44,13 +44,13 @@ redacted in Pulumi diagnostics.
 
 ## Resources
 
-The provider exposes eighteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+The provider exposes twenty resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
 `dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:SSHKey`,
 `dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`, and
-`dokploy:index:Mount`.
+`dokploy:index:Mount`, `dokploy:index:Schedule`, and `dokploy:index:GitLabIntegration`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -59,8 +59,13 @@ The provider exposes eighteen resources: `dokploy:index:Project`, `dokploy:index
 Project owns the default environment. Create explicit `Environment` resources for additional
 environments and use their IDs from dependent resources. Applications and Compose stacks can
 use Git, Docker, raw Compose, or private GitLab sources. A private GitLab reference records the
-integration/project/owner/namespace/repository/branch details. The referenced GitLab integration is not managed
-by this provider; SSH keys can be managed using the `SSHKey` resource.
+integration/project/owner/namespace/repository/branch details. Manage its
+configuration with `GitLabIntegration` or continue using an external relation
+ID; a referenced GitLab integration is not managed unless you declare that resource.
+The provider does not perform OAuth: authorize in Dokploy before deploying
+GitLab-backed workloads. See the
+[GitLab integrations guide](https://dimeskigj.github.io/pulumi-dokploy/guides/gitlab-integrations/).
+SSH keys can be managed using the `SSHKey` resource.
 
 Source type changes replace that resource rather than attempting an
 in-place conversion. Create and update operations wait for Dokploy deployment completion;
@@ -70,6 +75,7 @@ those volumes should be deleted.
 
 Database passwords, environment values, application build arguments/build secrets, and nested
 Docker credentials are secret inputs. Keep them secret in configuration and never log them.
+GitLab OAuth application secrets are also secret inputs; access and refresh tokens are never exported.
 
 SSH keys, container registries, reusable tags, project-tag associations, and workload mounts are
 managed resources. Use an `SSHKey` output as the `sshKeyId` of a generic Git Application, and a

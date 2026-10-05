@@ -18,3 +18,15 @@ Docker, Git, and GitLab application sources, and raw, Git, and GitLab Compose so
 ## Imports and passwords
 
 Refresh an imported resource and review its state. Missing imported passwords are expected when Dokploy treats them as write-only: restore them as secret inputs before updating. See [imports](../imports/) and [source behavior](../../concepts/sources/).
+
+## GitLab integration authorization and recovery
+
+`GitLabIntegration.isConfigured` reports observed token presence, not token
+validity, connectivity, or workload readiness. Complete OAuth authorization in
+Dokploy after creating or changing the integration; credential changes may
+require reauthorization. No OAuth tokens are available in Pulumi state. For an
+uncertain create or import/update mismatch, inspect Dokploy and its GitLab
+integration before retrying rather than assuming the request failed. Confirm
+that the managing user can read `user` and `gitProviders`. See the
+[GitLab integrations guide](../gitlab-integrations/) for relation IDs and
+recovery details.

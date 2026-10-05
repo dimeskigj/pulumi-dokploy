@@ -27,3 +27,16 @@ pulumi import dokploy:index:Mount mount <mount-id>
 ```text
 pulumi import dokploy:index:ProjectTag projectTag <project-id>/<tag-id>
 ```
+
+`GitLabIntegration` imports by its GitLab relation ID, not by the OAuth
+application ID or parent Git-provider ID:
+
+```text
+pulumi import dokploy:index:GitLabIntegration integration <gitlab-id>
+```
+
+An incomplete imported integration may require resupplying the client secret
+before update. Import leaves existing sharing unchanged, and no tokens are
+exported. Before deleting an integration, inspect unmanaged workloads that may
+reference it. If create success is uncertain, inspect Dokploy before retrying.
+See the [GitLab integrations guide](../gitlab-integrations/).

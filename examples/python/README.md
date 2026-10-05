@@ -21,7 +21,7 @@ source:
 source:
   type: gitlab
   gitlab:
-    integrationId: ${gitlabIntegration}
+    integrationId: ${managedGitlabIntegration.gitlabId}
     projectId: ${gitlabProject}
     owner: ${gitlabOwner}
     namespace: ${gitlabNamespace}
@@ -31,8 +31,17 @@ source:
       type: nixpacks
 ```
 
-The canonical program deliberately enables the Docker and raw Compose sources
-instead; the alternatives above are documentation only.
+The canonical program deliberately enables Docker, generic Git, and raw Compose
+sources instead; the alternatives above are documentation only. The managed
+`GitLabIntegration` configures Dokploy but does not authorize GitLab OAuth.
+Create it first, authorize it in Dokploy's UI, then switch an Application or
+Compose source to GitLab in a second deployment. The Compose alternative uses
+the same `managedGitlabIntegration.gitlabId` relation ID.
+
+The OAuth application ID and callback URI use invalid example placeholders;
+`gitlabApplicationSecret` is a secret, empty configuration placeholder. Supply
+real values with secret-aware Pulumi configuration before deployment. Never
+put access or refresh tokens in configuration.
 
 The active `genericGitApplication` uses the managed `SSHKey` resource's
 `sshKeyId`; the Docker application remains enabled separately so both source

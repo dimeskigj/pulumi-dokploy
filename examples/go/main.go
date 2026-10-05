@@ -45,6 +45,18 @@ func main() {
 		if param := cfg.Get("gitBranch"); param != "" {
 			gitBranch = param
 		}
+		gitlabApplicationId := "replace-with-gitlab-oauth-application-id"
+		if param := cfg.Get("gitlabApplicationId"); param != "" {
+			gitlabApplicationId = param
+		}
+		gitlabApplicationSecret := ""
+		if param := cfg.Get("gitlabApplicationSecret"); param != "" {
+			gitlabApplicationSecret = param
+		}
+		gitlabRedirectUri := "https://dokploy.example.invalid/api/providers/gitlab/callback"
+		if param := cfg.Get("gitlabRedirectUri"); param != "" {
+			gitlabRedirectUri = param
+		}
 		sshPrivateKey := ""
 		if param := cfg.Get("sshPrivateKey"); param != "" {
 			sshPrivateKey = param
@@ -84,6 +96,16 @@ func main() {
 		destinationSecretAccessKey := "replace-with-a-destination-secret-access-key"
 		if param := cfg.Get("destinationSecretAccessKey"); param != "" {
 			destinationSecretAccessKey = param
+		}
+		managedGitlabIntegration, err := dokploy.NewGitLabIntegration(ctx, "managedGitlabIntegration", &dokploy.GitLabIntegrationArgs{
+			Name:              pulumi.String("example-gitlab-integration"),
+			ApplicationId:     pulumi.String(gitlabApplicationId),
+			ApplicationSecret: pulumi.ToSecret(gitlabApplicationSecret).(pulumi.StringOutput),
+			RedirectUri:       pulumi.String(gitlabRedirectUri),
+			GitlabUrl:         pulumi.String("https://gitlab.com"),
+		})
+		if err != nil {
+			return err
 		}
 		projectResource, err := dokploy.NewProject(ctx, "project", &dokploy.ProjectArgs{
 			Name:        pulumi.String("dokploy-mvp"),
@@ -125,6 +147,17 @@ func main() {
 			CreateEnvFile:   pulumi.Bool(true),
 			RegistryId:      registry.RegistryId,
 			BuildRegistryId: registry.RegistryId,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = dokploy.NewSchedule(ctx, "applicationSchedule", &dokploy.ScheduleArgs{
+			Name:           pulumi.String("mvp-application-schedule"),
+			CronExpression: pulumi.String("0 0 * * *"),
+			ScheduleType:   pulumi.String("application"),
+			ApplicationId:  application.ApplicationId,
+			Enabled:        pulumi.Bool(false),
+			Command:        pulumi.ToSecret("echo scheduled maintenance").(pulumi.StringOutput),
 		})
 		if err != nil {
 			return err
@@ -343,6 +376,7 @@ func main() {
 		ctx.Export("gitlabNamespace", pulumi.String(gitlabNamespace))
 		ctx.Export("gitlabRepository", pulumi.String(gitlabRepository))
 		ctx.Export("gitBranch", pulumi.String(gitBranch))
+		ctx.Export("managedGitlabIntegrationId", managedGitlabIntegration.GitlabId)
 		return nil
 	})
 }

@@ -22,7 +22,7 @@ const gitStack = new dokploy.Compose("git-stack", {
 });
 ```
 
-For an existing GitLab integration, provide the integration, project, owner, namespace, repository, and branch metadata:
+For an existing GitLab integration, provide the integration, project, owner, namespace, repository, and branch metadata. Use an external ID or managed `gitlabId`:
 
 ```typescript
 const gitlabStack = new dokploy.Compose("gitlab-stack", {
@@ -30,7 +30,7 @@ const gitlabStack = new dokploy.Compose("gitlab-stack", {
   source: {
     type: "gitlab",
     gitlab: {
-      integrationId: "integration-1", projectId: 42, owner: "example",
+      integrationId: managedGitlabIntegration.gitlabId, projectId: 42, owner: "example",
       namespace: "platform", repository: "stack", branch: "main",
     },
   },
@@ -38,5 +38,9 @@ const gitlabStack = new dokploy.Compose("gitlab-stack", {
 ```
 
 Creates and updates fetch the selected raw or repository source, then redeploy and wait for deployment completion. Source settings and stack metadata update in place; `environmentId` and `serverId` are replacement-only dependencies. `deleteVolumesOnDestroy` defaults to `false`, so `pulumi destroy` preserves Compose volumes. Setting it to `true` is destructive: do so only when deleting the data volumes is intentional.
+
+Authorize a managed GitLab integration in Dokploy before switching Compose to
+GitLab. Keep raw or generic Git active until authorization is complete. See the
+[GitLab integrations guide](../gitlab-integrations/).
 
 See the [Compose reference](../../reference/compose/) and [source discriminators](../../concepts/sources/).
