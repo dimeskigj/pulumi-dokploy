@@ -1074,6 +1074,144 @@ type MySQL struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// Notification defines model for Notification.
+type Notification struct {
+	AppBuildError   *bool                                     `json:"appBuildError,omitempty"`
+	AppDeploy       *bool                                     `json:"appDeploy,omitempty"`
+	Custom          nullable.Nullable[NotificationCustom]     `json:"custom,omitempty"`
+	CustomId        nullable.Nullable[string]                 `json:"customId,omitempty"`
+	DatabaseBackup  *bool                                     `json:"databaseBackup,omitempty"`
+	Discord         nullable.Nullable[NotificationDiscord]    `json:"discord,omitempty"`
+	DiscordId       nullable.Nullable[string]                 `json:"discordId,omitempty"`
+	DockerCleanup   *bool                                     `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool                                     `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool                                     `json:"dokployRestart,omitempty"`
+	Email           nullable.Nullable[NotificationEmail]      `json:"email,omitempty"`
+	EmailId         nullable.Nullable[string]                 `json:"emailId,omitempty"`
+	Gotify          nullable.Nullable[NotificationGotify]     `json:"gotify,omitempty"`
+	GotifyId        nullable.Nullable[string]                 `json:"gotifyId,omitempty"`
+	Lark            nullable.Nullable[NotificationLark]       `json:"lark,omitempty"`
+	LarkId          nullable.Nullable[string]                 `json:"larkId,omitempty"`
+	Mattermost      nullable.Nullable[NotificationMattermost] `json:"mattermost,omitempty"`
+	MattermostId    nullable.Nullable[string]                 `json:"mattermostId,omitempty"`
+	Name            *string                                   `json:"name,omitempty"`
+	NotificationId  string                                    `json:"notificationId"`
+	Ntfy            nullable.Nullable[NotificationNtfy]       `json:"ntfy,omitempty"`
+	NtfyId          nullable.Nullable[string]                 `json:"ntfyId,omitempty"`
+	OrganizationId  string                                    `json:"organizationId"`
+	Pushover        nullable.Nullable[NotificationPushover]   `json:"pushover,omitempty"`
+	PushoverId      nullable.Nullable[string]                 `json:"pushoverId,omitempty"`
+	Resend          nullable.Nullable[NotificationResend]     `json:"resend,omitempty"`
+	ResendId        nullable.Nullable[string]                 `json:"resendId,omitempty"`
+	ServerThreshold *bool                                     `json:"serverThreshold,omitempty"`
+	Slack           nullable.Nullable[NotificationSlack]      `json:"slack,omitempty"`
+	SlackId         nullable.Nullable[string]                 `json:"slackId,omitempty"`
+	Teams           nullable.Nullable[NotificationTeams]      `json:"teams,omitempty"`
+	TeamsId         nullable.Nullable[string]                 `json:"teamsId,omitempty"`
+	Telegram        nullable.Nullable[NotificationTelegram]   `json:"telegram,omitempty"`
+	TelegramId      nullable.Nullable[string]                 `json:"telegramId,omitempty"`
+	VolumeBackup    *bool                                     `json:"volumeBackup,omitempty"`
+}
+
+// NotificationCustom defines model for NotificationCustom.
+type NotificationCustom struct {
+	CustomId string                               `json:"customId"`
+	Endpoint nullable.Nullable[string]            `json:"endpoint,omitempty"`
+	Headers  nullable.Nullable[map[string]string] `json:"headers,omitempty"`
+}
+
+// NotificationDiscord defines model for NotificationDiscord.
+type NotificationDiscord struct {
+	Decoration nullable.Nullable[bool]   `json:"decoration,omitempty"`
+	DiscordId  string                    `json:"discordId"`
+	WebhookUrl nullable.Nullable[string] `json:"webhookUrl,omitempty"`
+}
+
+// NotificationEmail defines model for NotificationEmail.
+type NotificationEmail struct {
+	EmailId     string                      `json:"emailId"`
+	FromAddress nullable.Nullable[string]   `json:"fromAddress,omitempty"`
+	Password    nullable.Nullable[string]   `json:"password,omitempty"`
+	SmtpPort    nullable.Nullable[int]      `json:"smtpPort,omitempty"`
+	SmtpServer  nullable.Nullable[string]   `json:"smtpServer,omitempty"`
+	ToAddresses nullable.Nullable[[]string] `json:"toAddresses,omitempty"`
+	Username    nullable.Nullable[string]   `json:"username,omitempty"`
+}
+
+// NotificationGotify defines model for NotificationGotify.
+type NotificationGotify struct {
+	AppToken   nullable.Nullable[string] `json:"appToken,omitempty"`
+	Decoration nullable.Nullable[bool]   `json:"decoration,omitempty"`
+	GotifyId   string                    `json:"gotifyId"`
+	Priority   nullable.Nullable[int]    `json:"priority,omitempty"`
+	ServerUrl  nullable.Nullable[string] `json:"serverUrl,omitempty"`
+}
+
+// NotificationLark defines model for NotificationLark.
+type NotificationLark struct {
+	LarkId     string                    `json:"larkId"`
+	WebhookUrl nullable.Nullable[string] `json:"webhookUrl,omitempty"`
+}
+
+// NotificationList defines model for NotificationList.
+type NotificationList = []Notification
+
+// NotificationMattermost defines model for NotificationMattermost.
+type NotificationMattermost struct {
+	Channel      nullable.Nullable[string] `json:"channel,omitempty"`
+	MattermostId string                    `json:"mattermostId"`
+	Username     nullable.Nullable[string] `json:"username,omitempty"`
+	WebhookUrl   nullable.Nullable[string] `json:"webhookUrl,omitempty"`
+}
+
+// NotificationNtfy defines model for NotificationNtfy.
+type NotificationNtfy struct {
+	AccessToken nullable.Nullable[string] `json:"accessToken,omitempty"`
+	NtfyId      string                    `json:"ntfyId"`
+	Priority    nullable.Nullable[int]    `json:"priority,omitempty"`
+	ServerUrl   nullable.Nullable[string] `json:"serverUrl,omitempty"`
+	Topic       nullable.Nullable[string] `json:"topic,omitempty"`
+}
+
+// NotificationPushover defines model for NotificationPushover.
+type NotificationPushover struct {
+	ApiToken   nullable.Nullable[string] `json:"apiToken,omitempty"`
+	Expire     nullable.Nullable[int]    `json:"expire,omitempty"`
+	Priority   nullable.Nullable[int]    `json:"priority,omitempty"`
+	PushoverId string                    `json:"pushoverId"`
+	Retry      nullable.Nullable[int]    `json:"retry,omitempty"`
+	UserKey    nullable.Nullable[string] `json:"userKey,omitempty"`
+}
+
+// NotificationResend defines model for NotificationResend.
+type NotificationResend struct {
+	ApiKey      nullable.Nullable[string]   `json:"apiKey,omitempty"`
+	FromAddress nullable.Nullable[string]   `json:"fromAddress,omitempty"`
+	ResendId    string                      `json:"resendId"`
+	ToAddresses nullable.Nullable[[]string] `json:"toAddresses,omitempty"`
+}
+
+// NotificationSlack defines model for NotificationSlack.
+type NotificationSlack struct {
+	Channel    nullable.Nullable[string] `json:"channel,omitempty"`
+	SlackId    string                    `json:"slackId"`
+	WebhookUrl nullable.Nullable[string] `json:"webhookUrl,omitempty"`
+}
+
+// NotificationTeams defines model for NotificationTeams.
+type NotificationTeams struct {
+	TeamsId    string                    `json:"teamsId"`
+	WebhookUrl nullable.Nullable[string] `json:"webhookUrl,omitempty"`
+}
+
+// NotificationTelegram defines model for NotificationTelegram.
+type NotificationTelegram struct {
+	BotToken        nullable.Nullable[string] `json:"botToken,omitempty"`
+	ChatId          nullable.Nullable[string] `json:"chatId,omitempty"`
+	MessageThreadId nullable.Nullable[string] `json:"messageThreadId,omitempty"`
+	TelegramId      string                    `json:"telegramId"`
+}
+
 // Organization defines model for Organization.
 type Organization struct {
 	Id                   *string                `json:"id,omitempty"`
@@ -2355,6 +2493,432 @@ type MysqlUpdateJSONBody struct {
 // MysqlUpdateJSONBodyApplicationStatus defines parameters for MysqlUpdate.
 type MysqlUpdateJSONBodyApplicationStatus string
 
+// NotificationCreateCustomJSONBody defines parameters for NotificationCreateCustom.
+type NotificationCreateCustomJSONBody struct {
+	AppBuildError   *bool              `json:"appBuildError,omitempty"`
+	AppDeploy       *bool              `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool              `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool              `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool              `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool              `json:"dokployRestart,omitempty"`
+	Endpoint        string             `json:"endpoint"`
+	Headers         *map[string]string `json:"headers,omitempty"`
+	Name            string             `json:"name"`
+	ServerThreshold *bool              `json:"serverThreshold,omitempty"`
+	VolumeBackup    *bool              `json:"volumeBackup,omitempty"`
+}
+
+// NotificationCreateDiscordJSONBody defines parameters for NotificationCreateDiscord.
+type NotificationCreateDiscordJSONBody struct {
+	AppBuildError   bool   `json:"appBuildError"`
+	AppDeploy       bool   `json:"appDeploy"`
+	DatabaseBackup  bool   `json:"databaseBackup"`
+	Decoration      bool   `json:"decoration"`
+	DockerCleanup   bool   `json:"dockerCleanup"`
+	DokployBackup   bool   `json:"dokployBackup"`
+	DokployRestart  bool   `json:"dokployRestart"`
+	Name            string `json:"name"`
+	ServerThreshold bool   `json:"serverThreshold"`
+	VolumeBackup    bool   `json:"volumeBackup"`
+	WebhookUrl      string `json:"webhookUrl"`
+}
+
+// NotificationCreateEmailJSONBody defines parameters for NotificationCreateEmail.
+type NotificationCreateEmailJSONBody struct {
+	AppBuildError   bool     `json:"appBuildError"`
+	AppDeploy       bool     `json:"appDeploy"`
+	DatabaseBackup  bool     `json:"databaseBackup"`
+	DockerCleanup   bool     `json:"dockerCleanup"`
+	DokployBackup   bool     `json:"dokployBackup"`
+	DokployRestart  bool     `json:"dokployRestart"`
+	FromAddress     string   `json:"fromAddress"`
+	Name            string   `json:"name"`
+	Password        string   `json:"password"`
+	ServerThreshold bool     `json:"serverThreshold"`
+	SmtpPort        float32  `json:"smtpPort"`
+	SmtpServer      string   `json:"smtpServer"`
+	ToAddresses     []string `json:"toAddresses"`
+	Username        string   `json:"username"`
+	VolumeBackup    bool     `json:"volumeBackup"`
+}
+
+// NotificationCreateGotifyJSONBody defines parameters for NotificationCreateGotify.
+type NotificationCreateGotifyJSONBody struct {
+	AppBuildError  bool   `json:"appBuildError"`
+	AppDeploy      bool   `json:"appDeploy"`
+	AppToken       string `json:"appToken"`
+	DatabaseBackup bool   `json:"databaseBackup"`
+	Decoration     bool   `json:"decoration"`
+	DockerCleanup  bool   `json:"dockerCleanup"`
+	DokployBackup  bool   `json:"dokployBackup"`
+	DokployRestart bool   `json:"dokployRestart"`
+	Name           string `json:"name"`
+	Priority       int    `json:"priority"`
+	ServerUrl      string `json:"serverUrl"`
+	VolumeBackup   bool   `json:"volumeBackup"`
+}
+
+// NotificationCreateLarkJSONBody defines parameters for NotificationCreateLark.
+type NotificationCreateLarkJSONBody struct {
+	AppBuildError   bool   `json:"appBuildError"`
+	AppDeploy       bool   `json:"appDeploy"`
+	DatabaseBackup  bool   `json:"databaseBackup"`
+	DockerCleanup   bool   `json:"dockerCleanup"`
+	DokployBackup   bool   `json:"dokployBackup"`
+	DokployRestart  bool   `json:"dokployRestart"`
+	Name            string `json:"name"`
+	ServerThreshold bool   `json:"serverThreshold"`
+	VolumeBackup    bool   `json:"volumeBackup"`
+	WebhookUrl      string `json:"webhookUrl"`
+}
+
+// NotificationCreateMattermostJSONBody defines parameters for NotificationCreateMattermost.
+type NotificationCreateMattermostJSONBody struct {
+	AppBuildError   bool    `json:"appBuildError"`
+	AppDeploy       bool    `json:"appDeploy"`
+	Channel         *string `json:"channel,omitempty"`
+	DatabaseBackup  bool    `json:"databaseBackup"`
+	DockerCleanup   bool    `json:"dockerCleanup"`
+	DokployBackup   bool    `json:"dokployBackup"`
+	DokployRestart  bool    `json:"dokployRestart"`
+	Name            string  `json:"name"`
+	ServerThreshold bool    `json:"serverThreshold"`
+	Username        *string `json:"username,omitempty"`
+	VolumeBackup    bool    `json:"volumeBackup"`
+	WebhookUrl      string  `json:"webhookUrl"`
+}
+
+// NotificationCreateNtfyJSONBody defines parameters for NotificationCreateNtfy.
+type NotificationCreateNtfyJSONBody struct {
+	AccessToken    string  `json:"accessToken"`
+	AppBuildError  bool    `json:"appBuildError"`
+	AppDeploy      bool    `json:"appDeploy"`
+	DatabaseBackup bool    `json:"databaseBackup"`
+	DockerCleanup  bool    `json:"dockerCleanup"`
+	DokployBackup  bool    `json:"dokployBackup"`
+	DokployRestart bool    `json:"dokployRestart"`
+	Name           string  `json:"name"`
+	Priority       float32 `json:"priority"`
+	ServerUrl      string  `json:"serverUrl"`
+	Topic          string  `json:"topic"`
+	VolumeBackup   bool    `json:"volumeBackup"`
+}
+
+// NotificationCreatePushoverJSONBody defines parameters for NotificationCreatePushover.
+type NotificationCreatePushoverJSONBody struct {
+	ApiToken        string                     `json:"apiToken"`
+	AppBuildError   *bool                      `json:"appBuildError,omitempty"`
+	AppDeploy       *bool                      `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool                      `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool                      `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool                      `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool                      `json:"dokployRestart,omitempty"`
+	Expire          nullable.Nullable[float32] `json:"expire,omitempty"`
+	Name            string                     `json:"name"`
+	Priority        *float32                   `json:"priority,omitempty"`
+	Retry           nullable.Nullable[float32] `json:"retry,omitempty"`
+	ServerThreshold *bool                      `json:"serverThreshold,omitempty"`
+	UserKey         string                     `json:"userKey"`
+	VolumeBackup    *bool                      `json:"volumeBackup,omitempty"`
+}
+
+// NotificationCreateResendJSONBody defines parameters for NotificationCreateResend.
+type NotificationCreateResendJSONBody struct {
+	ApiKey          string   `json:"apiKey"`
+	AppBuildError   bool     `json:"appBuildError"`
+	AppDeploy       bool     `json:"appDeploy"`
+	DatabaseBackup  bool     `json:"databaseBackup"`
+	DockerCleanup   bool     `json:"dockerCleanup"`
+	DokployBackup   bool     `json:"dokployBackup"`
+	DokployRestart  bool     `json:"dokployRestart"`
+	FromAddress     string   `json:"fromAddress"`
+	Name            string   `json:"name"`
+	ServerThreshold bool     `json:"serverThreshold"`
+	ToAddresses     []string `json:"toAddresses"`
+	VolumeBackup    bool     `json:"volumeBackup"`
+}
+
+// NotificationCreateSlackJSONBody defines parameters for NotificationCreateSlack.
+type NotificationCreateSlackJSONBody struct {
+	AppBuildError   bool   `json:"appBuildError"`
+	AppDeploy       bool   `json:"appDeploy"`
+	Channel         string `json:"channel"`
+	DatabaseBackup  bool   `json:"databaseBackup"`
+	DockerCleanup   bool   `json:"dockerCleanup"`
+	DokployBackup   bool   `json:"dokployBackup"`
+	DokployRestart  bool   `json:"dokployRestart"`
+	Name            string `json:"name"`
+	ServerThreshold bool   `json:"serverThreshold"`
+	VolumeBackup    bool   `json:"volumeBackup"`
+	WebhookUrl      string `json:"webhookUrl"`
+}
+
+// NotificationCreateTeamsJSONBody defines parameters for NotificationCreateTeams.
+type NotificationCreateTeamsJSONBody struct {
+	AppBuildError   bool   `json:"appBuildError"`
+	AppDeploy       bool   `json:"appDeploy"`
+	DatabaseBackup  bool   `json:"databaseBackup"`
+	DockerCleanup   bool   `json:"dockerCleanup"`
+	DokployBackup   bool   `json:"dokployBackup"`
+	DokployRestart  bool   `json:"dokployRestart"`
+	Name            string `json:"name"`
+	ServerThreshold bool   `json:"serverThreshold"`
+	VolumeBackup    bool   `json:"volumeBackup"`
+	WebhookUrl      string `json:"webhookUrl"`
+}
+
+// NotificationCreateTelegramJSONBody defines parameters for NotificationCreateTelegram.
+type NotificationCreateTelegramJSONBody struct {
+	AppBuildError   bool   `json:"appBuildError"`
+	AppDeploy       bool   `json:"appDeploy"`
+	BotToken        string `json:"botToken"`
+	ChatId          string `json:"chatId"`
+	DatabaseBackup  bool   `json:"databaseBackup"`
+	DockerCleanup   bool   `json:"dockerCleanup"`
+	DokployBackup   bool   `json:"dokployBackup"`
+	DokployRestart  bool   `json:"dokployRestart"`
+	MessageThreadId string `json:"messageThreadId"`
+	Name            string `json:"name"`
+	ServerThreshold bool   `json:"serverThreshold"`
+	VolumeBackup    bool   `json:"volumeBackup"`
+}
+
+// NotificationOneParams defines parameters for NotificationOne.
+type NotificationOneParams struct {
+	NotificationId string `form:"notificationId" json:"notificationId"`
+}
+
+// NotificationRemoveJSONBody defines parameters for NotificationRemove.
+type NotificationRemoveJSONBody struct {
+	NotificationId string `json:"notificationId"`
+}
+
+// NotificationUpdateCustomJSONBody defines parameters for NotificationUpdateCustom.
+type NotificationUpdateCustomJSONBody struct {
+	AppBuildError   *bool              `json:"appBuildError,omitempty"`
+	AppDeploy       *bool              `json:"appDeploy,omitempty"`
+	CustomId        string             `json:"customId"`
+	DatabaseBackup  *bool              `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool              `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool              `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool              `json:"dokployRestart,omitempty"`
+	Endpoint        *string            `json:"endpoint,omitempty"`
+	Headers         *map[string]string `json:"headers,omitempty"`
+	Name            *string            `json:"name,omitempty"`
+	NotificationId  string             `json:"notificationId"`
+	OrganizationId  *string            `json:"organizationId,omitempty"`
+	ServerThreshold *bool              `json:"serverThreshold,omitempty"`
+	VolumeBackup    *bool              `json:"volumeBackup,omitempty"`
+}
+
+// NotificationUpdateDiscordJSONBody defines parameters for NotificationUpdateDiscord.
+type NotificationUpdateDiscordJSONBody struct {
+	AppBuildError   *bool   `json:"appBuildError,omitempty"`
+	AppDeploy       *bool   `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool   `json:"databaseBackup,omitempty"`
+	Decoration      *bool   `json:"decoration,omitempty"`
+	DiscordId       string  `json:"discordId"`
+	DockerCleanup   *bool   `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool   `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool   `json:"dokployRestart,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	NotificationId  string  `json:"notificationId"`
+	OrganizationId  *string `json:"organizationId,omitempty"`
+	ServerThreshold *bool   `json:"serverThreshold,omitempty"`
+	VolumeBackup    *bool   `json:"volumeBackup,omitempty"`
+	WebhookUrl      *string `json:"webhookUrl,omitempty"`
+}
+
+// NotificationUpdateEmailJSONBody defines parameters for NotificationUpdateEmail.
+type NotificationUpdateEmailJSONBody struct {
+	AppBuildError   *bool     `json:"appBuildError,omitempty"`
+	AppDeploy       *bool     `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool     `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool     `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool     `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool     `json:"dokployRestart,omitempty"`
+	EmailId         string    `json:"emailId"`
+	FromAddress     *string   `json:"fromAddress,omitempty"`
+	Name            *string   `json:"name,omitempty"`
+	NotificationId  string    `json:"notificationId"`
+	OrganizationId  *string   `json:"organizationId,omitempty"`
+	Password        *string   `json:"password,omitempty"`
+	ServerThreshold *bool     `json:"serverThreshold,omitempty"`
+	SmtpPort        *float32  `json:"smtpPort,omitempty"`
+	SmtpServer      *string   `json:"smtpServer,omitempty"`
+	ToAddresses     *[]string `json:"toAddresses,omitempty"`
+	Username        *string   `json:"username,omitempty"`
+	VolumeBackup    *bool     `json:"volumeBackup,omitempty"`
+}
+
+// NotificationUpdateGotifyJSONBody defines parameters for NotificationUpdateGotify.
+type NotificationUpdateGotifyJSONBody struct {
+	AppBuildError  *bool   `json:"appBuildError,omitempty"`
+	AppDeploy      *bool   `json:"appDeploy,omitempty"`
+	AppToken       *string `json:"appToken,omitempty"`
+	DatabaseBackup *bool   `json:"databaseBackup,omitempty"`
+	Decoration     *bool   `json:"decoration,omitempty"`
+	DockerCleanup  *bool   `json:"dockerCleanup,omitempty"`
+	DokployBackup  *bool   `json:"dokployBackup,omitempty"`
+	DokployRestart *bool   `json:"dokployRestart,omitempty"`
+	GotifyId       string  `json:"gotifyId"`
+	Name           *string `json:"name,omitempty"`
+	NotificationId string  `json:"notificationId"`
+	OrganizationId *string `json:"organizationId,omitempty"`
+	Priority       *int    `json:"priority,omitempty"`
+	ServerUrl      *string `json:"serverUrl,omitempty"`
+	VolumeBackup   *bool   `json:"volumeBackup,omitempty"`
+}
+
+// NotificationUpdateLarkJSONBody defines parameters for NotificationUpdateLark.
+type NotificationUpdateLarkJSONBody struct {
+	AppBuildError   *bool   `json:"appBuildError,omitempty"`
+	AppDeploy       *bool   `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool   `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool   `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool   `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool   `json:"dokployRestart,omitempty"`
+	LarkId          string  `json:"larkId"`
+	Name            *string `json:"name,omitempty"`
+	NotificationId  string  `json:"notificationId"`
+	OrganizationId  *string `json:"organizationId,omitempty"`
+	ServerThreshold *bool   `json:"serverThreshold,omitempty"`
+	VolumeBackup    *bool   `json:"volumeBackup,omitempty"`
+	WebhookUrl      *string `json:"webhookUrl,omitempty"`
+}
+
+// NotificationUpdateMattermostJSONBody defines parameters for NotificationUpdateMattermost.
+type NotificationUpdateMattermostJSONBody struct {
+	AppBuildError   *bool   `json:"appBuildError,omitempty"`
+	AppDeploy       *bool   `json:"appDeploy,omitempty"`
+	Channel         *string `json:"channel,omitempty"`
+	DatabaseBackup  *bool   `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool   `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool   `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool   `json:"dokployRestart,omitempty"`
+	MattermostId    string  `json:"mattermostId"`
+	Name            *string `json:"name,omitempty"`
+	NotificationId  string  `json:"notificationId"`
+	OrganizationId  *string `json:"organizationId,omitempty"`
+	ServerThreshold *bool   `json:"serverThreshold,omitempty"`
+	Username        *string `json:"username,omitempty"`
+	VolumeBackup    *bool   `json:"volumeBackup,omitempty"`
+	WebhookUrl      *string `json:"webhookUrl,omitempty"`
+}
+
+// NotificationUpdateNtfyJSONBody defines parameters for NotificationUpdateNtfy.
+type NotificationUpdateNtfyJSONBody struct {
+	AccessToken    *string  `json:"accessToken,omitempty"`
+	AppBuildError  *bool    `json:"appBuildError,omitempty"`
+	AppDeploy      *bool    `json:"appDeploy,omitempty"`
+	DatabaseBackup *bool    `json:"databaseBackup,omitempty"`
+	DockerCleanup  *bool    `json:"dockerCleanup,omitempty"`
+	DokployBackup  *bool    `json:"dokployBackup,omitempty"`
+	DokployRestart *bool    `json:"dokployRestart,omitempty"`
+	Name           *string  `json:"name,omitempty"`
+	NotificationId string   `json:"notificationId"`
+	NtfyId         string   `json:"ntfyId"`
+	OrganizationId *string  `json:"organizationId,omitempty"`
+	Priority       *float32 `json:"priority,omitempty"`
+	ServerUrl      *string  `json:"serverUrl,omitempty"`
+	Topic          *string  `json:"topic,omitempty"`
+	VolumeBackup   *bool    `json:"volumeBackup,omitempty"`
+}
+
+// NotificationUpdatePushoverJSONBody defines parameters for NotificationUpdatePushover.
+type NotificationUpdatePushoverJSONBody struct {
+	ApiToken        *string                    `json:"apiToken,omitempty"`
+	AppBuildError   *bool                      `json:"appBuildError,omitempty"`
+	AppDeploy       *bool                      `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool                      `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool                      `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool                      `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool                      `json:"dokployRestart,omitempty"`
+	Expire          nullable.Nullable[float32] `json:"expire,omitempty"`
+	Name            *string                    `json:"name,omitempty"`
+	NotificationId  string                     `json:"notificationId"`
+	OrganizationId  *string                    `json:"organizationId,omitempty"`
+	Priority        *float32                   `json:"priority,omitempty"`
+	PushoverId      string                     `json:"pushoverId"`
+	Retry           nullable.Nullable[float32] `json:"retry,omitempty"`
+	ServerThreshold *bool                      `json:"serverThreshold,omitempty"`
+	UserKey         *string                    `json:"userKey,omitempty"`
+	VolumeBackup    *bool                      `json:"volumeBackup,omitempty"`
+}
+
+// NotificationUpdateResendJSONBody defines parameters for NotificationUpdateResend.
+type NotificationUpdateResendJSONBody struct {
+	ApiKey          *string   `json:"apiKey,omitempty"`
+	AppBuildError   *bool     `json:"appBuildError,omitempty"`
+	AppDeploy       *bool     `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool     `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool     `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool     `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool     `json:"dokployRestart,omitempty"`
+	FromAddress     *string   `json:"fromAddress,omitempty"`
+	Name            *string   `json:"name,omitempty"`
+	NotificationId  string    `json:"notificationId"`
+	OrganizationId  *string   `json:"organizationId,omitempty"`
+	ResendId        string    `json:"resendId"`
+	ServerThreshold *bool     `json:"serverThreshold,omitempty"`
+	ToAddresses     *[]string `json:"toAddresses,omitempty"`
+	VolumeBackup    *bool     `json:"volumeBackup,omitempty"`
+}
+
+// NotificationUpdateSlackJSONBody defines parameters for NotificationUpdateSlack.
+type NotificationUpdateSlackJSONBody struct {
+	AppBuildError   *bool   `json:"appBuildError,omitempty"`
+	AppDeploy       *bool   `json:"appDeploy,omitempty"`
+	Channel         *string `json:"channel,omitempty"`
+	DatabaseBackup  *bool   `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool   `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool   `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool   `json:"dokployRestart,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	NotificationId  string  `json:"notificationId"`
+	OrganizationId  *string `json:"organizationId,omitempty"`
+	ServerThreshold *bool   `json:"serverThreshold,omitempty"`
+	SlackId         string  `json:"slackId"`
+	VolumeBackup    *bool   `json:"volumeBackup,omitempty"`
+	WebhookUrl      *string `json:"webhookUrl,omitempty"`
+}
+
+// NotificationUpdateTeamsJSONBody defines parameters for NotificationUpdateTeams.
+type NotificationUpdateTeamsJSONBody struct {
+	AppBuildError   *bool   `json:"appBuildError,omitempty"`
+	AppDeploy       *bool   `json:"appDeploy,omitempty"`
+	DatabaseBackup  *bool   `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool   `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool   `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool   `json:"dokployRestart,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	NotificationId  string  `json:"notificationId"`
+	OrganizationId  *string `json:"organizationId,omitempty"`
+	ServerThreshold *bool   `json:"serverThreshold,omitempty"`
+	TeamsId         string  `json:"teamsId"`
+	VolumeBackup    *bool   `json:"volumeBackup,omitempty"`
+	WebhookUrl      *string `json:"webhookUrl,omitempty"`
+}
+
+// NotificationUpdateTelegramJSONBody defines parameters for NotificationUpdateTelegram.
+type NotificationUpdateTelegramJSONBody struct {
+	AppBuildError   *bool   `json:"appBuildError,omitempty"`
+	AppDeploy       *bool   `json:"appDeploy,omitempty"`
+	BotToken        *string `json:"botToken,omitempty"`
+	ChatId          *string `json:"chatId,omitempty"`
+	DatabaseBackup  *bool   `json:"databaseBackup,omitempty"`
+	DockerCleanup   *bool   `json:"dockerCleanup,omitempty"`
+	DokployBackup   *bool   `json:"dokployBackup,omitempty"`
+	DokployRestart  *bool   `json:"dokployRestart,omitempty"`
+	MessageThreadId *string `json:"messageThreadId,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	NotificationId  string  `json:"notificationId"`
+	OrganizationId  *string `json:"organizationId,omitempty"`
+	ServerThreshold *bool   `json:"serverThreshold,omitempty"`
+	TelegramId      string  `json:"telegramId"`
+	VolumeBackup    *bool   `json:"volumeBackup,omitempty"`
+}
+
 // PostgresCreateJSONBody defines parameters for PostgresCreate.
 type PostgresCreateJSONBody struct {
 	AppName          *string                   `json:"appName,omitempty"`
@@ -3047,6 +3611,81 @@ type MysqlSaveExternalPortJSONRequestBody MysqlSaveExternalPortJSONBody
 
 // MysqlUpdateJSONRequestBody defines body for MysqlUpdate for application/json ContentType.
 type MysqlUpdateJSONRequestBody MysqlUpdateJSONBody
+
+// NotificationCreateCustomJSONRequestBody defines body for NotificationCreateCustom for application/json ContentType.
+type NotificationCreateCustomJSONRequestBody NotificationCreateCustomJSONBody
+
+// NotificationCreateDiscordJSONRequestBody defines body for NotificationCreateDiscord for application/json ContentType.
+type NotificationCreateDiscordJSONRequestBody NotificationCreateDiscordJSONBody
+
+// NotificationCreateEmailJSONRequestBody defines body for NotificationCreateEmail for application/json ContentType.
+type NotificationCreateEmailJSONRequestBody NotificationCreateEmailJSONBody
+
+// NotificationCreateGotifyJSONRequestBody defines body for NotificationCreateGotify for application/json ContentType.
+type NotificationCreateGotifyJSONRequestBody NotificationCreateGotifyJSONBody
+
+// NotificationCreateLarkJSONRequestBody defines body for NotificationCreateLark for application/json ContentType.
+type NotificationCreateLarkJSONRequestBody NotificationCreateLarkJSONBody
+
+// NotificationCreateMattermostJSONRequestBody defines body for NotificationCreateMattermost for application/json ContentType.
+type NotificationCreateMattermostJSONRequestBody NotificationCreateMattermostJSONBody
+
+// NotificationCreateNtfyJSONRequestBody defines body for NotificationCreateNtfy for application/json ContentType.
+type NotificationCreateNtfyJSONRequestBody NotificationCreateNtfyJSONBody
+
+// NotificationCreatePushoverJSONRequestBody defines body for NotificationCreatePushover for application/json ContentType.
+type NotificationCreatePushoverJSONRequestBody NotificationCreatePushoverJSONBody
+
+// NotificationCreateResendJSONRequestBody defines body for NotificationCreateResend for application/json ContentType.
+type NotificationCreateResendJSONRequestBody NotificationCreateResendJSONBody
+
+// NotificationCreateSlackJSONRequestBody defines body for NotificationCreateSlack for application/json ContentType.
+type NotificationCreateSlackJSONRequestBody NotificationCreateSlackJSONBody
+
+// NotificationCreateTeamsJSONRequestBody defines body for NotificationCreateTeams for application/json ContentType.
+type NotificationCreateTeamsJSONRequestBody NotificationCreateTeamsJSONBody
+
+// NotificationCreateTelegramJSONRequestBody defines body for NotificationCreateTelegram for application/json ContentType.
+type NotificationCreateTelegramJSONRequestBody NotificationCreateTelegramJSONBody
+
+// NotificationRemoveJSONRequestBody defines body for NotificationRemove for application/json ContentType.
+type NotificationRemoveJSONRequestBody NotificationRemoveJSONBody
+
+// NotificationUpdateCustomJSONRequestBody defines body for NotificationUpdateCustom for application/json ContentType.
+type NotificationUpdateCustomJSONRequestBody NotificationUpdateCustomJSONBody
+
+// NotificationUpdateDiscordJSONRequestBody defines body for NotificationUpdateDiscord for application/json ContentType.
+type NotificationUpdateDiscordJSONRequestBody NotificationUpdateDiscordJSONBody
+
+// NotificationUpdateEmailJSONRequestBody defines body for NotificationUpdateEmail for application/json ContentType.
+type NotificationUpdateEmailJSONRequestBody NotificationUpdateEmailJSONBody
+
+// NotificationUpdateGotifyJSONRequestBody defines body for NotificationUpdateGotify for application/json ContentType.
+type NotificationUpdateGotifyJSONRequestBody NotificationUpdateGotifyJSONBody
+
+// NotificationUpdateLarkJSONRequestBody defines body for NotificationUpdateLark for application/json ContentType.
+type NotificationUpdateLarkJSONRequestBody NotificationUpdateLarkJSONBody
+
+// NotificationUpdateMattermostJSONRequestBody defines body for NotificationUpdateMattermost for application/json ContentType.
+type NotificationUpdateMattermostJSONRequestBody NotificationUpdateMattermostJSONBody
+
+// NotificationUpdateNtfyJSONRequestBody defines body for NotificationUpdateNtfy for application/json ContentType.
+type NotificationUpdateNtfyJSONRequestBody NotificationUpdateNtfyJSONBody
+
+// NotificationUpdatePushoverJSONRequestBody defines body for NotificationUpdatePushover for application/json ContentType.
+type NotificationUpdatePushoverJSONRequestBody NotificationUpdatePushoverJSONBody
+
+// NotificationUpdateResendJSONRequestBody defines body for NotificationUpdateResend for application/json ContentType.
+type NotificationUpdateResendJSONRequestBody NotificationUpdateResendJSONBody
+
+// NotificationUpdateSlackJSONRequestBody defines body for NotificationUpdateSlack for application/json ContentType.
+type NotificationUpdateSlackJSONRequestBody NotificationUpdateSlackJSONBody
+
+// NotificationUpdateTeamsJSONRequestBody defines body for NotificationUpdateTeams for application/json ContentType.
+type NotificationUpdateTeamsJSONRequestBody NotificationUpdateTeamsJSONBody
+
+// NotificationUpdateTelegramJSONRequestBody defines body for NotificationUpdateTelegram for application/json ContentType.
+type NotificationUpdateTelegramJSONRequestBody NotificationUpdateTelegramJSONBody
 
 // PostgresCreateJSONRequestBody defines body for PostgresCreate for application/json ContentType.
 type PostgresCreateJSONRequestBody PostgresCreateJSONBody
@@ -7747,6 +8386,212 @@ type ClientInterface interface {
 	// Takes a body of the `application/json` content type.
 	MysqlUpdate(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// NotificationAll performs a GET /notification.all (the `NotificationAll` operationId) request.
+	NotificationAll(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateCustomWithBody performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateCustomWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateCustom performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateCustom(ctx context.Context, body NotificationCreateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateDiscordWithBody performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateDiscordWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateDiscord performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateDiscord(ctx context.Context, body NotificationCreateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateEmailWithBody performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateEmailWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateEmail performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateEmail(ctx context.Context, body NotificationCreateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateGotifyWithBody performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateGotifyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateGotify performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateGotify(ctx context.Context, body NotificationCreateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateLarkWithBody performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateLarkWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateLark performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateLark(ctx context.Context, body NotificationCreateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateMattermostWithBody performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateMattermostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateMattermost performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateMattermost(ctx context.Context, body NotificationCreateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateNtfyWithBody performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateNtfyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateNtfy performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateNtfy(ctx context.Context, body NotificationCreateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreatePushoverWithBody performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreatePushoverWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreatePushover performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreatePushover(ctx context.Context, body NotificationCreatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateResendWithBody performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateResendWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateResend performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateResend(ctx context.Context, body NotificationCreateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateSlackWithBody performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateSlackWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateSlack performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateSlack(ctx context.Context, body NotificationCreateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateTeamsWithBody performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateTeamsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateTeams performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateTeams(ctx context.Context, body NotificationCreateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateTelegramWithBody performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationCreateTelegramWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationCreateTelegram performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationCreateTelegram(ctx context.Context, body NotificationCreateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationOne performs a GET /notification.one (the `NotificationOne` operationId) request.
+	NotificationOne(ctx context.Context, params *NotificationOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationRemoveWithBody performs a POST /notification.remove (the `NotificationRemove` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationRemove performs a POST /notification.remove (the `NotificationRemove` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationRemove(ctx context.Context, body NotificationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateCustomWithBody performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateCustomWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateCustom performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateCustom(ctx context.Context, body NotificationUpdateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateDiscordWithBody performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateDiscordWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateDiscord performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateDiscord(ctx context.Context, body NotificationUpdateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateEmailWithBody performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateEmailWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateEmail performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateEmail(ctx context.Context, body NotificationUpdateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateGotifyWithBody performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateGotifyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateGotify performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateGotify(ctx context.Context, body NotificationUpdateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateLarkWithBody performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateLarkWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateLark performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateLark(ctx context.Context, body NotificationUpdateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateMattermostWithBody performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateMattermostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateMattermost performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateMattermost(ctx context.Context, body NotificationUpdateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateNtfyWithBody performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateNtfyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateNtfy performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateNtfy(ctx context.Context, body NotificationUpdateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdatePushoverWithBody performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdatePushoverWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdatePushover performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdatePushover(ctx context.Context, body NotificationUpdatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateResendWithBody performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateResendWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateResend performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateResend(ctx context.Context, body NotificationUpdateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateSlackWithBody performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateSlackWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateSlack performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateSlack(ctx context.Context, body NotificationUpdateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateTeamsWithBody performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateTeamsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateTeams performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateTeams(ctx context.Context, body NotificationUpdateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateTelegramWithBody performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request,
+	// with any type of body and a specified content type.
+	NotificationUpdateTelegramWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotificationUpdateTelegram performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request.
+	// Takes a body of the `application/json` content type.
+	NotificationUpdateTelegram(ctx context.Context, body NotificationUpdateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// OrganizationActive performs a GET /organization.active (the `OrganizationActive` operationId) request.
 	OrganizationActive(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -9590,6 +10435,732 @@ func (c *Client) MysqlUpdateWithBody(ctx context.Context, contentType string, bo
 // Takes a body of the `application/json` content type.
 func (c *Client) MysqlUpdate(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMysqlUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationAll performs a GET /notification.all (the `NotificationAll` operationId) request.
+func (c *Client) NotificationAll(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationAllRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateCustomWithBody performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateCustomWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateCustomRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateCustom performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateCustom(ctx context.Context, body NotificationCreateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateCustomRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateDiscordWithBody performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateDiscordWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateDiscordRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateDiscord performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateDiscord(ctx context.Context, body NotificationCreateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateDiscordRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateEmailWithBody performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateEmailWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateEmailRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateEmail performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateEmail(ctx context.Context, body NotificationCreateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateEmailRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateGotifyWithBody performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateGotifyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateGotifyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateGotify performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateGotify(ctx context.Context, body NotificationCreateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateGotifyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateLarkWithBody performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateLarkWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateLarkRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateLark performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateLark(ctx context.Context, body NotificationCreateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateLarkRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateMattermostWithBody performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateMattermostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateMattermostRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateMattermost performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateMattermost(ctx context.Context, body NotificationCreateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateMattermostRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateNtfyWithBody performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateNtfyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateNtfyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateNtfy performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateNtfy(ctx context.Context, body NotificationCreateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateNtfyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreatePushoverWithBody performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreatePushoverWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreatePushoverRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreatePushover performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreatePushover(ctx context.Context, body NotificationCreatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreatePushoverRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateResendWithBody performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateResendWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateResendRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateResend performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateResend(ctx context.Context, body NotificationCreateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateResendRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateSlackWithBody performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateSlackWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateSlackRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateSlack performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateSlack(ctx context.Context, body NotificationCreateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateSlackRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateTeamsWithBody performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateTeamsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateTeamsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateTeams performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateTeams(ctx context.Context, body NotificationCreateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateTeamsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateTelegramWithBody performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationCreateTelegramWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateTelegramRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationCreateTelegram performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationCreateTelegram(ctx context.Context, body NotificationCreateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationCreateTelegramRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationOne performs a GET /notification.one (the `NotificationOne` operationId) request.
+func (c *Client) NotificationOne(ctx context.Context, params *NotificationOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationRemoveWithBody performs a POST /notification.remove (the `NotificationRemove` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationRemoveWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationRemoveRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationRemove performs a POST /notification.remove (the `NotificationRemove` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationRemove(ctx context.Context, body NotificationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateCustomWithBody performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateCustomWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateCustomRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateCustom performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateCustom(ctx context.Context, body NotificationUpdateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateCustomRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateDiscordWithBody performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateDiscordWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateDiscordRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateDiscord performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateDiscord(ctx context.Context, body NotificationUpdateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateDiscordRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateEmailWithBody performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateEmailWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateEmailRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateEmail performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateEmail(ctx context.Context, body NotificationUpdateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateEmailRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateGotifyWithBody performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateGotifyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateGotifyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateGotify performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateGotify(ctx context.Context, body NotificationUpdateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateGotifyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateLarkWithBody performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateLarkWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateLarkRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateLark performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateLark(ctx context.Context, body NotificationUpdateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateLarkRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateMattermostWithBody performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateMattermostWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateMattermostRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateMattermost performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateMattermost(ctx context.Context, body NotificationUpdateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateMattermostRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateNtfyWithBody performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateNtfyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateNtfyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateNtfy performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateNtfy(ctx context.Context, body NotificationUpdateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateNtfyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdatePushoverWithBody performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdatePushoverWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdatePushoverRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdatePushover performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdatePushover(ctx context.Context, body NotificationUpdatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdatePushoverRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateResendWithBody performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateResendWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateResendRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateResend performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateResend(ctx context.Context, body NotificationUpdateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateResendRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateSlackWithBody performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateSlackWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateSlackRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateSlack performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateSlack(ctx context.Context, body NotificationUpdateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateSlackRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateTeamsWithBody performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateTeamsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateTeamsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateTeams performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateTeams(ctx context.Context, body NotificationUpdateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateTeamsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateTelegramWithBody performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) NotificationUpdateTelegramWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateTelegramRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NotificationUpdateTelegram performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) NotificationUpdateTelegram(ctx context.Context, body NotificationUpdateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotificationUpdateTelegramRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -13194,6 +14765,1083 @@ func NewMysqlUpdateRequestWithBody(server string, contentType string, body io.Re
 	return req, nil
 }
 
+// NewNotificationAllRequest constructs an http.Request for the NotificationAll method
+func NewNotificationAllRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.all")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewNotificationCreateCustomRequest calls the generic NotificationCreateCustom builder with application/json body
+func NewNotificationCreateCustomRequest(server string, body NotificationCreateCustomJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateCustomRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateCustomRequestWithBody constructs an http.Request for the NotificationCreateCustom method, with any body, and a specified content type
+func NewNotificationCreateCustomRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createCustom")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateDiscordRequest calls the generic NotificationCreateDiscord builder with application/json body
+func NewNotificationCreateDiscordRequest(server string, body NotificationCreateDiscordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateDiscordRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateDiscordRequestWithBody constructs an http.Request for the NotificationCreateDiscord method, with any body, and a specified content type
+func NewNotificationCreateDiscordRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createDiscord")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateEmailRequest calls the generic NotificationCreateEmail builder with application/json body
+func NewNotificationCreateEmailRequest(server string, body NotificationCreateEmailJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateEmailRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateEmailRequestWithBody constructs an http.Request for the NotificationCreateEmail method, with any body, and a specified content type
+func NewNotificationCreateEmailRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createEmail")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateGotifyRequest calls the generic NotificationCreateGotify builder with application/json body
+func NewNotificationCreateGotifyRequest(server string, body NotificationCreateGotifyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateGotifyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateGotifyRequestWithBody constructs an http.Request for the NotificationCreateGotify method, with any body, and a specified content type
+func NewNotificationCreateGotifyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createGotify")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateLarkRequest calls the generic NotificationCreateLark builder with application/json body
+func NewNotificationCreateLarkRequest(server string, body NotificationCreateLarkJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateLarkRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateLarkRequestWithBody constructs an http.Request for the NotificationCreateLark method, with any body, and a specified content type
+func NewNotificationCreateLarkRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createLark")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateMattermostRequest calls the generic NotificationCreateMattermost builder with application/json body
+func NewNotificationCreateMattermostRequest(server string, body NotificationCreateMattermostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateMattermostRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateMattermostRequestWithBody constructs an http.Request for the NotificationCreateMattermost method, with any body, and a specified content type
+func NewNotificationCreateMattermostRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createMattermost")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateNtfyRequest calls the generic NotificationCreateNtfy builder with application/json body
+func NewNotificationCreateNtfyRequest(server string, body NotificationCreateNtfyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateNtfyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateNtfyRequestWithBody constructs an http.Request for the NotificationCreateNtfy method, with any body, and a specified content type
+func NewNotificationCreateNtfyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createNtfy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreatePushoverRequest calls the generic NotificationCreatePushover builder with application/json body
+func NewNotificationCreatePushoverRequest(server string, body NotificationCreatePushoverJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreatePushoverRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreatePushoverRequestWithBody constructs an http.Request for the NotificationCreatePushover method, with any body, and a specified content type
+func NewNotificationCreatePushoverRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createPushover")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateResendRequest calls the generic NotificationCreateResend builder with application/json body
+func NewNotificationCreateResendRequest(server string, body NotificationCreateResendJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateResendRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateResendRequestWithBody constructs an http.Request for the NotificationCreateResend method, with any body, and a specified content type
+func NewNotificationCreateResendRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createResend")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateSlackRequest calls the generic NotificationCreateSlack builder with application/json body
+func NewNotificationCreateSlackRequest(server string, body NotificationCreateSlackJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateSlackRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateSlackRequestWithBody constructs an http.Request for the NotificationCreateSlack method, with any body, and a specified content type
+func NewNotificationCreateSlackRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createSlack")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateTeamsRequest calls the generic NotificationCreateTeams builder with application/json body
+func NewNotificationCreateTeamsRequest(server string, body NotificationCreateTeamsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateTeamsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateTeamsRequestWithBody constructs an http.Request for the NotificationCreateTeams method, with any body, and a specified content type
+func NewNotificationCreateTeamsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createTeams")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationCreateTelegramRequest calls the generic NotificationCreateTelegram builder with application/json body
+func NewNotificationCreateTelegramRequest(server string, body NotificationCreateTelegramJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationCreateTelegramRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationCreateTelegramRequestWithBody constructs an http.Request for the NotificationCreateTelegram method, with any body, and a specified content type
+func NewNotificationCreateTelegramRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.createTelegram")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationOneRequest constructs an http.Request for the NotificationOne method
+func NewNotificationOneRequest(server string, params *NotificationOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "notificationId", params.NotificationId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewNotificationRemoveRequest calls the generic NotificationRemove builder with application/json body
+func NewNotificationRemoveRequest(server string, body NotificationRemoveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationRemoveRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationRemoveRequestWithBody constructs an http.Request for the NotificationRemove method, with any body, and a specified content type
+func NewNotificationRemoveRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateCustomRequest calls the generic NotificationUpdateCustom builder with application/json body
+func NewNotificationUpdateCustomRequest(server string, body NotificationUpdateCustomJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateCustomRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateCustomRequestWithBody constructs an http.Request for the NotificationUpdateCustom method, with any body, and a specified content type
+func NewNotificationUpdateCustomRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateCustom")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateDiscordRequest calls the generic NotificationUpdateDiscord builder with application/json body
+func NewNotificationUpdateDiscordRequest(server string, body NotificationUpdateDiscordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateDiscordRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateDiscordRequestWithBody constructs an http.Request for the NotificationUpdateDiscord method, with any body, and a specified content type
+func NewNotificationUpdateDiscordRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateDiscord")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateEmailRequest calls the generic NotificationUpdateEmail builder with application/json body
+func NewNotificationUpdateEmailRequest(server string, body NotificationUpdateEmailJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateEmailRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateEmailRequestWithBody constructs an http.Request for the NotificationUpdateEmail method, with any body, and a specified content type
+func NewNotificationUpdateEmailRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateEmail")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateGotifyRequest calls the generic NotificationUpdateGotify builder with application/json body
+func NewNotificationUpdateGotifyRequest(server string, body NotificationUpdateGotifyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateGotifyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateGotifyRequestWithBody constructs an http.Request for the NotificationUpdateGotify method, with any body, and a specified content type
+func NewNotificationUpdateGotifyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateGotify")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateLarkRequest calls the generic NotificationUpdateLark builder with application/json body
+func NewNotificationUpdateLarkRequest(server string, body NotificationUpdateLarkJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateLarkRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateLarkRequestWithBody constructs an http.Request for the NotificationUpdateLark method, with any body, and a specified content type
+func NewNotificationUpdateLarkRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateLark")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateMattermostRequest calls the generic NotificationUpdateMattermost builder with application/json body
+func NewNotificationUpdateMattermostRequest(server string, body NotificationUpdateMattermostJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateMattermostRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateMattermostRequestWithBody constructs an http.Request for the NotificationUpdateMattermost method, with any body, and a specified content type
+func NewNotificationUpdateMattermostRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateMattermost")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateNtfyRequest calls the generic NotificationUpdateNtfy builder with application/json body
+func NewNotificationUpdateNtfyRequest(server string, body NotificationUpdateNtfyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateNtfyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateNtfyRequestWithBody constructs an http.Request for the NotificationUpdateNtfy method, with any body, and a specified content type
+func NewNotificationUpdateNtfyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateNtfy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdatePushoverRequest calls the generic NotificationUpdatePushover builder with application/json body
+func NewNotificationUpdatePushoverRequest(server string, body NotificationUpdatePushoverJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdatePushoverRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdatePushoverRequestWithBody constructs an http.Request for the NotificationUpdatePushover method, with any body, and a specified content type
+func NewNotificationUpdatePushoverRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updatePushover")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateResendRequest calls the generic NotificationUpdateResend builder with application/json body
+func NewNotificationUpdateResendRequest(server string, body NotificationUpdateResendJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateResendRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateResendRequestWithBody constructs an http.Request for the NotificationUpdateResend method, with any body, and a specified content type
+func NewNotificationUpdateResendRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateResend")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateSlackRequest calls the generic NotificationUpdateSlack builder with application/json body
+func NewNotificationUpdateSlackRequest(server string, body NotificationUpdateSlackJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateSlackRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateSlackRequestWithBody constructs an http.Request for the NotificationUpdateSlack method, with any body, and a specified content type
+func NewNotificationUpdateSlackRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateSlack")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateTeamsRequest calls the generic NotificationUpdateTeams builder with application/json body
+func NewNotificationUpdateTeamsRequest(server string, body NotificationUpdateTeamsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateTeamsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateTeamsRequestWithBody constructs an http.Request for the NotificationUpdateTeams method, with any body, and a specified content type
+func NewNotificationUpdateTeamsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateTeams")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewNotificationUpdateTelegramRequest calls the generic NotificationUpdateTelegram builder with application/json body
+func NewNotificationUpdateTelegramRequest(server string, body NotificationUpdateTelegramJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotificationUpdateTelegramRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotificationUpdateTelegramRequestWithBody constructs an http.Request for the NotificationUpdateTelegram method, with any body, and a specified content type
+func NewNotificationUpdateTelegramRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notification.updateTelegram")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewOrganizationActiveRequest constructs an http.Request for the OrganizationActive method
 func NewOrganizationActiveRequest(server string) (*http.Request, error) {
 	var err error
@@ -15571,6 +18219,266 @@ type ClientWithResponsesInterface interface {
 	// MysqlUpdateWithResponse performs a POST /mysql.update (the `MysqlUpdate` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	MysqlUpdateWithResponse(ctx context.Context, body MysqlUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*MysqlUpdateResponse, error)
+
+	// NotificationAllWithResponse performs a GET /notification.all (the `NotificationAll` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationAllWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*NotificationAllResponse, error)
+
+	// NotificationCreateCustomWithBodyWithResponse performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateCustomWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateCustomResponse, error)
+
+	// NotificationCreateCustomWithResponse performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateCustomWithResponse(ctx context.Context, body NotificationCreateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateCustomResponse, error)
+
+	// NotificationCreateDiscordWithBodyWithResponse performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateDiscordWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateDiscordResponse, error)
+
+	// NotificationCreateDiscordWithResponse performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateDiscordWithResponse(ctx context.Context, body NotificationCreateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateDiscordResponse, error)
+
+	// NotificationCreateEmailWithBodyWithResponse performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateEmailWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateEmailResponse, error)
+
+	// NotificationCreateEmailWithResponse performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateEmailWithResponse(ctx context.Context, body NotificationCreateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateEmailResponse, error)
+
+	// NotificationCreateGotifyWithBodyWithResponse performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateGotifyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateGotifyResponse, error)
+
+	// NotificationCreateGotifyWithResponse performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateGotifyWithResponse(ctx context.Context, body NotificationCreateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateGotifyResponse, error)
+
+	// NotificationCreateLarkWithBodyWithResponse performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateLarkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateLarkResponse, error)
+
+	// NotificationCreateLarkWithResponse performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateLarkWithResponse(ctx context.Context, body NotificationCreateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateLarkResponse, error)
+
+	// NotificationCreateMattermostWithBodyWithResponse performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateMattermostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateMattermostResponse, error)
+
+	// NotificationCreateMattermostWithResponse performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateMattermostWithResponse(ctx context.Context, body NotificationCreateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateMattermostResponse, error)
+
+	// NotificationCreateNtfyWithBodyWithResponse performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateNtfyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateNtfyResponse, error)
+
+	// NotificationCreateNtfyWithResponse performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateNtfyWithResponse(ctx context.Context, body NotificationCreateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateNtfyResponse, error)
+
+	// NotificationCreatePushoverWithBodyWithResponse performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreatePushoverWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreatePushoverResponse, error)
+
+	// NotificationCreatePushoverWithResponse performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreatePushoverWithResponse(ctx context.Context, body NotificationCreatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreatePushoverResponse, error)
+
+	// NotificationCreateResendWithBodyWithResponse performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateResendWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateResendResponse, error)
+
+	// NotificationCreateResendWithResponse performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateResendWithResponse(ctx context.Context, body NotificationCreateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateResendResponse, error)
+
+	// NotificationCreateSlackWithBodyWithResponse performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateSlackWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateSlackResponse, error)
+
+	// NotificationCreateSlackWithResponse performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateSlackWithResponse(ctx context.Context, body NotificationCreateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateSlackResponse, error)
+
+	// NotificationCreateTeamsWithBodyWithResponse performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateTeamsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateTeamsResponse, error)
+
+	// NotificationCreateTeamsWithResponse performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateTeamsWithResponse(ctx context.Context, body NotificationCreateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateTeamsResponse, error)
+
+	// NotificationCreateTelegramWithBodyWithResponse performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationCreateTelegramWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateTelegramResponse, error)
+
+	// NotificationCreateTelegramWithResponse performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationCreateTelegramWithResponse(ctx context.Context, body NotificationCreateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateTelegramResponse, error)
+
+	// NotificationOneWithResponse performs a GET /notification.one (the `NotificationOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationOneWithResponse(ctx context.Context, params *NotificationOneParams, reqEditors ...RequestEditorFn) (*NotificationOneResponse, error)
+
+	// NotificationRemoveWithBodyWithResponse performs a POST /notification.remove (the `NotificationRemove` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationRemoveResponse, error)
+
+	// NotificationRemoveWithResponse performs a POST /notification.remove (the `NotificationRemove` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationRemoveWithResponse(ctx context.Context, body NotificationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationRemoveResponse, error)
+
+	// NotificationUpdateCustomWithBodyWithResponse performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateCustomWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateCustomResponse, error)
+
+	// NotificationUpdateCustomWithResponse performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateCustomWithResponse(ctx context.Context, body NotificationUpdateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateCustomResponse, error)
+
+	// NotificationUpdateDiscordWithBodyWithResponse performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateDiscordWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateDiscordResponse, error)
+
+	// NotificationUpdateDiscordWithResponse performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateDiscordWithResponse(ctx context.Context, body NotificationUpdateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateDiscordResponse, error)
+
+	// NotificationUpdateEmailWithBodyWithResponse performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateEmailWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateEmailResponse, error)
+
+	// NotificationUpdateEmailWithResponse performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateEmailWithResponse(ctx context.Context, body NotificationUpdateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateEmailResponse, error)
+
+	// NotificationUpdateGotifyWithBodyWithResponse performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateGotifyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateGotifyResponse, error)
+
+	// NotificationUpdateGotifyWithResponse performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateGotifyWithResponse(ctx context.Context, body NotificationUpdateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateGotifyResponse, error)
+
+	// NotificationUpdateLarkWithBodyWithResponse performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateLarkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateLarkResponse, error)
+
+	// NotificationUpdateLarkWithResponse performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateLarkWithResponse(ctx context.Context, body NotificationUpdateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateLarkResponse, error)
+
+	// NotificationUpdateMattermostWithBodyWithResponse performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateMattermostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateMattermostResponse, error)
+
+	// NotificationUpdateMattermostWithResponse performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateMattermostWithResponse(ctx context.Context, body NotificationUpdateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateMattermostResponse, error)
+
+	// NotificationUpdateNtfyWithBodyWithResponse performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateNtfyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateNtfyResponse, error)
+
+	// NotificationUpdateNtfyWithResponse performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateNtfyWithResponse(ctx context.Context, body NotificationUpdateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateNtfyResponse, error)
+
+	// NotificationUpdatePushoverWithBodyWithResponse performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdatePushoverWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdatePushoverResponse, error)
+
+	// NotificationUpdatePushoverWithResponse performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdatePushoverWithResponse(ctx context.Context, body NotificationUpdatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdatePushoverResponse, error)
+
+	// NotificationUpdateResendWithBodyWithResponse performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateResendWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateResendResponse, error)
+
+	// NotificationUpdateResendWithResponse performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateResendWithResponse(ctx context.Context, body NotificationUpdateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateResendResponse, error)
+
+	// NotificationUpdateSlackWithBodyWithResponse performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateSlackWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateSlackResponse, error)
+
+	// NotificationUpdateSlackWithResponse performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateSlackWithResponse(ctx context.Context, body NotificationUpdateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateSlackResponse, error)
+
+	// NotificationUpdateTeamsWithBodyWithResponse performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateTeamsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateTeamsResponse, error)
+
+	// NotificationUpdateTeamsWithResponse performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateTeamsWithResponse(ctx context.Context, body NotificationUpdateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateTeamsResponse, error)
+
+	// NotificationUpdateTelegramWithBodyWithResponse performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	NotificationUpdateTelegramWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateTelegramResponse, error)
+
+	// NotificationUpdateTelegramWithResponse performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	NotificationUpdateTelegramWithResponse(ctx context.Context, body NotificationUpdateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateTelegramResponse, error)
 
 	// OrganizationActiveWithResponse performs a GET /organization.active (the `OrganizationActive` operationId) request.
 	//
@@ -20099,6 +23007,1708 @@ func (r MysqlUpdateResponse) ContentType() string {
 	return ""
 }
 
+type NotificationAllResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *NotificationList
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r NotificationAllResponse) GetJSON200() *NotificationList {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationAllResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationAllResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationAllResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r NotificationAllResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationAllResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationAllResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationAllResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationAllResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationAllResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateCustomResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateCustomResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateCustomResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateCustomResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateCustomResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateCustomResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateCustomResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateCustomResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateCustomResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateDiscordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateDiscordResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateDiscordResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateDiscordResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateDiscordResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateDiscordResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateDiscordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateDiscordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateDiscordResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateEmailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateEmailResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateEmailResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateEmailResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateEmailResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateEmailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateEmailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateEmailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateEmailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateGotifyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateGotifyResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateGotifyResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateGotifyResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateGotifyResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateGotifyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateGotifyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateGotifyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateGotifyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateLarkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateLarkResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateLarkResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateLarkResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateLarkResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateLarkResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateLarkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateLarkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateLarkResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateMattermostResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateMattermostResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateMattermostResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateMattermostResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateMattermostResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateMattermostResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateMattermostResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateMattermostResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateMattermostResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateNtfyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateNtfyResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateNtfyResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateNtfyResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateNtfyResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateNtfyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateNtfyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateNtfyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateNtfyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreatePushoverResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreatePushoverResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreatePushoverResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreatePushoverResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreatePushoverResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreatePushoverResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreatePushoverResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreatePushoverResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreatePushoverResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateResendResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateResendResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateResendResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateResendResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateResendResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateResendResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateResendResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateResendResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateResendResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateSlackResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateSlackResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateSlackResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateSlackResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateSlackResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateSlackResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateSlackResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateSlackResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateSlackResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateTeamsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateTeamsResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateTeamsResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateTeamsResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateTeamsResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateTeamsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateTeamsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateTeamsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateTeamsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationCreateTelegramResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationCreateTelegramResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationCreateTelegramResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationCreateTelegramResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationCreateTelegramResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationCreateTelegramResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationCreateTelegramResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationCreateTelegramResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationCreateTelegramResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Notification
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r NotificationOneResponse) GetJSON200() *Notification {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r NotificationOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationRemoveResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationRemoveResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationRemoveResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationRemoveResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationRemoveResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationRemoveResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationRemoveResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationRemoveResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateCustomResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateCustomResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateCustomResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateCustomResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateCustomResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateCustomResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateCustomResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateCustomResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateCustomResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateDiscordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateDiscordResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateDiscordResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateDiscordResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateDiscordResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateDiscordResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateDiscordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateDiscordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateDiscordResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateEmailResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateEmailResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateEmailResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateEmailResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateEmailResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateEmailResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateEmailResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateEmailResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateEmailResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateGotifyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateGotifyResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateGotifyResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateGotifyResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateGotifyResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateGotifyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateGotifyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateGotifyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateGotifyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateLarkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateLarkResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateLarkResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateLarkResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateLarkResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateLarkResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateLarkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateLarkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateLarkResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateMattermostResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateMattermostResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateMattermostResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateMattermostResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateMattermostResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateMattermostResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateMattermostResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateMattermostResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateMattermostResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateNtfyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateNtfyResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateNtfyResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateNtfyResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateNtfyResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateNtfyResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateNtfyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateNtfyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateNtfyResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdatePushoverResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdatePushoverResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdatePushoverResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdatePushoverResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdatePushoverResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdatePushoverResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdatePushoverResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdatePushoverResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdatePushoverResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateResendResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateResendResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateResendResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateResendResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateResendResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateResendResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateResendResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateResendResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateResendResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateSlackResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateSlackResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateSlackResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateSlackResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateSlackResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateSlackResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateSlackResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateSlackResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateSlackResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateTeamsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateTeamsResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateTeamsResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateTeamsResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateTeamsResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateTeamsResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateTeamsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateTeamsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateTeamsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type NotificationUpdateTelegramResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r NotificationUpdateTelegramResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r NotificationUpdateTelegramResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r NotificationUpdateTelegramResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r NotificationUpdateTelegramResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r NotificationUpdateTelegramResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r NotificationUpdateTelegramResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotificationUpdateTelegramResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r NotificationUpdateTelegramResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type OrganizationActiveResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -24256,6 +28866,578 @@ func (c *ClientWithResponses) MysqlUpdateWithResponse(ctx context.Context, body 
 	return ParseMysqlUpdateResponse(rsp)
 }
 
+// NotificationAllWithResponse performs a GET /notification.all (the `NotificationAll` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationAllWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*NotificationAllResponse, error) {
+	rsp, err := c.NotificationAll(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationAllResponse(rsp)
+}
+
+// NotificationCreateCustomWithBodyWithResponse performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateCustomWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateCustomResponse, error) {
+	rsp, err := c.NotificationCreateCustomWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateCustomResponse(rsp)
+}
+
+// NotificationCreateCustomWithResponse performs a POST /notification.createCustom (the `NotificationCreateCustom` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateCustomWithResponse(ctx context.Context, body NotificationCreateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateCustomResponse, error) {
+	rsp, err := c.NotificationCreateCustom(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateCustomResponse(rsp)
+}
+
+// NotificationCreateDiscordWithBodyWithResponse performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateDiscordWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateDiscordResponse, error) {
+	rsp, err := c.NotificationCreateDiscordWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateDiscordResponse(rsp)
+}
+
+// NotificationCreateDiscordWithResponse performs a POST /notification.createDiscord (the `NotificationCreateDiscord` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateDiscordWithResponse(ctx context.Context, body NotificationCreateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateDiscordResponse, error) {
+	rsp, err := c.NotificationCreateDiscord(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateDiscordResponse(rsp)
+}
+
+// NotificationCreateEmailWithBodyWithResponse performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateEmailWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateEmailResponse, error) {
+	rsp, err := c.NotificationCreateEmailWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateEmailResponse(rsp)
+}
+
+// NotificationCreateEmailWithResponse performs a POST /notification.createEmail (the `NotificationCreateEmail` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateEmailWithResponse(ctx context.Context, body NotificationCreateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateEmailResponse, error) {
+	rsp, err := c.NotificationCreateEmail(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateEmailResponse(rsp)
+}
+
+// NotificationCreateGotifyWithBodyWithResponse performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateGotifyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateGotifyResponse, error) {
+	rsp, err := c.NotificationCreateGotifyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateGotifyResponse(rsp)
+}
+
+// NotificationCreateGotifyWithResponse performs a POST /notification.createGotify (the `NotificationCreateGotify` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateGotifyWithResponse(ctx context.Context, body NotificationCreateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateGotifyResponse, error) {
+	rsp, err := c.NotificationCreateGotify(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateGotifyResponse(rsp)
+}
+
+// NotificationCreateLarkWithBodyWithResponse performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateLarkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateLarkResponse, error) {
+	rsp, err := c.NotificationCreateLarkWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateLarkResponse(rsp)
+}
+
+// NotificationCreateLarkWithResponse performs a POST /notification.createLark (the `NotificationCreateLark` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateLarkWithResponse(ctx context.Context, body NotificationCreateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateLarkResponse, error) {
+	rsp, err := c.NotificationCreateLark(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateLarkResponse(rsp)
+}
+
+// NotificationCreateMattermostWithBodyWithResponse performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateMattermostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateMattermostResponse, error) {
+	rsp, err := c.NotificationCreateMattermostWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateMattermostResponse(rsp)
+}
+
+// NotificationCreateMattermostWithResponse performs a POST /notification.createMattermost (the `NotificationCreateMattermost` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateMattermostWithResponse(ctx context.Context, body NotificationCreateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateMattermostResponse, error) {
+	rsp, err := c.NotificationCreateMattermost(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateMattermostResponse(rsp)
+}
+
+// NotificationCreateNtfyWithBodyWithResponse performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateNtfyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateNtfyResponse, error) {
+	rsp, err := c.NotificationCreateNtfyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateNtfyResponse(rsp)
+}
+
+// NotificationCreateNtfyWithResponse performs a POST /notification.createNtfy (the `NotificationCreateNtfy` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateNtfyWithResponse(ctx context.Context, body NotificationCreateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateNtfyResponse, error) {
+	rsp, err := c.NotificationCreateNtfy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateNtfyResponse(rsp)
+}
+
+// NotificationCreatePushoverWithBodyWithResponse performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreatePushoverWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreatePushoverResponse, error) {
+	rsp, err := c.NotificationCreatePushoverWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreatePushoverResponse(rsp)
+}
+
+// NotificationCreatePushoverWithResponse performs a POST /notification.createPushover (the `NotificationCreatePushover` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreatePushoverWithResponse(ctx context.Context, body NotificationCreatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreatePushoverResponse, error) {
+	rsp, err := c.NotificationCreatePushover(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreatePushoverResponse(rsp)
+}
+
+// NotificationCreateResendWithBodyWithResponse performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateResendWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateResendResponse, error) {
+	rsp, err := c.NotificationCreateResendWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateResendResponse(rsp)
+}
+
+// NotificationCreateResendWithResponse performs a POST /notification.createResend (the `NotificationCreateResend` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateResendWithResponse(ctx context.Context, body NotificationCreateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateResendResponse, error) {
+	rsp, err := c.NotificationCreateResend(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateResendResponse(rsp)
+}
+
+// NotificationCreateSlackWithBodyWithResponse performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateSlackWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateSlackResponse, error) {
+	rsp, err := c.NotificationCreateSlackWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateSlackResponse(rsp)
+}
+
+// NotificationCreateSlackWithResponse performs a POST /notification.createSlack (the `NotificationCreateSlack` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateSlackWithResponse(ctx context.Context, body NotificationCreateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateSlackResponse, error) {
+	rsp, err := c.NotificationCreateSlack(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateSlackResponse(rsp)
+}
+
+// NotificationCreateTeamsWithBodyWithResponse performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateTeamsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateTeamsResponse, error) {
+	rsp, err := c.NotificationCreateTeamsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateTeamsResponse(rsp)
+}
+
+// NotificationCreateTeamsWithResponse performs a POST /notification.createTeams (the `NotificationCreateTeams` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateTeamsWithResponse(ctx context.Context, body NotificationCreateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateTeamsResponse, error) {
+	rsp, err := c.NotificationCreateTeams(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateTeamsResponse(rsp)
+}
+
+// NotificationCreateTelegramWithBodyWithResponse performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateTelegramWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationCreateTelegramResponse, error) {
+	rsp, err := c.NotificationCreateTelegramWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateTelegramResponse(rsp)
+}
+
+// NotificationCreateTelegramWithResponse performs a POST /notification.createTelegram (the `NotificationCreateTelegram` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationCreateTelegramWithResponse(ctx context.Context, body NotificationCreateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationCreateTelegramResponse, error) {
+	rsp, err := c.NotificationCreateTelegram(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationCreateTelegramResponse(rsp)
+}
+
+// NotificationOneWithResponse performs a GET /notification.one (the `NotificationOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationOneWithResponse(ctx context.Context, params *NotificationOneParams, reqEditors ...RequestEditorFn) (*NotificationOneResponse, error) {
+	rsp, err := c.NotificationOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationOneResponse(rsp)
+}
+
+// NotificationRemoveWithBodyWithResponse performs a POST /notification.remove (the `NotificationRemove` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationRemoveWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationRemoveResponse, error) {
+	rsp, err := c.NotificationRemoveWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationRemoveResponse(rsp)
+}
+
+// NotificationRemoveWithResponse performs a POST /notification.remove (the `NotificationRemove` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationRemoveWithResponse(ctx context.Context, body NotificationRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationRemoveResponse, error) {
+	rsp, err := c.NotificationRemove(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationRemoveResponse(rsp)
+}
+
+// NotificationUpdateCustomWithBodyWithResponse performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateCustomWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateCustomResponse, error) {
+	rsp, err := c.NotificationUpdateCustomWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateCustomResponse(rsp)
+}
+
+// NotificationUpdateCustomWithResponse performs a POST /notification.updateCustom (the `NotificationUpdateCustom` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateCustomWithResponse(ctx context.Context, body NotificationUpdateCustomJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateCustomResponse, error) {
+	rsp, err := c.NotificationUpdateCustom(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateCustomResponse(rsp)
+}
+
+// NotificationUpdateDiscordWithBodyWithResponse performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateDiscordWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateDiscordResponse, error) {
+	rsp, err := c.NotificationUpdateDiscordWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateDiscordResponse(rsp)
+}
+
+// NotificationUpdateDiscordWithResponse performs a POST /notification.updateDiscord (the `NotificationUpdateDiscord` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateDiscordWithResponse(ctx context.Context, body NotificationUpdateDiscordJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateDiscordResponse, error) {
+	rsp, err := c.NotificationUpdateDiscord(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateDiscordResponse(rsp)
+}
+
+// NotificationUpdateEmailWithBodyWithResponse performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateEmailWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateEmailResponse, error) {
+	rsp, err := c.NotificationUpdateEmailWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateEmailResponse(rsp)
+}
+
+// NotificationUpdateEmailWithResponse performs a POST /notification.updateEmail (the `NotificationUpdateEmail` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateEmailWithResponse(ctx context.Context, body NotificationUpdateEmailJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateEmailResponse, error) {
+	rsp, err := c.NotificationUpdateEmail(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateEmailResponse(rsp)
+}
+
+// NotificationUpdateGotifyWithBodyWithResponse performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateGotifyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateGotifyResponse, error) {
+	rsp, err := c.NotificationUpdateGotifyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateGotifyResponse(rsp)
+}
+
+// NotificationUpdateGotifyWithResponse performs a POST /notification.updateGotify (the `NotificationUpdateGotify` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateGotifyWithResponse(ctx context.Context, body NotificationUpdateGotifyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateGotifyResponse, error) {
+	rsp, err := c.NotificationUpdateGotify(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateGotifyResponse(rsp)
+}
+
+// NotificationUpdateLarkWithBodyWithResponse performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateLarkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateLarkResponse, error) {
+	rsp, err := c.NotificationUpdateLarkWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateLarkResponse(rsp)
+}
+
+// NotificationUpdateLarkWithResponse performs a POST /notification.updateLark (the `NotificationUpdateLark` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateLarkWithResponse(ctx context.Context, body NotificationUpdateLarkJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateLarkResponse, error) {
+	rsp, err := c.NotificationUpdateLark(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateLarkResponse(rsp)
+}
+
+// NotificationUpdateMattermostWithBodyWithResponse performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateMattermostWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateMattermostResponse, error) {
+	rsp, err := c.NotificationUpdateMattermostWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateMattermostResponse(rsp)
+}
+
+// NotificationUpdateMattermostWithResponse performs a POST /notification.updateMattermost (the `NotificationUpdateMattermost` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateMattermostWithResponse(ctx context.Context, body NotificationUpdateMattermostJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateMattermostResponse, error) {
+	rsp, err := c.NotificationUpdateMattermost(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateMattermostResponse(rsp)
+}
+
+// NotificationUpdateNtfyWithBodyWithResponse performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateNtfyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateNtfyResponse, error) {
+	rsp, err := c.NotificationUpdateNtfyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateNtfyResponse(rsp)
+}
+
+// NotificationUpdateNtfyWithResponse performs a POST /notification.updateNtfy (the `NotificationUpdateNtfy` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateNtfyWithResponse(ctx context.Context, body NotificationUpdateNtfyJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateNtfyResponse, error) {
+	rsp, err := c.NotificationUpdateNtfy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateNtfyResponse(rsp)
+}
+
+// NotificationUpdatePushoverWithBodyWithResponse performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdatePushoverWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdatePushoverResponse, error) {
+	rsp, err := c.NotificationUpdatePushoverWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdatePushoverResponse(rsp)
+}
+
+// NotificationUpdatePushoverWithResponse performs a POST /notification.updatePushover (the `NotificationUpdatePushover` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdatePushoverWithResponse(ctx context.Context, body NotificationUpdatePushoverJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdatePushoverResponse, error) {
+	rsp, err := c.NotificationUpdatePushover(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdatePushoverResponse(rsp)
+}
+
+// NotificationUpdateResendWithBodyWithResponse performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateResendWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateResendResponse, error) {
+	rsp, err := c.NotificationUpdateResendWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateResendResponse(rsp)
+}
+
+// NotificationUpdateResendWithResponse performs a POST /notification.updateResend (the `NotificationUpdateResend` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateResendWithResponse(ctx context.Context, body NotificationUpdateResendJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateResendResponse, error) {
+	rsp, err := c.NotificationUpdateResend(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateResendResponse(rsp)
+}
+
+// NotificationUpdateSlackWithBodyWithResponse performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateSlackWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateSlackResponse, error) {
+	rsp, err := c.NotificationUpdateSlackWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateSlackResponse(rsp)
+}
+
+// NotificationUpdateSlackWithResponse performs a POST /notification.updateSlack (the `NotificationUpdateSlack` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateSlackWithResponse(ctx context.Context, body NotificationUpdateSlackJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateSlackResponse, error) {
+	rsp, err := c.NotificationUpdateSlack(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateSlackResponse(rsp)
+}
+
+// NotificationUpdateTeamsWithBodyWithResponse performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateTeamsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateTeamsResponse, error) {
+	rsp, err := c.NotificationUpdateTeamsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateTeamsResponse(rsp)
+}
+
+// NotificationUpdateTeamsWithResponse performs a POST /notification.updateTeams (the `NotificationUpdateTeams` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateTeamsWithResponse(ctx context.Context, body NotificationUpdateTeamsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateTeamsResponse, error) {
+	rsp, err := c.NotificationUpdateTeams(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateTeamsResponse(rsp)
+}
+
+// NotificationUpdateTelegramWithBodyWithResponse performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateTelegramWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotificationUpdateTelegramResponse, error) {
+	rsp, err := c.NotificationUpdateTelegramWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateTelegramResponse(rsp)
+}
+
+// NotificationUpdateTelegramWithResponse performs a POST /notification.updateTelegram (the `NotificationUpdateTelegram` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) NotificationUpdateTelegramWithResponse(ctx context.Context, body NotificationUpdateTelegramJSONRequestBody, reqEditors ...RequestEditorFn) (*NotificationUpdateTelegramResponse, error) {
+	rsp, err := c.NotificationUpdateTelegram(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotificationUpdateTelegramResponse(rsp)
+}
+
 // OrganizationActiveWithResponse performs a GET /organization.active (the `OrganizationActive` operationId) request.
 //
 // Returns a wrapper object for the known response body format(s).
@@ -28380,6 +33562,1378 @@ func ParseMysqlUpdateResponse(rsp *http.Response) (*MysqlUpdateResponse, error) 
 	return response, nil
 }
 
+// ParseNotificationAllResponse parses an HTTP response from a NotificationAllWithResponse call
+func ParseNotificationAllResponse(rsp *http.Response) (*NotificationAllResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationAllResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NotificationList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateCustomResponse parses an HTTP response from a NotificationCreateCustomWithResponse call
+func ParseNotificationCreateCustomResponse(rsp *http.Response) (*NotificationCreateCustomResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateCustomResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateDiscordResponse parses an HTTP response from a NotificationCreateDiscordWithResponse call
+func ParseNotificationCreateDiscordResponse(rsp *http.Response) (*NotificationCreateDiscordResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateDiscordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateEmailResponse parses an HTTP response from a NotificationCreateEmailWithResponse call
+func ParseNotificationCreateEmailResponse(rsp *http.Response) (*NotificationCreateEmailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateEmailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateGotifyResponse parses an HTTP response from a NotificationCreateGotifyWithResponse call
+func ParseNotificationCreateGotifyResponse(rsp *http.Response) (*NotificationCreateGotifyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateGotifyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateLarkResponse parses an HTTP response from a NotificationCreateLarkWithResponse call
+func ParseNotificationCreateLarkResponse(rsp *http.Response) (*NotificationCreateLarkResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateLarkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateMattermostResponse parses an HTTP response from a NotificationCreateMattermostWithResponse call
+func ParseNotificationCreateMattermostResponse(rsp *http.Response) (*NotificationCreateMattermostResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateMattermostResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateNtfyResponse parses an HTTP response from a NotificationCreateNtfyWithResponse call
+func ParseNotificationCreateNtfyResponse(rsp *http.Response) (*NotificationCreateNtfyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateNtfyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreatePushoverResponse parses an HTTP response from a NotificationCreatePushoverWithResponse call
+func ParseNotificationCreatePushoverResponse(rsp *http.Response) (*NotificationCreatePushoverResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreatePushoverResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateResendResponse parses an HTTP response from a NotificationCreateResendWithResponse call
+func ParseNotificationCreateResendResponse(rsp *http.Response) (*NotificationCreateResendResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateResendResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateSlackResponse parses an HTTP response from a NotificationCreateSlackWithResponse call
+func ParseNotificationCreateSlackResponse(rsp *http.Response) (*NotificationCreateSlackResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateSlackResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateTeamsResponse parses an HTTP response from a NotificationCreateTeamsWithResponse call
+func ParseNotificationCreateTeamsResponse(rsp *http.Response) (*NotificationCreateTeamsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateTeamsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationCreateTelegramResponse parses an HTTP response from a NotificationCreateTelegramWithResponse call
+func ParseNotificationCreateTelegramResponse(rsp *http.Response) (*NotificationCreateTelegramResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationCreateTelegramResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationOneResponse parses an HTTP response from a NotificationOneWithResponse call
+func ParseNotificationOneResponse(rsp *http.Response) (*NotificationOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Notification
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationRemoveResponse parses an HTTP response from a NotificationRemoveWithResponse call
+func ParseNotificationRemoveResponse(rsp *http.Response) (*NotificationRemoveResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateCustomResponse parses an HTTP response from a NotificationUpdateCustomWithResponse call
+func ParseNotificationUpdateCustomResponse(rsp *http.Response) (*NotificationUpdateCustomResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateCustomResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateDiscordResponse parses an HTTP response from a NotificationUpdateDiscordWithResponse call
+func ParseNotificationUpdateDiscordResponse(rsp *http.Response) (*NotificationUpdateDiscordResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateDiscordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateEmailResponse parses an HTTP response from a NotificationUpdateEmailWithResponse call
+func ParseNotificationUpdateEmailResponse(rsp *http.Response) (*NotificationUpdateEmailResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateEmailResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateGotifyResponse parses an HTTP response from a NotificationUpdateGotifyWithResponse call
+func ParseNotificationUpdateGotifyResponse(rsp *http.Response) (*NotificationUpdateGotifyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateGotifyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateLarkResponse parses an HTTP response from a NotificationUpdateLarkWithResponse call
+func ParseNotificationUpdateLarkResponse(rsp *http.Response) (*NotificationUpdateLarkResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateLarkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateMattermostResponse parses an HTTP response from a NotificationUpdateMattermostWithResponse call
+func ParseNotificationUpdateMattermostResponse(rsp *http.Response) (*NotificationUpdateMattermostResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateMattermostResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateNtfyResponse parses an HTTP response from a NotificationUpdateNtfyWithResponse call
+func ParseNotificationUpdateNtfyResponse(rsp *http.Response) (*NotificationUpdateNtfyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateNtfyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdatePushoverResponse parses an HTTP response from a NotificationUpdatePushoverWithResponse call
+func ParseNotificationUpdatePushoverResponse(rsp *http.Response) (*NotificationUpdatePushoverResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdatePushoverResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateResendResponse parses an HTTP response from a NotificationUpdateResendWithResponse call
+func ParseNotificationUpdateResendResponse(rsp *http.Response) (*NotificationUpdateResendResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateResendResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateSlackResponse parses an HTTP response from a NotificationUpdateSlackWithResponse call
+func ParseNotificationUpdateSlackResponse(rsp *http.Response) (*NotificationUpdateSlackResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateSlackResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateTeamsResponse parses an HTTP response from a NotificationUpdateTeamsWithResponse call
+func ParseNotificationUpdateTeamsResponse(rsp *http.Response) (*NotificationUpdateTeamsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateTeamsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotificationUpdateTelegramResponse parses an HTTP response from a NotificationUpdateTelegramWithResponse call
+func ParseNotificationUpdateTelegramResponse(rsp *http.Response) (*NotificationUpdateTelegramResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotificationUpdateTelegramResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseOrganizationActiveResponse parses an HTTP response from a OrganizationActiveWithResponse call
 func ParseOrganizationActiveResponse(rsp *http.Response) (*OrganizationActiveResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -30713,148 +37267,193 @@ func ParseVolumeBackupsUpdateResponse(rsp *http.Response) (*VolumeBackupsUpdateR
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
-	"QZo0h/ghR76ND23qvUABETTsfwIAAP//",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

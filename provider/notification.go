@@ -1,0 +1,227 @@
+package dokploy
+
+import (
+	"context"
+	"reflect"
+	"strings"
+
+	p "github.com/pulumi/pulumi-go-provider"
+	"github.com/pulumi/pulumi-go-provider/infer"
+)
+
+type Notification struct{ client clientFactory }
+
+type NotificationArgs struct {
+	Name       string                        `pulumi:"name"`
+	Events     *NotificationEvents           `pulumi:"events,optional"`
+	Slack      *NotificationSlackConfig      `pulumi:"slack,optional"`
+	Telegram   *NotificationTelegramConfig   `pulumi:"telegram,optional"`
+	Discord    *NotificationDiscordConfig    `pulumi:"discord,optional"`
+	Email      *NotificationEmailConfig      `pulumi:"email,optional"`
+	Resend     *NotificationResendConfig     `pulumi:"resend,optional"`
+	Gotify     *NotificationGotifyConfig     `pulumi:"gotify,optional"`
+	Ntfy       *NotificationNtfyConfig       `pulumi:"ntfy,optional"`
+	Mattermost *NotificationMattermostConfig `pulumi:"mattermost,optional"`
+	Custom     *NotificationCustomConfig     `pulumi:"custom,optional"`
+	Lark       *NotificationLarkConfig       `pulumi:"lark,optional"`
+	Teams      *NotificationTeamsConfig      `pulumi:"teams,optional"`
+	Pushover   *NotificationPushoverConfig   `pulumi:"pushover,optional"`
+}
+
+type NotificationEvents struct {
+	AppDeploy       bool `pulumi:"appDeploy,optional"`
+	AppBuildError   bool `pulumi:"appBuildError,optional"`
+	DatabaseBackup  bool `pulumi:"databaseBackup,optional"`
+	VolumeBackup    bool `pulumi:"volumeBackup,optional"`
+	DokployBackup   bool `pulumi:"dokployBackup,optional"`
+	DokployRestart  bool `pulumi:"dokployRestart,optional"`
+	DockerCleanup   bool `pulumi:"dockerCleanup,optional"`
+	ServerThreshold bool `pulumi:"serverThreshold,optional"`
+}
+
+type NotificationState struct {
+	NotificationArgs
+	NotificationID   string `pulumi:"notificationId"`
+	NotificationType string `pulumi:"notificationType"`
+	ChannelID        string `pulumi:"channelId"`
+	OrganizationID   string `pulumi:"organizationId"`
+}
+
+func (r *Notification) Annotate(n infer.Annotator) {
+	n.SetToken("index", "Notification")
+	n.Describe(r, "A Dokploy notification destination and its event subscriptions.")
+}
+func (a *NotificationArgs) Annotate(n infer.Annotator) {
+	n.Describe(&a.Name, "Required notification name.")
+	n.Describe(&a.Events, "Optional event subscriptions; every omitted event defaults to false.")
+	n.Describe(&a.Slack, "Slack destination; select exactly one channel block.")
+	n.Describe(&a.Telegram, "Telegram destination; select exactly one channel block.")
+	n.Describe(&a.Discord, "Discord destination; select exactly one channel block.")
+	n.Describe(&a.Email, "SMTP email destination; select exactly one channel block.")
+	n.Describe(&a.Resend, "Resend email destination; select exactly one channel block.")
+	n.Describe(&a.Gotify, "Gotify destination; select exactly one channel block.")
+	n.Describe(&a.Ntfy, "Ntfy destination; select exactly one channel block.")
+	n.Describe(&a.Mattermost, "Mattermost destination; select exactly one channel block.")
+	n.Describe(&a.Custom, "Custom HTTP destination; select exactly one channel block.")
+	n.Describe(&a.Lark, "Lark destination; select exactly one channel block.")
+	n.Describe(&a.Teams, "Teams destination; select exactly one channel block.")
+	n.Describe(&a.Pushover, "Pushover destination; select exactly one channel block.")
+}
+func (e *NotificationEvents) Annotate(n infer.Annotator) {
+	n.Describe(&e.AppDeploy, "Notify on application deployment; defaults to false.")
+	n.SetDefault(&e.AppDeploy, false)
+	n.Describe(&e.AppBuildError, "Notify on application build error; defaults to false.")
+	n.SetDefault(&e.AppBuildError, false)
+	n.Describe(&e.DatabaseBackup, "Notify on database backup; defaults to false.")
+	n.SetDefault(&e.DatabaseBackup, false)
+	n.Describe(&e.VolumeBackup, "Notify on volume backup; defaults to false.")
+	n.SetDefault(&e.VolumeBackup, false)
+	n.Describe(&e.DokployBackup, "Notify on Dokploy backup; defaults to false.")
+	n.SetDefault(&e.DokployBackup, false)
+	n.Describe(&e.DokployRestart, "Notify on Dokploy restart; defaults to false.")
+	n.SetDefault(&e.DokployRestart, false)
+	n.Describe(&e.DockerCleanup, "Notify on Docker cleanup; defaults to false.")
+	n.SetDefault(&e.DockerCleanup, false)
+	n.Describe(&e.ServerThreshold, "Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.")
+	n.SetDefault(&e.ServerThreshold, false)
+}
+func (s *NotificationState) Annotate(n infer.Annotator) {
+	n.Describe(&s.NotificationID, "Stable Dokploy notification ID.")
+	n.Describe(&s.NotificationType, "Selected notification channel type.")
+	n.Describe(&s.ChannelID, "Stable selected channel relation ID.")
+	n.Describe(&s.OrganizationID, "Owning Dokploy organization ID.")
+}
+
+func (r Notification) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[NotificationArgs], error) {
+	in, failures, err := infer.DefaultCheck[NotificationArgs](ctx, req.NewInputs)
+	if err != nil || len(failures) != 0 {
+		return infer.CheckResponse[NotificationArgs]{Inputs: in, Failures: failures}, err
+	}
+	in = normalizeNotificationArgs(in)
+	// Inference reattaches computed/secret metadata to encoded typed values.
+	// Optional nil pointers disappear during encoding, so retain normalized
+	// placeholders for unknown values and instantiate computed whole blocks.
+	for _, kind := range notificationChannels {
+		if !req.NewInputs.Get(kind).IsComputed() {
+			continue
+		}
+		switch kind {
+		case notificationSlack:
+			in.Slack = &NotificationSlackConfig{}
+		case notificationTelegram:
+			in.Telegram = &NotificationTelegramConfig{}
+		case notificationDiscord:
+			in.Discord = &NotificationDiscordConfig{}
+		case notificationEmail:
+			in.Email = &NotificationEmailConfig{}
+		case notificationResend:
+			in.Resend = &NotificationResendConfig{}
+		case notificationGotify:
+			in.Gotify = &NotificationGotifyConfig{}
+		case notificationNtfy:
+			in.Ntfy = &NotificationNtfyConfig{}
+		case notificationMattermost:
+			in.Mattermost = &NotificationMattermostConfig{}
+		case notificationCustom:
+			in.Custom = &NotificationCustomConfig{}
+		case notificationLark:
+			in.Lark = &NotificationLarkConfig{}
+		case notificationTeams:
+			in.Teams = &NotificationTeamsConfig{}
+		case notificationPushover:
+			in.Pushover = &NotificationPushoverConfig{}
+		}
+	}
+	return infer.CheckResponse[NotificationArgs]{Inputs: in, Failures: append(failures, validateNotificationKnown(in, req.NewInputs)...)}, nil
+}
+
+func (r Notification) Diff(_ context.Context, req infer.DiffRequest[NotificationArgs, NotificationState]) (infer.DiffResponse, error) {
+	a, b := normalizeNotificationArgs(req.Inputs), normalizeNotificationArgs(req.State.NotificationArgs)
+	d := map[string]p.PropertyDiff{}
+	if a.Name != b.Name {
+		d["name"] = p.PropertyDiff{Kind: p.Update}
+	}
+	for _, f := range notificationEventFields {
+		if eventValue(*a.Events, f.index) != eventValue(*b.Events, f.index) {
+			d["events."+f.name] = p.PropertyDiff{Kind: p.Update}
+		}
+	}
+	ak, _ := notificationKind(a)
+	bk, _ := notificationKind(b)
+	if ak != bk {
+		if bk != "" {
+			d[bk] = p.PropertyDiff{Kind: p.DeleteReplace}
+		}
+		if ak != "" {
+			d[ak] = p.PropertyDiff{Kind: p.AddReplace}
+		}
+	} else if ak != "" {
+		notificationConfigDiff(d, ak, a, b)
+	}
+	return infer.DiffResponse{HasChanges: len(d) > 0, DetailedDiff: d, DeleteBeforeReplace: hasReplacement(d)}, nil
+}
+
+// The selected block is compared field-by-field, never marked replace-on-change.
+func notificationConfigDiff(d map[string]p.PropertyDiff, kind string, a, b NotificationArgs) {
+	av, bv := reflect.ValueOf(notificationBlock(a, kind)).Elem(), reflect.ValueOf(notificationBlock(b, kind)).Elem()
+	t := av.Type()
+	for i := 0; i < av.NumField(); i++ {
+		if reflect.DeepEqual(av.Field(i).Interface(), bv.Field(i).Interface()) {
+			continue
+		}
+		name := t.Field(i).Tag.Get("pulumi")
+		for j, c := range name {
+			if c == ',' {
+				name = name[:j]
+				break
+			}
+		}
+		// A containing-property diff avoids unescaped user-controlled header keys.
+		d[kind+"."+name] = p.PropertyDiff{Kind: p.Update}
+	}
+}
+
+// Identities depend on the selected channel but not its secret contents.
+// Keeping the input blocks as computed-only dependencies avoids leaking secret
+// metadata into public identity fields while deferring them for unknown blocks.
+func (r Notification) WireDependencies(f infer.FieldSelector, a *NotificationArgs, s *NotificationState) {
+	blocks := []infer.InputField{
+		f.InputField(&a.Slack), f.InputField(&a.Telegram), f.InputField(&a.Discord),
+		f.InputField(&a.Email), f.InputField(&a.Resend), f.InputField(&a.Gotify),
+		f.InputField(&a.Ntfy), f.InputField(&a.Mattermost), f.InputField(&a.Custom),
+		f.InputField(&a.Lark), f.InputField(&a.Teams), f.InputField(&a.Pushover),
+	}
+	// Known settings changes do not change identity on an in-place update.
+	// An absent typed block may represent a computed whole block during preview;
+	// a zero required field similarly represents a computed nested input.
+	var identity []infer.InputField
+	for i, kind := range notificationChannels {
+		v := notificationBlock(*a, kind)
+		if !notificationSelected(*a, kind) || notificationMissingRequiredValue(v) {
+			identity = append(identity, blocks[i].Computed())
+		}
+	}
+	for _, output := range []infer.OutputField{f.OutputField(&s.NotificationID), f.OutputField(&s.NotificationType), f.OutputField(&s.ChannelID), f.OutputField(&s.OrganizationID)} {
+		output.DependsOn(identity...)
+	}
+	f.OutputField(&s.Name).DependsOn(f.InputField(&a.Name))
+	f.OutputField(&s.Events).DependsOn(f.InputField(&a.Events))
+	for i, output := range []infer.OutputField{
+		f.OutputField(&s.Slack), f.OutputField(&s.Telegram), f.OutputField(&s.Discord),
+		f.OutputField(&s.Email), f.OutputField(&s.Resend), f.OutputField(&s.Gotify),
+		f.OutputField(&s.Ntfy), f.OutputField(&s.Mattermost), f.OutputField(&s.Custom),
+		f.OutputField(&s.Lark), f.OutputField(&s.Teams), f.OutputField(&s.Pushover),
+	} {
+		output.DependsOn(blocks[i])
+	}
+}
+
+func notificationMissingRequiredValue(block any) bool {
+	v := reflect.ValueOf(block).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		if !strings.Contains(v.Type().Field(i).Tag.Get("pulumi"), ",optional") && v.Field(i).IsZero() {
+			return true
+		}
+	}
+	return false
+}

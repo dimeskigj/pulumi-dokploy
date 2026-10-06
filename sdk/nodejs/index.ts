@@ -55,6 +55,11 @@ export type MySQL = import("./mySQL").MySQL;
 export const MySQL: typeof import("./mySQL").MySQL = null as any;
 utilities.lazyLoad(exports, ["MySQL"], () => require("./mySQL"));
 
+export { NotificationArgs } from "./notification";
+export type Notification = import("./notification").Notification;
+export const Notification: typeof import("./notification").Notification = null as any;
+utilities.lazyLoad(exports, ["Notification"], () => require("./notification"));
+
 export { PostgresArgs } from "./postgres";
 export type Postgres = import("./postgres").Postgres;
 export const Postgres: typeof import("./postgres").Postgres = null as any;
@@ -139,6 +144,8 @@ const _module = {
                 return new Mount(name, <any>undefined, { urn })
             case "dokploy:index:MySQL":
                 return new MySQL(name, <any>undefined, { urn })
+            case "dokploy:index:Notification":
+                return new Notification(name, <any>undefined, { urn })
             case "dokploy:index:Postgres":
                 return new Postgres(name, <any>undefined, { urn })
             case "dokploy:index:Project":

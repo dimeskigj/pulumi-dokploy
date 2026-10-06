@@ -1,0 +1,143 @@
+---
+title: Notifications
+description: Manage Dokploy notification destinations and event subscriptions safely.
+---
+
+`dokploy:index:Notification` manages a Dokploy destination and its subscriptions,
+not Pulumi notifications or provider configuration. Set a required nonempty `name`,
+optionally `events`, and **exactly one** typed channel block. There is no input
+`enabled`, notification ID, channel ID, or organization ID: the authenticated
+session's active organization owns the resource. See the
+[Notification reference](../../reference/notification/) and
+[channel and event types](../../reference/types/#notification-custom-config).
+
+## Slack example
+
+Store the destination in secret stack configuration, not in source:
+
+```bash
+pulumi config set --secret notificationWebhookUrl <webhook-url>
+```
+
+```ts
+import * as pulumi from "@pulumi/pulumi";
+import * as dokploy from "@dimeskigj/pulumi-dokploy";
+
+const config = new pulumi.Config();
+const notification = new dokploy.Notification("deploy-alerts", {
+  name: "deploy-alerts",
+  slack: { webhookUrl: config.requireSecret("notificationWebhookUrl") },
+  events: { appDeploy: true, appBuildError: true },
+});
+```
+
+All eight events default to `false` when omitted: `appDeploy`, `appBuildError`,
+`databaseBackup`, `volumeBackup`, `dokployBackup`, `dokployRestart`,
+`dockerCleanup`, and `serverThreshold`. Enable only the events you intend to
+subscribe to. There are no per-workload filters or success/failure-specific
+filters in this resource. Gotify and Ntfy cannot set `serverThreshold: true`:
+their pinned update endpoints do not manage it. If an external change leaves
+`serverThreshold` true on either channel, an update attempting to clear it is
+refused; reconcile on the server or delete after identity verification.
+
+## Choose a channel
+
+Only one of these blocks may be present. Required settings have no implicit
+credential values; optional defaults are applied when absent.
+
+| Channel block | Required fields | Optional fields and defaults |
+| --- | --- | --- |
+| `slack` | `webhookUrl` | `channel`: empty string |
+| `telegram` | `botToken`, `chatId` | `messageThreadId`: empty string |
+| `discord` | `webhookUrl` | `decoration`: false |
+| `email` | `smtpServer`, `smtpPort`, `username`, `password`, `fromAddress`, `toAddresses` | None |
+| `resend` | `apiKey`, `fromAddress`, `toAddresses` | None |
+| `gotify` | `serverUrl`, `appToken` | `priority`: 5; `decoration`: false |
+| `ntfy` | `serverUrl`, `topic` | `accessToken`: empty string; `priority`: 3 |
+| `mattermost` | `webhookUrl` | `channel`, `username`: empty strings |
+| `custom` | `endpoint` | `headers`: empty map of string keys to string values |
+| `lark` | `webhookUrl` | None |
+| `teams` | `webhookUrl` | None |
+| `pushover` | `userKey`, `apiToken` | `priority`: 0; `retry`, `expire`: absent |
+
+The [generated types](../../reference/types/#notification-events) describe every
+event and setting. Recipient arrays must be nonempty and contain nonempty strings;
+`smtpPort` is 1–65535. Gotify priority is 1–9007199254740991 (the maximum
+integer safely representable by Dokploy's JSON number runtime); Ntfy priority is 1–5,
+and Pushover priority is -2–2. For Pushover emergency priority 2, set both
+`retry` (at least 30 seconds) and `expire` (1–10800 seconds):
+
+```ts
+const emergency = new dokploy.Notification("emergency", {
+  name: "emergency",
+  pushover: {
+    userKey: config.requireSecret("pushoverUserKey"),
+    apiToken: config.requireSecret("pushoverApiToken"),
+    priority: 2,
+    retry: 30,
+    expire: 3600,
+  },
+  events: { appBuildError: true },
+});
+```
+
+Custom HTTP destinations may include header names with dots or brackets;
+values can be credentials. Protect both the endpoint and the entire headers map:
+
+```ts
+const custom = new dokploy.Notification("custom-alerts", {
+  name: "custom-alerts",
+  custom: {
+    endpoint: config.requireSecret("notificationEndpoint"),
+    headers: config.requireSecretObject<Record<string, string>>("notificationHeaders"),
+  },
+  events: { appBuildError: true },
+});
+```
+
+Set `notificationEndpoint` and `notificationHeaders` with `pulumi config set --secret`
+from your protected credential store; do not put header values or endpoints in
+source, logs, or documentation examples. The provider marks nested credentials,
+webhook URLs, the Custom endpoint/headers, and Gotify/Ntfy server URLs secret in
+the Pulumi schema. Use secret-aware SDK inputs even when a generated language
+builder accepts ordinary strings.
+
+## Lifecycle and recovery
+
+Creation requires **read/list/create/update** permission in the active Dokploy
+organization; subsequent updates and deletes also require their respective
+permissions. The provider creates with an unpredictable **temporary** name and
+all events disabled (`false`), verifies the new record and its channel identity,
+then updates the requested name and subscriptions. A disabled record may briefly
+appear in the Dokploy UI. Creation does not send a connection test or a test
+message; enabling events can cause future real messages when events occur.
+
+Bodyless create responses can leave success uncertain. If creation fails before
+identity verification, inspect recent disabled notification records in the
+active organization's Dokploy UI and investigate possible orphans before retrying.
+Do not blindly run create again, assume a matching name proves ownership, or
+delete a record based on names alone: verify its organization, channel and
+identity first. The provider never automatically retries an uncertain create
+or cleans up an unverified candidate.
+
+If discovery verifies identity but rename, event update or read-back fails,
+Pulumi retains verified partial state with the last trustworthy settings, not
+a promise that final settings applied. Run `pulumi refresh` and inspect the
+Dokploy record before repair; the server may have accepted a final update despite
+the reported error. Do not blindly delete or recreate the notification.
+
+Name, events, credentials, and same-channel settings update in place. Selecting
+a different channel replaces the Notification. Outputs `notificationId`,
+`notificationType`, `channelId`, and `organizationId` are observed identity;
+`channelId` is the selected relation ID, not a channel routing field.
+
+Import uses the Dokploy notification ID:
+
+```text
+pulumi import dokploy:index:Notification notification <notification-id>
+```
+
+An import discovers its channel, but required secret fields omitted by a Dokploy
+response are represented as empty secret values, not recovered credentials.
+Resupply them using `pulumi config set --secret` before an update; never send
+empty required secrets. See [imports](../imports/) and [secrets](../../concepts/secrets/).

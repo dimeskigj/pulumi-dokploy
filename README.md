@@ -44,13 +44,13 @@ redacted in Pulumi diagnostics.
 
 ## Resources
 
-The provider exposes eighteen resources: `dokploy:index:Project`, `dokploy:index:Environment`,
+The provider exposes twenty resources: `dokploy:index:Project`, `dokploy:index:Environment`,
 `dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
 `dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
 `dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:SSHKey`,
-`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`, and
-`dokploy:index:Mount`.
+`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
+`dokploy:index:Mount`, `dokploy:index:Schedule`, and `dokploy:index:Notification`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -81,6 +81,15 @@ secret configuration. File mounts consume a dedicated `fileMountContent` secret 
 the canonical example has only empty non-credential placeholders required by Pulumi YAML conversion.
 MongoDB and LibSQL are documented exclusions for mounts.
 
+`Notification` manages one of twelve channel destinations and explicit event subscriptions;
+all events default to false. Supply webhook URLs, tokens, endpoints, and custom headers
+through Pulumi secret configuration. The provider creates with a temporary name and
+disabled events, then verifies identity before applying final settings; if creation is
+uncertain, investigate in Dokploy rather than retrying or deleting by name alone.
+Refresh before repairing verified partial state. Changing channel replaces the resource;
+the provider does not send automatic test messages. See the
+[Notifications guide](https://dimeskigj.github.io/pulumi-dokploy/guides/notifications/).
+
 See the [Get Started](https://dimeskigj.github.io/pulumi-dokploy/getting-started/installation/),
 [Resources](https://dimeskigj.github.io/pulumi-dokploy/reference/project/), and
 [Guides](https://dimeskigj.github.io/pulumi-dokploy/guides/applications/) pages for the full walkthrough.
@@ -102,7 +111,11 @@ pulumi import dokploy:index:Registry registry <registry-id>
 pulumi import dokploy:index:Tag tag <tag-id>
 pulumi import dokploy:index:ProjectTag projectTag <project-id>/<tag-id>
 pulumi import dokploy:index:Mount mount <mount-id>
+pulumi import dokploy:index:Notification notification <notification-id>
 ```
+
+An imported Notification may have required secrets omitted from Dokploy's response;
+resupply them via secret configuration before update. Never use empty imported credentials.
 
 ## Development
 

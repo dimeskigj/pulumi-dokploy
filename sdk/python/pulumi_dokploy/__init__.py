@@ -16,6 +16,7 @@ from .maria_db import *
 from .mongo_db import *
 from .mount import *
 from .my_sql import *
+from .notification import *
 from .postgres import *
 from .project import *
 from .project_tag import *
@@ -54,6 +55,7 @@ _utilities.register(
    "dokploy:index:MongoDB": "MongoDB",
    "dokploy:index:Mount": "Mount",
    "dokploy:index:MySQL": "MySQL",
+   "dokploy:index:Notification": "Notification",
    "dokploy:index:Postgres": "Postgres",
    "dokploy:index:Project": "Project",
    "dokploy:index:ProjectTag": "ProjectTag",

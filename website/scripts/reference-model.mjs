@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 const EXPECTED_RESOURCES = new Set([
   "Application", "Compose", "Domain", "Environment", "Postgres", "MySQL", "MariaDB", "MongoDB", "Project", "Redis",
-  "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule",
+  "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule", "Notification",
 ]);
 const SOURCE_PATH = Symbol("schema source path");
 
@@ -39,6 +39,11 @@ export function slugFromToken(token) {
 export function formatType(property) {
   if (property.$ref) return property.$ref.split(":").at(-1);
   if (property.type === "array" && property.items) return `${formatType(property.items)}[]`;
+  if (property.type === "object" && property.additionalProperties?.type === "string" &&
+      Object.keys(property.additionalProperties).length === 1 &&
+      Object.keys(property).every((key) => ["type", "additionalProperties", "description", "secret"].includes(key))) {
+    return "map<string, string>";
+  }
   if (["string", "integer", "number", "boolean"].includes(property.type)) return property.type;
   throw new Error(`Unsupported Pulumi property type: ${JSON.stringify(property)}`);
 }
@@ -108,11 +113,16 @@ function parseSchemaInternal(schema, options = {}) {
   const typeModels = Object.keys(types).sort().map((token) => {
     const definition = types[token];
     const name = resourceName(token);
+    // Nested Notification types have annotated properties but Pulumi inference
+    // publishes no type-level description for them. Keep other types strict.
+    const notificationDescription = /^Notification(?:Events|(?:Slack|Telegram|Discord|Email|Resend|Gotify|Ntfy|Mattermost|Custom|Lark|Teams|Pushover)Config)$/.test(name)
+      ? `${name === "NotificationEvents" ? "Event subscriptions" : `${name.slice(12, -6)} channel settings`} for a Dokploy notification.`
+      : null;
     return {
       token,
       name,
       slug: slugFromToken(token),
-      description: assertDescription(definition.description, `type ${token}`),
+      description: assertDescription(definition.description || notificationDescription, `type ${token}`),
       properties: normalizeProperties(definition.properties, definition.required, `type ${token}`, types),
     };
   });

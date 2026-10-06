@@ -24,6 +24,19 @@ __all__ = [
     'GitComposeSource',
     'GitLabAppSource',
     'GitLabComposeSource',
+    'NotificationCustomConfig',
+    'NotificationDiscordConfig',
+    'NotificationEmailConfig',
+    'NotificationEvents',
+    'NotificationGotifyConfig',
+    'NotificationLarkConfig',
+    'NotificationMattermostConfig',
+    'NotificationNtfyConfig',
+    'NotificationPushoverConfig',
+    'NotificationResendConfig',
+    'NotificationSlackConfig',
+    'NotificationTeamsConfig',
+    'NotificationTelegramConfig',
     'RawComposeSource',
 ]
 
@@ -807,6 +820,876 @@ class GitLabComposeSource(dict):
         Paths to watch.
         """
         return pulumi.get(self, "watch_paths")
+
+
+@pulumi.output_type
+class NotificationCustomConfig(dict):
+    def __init__(__self__, *,
+                 endpoint: _builtins.str,
+                 headers: Optional[Mapping[str, _builtins.str]] = None):
+        """
+        :param _builtins.str endpoint: Secret HTTP(S) destination URL.
+        :param Mapping[str, _builtins.str] headers: Secret custom HTTP headers; defaults to an empty map.
+        """
+        pulumi.set(__self__, "endpoint", endpoint)
+        if headers is not None:
+            pulumi.set(__self__, "headers", headers)
+
+    @_builtins.property
+    @pulumi.getter
+    def endpoint(self) -> _builtins.str:
+        """
+        Secret HTTP(S) destination URL.
+        """
+        return pulumi.get(self, "endpoint")
+
+    @_builtins.property
+    @pulumi.getter
+    def headers(self) -> Optional[Mapping[str, _builtins.str]]:
+        """
+        Secret custom HTTP headers; defaults to an empty map.
+        """
+        return pulumi.get(self, "headers")
+
+
+@pulumi.output_type
+class NotificationDiscordConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "webhookUrl":
+            suggest = "webhook_url"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationDiscordConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationDiscordConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationDiscordConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 webhook_url: _builtins.str,
+                 decoration: Optional[_builtins.bool] = None):
+        """
+        :param _builtins.str webhook_url: Secret Discord webhook URL.
+        :param _builtins.bool decoration: Whether to decorate messages; defaults to false.
+        """
+        pulumi.set(__self__, "webhook_url", webhook_url)
+        if decoration is None:
+            decoration = False
+        if decoration is not None:
+            pulumi.set(__self__, "decoration", decoration)
+
+    @_builtins.property
+    @pulumi.getter(name="webhookUrl")
+    def webhook_url(self) -> _builtins.str:
+        """
+        Secret Discord webhook URL.
+        """
+        return pulumi.get(self, "webhook_url")
+
+    @_builtins.property
+    @pulumi.getter
+    def decoration(self) -> Optional[_builtins.bool]:
+        """
+        Whether to decorate messages; defaults to false.
+        """
+        return pulumi.get(self, "decoration")
+
+
+@pulumi.output_type
+class NotificationEmailConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "fromAddress":
+            suggest = "from_address"
+        elif key == "smtpPort":
+            suggest = "smtp_port"
+        elif key == "smtpServer":
+            suggest = "smtp_server"
+        elif key == "toAddresses":
+            suggest = "to_addresses"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationEmailConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationEmailConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationEmailConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 from_address: _builtins.str,
+                 password: _builtins.str,
+                 smtp_port: _builtins.int,
+                 smtp_server: _builtins.str,
+                 to_addresses: Sequence[_builtins.str],
+                 username: _builtins.str):
+        """
+        :param _builtins.str from_address: Sender address.
+        :param _builtins.str password: Secret SMTP password.
+        :param _builtins.int smtp_port: SMTP port from 1 through 65535.
+        :param _builtins.str smtp_server: SMTP server hostname.
+        :param Sequence[_builtins.str] to_addresses: Nonempty list of recipient addresses.
+        :param _builtins.str username: SMTP username.
+        """
+        pulumi.set(__self__, "from_address", from_address)
+        pulumi.set(__self__, "password", password)
+        pulumi.set(__self__, "smtp_port", smtp_port)
+        pulumi.set(__self__, "smtp_server", smtp_server)
+        pulumi.set(__self__, "to_addresses", to_addresses)
+        pulumi.set(__self__, "username", username)
+
+    @_builtins.property
+    @pulumi.getter(name="fromAddress")
+    def from_address(self) -> _builtins.str:
+        """
+        Sender address.
+        """
+        return pulumi.get(self, "from_address")
+
+    @_builtins.property
+    @pulumi.getter
+    def password(self) -> _builtins.str:
+        """
+        Secret SMTP password.
+        """
+        return pulumi.get(self, "password")
+
+    @_builtins.property
+    @pulumi.getter(name="smtpPort")
+    def smtp_port(self) -> _builtins.int:
+        """
+        SMTP port from 1 through 65535.
+        """
+        return pulumi.get(self, "smtp_port")
+
+    @_builtins.property
+    @pulumi.getter(name="smtpServer")
+    def smtp_server(self) -> _builtins.str:
+        """
+        SMTP server hostname.
+        """
+        return pulumi.get(self, "smtp_server")
+
+    @_builtins.property
+    @pulumi.getter(name="toAddresses")
+    def to_addresses(self) -> Sequence[_builtins.str]:
+        """
+        Nonempty list of recipient addresses.
+        """
+        return pulumi.get(self, "to_addresses")
+
+    @_builtins.property
+    @pulumi.getter
+    def username(self) -> _builtins.str:
+        """
+        SMTP username.
+        """
+        return pulumi.get(self, "username")
+
+
+@pulumi.output_type
+class NotificationEvents(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "appBuildError":
+            suggest = "app_build_error"
+        elif key == "appDeploy":
+            suggest = "app_deploy"
+        elif key == "databaseBackup":
+            suggest = "database_backup"
+        elif key == "dockerCleanup":
+            suggest = "docker_cleanup"
+        elif key == "dokployBackup":
+            suggest = "dokploy_backup"
+        elif key == "dokployRestart":
+            suggest = "dokploy_restart"
+        elif key == "serverThreshold":
+            suggest = "server_threshold"
+        elif key == "volumeBackup":
+            suggest = "volume_backup"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationEvents. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationEvents.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationEvents.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 app_build_error: Optional[_builtins.bool] = None,
+                 app_deploy: Optional[_builtins.bool] = None,
+                 database_backup: Optional[_builtins.bool] = None,
+                 docker_cleanup: Optional[_builtins.bool] = None,
+                 dokploy_backup: Optional[_builtins.bool] = None,
+                 dokploy_restart: Optional[_builtins.bool] = None,
+                 server_threshold: Optional[_builtins.bool] = None,
+                 volume_backup: Optional[_builtins.bool] = None):
+        """
+        :param _builtins.bool app_build_error: Notify on application build error; defaults to false.
+        :param _builtins.bool app_deploy: Notify on application deployment; defaults to false.
+        :param _builtins.bool database_backup: Notify on database backup; defaults to false.
+        :param _builtins.bool docker_cleanup: Notify on Docker cleanup; defaults to false.
+        :param _builtins.bool dokploy_backup: Notify on Dokploy backup; defaults to false.
+        :param _builtins.bool dokploy_restart: Notify on Dokploy restart; defaults to false.
+        :param _builtins.bool server_threshold: Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+        :param _builtins.bool volume_backup: Notify on volume backup; defaults to false.
+        """
+        if app_build_error is None:
+            app_build_error = False
+        if app_build_error is not None:
+            pulumi.set(__self__, "app_build_error", app_build_error)
+        if app_deploy is None:
+            app_deploy = False
+        if app_deploy is not None:
+            pulumi.set(__self__, "app_deploy", app_deploy)
+        if database_backup is None:
+            database_backup = False
+        if database_backup is not None:
+            pulumi.set(__self__, "database_backup", database_backup)
+        if docker_cleanup is None:
+            docker_cleanup = False
+        if docker_cleanup is not None:
+            pulumi.set(__self__, "docker_cleanup", docker_cleanup)
+        if dokploy_backup is None:
+            dokploy_backup = False
+        if dokploy_backup is not None:
+            pulumi.set(__self__, "dokploy_backup", dokploy_backup)
+        if dokploy_restart is None:
+            dokploy_restart = False
+        if dokploy_restart is not None:
+            pulumi.set(__self__, "dokploy_restart", dokploy_restart)
+        if server_threshold is None:
+            server_threshold = False
+        if server_threshold is not None:
+            pulumi.set(__self__, "server_threshold", server_threshold)
+        if volume_backup is None:
+            volume_backup = False
+        if volume_backup is not None:
+            pulumi.set(__self__, "volume_backup", volume_backup)
+
+    @_builtins.property
+    @pulumi.getter(name="appBuildError")
+    def app_build_error(self) -> Optional[_builtins.bool]:
+        """
+        Notify on application build error; defaults to false.
+        """
+        return pulumi.get(self, "app_build_error")
+
+    @_builtins.property
+    @pulumi.getter(name="appDeploy")
+    def app_deploy(self) -> Optional[_builtins.bool]:
+        """
+        Notify on application deployment; defaults to false.
+        """
+        return pulumi.get(self, "app_deploy")
+
+    @_builtins.property
+    @pulumi.getter(name="databaseBackup")
+    def database_backup(self) -> Optional[_builtins.bool]:
+        """
+        Notify on database backup; defaults to false.
+        """
+        return pulumi.get(self, "database_backup")
+
+    @_builtins.property
+    @pulumi.getter(name="dockerCleanup")
+    def docker_cleanup(self) -> Optional[_builtins.bool]:
+        """
+        Notify on Docker cleanup; defaults to false.
+        """
+        return pulumi.get(self, "docker_cleanup")
+
+    @_builtins.property
+    @pulumi.getter(name="dokployBackup")
+    def dokploy_backup(self) -> Optional[_builtins.bool]:
+        """
+        Notify on Dokploy backup; defaults to false.
+        """
+        return pulumi.get(self, "dokploy_backup")
+
+    @_builtins.property
+    @pulumi.getter(name="dokployRestart")
+    def dokploy_restart(self) -> Optional[_builtins.bool]:
+        """
+        Notify on Dokploy restart; defaults to false.
+        """
+        return pulumi.get(self, "dokploy_restart")
+
+    @_builtins.property
+    @pulumi.getter(name="serverThreshold")
+    def server_threshold(self) -> Optional[_builtins.bool]:
+        """
+        Notify on server threshold; unsupported for Gotify and Ntfy; defaults to false.
+        """
+        return pulumi.get(self, "server_threshold")
+
+    @_builtins.property
+    @pulumi.getter(name="volumeBackup")
+    def volume_backup(self) -> Optional[_builtins.bool]:
+        """
+        Notify on volume backup; defaults to false.
+        """
+        return pulumi.get(self, "volume_backup")
+
+
+@pulumi.output_type
+class NotificationGotifyConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "appToken":
+            suggest = "app_token"
+        elif key == "serverUrl":
+            suggest = "server_url"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationGotifyConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationGotifyConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationGotifyConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 app_token: _builtins.str,
+                 server_url: _builtins.str,
+                 decoration: Optional[_builtins.bool] = None,
+                 priority: Optional[_builtins.int] = None):
+        """
+        :param _builtins.str app_token: Secret Gotify application token.
+        :param _builtins.str server_url: Secret Gotify server URL.
+        :param _builtins.bool decoration: Whether to decorate messages; defaults to false.
+        :param _builtins.int priority: Message priority; defaults to 5 (minimum 1).
+        """
+        pulumi.set(__self__, "app_token", app_token)
+        pulumi.set(__self__, "server_url", server_url)
+        if decoration is None:
+            decoration = False
+        if decoration is not None:
+            pulumi.set(__self__, "decoration", decoration)
+        if priority is None:
+            priority = 5
+        if priority is not None:
+            pulumi.set(__self__, "priority", priority)
+
+    @_builtins.property
+    @pulumi.getter(name="appToken")
+    def app_token(self) -> _builtins.str:
+        """
+        Secret Gotify application token.
+        """
+        return pulumi.get(self, "app_token")
+
+    @_builtins.property
+    @pulumi.getter(name="serverUrl")
+    def server_url(self) -> _builtins.str:
+        """
+        Secret Gotify server URL.
+        """
+        return pulumi.get(self, "server_url")
+
+    @_builtins.property
+    @pulumi.getter
+    def decoration(self) -> Optional[_builtins.bool]:
+        """
+        Whether to decorate messages; defaults to false.
+        """
+        return pulumi.get(self, "decoration")
+
+    @_builtins.property
+    @pulumi.getter
+    def priority(self) -> Optional[_builtins.int]:
+        """
+        Message priority; defaults to 5 (minimum 1).
+        """
+        return pulumi.get(self, "priority")
+
+
+@pulumi.output_type
+class NotificationLarkConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "webhookUrl":
+            suggest = "webhook_url"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationLarkConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationLarkConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationLarkConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 webhook_url: _builtins.str):
+        """
+        :param _builtins.str webhook_url: Secret Lark webhook URL.
+        """
+        pulumi.set(__self__, "webhook_url", webhook_url)
+
+    @_builtins.property
+    @pulumi.getter(name="webhookUrl")
+    def webhook_url(self) -> _builtins.str:
+        """
+        Secret Lark webhook URL.
+        """
+        return pulumi.get(self, "webhook_url")
+
+
+@pulumi.output_type
+class NotificationMattermostConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "webhookUrl":
+            suggest = "webhook_url"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationMattermostConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationMattermostConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationMattermostConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 webhook_url: _builtins.str,
+                 channel: Optional[_builtins.str] = None,
+                 username: Optional[_builtins.str] = None):
+        """
+        :param _builtins.str webhook_url: Secret Mattermost webhook URL.
+        :param _builtins.str channel: Optional routing channel; defaults to empty.
+        :param _builtins.str username: Optional display username; defaults to empty.
+        """
+        pulumi.set(__self__, "webhook_url", webhook_url)
+        if channel is None:
+            channel = ''
+        if channel is not None:
+            pulumi.set(__self__, "channel", channel)
+        if username is None:
+            username = ''
+        if username is not None:
+            pulumi.set(__self__, "username", username)
+
+    @_builtins.property
+    @pulumi.getter(name="webhookUrl")
+    def webhook_url(self) -> _builtins.str:
+        """
+        Secret Mattermost webhook URL.
+        """
+        return pulumi.get(self, "webhook_url")
+
+    @_builtins.property
+    @pulumi.getter
+    def channel(self) -> Optional[_builtins.str]:
+        """
+        Optional routing channel; defaults to empty.
+        """
+        return pulumi.get(self, "channel")
+
+    @_builtins.property
+    @pulumi.getter
+    def username(self) -> Optional[_builtins.str]:
+        """
+        Optional display username; defaults to empty.
+        """
+        return pulumi.get(self, "username")
+
+
+@pulumi.output_type
+class NotificationNtfyConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "serverUrl":
+            suggest = "server_url"
+        elif key == "accessToken":
+            suggest = "access_token"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationNtfyConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationNtfyConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationNtfyConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 server_url: _builtins.str,
+                 topic: _builtins.str,
+                 access_token: Optional[_builtins.str] = None,
+                 priority: Optional[_builtins.int] = None):
+        """
+        :param _builtins.str server_url: Secret Ntfy server URL.
+        :param _builtins.str topic: Ntfy topic.
+        :param _builtins.str access_token: Optional secret access token; defaults to empty.
+        :param _builtins.int priority: Message priority, 1 through 5; defaults to 3.
+        """
+        pulumi.set(__self__, "server_url", server_url)
+        pulumi.set(__self__, "topic", topic)
+        if access_token is None:
+            access_token = ''
+        if access_token is not None:
+            pulumi.set(__self__, "access_token", access_token)
+        if priority is None:
+            priority = 3
+        if priority is not None:
+            pulumi.set(__self__, "priority", priority)
+
+    @_builtins.property
+    @pulumi.getter(name="serverUrl")
+    def server_url(self) -> _builtins.str:
+        """
+        Secret Ntfy server URL.
+        """
+        return pulumi.get(self, "server_url")
+
+    @_builtins.property
+    @pulumi.getter
+    def topic(self) -> _builtins.str:
+        """
+        Ntfy topic.
+        """
+        return pulumi.get(self, "topic")
+
+    @_builtins.property
+    @pulumi.getter(name="accessToken")
+    def access_token(self) -> Optional[_builtins.str]:
+        """
+        Optional secret access token; defaults to empty.
+        """
+        return pulumi.get(self, "access_token")
+
+    @_builtins.property
+    @pulumi.getter
+    def priority(self) -> Optional[_builtins.int]:
+        """
+        Message priority, 1 through 5; defaults to 3.
+        """
+        return pulumi.get(self, "priority")
+
+
+@pulumi.output_type
+class NotificationPushoverConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "apiToken":
+            suggest = "api_token"
+        elif key == "userKey":
+            suggest = "user_key"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationPushoverConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationPushoverConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationPushoverConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 api_token: _builtins.str,
+                 user_key: _builtins.str,
+                 expire: Optional[_builtins.int] = None,
+                 priority: Optional[_builtins.int] = None,
+                 retry: Optional[_builtins.int] = None):
+        """
+        :param _builtins.str api_token: Secret Pushover API token.
+        :param _builtins.str user_key: Secret Pushover user key.
+        :param _builtins.int expire: Emergency expiry in seconds, 1 through 10800; required for priority 2.
+        :param _builtins.int priority: Priority from -2 through 2; defaults to 0.
+        :param _builtins.int retry: Emergency retry interval in seconds, at least 30; required for priority 2.
+        """
+        pulumi.set(__self__, "api_token", api_token)
+        pulumi.set(__self__, "user_key", user_key)
+        if expire is not None:
+            pulumi.set(__self__, "expire", expire)
+        if priority is None:
+            priority = 0
+        if priority is not None:
+            pulumi.set(__self__, "priority", priority)
+        if retry is not None:
+            pulumi.set(__self__, "retry", retry)
+
+    @_builtins.property
+    @pulumi.getter(name="apiToken")
+    def api_token(self) -> _builtins.str:
+        """
+        Secret Pushover API token.
+        """
+        return pulumi.get(self, "api_token")
+
+    @_builtins.property
+    @pulumi.getter(name="userKey")
+    def user_key(self) -> _builtins.str:
+        """
+        Secret Pushover user key.
+        """
+        return pulumi.get(self, "user_key")
+
+    @_builtins.property
+    @pulumi.getter
+    def expire(self) -> Optional[_builtins.int]:
+        """
+        Emergency expiry in seconds, 1 through 10800; required for priority 2.
+        """
+        return pulumi.get(self, "expire")
+
+    @_builtins.property
+    @pulumi.getter
+    def priority(self) -> Optional[_builtins.int]:
+        """
+        Priority from -2 through 2; defaults to 0.
+        """
+        return pulumi.get(self, "priority")
+
+    @_builtins.property
+    @pulumi.getter
+    def retry(self) -> Optional[_builtins.int]:
+        """
+        Emergency retry interval in seconds, at least 30; required for priority 2.
+        """
+        return pulumi.get(self, "retry")
+
+
+@pulumi.output_type
+class NotificationResendConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "apiKey":
+            suggest = "api_key"
+        elif key == "fromAddress":
+            suggest = "from_address"
+        elif key == "toAddresses":
+            suggest = "to_addresses"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationResendConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationResendConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationResendConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 api_key: _builtins.str,
+                 from_address: _builtins.str,
+                 to_addresses: Sequence[_builtins.str]):
+        """
+        :param _builtins.str api_key: Secret Resend API key.
+        :param _builtins.str from_address: Sender address.
+        :param Sequence[_builtins.str] to_addresses: Nonempty list of recipient addresses.
+        """
+        pulumi.set(__self__, "api_key", api_key)
+        pulumi.set(__self__, "from_address", from_address)
+        pulumi.set(__self__, "to_addresses", to_addresses)
+
+    @_builtins.property
+    @pulumi.getter(name="apiKey")
+    def api_key(self) -> _builtins.str:
+        """
+        Secret Resend API key.
+        """
+        return pulumi.get(self, "api_key")
+
+    @_builtins.property
+    @pulumi.getter(name="fromAddress")
+    def from_address(self) -> _builtins.str:
+        """
+        Sender address.
+        """
+        return pulumi.get(self, "from_address")
+
+    @_builtins.property
+    @pulumi.getter(name="toAddresses")
+    def to_addresses(self) -> Sequence[_builtins.str]:
+        """
+        Nonempty list of recipient addresses.
+        """
+        return pulumi.get(self, "to_addresses")
+
+
+@pulumi.output_type
+class NotificationSlackConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "webhookUrl":
+            suggest = "webhook_url"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationSlackConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationSlackConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationSlackConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 webhook_url: _builtins.str,
+                 channel: Optional[_builtins.str] = None):
+        """
+        :param _builtins.str webhook_url: Secret Slack webhook URL.
+        :param _builtins.str channel: Optional routing channel; defaults to empty.
+        """
+        pulumi.set(__self__, "webhook_url", webhook_url)
+        if channel is None:
+            channel = ''
+        if channel is not None:
+            pulumi.set(__self__, "channel", channel)
+
+    @_builtins.property
+    @pulumi.getter(name="webhookUrl")
+    def webhook_url(self) -> _builtins.str:
+        """
+        Secret Slack webhook URL.
+        """
+        return pulumi.get(self, "webhook_url")
+
+    @_builtins.property
+    @pulumi.getter
+    def channel(self) -> Optional[_builtins.str]:
+        """
+        Optional routing channel; defaults to empty.
+        """
+        return pulumi.get(self, "channel")
+
+
+@pulumi.output_type
+class NotificationTeamsConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "webhookUrl":
+            suggest = "webhook_url"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationTeamsConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationTeamsConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationTeamsConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 webhook_url: _builtins.str):
+        """
+        :param _builtins.str webhook_url: Secret Teams webhook URL.
+        """
+        pulumi.set(__self__, "webhook_url", webhook_url)
+
+    @_builtins.property
+    @pulumi.getter(name="webhookUrl")
+    def webhook_url(self) -> _builtins.str:
+        """
+        Secret Teams webhook URL.
+        """
+        return pulumi.get(self, "webhook_url")
+
+
+@pulumi.output_type
+class NotificationTelegramConfig(dict):
+    @staticmethod
+    def __key_warning(key: str):
+        suggest = None
+        if key == "botToken":
+            suggest = "bot_token"
+        elif key == "chatId":
+            suggest = "chat_id"
+        elif key == "messageThreadId":
+            suggest = "message_thread_id"
+
+        if suggest:
+            pulumi.log.warn(f"Key '{key}' not found in NotificationTelegramConfig. Access the value via the '{suggest}' property getter instead.")
+
+    def __getitem__(self, key: str) -> Any:
+        NotificationTelegramConfig.__key_warning(key)
+        return super().__getitem__(key)
+
+    def get(self, key: str, default = None) -> Any:
+        NotificationTelegramConfig.__key_warning(key)
+        return super().get(key, default)
+
+    def __init__(__self__, *,
+                 bot_token: _builtins.str,
+                 chat_id: _builtins.str,
+                 message_thread_id: Optional[_builtins.str] = None):
+        """
+        :param _builtins.str bot_token: Secret Telegram bot token.
+        :param _builtins.str chat_id: Telegram chat ID.
+        :param _builtins.str message_thread_id: Optional message thread ID; defaults to empty.
+        """
+        pulumi.set(__self__, "bot_token", bot_token)
+        pulumi.set(__self__, "chat_id", chat_id)
+        if message_thread_id is None:
+            message_thread_id = ''
+        if message_thread_id is not None:
+            pulumi.set(__self__, "message_thread_id", message_thread_id)
+
+    @_builtins.property
+    @pulumi.getter(name="botToken")
+    def bot_token(self) -> _builtins.str:
+        """
+        Secret Telegram bot token.
+        """
+        return pulumi.get(self, "bot_token")
+
+    @_builtins.property
+    @pulumi.getter(name="chatId")
+    def chat_id(self) -> _builtins.str:
+        """
+        Telegram chat ID.
+        """
+        return pulumi.get(self, "chat_id")
+
+    @_builtins.property
+    @pulumi.getter(name="messageThreadId")
+    def message_thread_id(self) -> Optional[_builtins.str]:
+        """
+        Optional message thread ID; defaults to empty.
+        """
+        return pulumi.get(self, "message_thread_id")
 
 
 @pulumi.output_type
