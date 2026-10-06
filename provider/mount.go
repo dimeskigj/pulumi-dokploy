@@ -32,6 +32,7 @@ const (
 	mountTypeBind            = "bind"
 	mountTypeVolume          = "volume"
 	mountTypeFile            = "file"
+	mountUpdatePhaseUpdate   = "update"
 	mountUpdateStatusFailed  = "failed"
 	mountUpdateStatusTimeout = "timeout"
 )
@@ -296,7 +297,7 @@ func (r Mount) Update(ctx context.Context, req infer.UpdateRequest[MountArgs, Mo
 	t, err := mountTargetFor(req.Inputs)
 	phase := "target"
 	if err == nil {
-		phase = "update"
+		phase = mountUpdatePhaseUpdate
 		_, err = r.client(ctx).MountsUpdateWithResponse(ctx, mountUpdateBody(req.ID, req.Inputs, t))
 		if err == nil {
 			phase = "readback"

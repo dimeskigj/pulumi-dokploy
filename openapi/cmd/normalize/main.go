@@ -86,10 +86,10 @@ func (p PathItem) MarshalJSON() ([]byte, error) {
 		methods = map[string]*Operation{}
 	}
 	if p.Get != nil {
-		methods["get"] = p.Get
+		methods[httpMethodGet] = p.Get
 	}
 	if p.Post != nil {
-		methods["post"] = p.Post
+		methods[httpMethodPost] = p.Post
 	}
 	for k, v := range methods {
 		b, err := json.Marshal(v)
@@ -102,7 +102,7 @@ func (p PathItem) MarshalJSON() ([]byte, error) {
 }
 func isHTTPMethod(s string) bool {
 	switch strings.ToLower(s) {
-	case "get", "put", "post", "delete", "options", "head", "patch", "trace":
+	case httpMethodGet, "put", httpMethodPost, "delete", "options", "head", "patch", "trace":
 		return true
 	}
 	return false
@@ -122,10 +122,10 @@ func allOperations(p *PathItem) map[string]*Operation {
 		r[method] = op
 	}
 	if p.Get != nil {
-		r["get"] = p.Get
+		r[httpMethodGet] = p.Get
 	}
 	if p.Post != nil {
-		r["post"] = p.Post
+		r[httpMethodPost] = p.Post
 	}
 	return r
 }
@@ -180,10 +180,10 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 			x := *candidate
 			x.Raw = cloneMap(candidate.Raw)
 			b.Methods[method] = &x
-			if method == "get" {
+			if method == httpMethodGet {
 				b.Get = &x
 			}
-			if method == "post" {
+			if method == httpMethodPost {
 				b.Post = &x
 			}
 		}
