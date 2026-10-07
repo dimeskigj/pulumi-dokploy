@@ -239,8 +239,8 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-    assert.equal((config.match(/link: "\//g) ?? []).length, 53);
-    assert.equal(curatedFiles.length, 16);
+    assert.equal((config.match(/link: "\//g) ?? []).length, 54);
+    assert.equal(curatedFiles.length, 17);
 });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
