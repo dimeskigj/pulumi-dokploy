@@ -196,7 +196,7 @@ func TestLookupSchemaContract(t *testing.T) {
 	require.ElementsMatch(t, tokens, functionTokens(spec.Functions))
 	require.ElementsMatch(t, []string{
 		"dokploy:index:Project", "dokploy:index:Environment", "dokploy:index:Application", "dokploy:index:Compose", "dokploy:index:Postgres", "dokploy:index:MySQL", "dokploy:index:MariaDB", "dokploy:index:MongoDB", "dokploy:index:Redis", "dokploy:index:Domain", "dokploy:index:Destination", "dokploy:index:Backup", "dokploy:index:VolumeBackup", "dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount",
-		"dokploy:index:Schedule",
+		"dokploy:index:Schedule", "dokploy:index:Port",
 	}, resourceTokens(spec.Resources))
 	for token, resource := range spec.Resources {
 		require.False(t, resource.IsComponent, token)
