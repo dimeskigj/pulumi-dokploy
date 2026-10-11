@@ -37,7 +37,7 @@ broader direct-provider coverage.
 
 ## Prerequisites
 
-Install Go `1.26.6`, the pinned Pulumi CLI `3.259.0`, and the repository's
+Install Go `1.26.9`, the pinned Pulumi CLI `3.259.0`, and the repository's
 local provider binary.
 
 **Process prerequisites** are the variables that enable a live test process:

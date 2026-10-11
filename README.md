@@ -8,7 +8,7 @@ The Dokploy provider manages self-hosted Dokploy projects and deployments with P
 
 ## Install
 
-The provider is built and tested with Go 1.26.6, including the security-fixed
+The provider is built and tested with Go 1.26.9, including the security-fixed
 toolchain used by the release workflows.
 
 Install the SDK package for your Pulumi language. Pulumi normally downloads the
