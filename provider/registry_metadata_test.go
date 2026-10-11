@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const releaseGoVersion = "1.26.6"
+const releaseGoVersion = "1.26.9"
 
 const pulumiScriptsRef = "9aeffd86afa793846dc4f001a6f374b3f135bfef"
 
