@@ -68,8 +68,7 @@ by this provider; SSH keys can be managed using the `SSHKey` resource.
 
 Source type changes replace that resource rather than attempting an
 in-place conversion. Create and update operations for deploying workload resources
-wait for Dokploy deployment completion;
-deployment errors preserve partial state so the failed resource can be inspected and repaired.
+wait for Dokploy deployment completion; deployment errors preserve partial state so the failed resource can be inspected and repaired.
 Compose volumes are preserved on destroy by default. Set `deleteVolumesOnDestroy` only when
 those volumes should be deleted.
 
