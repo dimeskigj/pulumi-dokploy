@@ -41,8 +41,78 @@ func (m *lookupMocks) Call(args pulumi.MockCallArgs) (resource.PropertyMap, erro
 			"environmentId": "environment-example", "name": "Existing environment",
 			"projectId": "project-example", "isDefault": true,
 		}), nil
+	case "dokploy:index:getServer":
+		if args.Args["serverId"].StringValue() != "server-example" {
+			return nil, fmt.Errorf("unexpected server invoke input")
+		}
+		return resource.NewPropertyMapFromMap(map[string]any{
+			"serverId": "server-example", "name": "Existing server",
+		}), nil
 	default:
 		return nil, fmt.Errorf("unexpected invoke token: %s", args.Token)
+	}
+}
+
+type serverLookupMocks struct {
+	lookupMocks
+	reads int
+}
+
+func (m *serverLookupMocks) NewResource(args pulumi.MockResourceArgs) (string, resource.PropertyMap, error) {
+	if args.TypeToken != "dokploy:index:Server" {
+		return m.lookupMocks.NewResource(args)
+	}
+	if args.ReadRPC == nil || args.Name != "managedServer" || args.ID != "server-example" {
+		return "", nil, fmt.Errorf("unexpected managed Server read")
+	}
+	m.reads++
+	return args.ID, resource.NewPropertyMapFromMap(map[string]any{
+		"serverId": args.ID, "name": "Managed server",
+	}), nil
+}
+
+func TestGoServerInvokeAndManagedGetterCoexist(t *testing.T) {
+	// Compile-time checks keep both the invoke and managed-resource getter usable.
+	var _ func(*pulumi.Context, *dokploy.LookupServerArgs, ...pulumi.InvokeOption) (*dokploy.LookupServerResult, error) = dokploy.LookupServer
+	var _ func(*pulumi.Context, dokploy.LookupServerOutputArgs, ...pulumi.InvokeOption) dokploy.LookupServerResultOutput = dokploy.LookupServerOutput
+	var _ func(*pulumi.Context, string, pulumi.IDInput, *dokploy.ServerState, ...pulumi.ResourceOption) (*dokploy.Server, error) = dokploy.GetServer
+
+	mocks := &serverLookupMocks{}
+	err := pulumi.RunErr(func(ctx *pulumi.Context) error {
+		plain, err := dokploy.LookupServer(ctx, &dokploy.LookupServerArgs{ServerId: "server-example"})
+		if err != nil {
+			return err
+		}
+		if plain.ServerId != "server-example" || plain.Name != "Existing server" {
+			return fmt.Errorf("plain Server invoke metadata mismatch")
+		}
+		output := dokploy.LookupServerOutput(ctx, dokploy.LookupServerOutputArgs{ServerId: pulumi.String("server-example")})
+		ctx.Export("lookupName", output.Name().ApplyT(func(name string) (string, error) {
+			if name != "Existing server" {
+				return "", fmt.Errorf("output Server invoke metadata mismatch")
+			}
+			return name, nil
+		}))
+		managed, err := dokploy.GetServer(ctx, "managedServer", pulumi.ID("server-example"), nil)
+		if err != nil {
+			return err
+		}
+		ctx.Export("managedName", managed.Name.ApplyT(func(name string) (string, error) {
+			if name != "Managed server" {
+				return "", fmt.Errorf("managed Server read metadata mismatch")
+			}
+			return name, nil
+		}))
+		return nil
+	}, pulumi.WithMocks("server-lookup-example", "test", mocks))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(mocks.calls) != 2 || mocks.calls[0] != "dokploy:index:getServer" || mocks.calls[1] != "dokploy:index:getServer" {
+		t.Fatalf("unexpected invoke tokens: %v", mocks.calls)
+	}
+	if mocks.reads != 1 || mocks.resources != 0 {
+		t.Fatalf("unexpected resource reads=%d registrations=%d", mocks.reads, mocks.resources)
 	}
 }
 

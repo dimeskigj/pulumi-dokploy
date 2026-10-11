@@ -41,4 +41,17 @@ _ = project.Name
 _ = environment.EnvironmentId // Supply explicitly to a managed resource when needed.
 ```
 
+### Go Server invoke migration
+
+Adding the managed `Server` resource changes **Go SDK names only**: the former Server invoke `GetServer`, `GetServerArgs`, `GetServerResult`, `GetServerOutput`, `GetServerOutputArgs`, and `GetServerResultOutput` are now `LookupServer`, `LookupServerArgs`, `LookupServerResult`, `LookupServerOutput`, `LookupServerOutputArgs`, and `LookupServerResultOutput`, respectively. Update Go code using the read-only invoke, for example:
+
+```go
+server, err := dokploy.LookupServer(ctx, &dokploy.LookupServerArgs{ServerId: "<existing-server-id>"})
+if err != nil { return err }
+_ = server.Name
+// For a Pulumi Output ID: dokploy.LookupServerOutput(ctx, dokploy.LookupServerOutputArgs{ServerId: serverID})
+```
+
+`dokploy.GetServer(ctx, name, id, state)` now reads a **managed Server resource** into Pulumi state; it is not the metadata invoke. The invoke still uses provider token `dokploy:index:getServer`, and its names in other languages remain unchanged. Use the invoke when you do not intend to manage the existing Server record.
+
 Results project only documented non-secret metadata: ID and name are required, while other fields (including default-environment metadata) are optional and may be absent. Passwords, private keys, environment values, source configuration, Compose files, commands, nested objects, and monitoring settings are omitted. Names and descriptions are ordinary metadata, **not** scanned for secrets deliberately stored in them; avoid placing secrets there. See the [environment function reference](../../reference/get-environment/) for input and output types.
