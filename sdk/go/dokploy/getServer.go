@@ -12,9 +12,9 @@ import (
 )
 
 // Read non-secret metadata for an existing Dokploy server by ID without managing it.
-func GetServer(ctx *pulumi.Context, args *GetServerArgs, opts ...pulumi.InvokeOption) (*GetServerResult, error) {
+func LookupServer(ctx *pulumi.Context, args *LookupServerArgs, opts ...pulumi.InvokeOption) (*LookupServerResult, error) {
 	opts = internal.PkgInvokeDefaultOpts(opts)
-	var rv GetServerResult
+	var rv LookupServerResult
 	err := ctx.Invoke("dokploy:index:getServer", args, &rv, opts...)
 	if err != nil {
 		return nil, err
@@ -22,12 +22,12 @@ func GetServer(ctx *pulumi.Context, args *GetServerArgs, opts ...pulumi.InvokeOp
 	return &rv, nil
 }
 
-type GetServerArgs struct {
+type LookupServerArgs struct {
 	// The ID of the existing Dokploy server to read.
 	ServerId string `pulumi:"serverId"`
 }
 
-type GetServerResult struct {
+type LookupServerResult struct {
 	// The optional description metadata.
 	Description *string `pulumi:"description"`
 	// The optional IP address metadata.
@@ -50,84 +50,84 @@ type GetServerResult struct {
 	Username *string `pulumi:"username"`
 }
 
-func GetServerOutput(ctx *pulumi.Context, args GetServerOutputArgs, opts ...pulumi.InvokeOption) GetServerResultOutput {
+func LookupServerOutput(ctx *pulumi.Context, args LookupServerOutputArgs, opts ...pulumi.InvokeOption) LookupServerResultOutput {
 	options := pulumi.InvokeOutputOptions{InvokeOptions: internal.PkgInvokeDefaultOpts(opts)}
-	return ctx.InvokeOutput("dokploy:index:getServer", args, GetServerResultOutput{}, options).(GetServerResultOutput)
+	return ctx.InvokeOutput("dokploy:index:getServer", args, LookupServerResultOutput{}, options).(LookupServerResultOutput)
 }
 
-type GetServerOutputArgs struct {
+type LookupServerOutputArgs struct {
 	// The ID of the existing Dokploy server to read.
 	ServerId pulumi.StringInput `pulumi:"serverId"`
 }
 
-func (GetServerOutputArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*GetServerArgs)(nil)).Elem()
+func (LookupServerOutputArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*LookupServerArgs)(nil)).Elem()
 }
 
-type GetServerResultOutput struct{ *pulumi.OutputState }
+type LookupServerResultOutput struct{ *pulumi.OutputState }
 
-func (GetServerResultOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*GetServerResult)(nil)).Elem()
+func (LookupServerResultOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*LookupServerResult)(nil)).Elem()
 }
 
-func (o GetServerResultOutput) ToGetServerResultOutput() GetServerResultOutput {
+func (o LookupServerResultOutput) ToLookupServerResultOutput() LookupServerResultOutput {
 	return o
 }
 
-func (o GetServerResultOutput) ToGetServerResultOutputWithContext(ctx context.Context) GetServerResultOutput {
+func (o LookupServerResultOutput) ToLookupServerResultOutputWithContext(ctx context.Context) LookupServerResultOutput {
 	return o
 }
 
 // The optional description metadata.
-func (o GetServerResultOutput) Description() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *string { return v.Description }).(pulumi.StringPtrOutput)
+func (o LookupServerResultOutput) Description() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *string { return v.Description }).(pulumi.StringPtrOutput)
 }
 
 // The optional IP address metadata.
-func (o GetServerResultOutput) IpAddress() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *string { return v.IpAddress }).(pulumi.StringPtrOutput)
+func (o LookupServerResultOutput) IpAddress() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *string { return v.IpAddress }).(pulumi.StringPtrOutput)
 }
 
 // The server name.
-func (o GetServerResultOutput) Name() pulumi.StringOutput {
-	return o.ApplyT(func(v GetServerResult) string { return v.Name }).(pulumi.StringOutput)
+func (o LookupServerResultOutput) Name() pulumi.StringOutput {
+	return o.ApplyT(func(v LookupServerResult) string { return v.Name }).(pulumi.StringOutput)
 }
 
 // The optional organization ID metadata.
-func (o GetServerResultOutput) OrganizationId() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *string { return v.OrganizationId }).(pulumi.StringPtrOutput)
+func (o LookupServerResultOutput) OrganizationId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *string { return v.OrganizationId }).(pulumi.StringPtrOutput)
 }
 
 // The optional port metadata.
-func (o GetServerResultOutput) Port() pulumi.IntPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *int { return v.Port }).(pulumi.IntPtrOutput)
+func (o LookupServerResultOutput) Port() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *int { return v.Port }).(pulumi.IntPtrOutput)
 }
 
 // The stable Dokploy server ID.
-func (o GetServerResultOutput) ServerId() pulumi.StringOutput {
-	return o.ApplyT(func(v GetServerResult) string { return v.ServerId }).(pulumi.StringOutput)
+func (o LookupServerResultOutput) ServerId() pulumi.StringOutput {
+	return o.ApplyT(func(v LookupServerResult) string { return v.ServerId }).(pulumi.StringOutput)
 }
 
 // The optional server type metadata.
-func (o GetServerResultOutput) ServerType() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *string { return v.ServerType }).(pulumi.StringPtrOutput)
+func (o LookupServerResultOutput) ServerType() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *string { return v.ServerType }).(pulumi.StringPtrOutput)
 }
 
 // The optional SSH key ID metadata.
-func (o GetServerResultOutput) SshKeyId() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *string { return v.SshKeyId }).(pulumi.StringPtrOutput)
+func (o LookupServerResultOutput) SshKeyId() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *string { return v.SshKeyId }).(pulumi.StringPtrOutput)
 }
 
 // The optional status metadata.
-func (o GetServerResultOutput) Status() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *string { return v.Status }).(pulumi.StringPtrOutput)
+func (o LookupServerResultOutput) Status() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *string { return v.Status }).(pulumi.StringPtrOutput)
 }
 
 // The optional username metadata.
-func (o GetServerResultOutput) Username() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v GetServerResult) *string { return v.Username }).(pulumi.StringPtrOutput)
+func (o LookupServerResultOutput) Username() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v LookupServerResult) *string { return v.Username }).(pulumi.StringPtrOutput)
 }
 
 func init() {
-	pulumi.RegisterOutputType(GetServerResultOutput{})
+	pulumi.RegisterOutputType(LookupServerResultOutput{})
 }
