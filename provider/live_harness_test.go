@@ -179,6 +179,9 @@ func handleLiveHeavyCreateError(t *testing.T, lease *liveHeavyOperationLease, id
 }
 
 func processLiveHeavyCreateError(t *testing.T, lease *liveHeavyOperationLease, id string, createErr error, cleanup func(), probes ...func(context.Context) error) error {
+	if id == "" && createErr == nil {
+		createErr = errors.New("live create returned no confirmed identity")
+	}
 	return processLiveHeavyOperationError(t, lease, createErr, func() {
 		cleanupLiveHeavyCreateFailure(t, lease, id, createErr, cleanup)
 	}, probes...)
@@ -218,12 +221,28 @@ func processLiveHeavyOperationError(t *testing.T, lease *liveHeavyOperationLease
 
 func cleanupLiveHeavyCreateFailure(t *testing.T, lease *liveHeavyOperationLease, id string, createErr error, cleanup func()) {
 	t.Helper()
+	if id == "" {
+		if !liveCreateDefinitelyRejected(createErr) {
+			recordLiveCleanupFailure(lease.kind, "", createErr)
+		}
+		return
+	}
 	if createErr == nil {
 		return
 	}
-	if id != "" && cleanup != nil {
+	if cleanup != nil {
 		cleanup()
+	} else {
+		recordLiveCleanupFailure(lease.kind, id, createErr)
 	}
+}
+
+// Without an acknowledged identity, only an explicit API rejection proves
+// that there is no mutation to clean up. Transport/decode failures, timeouts,
+// rate limits, and incomplete successes leave ownership uncertain.
+func liveCreateDefinitelyRejected(err error) bool {
+	var apiErr *client.APIError
+	return errors.As(err, &apiErr) && apiErr.StatusCode >= 400 && apiErr.StatusCode < 500 && apiErr.StatusCode != 429
 }
 
 var liveResultStore struct {
@@ -731,6 +750,17 @@ func requireLiveAcceptance(t *testing.T) {
 	}
 }
 
+// An ordinary failed subtest does not gate siblings; only a safety stop does.
+func runLiveCase(t *testing.T, name string, run func(*testing.T)) bool {
+	t.Helper()
+	return t.Run(name, func(t *testing.T) {
+		if heavyLiveTierStopped() {
+			t.Skip("live acceptance stopped after a cleanup or server-health failure")
+		}
+		run(t)
+	})
+}
+
 func liveRunName(kind string) string {
 	return "pulumi-acceptance-" + kind + "-" + uuid.NewString()
 }
@@ -1034,7 +1064,7 @@ func recordHeavyFailure(kind string, diagnostic interface{}) string {
 func structuralLiveDiagnostic(operation, kind string, err error) string {
 	resource := "unknown"
 	switch kind {
-	case "application", "compose", "domain", "mount", "project", "environment", "destination", "ssh-key", "registry", "tag", "project-tag", "postgres", "mysql", "mariadb", "mongodb", "redis", "backup", "backup-postgres", "backup-mysql", "backup-mariadb", "backup-mongodb":
+	case "application", "compose", "domain", "mount", "project", "environment", "destination", "ssh-key", "registry", "tag", "project-tag", "postgres", "mysql", "mariadb", "mongodb", "redis", "backup", "backup-postgres", "backup-mysql", "backup-mariadb", "backup-mongodb", "schedule", "server", "port", "notification":
 		resource = kind
 	}
 	statusClass, code := "transport", "unknown"
@@ -1110,7 +1140,19 @@ func restoreLiveHarnessState(state liveHarnessState) {
 	liveResultStore.Unlock()
 }
 
-func heavyLiveTierStopped() bool { return liveHeavyStop.Load() }
+func heavyLiveTierStopped() bool {
+	if liveHeavyStop.Load() {
+		return true
+	}
+	path := strings.TrimSpace(os.Getenv(liveStopMarkerEnvironment))
+	if path == "" {
+		return false
+	}
+	// New processes and repeated runs must honor an earlier safety stop. Fail
+	// closed on unreadable marker paths, including dangling symlinks.
+	_, err := os.Lstat(path)
+	return err == nil || !os.IsNotExist(err)
+}
 
 func heavyLiveTierAvailable() bool { return !heavyLiveTierStopped() }
 

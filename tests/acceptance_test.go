@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -428,9 +429,14 @@ func TestLifecycleSmokeProgram(t *testing.T) {
 			}
 			project := mocks.resource("dokploy:index:Project", acceptanceEntityName("project", "mock"))
 			assertString(t, project, "description", variant.values.description)
+			readProject := mocks.resource("dokploy:index:Project", "pulumi-acceptance-read-project-mock")
+			assertString(t, readProject, "name", "pulumi-acceptance-project-mock")
+			assertString(t, readProject, "description", variant.values.description)
 			environment := mocks.resource("dokploy:index:Environment", acceptanceEntityName("environment", "mock"))
 			assertString(t, environment, "name", acceptanceEntityName(variant.values.environment, "mock"))
 			assertString(t, environment, "projectId", "project-mock-id")
+			readEnvironment := mocks.resource("dokploy:index:Environment", "pulumi-acceptance-read-environment-mock")
+			assertString(t, readEnvironment, "name", acceptanceEntityName(variant.values.environment, "mock"))
 			tag := mocks.resource("dokploy:index:Tag", acceptanceEntityName("tag", "mock"))
 			assertString(t, tag, "color", variant.values.color)
 			association := mocks.resource("dokploy:index:ProjectTag", acceptanceEntityName("project-tag", "mock"))
@@ -471,6 +477,75 @@ func TestLifecycleSmokeProgramKeepsResourceIdentityAcrossRevisions(t *testing.T)
 	}
 	if len(ids) != 4 {
 		t.Fatalf("distinct logical resources did not receive distinct IDs: %#v", ids)
+	}
+}
+
+func TestLifecycleSmokeProgramInvokesResolvedLookupsAcrossRevisions(t *testing.T) {
+	cfg := liveConfig{NameSuffix: "mock"}
+	mocks := &captureLifecycleResources{}
+	for _, program := range []pulumi.RunFunc{lifecycleRevisionOne(cfg), lifecycleRevisionTwo(cfg), lifecycleRevisionOne(cfg)} {
+		if err := pulumi.RunErr(program, pulumi.WithMocks("lifecycle", "lookup-repeat", mocks)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mocks.mu.Lock()
+	defer mocks.mu.Unlock()
+	for _, token := range []string{"dokploy:index:getProject", "dokploy:index:getEnvironment"} {
+		if len(mocks.calls[token]) != 3 {
+			t.Fatalf("%s invoke count = %d, want three", token, len(mocks.calls[token]))
+		}
+	}
+}
+
+func TestLifecycleSmokeProgramLookupFailureDoesNotPoisonIndependentRun(t *testing.T) {
+	cfg := liveConfig{NameSuffix: "mock"}
+	failing := &captureLifecycleResources{callError: errors.New("independent invoke failure")}
+	if err := pulumi.RunErr(lifecycleRevisionOne(cfg), pulumi.WithMocks("lifecycle", "failed", failing)); err == nil {
+		t.Fatal("lookup failure did not fail the program")
+	}
+	for _, revision := range []struct {
+		program         pulumi.RunFunc
+		environmentName string
+	}{
+		{lifecycleRevisionOne(cfg), "pulumi-acceptance-staging-mock"},
+		{lifecycleRevisionTwo(cfg), "pulumi-acceptance-staging-updated-mock"},
+	} {
+		mocks := &captureLifecycleResources{}
+		captureOutputs := func(ctx *pulumi.Context) error {
+			if err := revision.program(ctx); err != nil {
+				return err
+			}
+			exports := ctx.GetCurrentExportMap()
+			keys := make([]string, 0, len(exports))
+			for key := range exports {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			inputs := make([]interface{}, len(keys))
+			for index, key := range keys {
+				inputs[index] = exports[key]
+			}
+			pulumi.All(inputs...).ApplyT(func(values []interface{}) error {
+				mocks.mu.Lock()
+				defer mocks.mu.Unlock()
+				mocks.outputs = resource.PropertyMap{}
+				for index, key := range keys {
+					mocks.outputs[resource.PropertyKey(key)] = resource.NewPropertyValue(values[index])
+				}
+				return nil
+			})
+			return nil
+		}
+		if err := pulumi.RunErr(captureOutputs, pulumi.WithMocks("lifecycle", "independent", mocks)); err != nil {
+			t.Fatal("prior independent failure poisoned program")
+		}
+		mocks.mu.Lock()
+		outputs := mocks.outputs.Copy()
+		mocks.mu.Unlock()
+		assertString(t, outputs, "lookupProjectId", "project-mock-id")
+		assertString(t, outputs, "lookupProjectName", "pulumi-acceptance-project-mock")
+		assertString(t, outputs, "lookupEnvironmentId", "environment-mock-id")
+		assertString(t, outputs, "lookupEnvironmentName", revision.environmentName)
 	}
 }
 
@@ -565,6 +640,81 @@ func TestLifecycleSmokeCleanupRunsPostDestroyValidationAndAllCleanupSteps(t *tes
 	}
 	if removeDeadline.IsZero() || listDeadline.IsZero() || !listDeadline.After(removeDeadline) {
 		t.Fatalf("cleanup contexts were not independent: remove=%v, list=%v", removeDeadline, listDeadline)
+	}
+}
+
+func TestLifecycleSmokeCleanupFailureWritesProtectedStopMarker(t *testing.T) {
+	for _, stage := range []string{"destroy", "export", "remove", "list"} {
+		t.Run(stage, func(t *testing.T) {
+			marker := filepath.Join(t.TempDir(), "stop")
+			failures := make([]error, 4)
+			index := map[string]int{"destroy": 0, "export": 1, "remove": 2, "list": 3}[stage]
+			failures[index] = errors.New("private cleanup detail")
+			if err := recordLifecycleCleanupStop(marker, failures...); err != nil {
+				t.Fatal(err)
+			}
+			content, err := os.ReadFile(marker)
+			if err != nil || string(content) != "stop\n" {
+				t.Fatal("cleanup failure did not write fixed stop marker")
+			}
+			info, err := os.Stat(marker)
+			if err != nil || info.Mode().Perm() != 0600 {
+				t.Fatal("stop marker is not protected")
+			}
+			if err := lifecycleSmokeGate(marker); err == nil {
+				t.Fatal("smoke gate ignored cleanup uncertainty")
+			}
+		})
+	}
+}
+
+func TestLifecycleSmokeCleanupNeverClearsOrRewritesExistingMarker(t *testing.T) {
+	marker := filepath.Join(t.TempDir(), "stop")
+	if err := os.WriteFile(marker, []byte("prior marker\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	for _, failures := range [][]error{{errors.New("failure")}, {nil, nil, nil, nil}} {
+		if err := recordLifecycleCleanupStop(marker, failures...); err != nil {
+			t.Fatal(err)
+		}
+		content, err := os.ReadFile(marker)
+		if err != nil || string(content) != "prior marker\n" {
+			t.Fatal("existing stop marker was modified")
+		}
+		if err := lifecycleSmokeGate(marker); err == nil {
+			t.Fatal("repeat run ignored existing marker")
+		}
+	}
+}
+
+func TestLifecycleSmokeCleanupSuccessAllowsIndependentRepeatedRuns(t *testing.T) {
+	marker := filepath.Join(t.TempDir(), "stop")
+	for range 2 {
+		if err := recordLifecycleCleanupStop(marker, nil, nil, nil, nil); err != nil {
+			t.Fatal(err)
+		}
+		if err := lifecycleSmokeGate(marker); err != nil {
+			t.Fatal("successful cleanup blocked independent run")
+		}
+	}
+	if _, err := os.Stat(marker); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("successful cleanup created a stop marker")
+	}
+}
+
+func TestLifecycleSmokeGateFailsClosedOnMissingSetupAndUninspectableMarker(t *testing.T) {
+	if err := lifecycleSmokeGate(""); err == nil {
+		t.Fatal("missing stop-marker safety setup was accepted")
+	}
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, []byte("file"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := lifecycleSmokeGate(filepath.Join(file, "stop")); err == nil {
+		t.Fatal("uninspectable stop-marker path was accepted")
+	}
+	if err := recordLifecycleCleanupStop(filepath.Join(file, "stop"), errors.New("private")); err == nil {
+		t.Fatal("stop-marker write failure was hidden")
 	}
 }
 
@@ -737,10 +887,40 @@ type captureLifecycleResources struct {
 	resources map[string]resource.PropertyMap
 	ids       map[string]string
 	histories map[string][]string
+	calls     map[string][]resource.PropertyMap
+	outputs   resource.PropertyMap
+	callError error
 }
 
-func (m *captureLifecycleResources) Call(pulumi.MockCallArgs) (resource.PropertyMap, error) {
-	return resource.PropertyMap{}, nil
+func (m *captureLifecycleResources) Call(args pulumi.MockCallArgs) (resource.PropertyMap, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.calls == nil {
+		m.calls = map[string][]resource.PropertyMap{}
+	}
+	m.calls[args.Token] = append(m.calls[args.Token], args.Args.Copy())
+	if m.callError != nil {
+		return nil, m.callError
+	}
+	var resourceType, field, id string
+	switch args.Token {
+	case "dokploy:index:getProject":
+		resourceType, field, id = "dokploy:index:Project", "projectId", "project-mock-id"
+	case "dokploy:index:getEnvironment":
+		resourceType, field, id = "dokploy:index:Environment", "environmentId", "environment-mock-id"
+	default:
+		return nil, errors.New("unexpected invoke token")
+	}
+	value, ok := args.Args[resource.PropertyKey(field)]
+	if len(args.Args) != 1 || !ok || !value.IsString() || value.StringValue() != id {
+		return nil, errors.New("invoke did not receive resolved owned resource identity")
+	}
+	for key, state := range m.resources {
+		if strings.HasPrefix(key, resourceType+"/") && !strings.Contains(key, "/pulumi-acceptance-read-") {
+			return resource.PropertyMap{resource.PropertyKey(field): value, "name": state["name"]}, nil
+		}
+	}
+	return nil, errors.New("invoke preceded resource registration")
 }
 
 func (m *captureLifecycleResources) NewResource(args pulumi.MockResourceArgs) (string, resource.PropertyMap, error) {
@@ -756,6 +936,19 @@ func (m *captureLifecycleResources) NewResource(args pulumi.MockResourceArgs) (s
 		m.histories = map[string][]string{}
 	}
 	inputs := args.Inputs.Copy()
+	if args.ID != "" {
+		found := false
+		for key, state := range m.resources {
+			if strings.HasPrefix(key, args.TypeToken+"/") && !strings.Contains(key, "/pulumi-acceptance-read-") {
+				inputs = state.Copy()
+				found = true
+				break
+			}
+		}
+		if !found {
+			return "", nil, errors.New("import read preceded owned resource registration")
+		}
+	}
 	switch args.TypeToken {
 	case "dokploy:index:Project":
 		inputs["projectId"] = resource.NewStringProperty("project-mock-id")
@@ -767,7 +960,9 @@ func (m *captureLifecycleResources) NewResource(args pulumi.MockResourceArgs) (s
 	}
 	m.resources[args.TypeToken+"/"+args.Name] = inputs
 	key := args.TypeToken + "/" + args.Name
-	if _, ok := m.ids[key]; !ok {
+	if args.ID != "" {
+		m.ids[key] = args.ID
+	} else if _, ok := m.ids[key]; !ok {
 		m.ids[key] = "mock-resource-id-" + strconv.Itoa(len(m.ids)+1)
 	}
 	m.histories[key] = append(m.histories[key], m.ids[key])

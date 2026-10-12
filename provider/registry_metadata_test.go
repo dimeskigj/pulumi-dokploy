@@ -928,6 +928,21 @@ func TestOwnedWorkflow(t *testing.T) {
 	jobs := workflow["jobs"].(map[string]any)
 	prerequisites := jobs["prerequisites"].(map[string]any)
 	steps := prerequisites["steps"].([]any)
+	confirmation := steps[findStepIndex(steps, "Require operator safety confirmation")].(map[string]any)
+	require.Equal(t, map[string]any{"ACCEPTANCE_SAFETY_CONFIRMED": "${{ inputs.safety_confirmed }}"}, confirmation["env"])
+	require.NotContains(t, confirmation, "if")
+	require.NotContains(t, confirmation, "continue-on-error")
+	for _, choice := range []string{"", "false", "true"} {
+		// Execute only the checked-in confirmation step, without inherited credentials.
+		command := exec.Command("bash", "-euo", "pipefail", "-c", confirmation["run"].(string)) //nolint:gosec
+		command.Env = []string{"PATH=/usr/bin:/bin", "ACCEPTANCE_SAFETY_CONFIRMED=" + choice}
+		err := command.Run()
+		if choice == "true" {
+			require.NoError(t, err)
+		} else {
+			require.Error(t, err, "missing operator clearance must block a fresh dispatch")
+		}
+	}
 	markerPath := "${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}"
 	prepareIndex := findStepIndex(steps, "Prepare acceptance stop marker")
 	require.GreaterOrEqual(t, prepareIndex, 0)
@@ -951,81 +966,43 @@ func TestOwnedWorkflow(t *testing.T) {
 		"DOKPLOY_ENDPOINT": "${{ secrets.DOKPLOY_ENDPOINT }}",
 		"DOKPLOY_API_KEY":  "${{ secrets.DOKPLOY_API_KEY }}",
 	}, preflight["env"])
-	type liveStep struct {
-		name string
-		run  string
-		env  map[string]any
+	// Execution/continuation behavior is tested by test_live_acceptance_runner.py;
+	// here protect the workflow boundary: selection, credentials and serialization.
+	concurrency := workflow["concurrency"].(map[string]any)
+	require.Equal(t, "dokploy-live-acceptance", concurrency["group"])
+	require.Equal(t, false, concurrency["cancel-in-progress"])
+	selection := workflow["on"].(map[string]any)["workflow_dispatch"].(map[string]any)["inputs"].(map[string]any)["segment"].(map[string]any)
+	require.Equal(t, "choice", selection["type"])
+	require.Equal(t, "all", selection["default"])
+	require.Equal(t, []any{"all", "tier1", "tier2", "tier3", "tier4", "smoke"}, selection["options"])
+	safety := workflow["on"].(map[string]any)["workflow_dispatch"].(map[string]any)["inputs"].(map[string]any)["safety_confirmed"].(map[string]any)
+	require.Equal(t, "boolean", safety["type"])
+	require.Equal(t, true, safety["required"])
+	require.Equal(t, false, safety["default"])
+	runnerIndex := findStepIndex(steps, "Test acceptance segments")
+	require.GreaterOrEqual(t, runnerIndex, 0)
+	runner := steps[runnerIndex].(map[string]any)
+	require.Equal(t, `mise exec -- bash scripts/run-live-acceptance.sh "$ACCEPTANCE_SEGMENT"`, runner["run"])
+	require.NotContains(t, runner, "continue-on-error", "runner's aggregate failure must fail the job")
+	expectedEnv := map[string]any{"ACCEPTANCE_SEGMENT": "${{ inputs.segment }}", "DOKPLOY_ACCEPTANCE": "1", "DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath}
+	for _, name := range []string{
+		"DOKPLOY_ENDPOINT", "DOKPLOY_API_KEY", "DOKPLOY_ACCEPTANCE_SERVER_ID",
+		"DOKPLOY_REGISTRY_URL", "DOKPLOY_REGISTRY_USERNAME", "DOKPLOY_REGISTRY_PASSWORD", "DOKPLOY_REGISTRY_IMAGE_PREFIX",
+		"DOKPLOY_REGISTRY_UPDATED_URL", "DOKPLOY_REGISTRY_UPDATED_USERNAME", "DOKPLOY_REGISTRY_UPDATED_PASSWORD", "DOKPLOY_REGISTRY_UPDATED_IMAGE_PREFIX",
+		"DOKPLOY_ACCEPTANCE_DESTINATION_UPDATED_PROVIDER", "DOKPLOY_GITLAB_INTEGRATION_ID", "DOKPLOY_GITLAB_PROJECT_ID",
+		"DOKPLOY_GITLAB_OWNER", "DOKPLOY_GITLAB_NAMESPACE", "DOKPLOY_GITLAB_REPOSITORY", "DOKPLOY_GITLAB_BRANCH",
+		"DOKPLOY_GITLAB_USERNAME", "DOKPLOY_GITLAB_TOKEN", "DOKPLOY_CUSTOM_CERT_RESOLVER",
+	} {
+		expectedEnv[name] = "${{ secrets." + name + " }}"
 	}
-	var liveSteps []liveStep
-	for _, rawStep := range steps {
-		step := rawStep.(map[string]any)
-		run, _ := step["run"].(string)
-		if strings.Contains(run, "go test ./provider") || strings.Contains(run, "go test ./tests") {
-			liveSteps = append(liveSteps, liveStep{name: step["name"].(string), run: run, env: step["env"].(map[string]any)})
-		}
-	}
-	require.Len(t, liveSteps, 5)
-	expected := []struct {
-		name string
-		run  string
-		env  map[string]any
-	}{
-		{"Test live Tier 1 control plane", "mise exec -- go test ./provider -run TestLiveTier1ControlPlane -parallel=1 -count=1 -v", map[string]any{
-			"DOKPLOY_ACCEPTANCE_SERVER_ID": "${{ secrets.DOKPLOY_ACCEPTANCE_SERVER_ID }}",
-			"DOKPLOY_ACCEPTANCE":           "1", "DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath, "DOKPLOY_ENDPOINT": "${{ secrets.DOKPLOY_ENDPOINT }}", "DOKPLOY_API_KEY": "${{ secrets.DOKPLOY_API_KEY }}", "DOKPLOY_REGISTRY_URL": "${{ secrets.DOKPLOY_REGISTRY_URL }}", "DOKPLOY_REGISTRY_USERNAME": "${{ secrets.DOKPLOY_REGISTRY_USERNAME }}", "DOKPLOY_REGISTRY_PASSWORD": "${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}", "DOKPLOY_REGISTRY_IMAGE_PREFIX": "${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}", "DOKPLOY_REGISTRY_UPDATED_URL": "${{ secrets.DOKPLOY_REGISTRY_UPDATED_URL }}", "DOKPLOY_REGISTRY_UPDATED_USERNAME": "${{ secrets.DOKPLOY_REGISTRY_UPDATED_USERNAME }}", "DOKPLOY_REGISTRY_UPDATED_PASSWORD": "${{ secrets.DOKPLOY_REGISTRY_UPDATED_PASSWORD }}", "DOKPLOY_REGISTRY_UPDATED_IMAGE_PREFIX": "${{ secrets.DOKPLOY_REGISTRY_UPDATED_IMAGE_PREFIX }}", "DOKPLOY_ACCEPTANCE_DESTINATION_UPDATED_PROVIDER": "${{ secrets.DOKPLOY_ACCEPTANCE_DESTINATION_UPDATED_PROVIDER }}",
-		}},
-		{"Test live Tier 2 workloads", "mise exec -- go test ./provider -run TestLiveTier2Workloads -parallel=1 -count=1 -v", map[string]any{
-			"DOKPLOY_ACCEPTANCE_SERVER_ID":  "${{ secrets.DOKPLOY_ACCEPTANCE_SERVER_ID }}",
-			"DOKPLOY_GITLAB_INTEGRATION_ID": "${{ secrets.DOKPLOY_GITLAB_INTEGRATION_ID }}", "DOKPLOY_GITLAB_PROJECT_ID": "${{ secrets.DOKPLOY_GITLAB_PROJECT_ID }}", "DOKPLOY_GITLAB_OWNER": "${{ secrets.DOKPLOY_GITLAB_OWNER }}", "DOKPLOY_GITLAB_NAMESPACE": "${{ secrets.DOKPLOY_GITLAB_NAMESPACE }}", "DOKPLOY_GITLAB_REPOSITORY": "${{ secrets.DOKPLOY_GITLAB_REPOSITORY }}", "DOKPLOY_GITLAB_BRANCH": "${{ secrets.DOKPLOY_GITLAB_BRANCH }}", "DOKPLOY_GITLAB_USERNAME": "${{ secrets.DOKPLOY_GITLAB_USERNAME }}", "DOKPLOY_GITLAB_TOKEN": "${{ secrets.DOKPLOY_GITLAB_TOKEN }}",
-			"DOKPLOY_ACCEPTANCE": "1", "DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath, "DOKPLOY_ENDPOINT": "${{ secrets.DOKPLOY_ENDPOINT }}", "DOKPLOY_API_KEY": "${{ secrets.DOKPLOY_API_KEY }}", "DOKPLOY_REGISTRY_URL": "${{ secrets.DOKPLOY_REGISTRY_URL }}", "DOKPLOY_REGISTRY_USERNAME": "${{ secrets.DOKPLOY_REGISTRY_USERNAME }}", "DOKPLOY_REGISTRY_PASSWORD": "${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}", "DOKPLOY_REGISTRY_IMAGE_PREFIX": "${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}", "DOKPLOY_CUSTOM_CERT_RESOLVER": "${{ secrets.DOKPLOY_CUSTOM_CERT_RESOLVER }}",
-		}},
-		{"Test live Tier 3 databases", "mise exec -- go test ./provider -run TestLiveTier3Databases -parallel=1 -count=1 -v", map[string]any{
-			"DOKPLOY_ACCEPTANCE": "1", "DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath, "DOKPLOY_ENDPOINT": "${{ secrets.DOKPLOY_ENDPOINT }}", "DOKPLOY_API_KEY": "${{ secrets.DOKPLOY_API_KEY }}",
-		}},
-		{"Test live Tier 4 backups", "mise exec -- go test ./provider -run TestLiveTier4Backups -parallel=1 -count=1 -v", map[string]any{
-			"DOKPLOY_ACCEPTANCE": "1", "DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath, "DOKPLOY_ENDPOINT": "${{ secrets.DOKPLOY_ENDPOINT }}", "DOKPLOY_API_KEY": "${{ secrets.DOKPLOY_API_KEY }}",
-		}},
-		{"Test Pulumi lifecycle smoke", "mise exec -- go test ./tests -run TestAccLifecycleSmoke -parallel=1 -count=1 -v", map[string]any{
-			"DOKPLOY_ACCEPTANCE": "1", "DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath, "DOKPLOY_ENDPOINT": "${{ secrets.DOKPLOY_ENDPOINT }}", "DOKPLOY_API_KEY": "${{ secrets.DOKPLOY_API_KEY }}",
-		}},
-	}
-	expectedIDs := []string{"tier1", "tier2", "tier3", "tier4", "smoke"}
-	for i, want := range expected {
-		step := steps[findStepIndex(steps, liveSteps[i].name)].(map[string]any)
-		require.Equal(t, want.name, liveSteps[i].name)
-		require.Equal(t, want.run, liveSteps[i].run)
-		require.Equal(t, want.env, liveSteps[i].env)
-		require.Equal(t, expectedIDs[i], step["id"])
-		if i == 0 {
-			require.NotContains(t, step, "if")
-		} else {
-			require.Equal(t, "${{ steps."+expectedIDs[i-1]+"_gate.outputs.marker_absent == 'true' }}", step["if"])
-			require.NotContains(t, step["if"], "!= 'true'")
-		}
-		require.Equal(t, true, step["continue-on-error"])
-		require.Contains(t, liveSteps[i].run, "-parallel=1 -count=1 -v")
-	}
-	for i, name := range []string{"Tier 1", "Tier 2", "Tier 3", "Tier 4"} {
-		gate := steps[findStepIndex(steps, "Check "+name+" stop marker")].(map[string]any)
-		require.Equal(t, expectedIDs[i]+"_gate", gate["id"])
-		require.Equal(t, "${{ always() }}", gate["if"])
-		require.NotContains(t, gate, "continue-on-error")
-		require.Equal(t, map[string]any{"DOKPLOY_ACCEPTANCE_STOP_FILE": markerPath}, gate["env"])
-		require.Contains(t, gate["run"], "marker_absent=true")
-	}
-	orderedNames := []string{"Checkout Repo", "Set Provider Version", "Prepare acceptance stop marker", "Require Dokploy acceptance credentials", "Setup Tools", "Verify Pulumi CLI", "Build codegen binaries", "Build Schema", "Build Provider", "Expose local provider", "Test Provider Library", "Test live Tier 1 control plane", "Check Tier 1 stop marker", "Test live Tier 2 workloads", "Check Tier 2 stop marker", "Test live Tier 3 databases", "Check Tier 3 stop marker", "Test live Tier 4 backups", "Check Tier 4 stop marker", "Test Pulumi lifecycle smoke"}
+	require.Equal(t, expectedEnv, runner["env"])
+	orderedNames := []string{"Require operator safety confirmation", "Checkout Repo", "Set Provider Version", "Prepare acceptance stop marker", "Require Dokploy acceptance credentials", "Setup Tools", "Verify Pulumi CLI", "Build codegen binaries", "Build Schema", "Build Provider", "Expose local provider", "Test Provider Library", "Test acceptance segments"}
 	previous := -1
 	for _, name := range orderedNames {
 		index := findStepIndex(steps, name)
 		require.Greater(t, index, previous, "workflow step order for %s", name)
-		if !strings.HasPrefix(name, "Test live ") && name != "Test Pulumi lifecycle smoke" && !strings.HasPrefix(name, "Check Tier ") {
-			require.NotContains(t, steps[index].(map[string]any), "if", name)
-		}
-		if strings.HasPrefix(name, "Test live ") || name == "Test Pulumi lifecycle smoke" {
-			require.Equal(t, true, steps[index].(map[string]any)["continue-on-error"], name)
-		} else {
-			require.NotContains(t, steps[index].(map[string]any), "continue-on-error", name)
-		}
+		require.NotContains(t, steps[index].(map[string]any), "if", name)
+		require.NotContains(t, steps[index].(map[string]any), "continue-on-error", name)
 		previous = index
 	}
 	pulumiCLI := steps[findStepIndex(steps, "Verify Pulumi CLI")].(map[string]any)
@@ -1034,28 +1011,9 @@ func TestOwnedWorkflow(t *testing.T) {
 	require.Equal(t, `echo "${{ github.workspace }}/bin" >> "$GITHUB_PATH"`, localProvider["run"])
 	require.NotContains(t, localProvider["run"], "ls")
 	require.NotContains(t, localProvider["run"], "find")
-	for i, name := range []string{"Tier 1", "Tier 2", "Tier 3", "Tier 4"} {
-		gateIndex := findStepIndex(steps, "Check "+name+" stop marker")
-		tierIndex := findStepIndex(steps, expected[i+1].name)
-		require.Equal(t, tierIndex-1, gateIndex)
-		gateID := expectedIDs[i] + "_gate"
-		tier := steps[tierIndex].(map[string]any)
-		require.Equal(t, "${{ steps."+gateID+".outputs.marker_absent == 'true' }}", tier["if"])
-		require.NotContains(t, tier["if"], "!= 'true'")
-	}
-	reportIndex := findStepIndex(steps, "Report acceptance failures")
-	require.Equal(t, findStepIndex(steps, "Test Pulumi lifecycle smoke")+1, reportIndex)
-	report := steps[reportIndex].(map[string]any)
-	require.Equal(t, "${{ always() }}", report["if"])
-	reportRun := report["run"].(string)
-	for _, outcome := range []string{"steps.tier1.outcome", "steps.tier2.outcome", "steps.tier3.outcome", "steps.tier4.outcome", "steps.smoke.outcome"} {
-		require.Contains(t, reportRun, "${{ "+outcome+" }}")
-	}
-	require.Contains(t, reportRun, `[ "$outcome" = "failure" ] || [ "$outcome" = "cancelled" ]`)
-	require.Contains(t, reportRun, `exit "$failed"`)
 	tarIndex := findStepIndex(steps, "Tar provider binaries")
 	uploadIndex := findStepIndex(steps, "Upload artifacts")
-	require.Equal(t, reportIndex+1, tarIndex)
+	require.Equal(t, runnerIndex+1, tarIndex)
 	require.Equal(t, tarIndex+1, uploadIndex)
 	tarStep := steps[tarIndex].(map[string]any)
 	require.Equal(t, "${{ always() }}", tarStep["if"])
@@ -1084,7 +1042,7 @@ func TestOwnedWorkflow(t *testing.T) {
 			name, _ := step["name"].(string)
 			run, _ := step["run"].(string)
 			require.NotContains(t, run, ".env", "%s/%s must not load .env", jobName, name)
-			if jobName != "prerequisites" || (name != "Require Dokploy acceptance credentials" && !strings.HasPrefix(name, "Test live ") && name != "Test Pulumi lifecycle smoke") {
+			if jobName != "prerequisites" || (name != "Require Dokploy acceptance credentials" && name != "Test acceptance segments") {
 				env, _ := step["env"].(map[string]any)
 				for key := range env {
 					if key != "DOKPLOY_ACCEPTANCE_STOP_FILE" {

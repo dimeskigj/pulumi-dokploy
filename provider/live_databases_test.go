@@ -20,17 +20,17 @@ func TestLiveTier3Databases(t *testing.T) {
 	ctx := liveContext(t, 50*time.Minute)
 	_, environmentID, _ := liveProject(t, ctx, api)
 
-	t.Run("Postgres", func(t *testing.T) { livePostgresLifecycle(t, ctx, api, environmentID) })
-	t.Run("MySQL", func(t *testing.T) { liveMySQLLifecycle(t, ctx, api, environmentID) })
-	t.Run("MariaDB", func(t *testing.T) { liveMariaDBLifecycle(t, ctx, api, environmentID) })
-	t.Run("MongoDBReplicaSets", func(t *testing.T) {
+	runLiveCase(t, "Postgres", func(t *testing.T) { livePostgresLifecycle(t, ctx, api, environmentID) })
+	runLiveCase(t, "MySQL", func(t *testing.T) { liveMySQLLifecycle(t, ctx, api, environmentID) })
+	runLiveCase(t, "MariaDB", func(t *testing.T) { liveMariaDBLifecycle(t, ctx, api, environmentID) })
+	runLiveCase(t, "MongoDBReplicaSets", func(t *testing.T) {
 		if os.Getenv("DOKPLOY_ACCEPTANCE_ALLOW_REPLICAS") != "1" {
 			t.Skip("low-powered acceptance server: MongoDB replica sets require multiple containers (set DOKPLOY_ACCEPTANCE_ALLOW_REPLICAS=1 to opt in)")
 		}
 		liveMongoDBLifecycle(t, ctx, api, environmentID, true)
 	})
-	t.Run("MongoDB", func(t *testing.T) { liveMongoDBLifecycle(t, ctx, api, environmentID, false) })
-	t.Run("Redis", func(t *testing.T) { liveRedisLifecycle(t, ctx, api, environmentID) })
+	runLiveCase(t, "MongoDB", func(t *testing.T) { liveMongoDBLifecycle(t, ctx, api, environmentID, false) })
+	runLiveCase(t, "Redis", func(t *testing.T) { liveRedisLifecycle(t, ctx, api, environmentID) })
 }
 
 func waitForDatabaseAbsence(ctx context.Context, read func(context.Context) (string, error)) error {
@@ -128,6 +128,7 @@ func livePostgresLifecycle(t *testing.T, ctx context.Context, api *client.Client
 	requireLiveEqual(t, "postgres.environment", "LIVE=2", value(postUpdate.Inputs.Environment))
 	requireLiveEqual(t, "postgres.name", updated.Name, postUpdate.Inputs.Name)
 	requireLiveEqual(t, "postgres.description", value(updated.Description), value(postUpdate.Inputs.Description))
+	t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Postgres", id, postUpdate.Inputs.Name) })
 	imported, err := r.Read(ctx, infer.ReadRequest[PostgresArgs, PostgresState]{ID: id})
 	requireNoError(t, err)
 	requireLiveEqual(t, "postgres.id", id, imported.State.PostgresID)
@@ -209,6 +210,7 @@ func liveMySQLLifecycle(t *testing.T, ctx context.Context, api *client.Client, e
 	requireLiveEqual(t, "mysql.environment", "LIVE=2", value(postUpdate.Inputs.Environment))
 	requireLiveEqual(t, "mysql.name", updated.Name, postUpdate.Inputs.Name)
 	requireLiveEqual(t, "mysql.description", value(updated.Description), value(postUpdate.Inputs.Description))
+	t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "MySQL", id, postUpdate.Inputs.Name) })
 	imported, err := r.Read(ctx, infer.ReadRequest[MySQLArgs, MySQLState]{ID: id})
 	requireNoError(t, err)
 	requireLiveEqual(t, "mysql.id", id, imported.State.MySQLID)
@@ -286,6 +288,7 @@ func liveMariaDBLifecycle(t *testing.T, ctx context.Context, api *client.Client,
 	requireLiveEqual(t, "mariadb.environment", "LIVE=2", value(postUpdate.Inputs.Environment))
 	requireLiveEqual(t, "mariadb.name", updated.Name, postUpdate.Inputs.Name)
 	requireLiveEqual(t, "mariadb.description", value(updated.Description), value(postUpdate.Inputs.Description))
+	t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "MariaDB", id, postUpdate.Inputs.Name) })
 	imported, err := r.Read(ctx, infer.ReadRequest[MariaDBArgs, MariaDBState]{ID: id})
 	requireNoError(t, err)
 	requireLiveEqual(t, "mariadb.id", id, imported.State.MariaDBID)
@@ -363,6 +366,7 @@ func liveMongoDBLifecycle(t *testing.T, ctx context.Context, api *client.Client,
 	requireLiveEqual(t, "mongodb.environment", "LIVE=2", value(postUpdate.Inputs.Environment))
 	requireLiveEqual(t, "mongodb.name", updated.Name, postUpdate.Inputs.Name)
 	requireLiveEqual(t, "mongodb.description", value(updated.Description), value(postUpdate.Inputs.Description))
+	t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "MongoDB", id, postUpdate.Inputs.Name) })
 	imported, err := r.Read(ctx, infer.ReadRequest[MongoDBArgs, MongoDBState]{ID: id})
 	requireNoError(t, err)
 	requireLiveEqual(t, "mongodb.id", id, imported.State.MongoDBID)
@@ -437,6 +441,7 @@ func liveRedisLifecycle(t *testing.T, ctx context.Context, api *client.Client, e
 	requireLiveEqual(t, "redis.environment", "LIVE=2", value(postUpdate.Inputs.Environment))
 	requireLiveEqual(t, "redis.name", updated.Name, postUpdate.Inputs.Name)
 	requireLiveEqual(t, "redis.description", value(updated.Description), value(postUpdate.Inputs.Description))
+	t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Redis", id, postUpdate.Inputs.Name) })
 	imported, err := r.Read(ctx, infer.ReadRequest[RedisArgs, RedisState]{ID: id})
 	requireNoError(t, err)
 	requireLiveEqual(t, "redis.id", id, imported.State.RedisID)

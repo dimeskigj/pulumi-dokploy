@@ -126,6 +126,12 @@ func TestLiveTier2Workloads(t *testing.T) {
 	projectID, environmentID, releaseProject := liveProject(t, ctx, api)
 	_ = projectID
 	scheduleCleanup := newLiveScheduleCleanupGuard()
+	var portGuard *livePortCleanupGuard
+	t.Cleanup(func() {
+		if portGuard != nil {
+			portGuard.retainProjectIfNeeded(releaseProject)
+		}
+	})
 	// Registered after project cleanup so this runs first even after Fatal.
 	t.Cleanup(func() { scheduleCleanup.retainProjectIfNeeded(releaseProject) })
 
@@ -159,7 +165,13 @@ func TestLiveTier2Workloads(t *testing.T) {
 			}
 		})
 	})
-	t.Run("Application", func(t *testing.T) {
+	runLiveCase(t, "Port", func(t *testing.T) {
+		requireLiveAcceptance(t)
+		var err error
+		portGuard, err = runLivePortLifecycle(t, ctx, api, environmentID)
+		requireLiveLifecycleNoError(t, "Port", "lifecycle", err)
+	})
+	runLiveCase(t, "Application", func(t *testing.T) {
 		inputs := ApplicationArgs{Name: liveRunName("application"), EnvironmentID: environmentID, Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx:1.27"}}}
 		t.Cleanup(registerLiveSecrets(value(inputs.Environment), value(inputs.BuildArgs), value(inputs.BuildSecrets), "APP_ENV_SENTINEL=1", "APP_BUILD_ARG_SENTINEL=1", "APP_BUILD_SECRET_SENTINEL=1"))
 		r := Application{client: fixedClient(api)}
@@ -197,6 +209,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 		requireNoError(t, err)
 		requireLiveEqual(t, "application.name", updated.Name, postUpdate.Inputs.Name)
 		requireLiveEqual(t, "application.description", updatedDescription, value(postUpdate.Inputs.Description))
+		t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Application", created.ID, postUpdate.Inputs.Name) })
 		imported, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: created.ID})
 		requireNoError(t, err)
 		requireLiveEqual(t, "application.id", created.ID, imported.State.ApplicationID)
@@ -239,7 +252,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 
 	})
 
-	t.Run("Compose", func(t *testing.T) {
+	runLiveCase(t, "Compose", func(t *testing.T) {
 		inputs := ComposeArgs{Name: liveRunName("compose"), EnvironmentID: environmentID, Source: ComposeSource{Type: ComposeSourceRaw, Raw: &RawComposeSource{ComposeFile: "services:\n  web:\n    image: nginx:1.27\n"}}}
 		t.Cleanup(registerLiveSecrets(value(inputs.Environment), "COMPOSE_ENV=1"))
 		r := Compose{client: fixedClient(api)}
@@ -275,6 +288,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 		postUpdate, err := r.Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: created.ID, State: changed.Output})
 		requireNoError(t, err)
 		requireLiveEqual(t, "compose.name", updated.Name, postUpdate.Inputs.Name)
+		t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Compose", created.ID, postUpdate.Inputs.Name) })
 		imported, err := r.Read(ctx, infer.ReadRequest[ComposeArgs, ComposeState]{ID: created.ID})
 		requireNoError(t, err)
 		requireLiveEqual(t, "compose.id", created.ID, imported.State.ComposeID)
@@ -316,7 +330,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 	}{{"application", applicationID, applicationStatus, false}, {"compose", composeID, composeStatus, true}}
 	for _, target := range workloadTargets {
 		target := target
-		t.Run("Domain/"+target.name, func(t *testing.T) {
+		runLiveCase(t, "Domain/"+target.name, func(t *testing.T) {
 			readiness := applicationTargetReadiness(api, target.id)
 			if target.compose {
 				readiness = composeTargetReadiness(api, target.id)
@@ -426,7 +440,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 			requireWorkloadLifecycleNoError(t, "domain", err)
 			requireLiveEqual(t, "domain.id after delete", "", gone.ID)
 		})
-		t.Run("Domain/custom-certificate/"+target.name, func(t *testing.T) {
+		runLiveCase(t, "Domain/custom-certificate/"+target.name, func(t *testing.T) {
 			resolver := os.Getenv("DOKPLOY_CUSTOM_CERT_RESOLVER")
 			if resolver == "" {
 				t.Skip("DOKPLOY_CUSTOM_CERT_RESOLVER is not configured")
@@ -488,7 +502,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 
 	for _, target := range workloadTargets {
 		target := target
-		t.Run("Mounts/"+target.name, func(t *testing.T) {
+		runLiveCase(t, "Mounts/"+target.name, func(t *testing.T) {
 			mounts := []MountArgs{
 				{Type: mountTypeBind, MountPath: "/mnt/bind", HostPath: stringPtr(filepath.Join("/tmp", liveRunName("mount")))},
 				{Type: mountTypeVolume, MountPath: "/mnt/volume", VolumeName: stringPtr(liveRunName("volume"))},
@@ -528,7 +542,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 	// Dispatch-only cases prove every supported target route without adding an
 	// update/redeploy cycle to the matrix. Each database fixture is created and
 	// removed before the next one is started.
-	t.Run("MountDispatch/postgres", func(t *testing.T) {
+	runLiveCase(t, "MountDispatch/postgres", func(t *testing.T) {
 		fixture := createDispatchDatabase(t, ctx, api, environmentID, "postgres")
 		// Register the fixture immediately. runLiveMountLifecycle registers its
 		// mount owner after this one, so Go's LIFO cleanup guarantees the mount is
@@ -551,7 +565,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 
 	for _, target := range []string{"compose", "mysql", "mariadb", "redis"} {
 		target := target
-		t.Run("MountDispatch/"+target, func(t *testing.T) {
+		runLiveCase(t, "MountDispatch/"+target, func(t *testing.T) {
 			var targetID string
 			var fixture *liveDispatchFixture
 			switch target {
@@ -661,7 +675,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 
 	// Source variants configure bare resources and do not deploy or clone
 	// anything. Git is always available; external integrations are gated.
-	t.Run("SourceVariants", func(t *testing.T) {
+	runLiveCase(t, "SourceVariants", func(t *testing.T) {
 		registrySource := liveRegistryApplicationSource()
 		gitLabSource := liveGitLabApplicationSource()
 		composeGitLabSource := gitLabComposeSource()
@@ -856,7 +870,7 @@ func TestLiveTier2Workloads(t *testing.T) {
 		}
 	})
 
-	t.Run("Schedule", func(t *testing.T) {
+	runLiveCase(t, "Schedule", func(t *testing.T) {
 		runLiveScheduleCases(t, ctx, api, applicationID, composeID, scheduleCleanup)
 	})
 	if heavyLiveTierStopped() {
@@ -1457,6 +1471,12 @@ func newPostgresDispatchFixture(api *client.Client, id string, lease *liveHeavyO
 
 func cleanupAfterCreateError(t *testing.T, kind, id string, createErr error, remove func(context.Context) error, read func(context.Context) (string, error)) {
 	t.Helper()
+	if id == "" {
+		if !liveCreateDefinitelyRejected(createErr) {
+			recordLiveCleanupFailure(kind, "", createErr)
+		}
+		return
+	}
 	if !cleanupAfterCreateErrorNeedsImmediateCleanup(id, createErr) {
 		return
 	}

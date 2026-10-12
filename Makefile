@@ -106,11 +106,15 @@ test_examples: install_plugin
 	cd sdk/java && $(JAVA11_EXEC) gradle publishToMavenLocal --no-daemon
 	cd examples/java && $(JAVA17_MAVEN_EXEC) mvn $(MAVEN_TLS_OPTS) package -DskipTests
 
-test_provider:
-	go test -short -v -count=1 ./provider/... ./internal/...
+.PHONY: test_acceptance_runner
+test_acceptance_runner:
+	python3 -m unittest discover -s scripts -p 'test_live_acceptance_runner.py'
+
+test_provider: test_acceptance_runner
+	mise exec -- /usr/bin/env DOKPLOY_ACCEPTANCE=0 go test -short -v -count=1 ./provider/... ./internal/...
 
 test_race:
-	mise exec -- go test -race ./provider/... ./internal/...
+	mise exec -- /usr/bin/env DOKPLOY_ACCEPTANCE=0 go test -race ./provider/... ./internal/...
 
 test: test_provider test_examples
 

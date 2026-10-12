@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -112,8 +113,15 @@ type Corrections struct {
 	Responses map[string]string `json:"responses"`
 	Requests  map[string]string `json:"requests"`
 	// Only correct known upstream request properties; retain all other request fields.
-	RequestIntegerProperties map[string][]string `json:"requestIntegerProperties"`
-	Schemas                  map[string]any      `json:"schemas"`
+	RequestIntegerProperties map[string][]string              `json:"requestIntegerProperties"`
+	RequestSchemaAdditions   map[string]RequestSchemaAddition `json:"requestSchemaAdditions"`
+	Schemas                  map[string]any                   `json:"schemas"`
+}
+
+// Add known newer-server fields without replacing the saved request contract.
+type RequestSchemaAddition struct {
+	Properties map[string]any `json:"properties"`
+	Required   []string       `json:"required"`
 }
 
 func allOperations(p *PathItem) map[string]*Operation {
@@ -275,6 +283,36 @@ func normalize(in *Document, allow []string, c Corrections) (*Document, error) {
 			return nil, fmt.Errorf("request correction %s names missing schema %s", name, schemaName)
 		}
 		applicationJSON["schema"] = schemaRef(schemaName)
+	}
+	for name, addition := range c.RequestSchemaAdditions {
+		path, ok := out.Paths["/"+name]
+		if !ok {
+			return nil, fmt.Errorf("missing request addition operation: %s", name)
+		}
+		op := operationFor(path, name)
+		body, _ := op.Raw["requestBody"].(map[string]any)
+		content, _ := body["content"].(map[string]any)
+		applicationJSON, _ := content["application/json"].(map[string]any)
+		schema, _ := applicationJSON["schema"].(map[string]any)
+		properties, _ := schema["properties"].(map[string]any)
+		if properties == nil {
+			return nil, fmt.Errorf("missing request properties for addition: %s", name)
+		}
+		for property, definition := range addition.Properties {
+			properties[property] = definition
+		}
+		required, _ := schema["required"].([]any)
+		for _, property := range addition.Required {
+			if _, exists := properties[property]; !exists {
+				return nil, fmt.Errorf("missing required request addition: %s.%s", name, property)
+			}
+			if !slices.Contains(required, any(property)) {
+				required = append(required, property)
+			}
+		}
+		if len(required) > 0 {
+			schema["required"] = required
+		}
 	}
 	for name, properties := range c.RequestIntegerProperties {
 		item := out.Paths["/"+name]

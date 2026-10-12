@@ -2,6 +2,22 @@ name: run-acceptance-tests
 
 on:
   workflow_dispatch:
+    inputs:
+      segment:
+        description: Acceptance segment to run independently
+        type: choice
+        default: all
+        options: [all, tier1, tier2, tier3, tier4, smoke]
+      safety_confirmed:
+        description: I verified prior cleanup, server health, and no unresolved acceptance safety stops
+        type: boolean
+        required: true
+        default: false
+
+# All segments share the dedicated acceptance server; never overlap runs.
+concurrency:
+  group: dokploy-live-acceptance
+  cancel-in-progress: false
 
 env:
   PROVIDER: dokploy
@@ -27,6 +43,14 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Require operator safety confirmation
+        env:
+          ACCEPTANCE_SAFETY_CONFIRMED: ${{ inputs.safety_confirmed }}
+        run: |
+          if [ "$ACCEPTANCE_SAFETY_CONFIRMED" != "true" ]; then
+            echo "Verify prior cleanup and dedicated server health before starting another acceptance run." >&2
+            exit 1
+          fi
       - name: Checkout Repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -71,14 +95,13 @@ jobs:
       - name: Expose local provider
         run: echo "${{ github.workspace }}/bin" >> "$GITHUB_PATH"
       - name: Test Provider Library
-        run: make test_provider
+        run: mise exec -- /usr/bin/env DOKPLOY_ACCEPTANCE=0 /usr/bin/make test_provider
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - id: tier1
-        name: Test live Tier 1 control plane
-        run: mise exec -- go test ./provider -run TestLiveTier1ControlPlane -parallel=1 -count=1 -v
-        continue-on-error: true
+      - name: Test acceptance segments
+        run: mise exec -- bash scripts/run-live-acceptance.sh "$ACCEPTANCE_SEGMENT"
         env:
+          ACCEPTANCE_SEGMENT: ${{ inputs.segment }}
           DOKPLOY_ACCEPTANCE: "1"
           DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
           DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
@@ -93,27 +116,6 @@ jobs:
           DOKPLOY_REGISTRY_UPDATED_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_UPDATED_PASSWORD }}
           DOKPLOY_REGISTRY_UPDATED_IMAGE_PREFIX: ${{ secrets.DOKPLOY_REGISTRY_UPDATED_IMAGE_PREFIX }}
           DOKPLOY_ACCEPTANCE_DESTINATION_UPDATED_PROVIDER: ${{ secrets.DOKPLOY_ACCEPTANCE_DESTINATION_UPDATED_PROVIDER }}
-      - id: tier1_gate
-        name: Check Tier 1 stop marker
-        if: ${{ always() }}
-        run: |
-          if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
-            exit 1
-          fi
-          echo "marker_absent=true" >> "$GITHUB_OUTPUT"
-        env:
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-      - id: tier2
-        name: Test live Tier 2 workloads
-        if: ${{ steps.tier1_gate.outputs.marker_absent == 'true' }}
-        run: mise exec -- go test ./provider -run TestLiveTier2Workloads -parallel=1 -count=1 -v
-        continue-on-error: true
-        env:
-          DOKPLOY_ACCEPTANCE: "1"
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-          DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-          DOKPLOY_ACCEPTANCE_SERVER_ID: ${{ secrets.DOKPLOY_ACCEPTANCE_SERVER_ID }}
           DOKPLOY_GITLAB_INTEGRATION_ID: ${{ secrets.DOKPLOY_GITLAB_INTEGRATION_ID }}
           DOKPLOY_GITLAB_PROJECT_ID: ${{ secrets.DOKPLOY_GITLAB_PROJECT_ID }}
           DOKPLOY_GITLAB_OWNER: ${{ secrets.DOKPLOY_GITLAB_OWNER }}
@@ -122,86 +124,7 @@ jobs:
           DOKPLOY_GITLAB_BRANCH: ${{ secrets.DOKPLOY_GITLAB_BRANCH }}
           DOKPLOY_GITLAB_USERNAME: ${{ secrets.DOKPLOY_GITLAB_USERNAME }}
           DOKPLOY_GITLAB_TOKEN: ${{ secrets.DOKPLOY_GITLAB_TOKEN }}
-          DOKPLOY_REGISTRY_URL: ${{ secrets.DOKPLOY_REGISTRY_URL }}
-          DOKPLOY_REGISTRY_USERNAME: ${{ secrets.DOKPLOY_REGISTRY_USERNAME }}
-          DOKPLOY_REGISTRY_PASSWORD: ${{ secrets.DOKPLOY_REGISTRY_PASSWORD }}
-          DOKPLOY_REGISTRY_IMAGE_PREFIX: ${{ secrets.DOKPLOY_REGISTRY_IMAGE_PREFIX }}
           DOKPLOY_CUSTOM_CERT_RESOLVER: ${{ secrets.DOKPLOY_CUSTOM_CERT_RESOLVER }}
-      - id: tier2_gate
-        name: Check Tier 2 stop marker
-        if: ${{ always() }}
-        run: |
-          if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
-            exit 1
-          fi
-          echo "marker_absent=true" >> "$GITHUB_OUTPUT"
-        env:
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-      - id: tier3
-        name: Test live Tier 3 databases
-        if: ${{ steps.tier2_gate.outputs.marker_absent == 'true' }}
-        run: mise exec -- go test ./provider -run TestLiveTier3Databases -parallel=1 -count=1 -v
-        continue-on-error: true
-        env:
-          DOKPLOY_ACCEPTANCE: "1"
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-          DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-      - id: tier3_gate
-        name: Check Tier 3 stop marker
-        if: ${{ always() }}
-        run: |
-          if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
-            exit 1
-          fi
-          echo "marker_absent=true" >> "$GITHUB_OUTPUT"
-        env:
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-      - id: tier4
-        name: Test live Tier 4 backups
-        if: ${{ steps.tier3_gate.outputs.marker_absent == 'true' }}
-        run: mise exec -- go test ./provider -run TestLiveTier4Backups -parallel=1 -count=1 -v
-        continue-on-error: true
-        env:
-          DOKPLOY_ACCEPTANCE: "1"
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-          DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-      - id: tier4_gate
-        name: Check Tier 4 stop marker
-        if: ${{ always() }}
-        run: |
-          if [ -e "$DOKPLOY_ACCEPTANCE_STOP_FILE" ]; then
-            exit 1
-          fi
-          echo "marker_absent=true" >> "$GITHUB_OUTPUT"
-        env:
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-      - id: smoke
-        name: Test Pulumi lifecycle smoke
-        if: ${{ steps.tier4_gate.outputs.marker_absent == 'true' }}
-        run: mise exec -- go test ./tests -run TestAccLifecycleSmoke -parallel=1 -count=1 -v
-        continue-on-error: true
-        env:
-          DOKPLOY_ACCEPTANCE: "1"
-          DOKPLOY_ACCEPTANCE_STOP_FILE: ${{ runner.temp }}/dokploy-acceptance-stop-${{ github.run_id }}-${{ github.run_attempt }}
-          DOKPLOY_ENDPOINT: ${{ secrets.DOKPLOY_ENDPOINT }}
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
-      - name: Report acceptance failures
-        if: ${{ always() }}
-        run: |
-          failed=0
-          for outcome in \
-            "${{ steps.tier1.outcome }}" \
-            "${{ steps.tier2.outcome }}" \
-            "${{ steps.tier3.outcome }}" \
-            "${{ steps.tier4.outcome }}" \
-            "${{ steps.smoke.outcome }}"; do
-            if [ "$outcome" = "failure" ] || [ "$outcome" = "cancelled" ]; then
-              failed=1
-            fi
-          done
-          exit "$failed"
       - name: Tar provider binaries
         if: ${{ always() }}
         run: |

@@ -20,15 +20,22 @@ import (
 func TestLiveTier4Backups(t *testing.T) {
 	api := liveClient(t)
 	ctx := liveContext(t, 50*time.Minute)
-	_, environmentID, _ := liveProject(t, ctx, api)
+	_, environmentID, releaseProject := liveProject(t, ctx, api)
+	t.Cleanup(func() {
+		// Project deletion can cascade through targets and unresolved backups.
+		// Preserve the fixture for investigation after any cleanup safety stop.
+		if heavyLiveTierStopped() {
+			releaseProject()
+		}
+	})
 	destinationID := liveBackupDestination(t, ctx, api)
 
-	t.Run("Backup/Postgres", func(t *testing.T) { liveBackupForPostgres(t, ctx, api, environmentID, destinationID) })
-	t.Run("Backup/MySQL", func(t *testing.T) { liveBackupForMySQL(t, ctx, api, environmentID, destinationID) })
-	t.Run("Backup/MariaDB", func(t *testing.T) { liveBackupForMariaDB(t, ctx, api, environmentID, destinationID) })
-	t.Run("Backup/MongoDB", func(t *testing.T) { liveBackupForMongoDB(t, ctx, api, environmentID, destinationID) })
-	t.Run("VolumeBackup/Application", func(t *testing.T) { liveVolumeBackupForApplication(t, ctx, api, environmentID, destinationID) })
-	t.Run("VolumeBackup/Compose", func(t *testing.T) { liveVolumeBackupForCompose(t, ctx, api, environmentID, destinationID) })
+	runLiveCase(t, "Backup/Postgres", func(t *testing.T) { liveBackupForPostgres(t, ctx, api, environmentID, destinationID) })
+	runLiveCase(t, "Backup/MySQL", func(t *testing.T) { liveBackupForMySQL(t, ctx, api, environmentID, destinationID) })
+	runLiveCase(t, "Backup/MariaDB", func(t *testing.T) { liveBackupForMariaDB(t, ctx, api, environmentID, destinationID) })
+	runLiveCase(t, "Backup/MongoDB", func(t *testing.T) { liveBackupForMongoDB(t, ctx, api, environmentID, destinationID) })
+	runLiveCase(t, "VolumeBackup/Application", func(t *testing.T) { liveVolumeBackupForApplication(t, ctx, api, environmentID, destinationID) })
+	runLiveCase(t, "VolumeBackup/Compose", func(t *testing.T) { liveVolumeBackupForCompose(t, ctx, api, environmentID, destinationID) })
 }
 
 func liveBackupDestination(t *testing.T, ctx context.Context, api *client.Client) string {
@@ -42,6 +49,10 @@ func liveBackupDestination(t *testing.T, ctx context.Context, api *client.Client
 	if created.ID != "" {
 		id := created.ID
 		t.Cleanup(func() {
+			// A destination can still be referenced by an unresolved backup.
+			if heavyLiveTierStopped() {
+				return
+			}
 			liveCleanupVerified(t, "destination", id, func(c context.Context) error {
 				_, e := r.Delete(c, infer.DeleteRequest[DestinationState]{ID: id})
 				return e
@@ -51,13 +62,24 @@ func liveBackupDestination(t *testing.T, ctx context.Context, api *client.Client
 			})
 		})
 	}
+	if created.ID == "" {
+		cleanupAfterCreateError(t, "destination", "", err, func(c context.Context) error {
+			_, e := r.Delete(c, infer.DeleteRequest[DestinationState]{ID: created.ID})
+			return e
+		}, func(c context.Context) (string, error) {
+			v, e := r.Read(c, infer.ReadRequest[DestinationArgs, DestinationState]{ID: created.ID})
+			return v.ID, e
+		})
+	}
 	if err != nil {
 		if isExternalDestinationConnectivityValidation(err) {
 			t.Skip("Dokploy validates the backup destination network before lifecycle tests")
 		}
 		requireNoError(t, err)
 	}
-	requireLivePresent(t, "backup.id", created.ID)
+	if created.ID == "" {
+		requireLiveLifecycleNoError(t, "destination", "create", errLiveCleanup)
+	}
 	return created.ID
 }
 
@@ -83,17 +105,48 @@ func isExternalDestinationConnectivityValidation(err error) bool {
 }
 
 type liveBackupTarget struct {
-	id       string
-	lease    *liveHeavyOperationLease
-	remove   func(context.Context) error
-	readID   func(context.Context) (string, error)
-	resource string
+	id        string
+	dependent *liveCleanupID
+	lease     *liveHeavyOperationLease
+	remove    func(context.Context) error
+	readID    func(context.Context) (string, error)
+	resource  string
 }
 
 type liveCleanupID struct {
-	mu       sync.Mutex
-	id       string
-	cleaning bool
+	mu        sync.Mutex
+	id        string
+	cleaning  bool
+	uncertain bool
+}
+
+func (c *liveCleanupID) pending() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.id != "" || c.uncertain
+}
+
+// A 4xx discovery/read error after a submitted create is not proof that the
+// mutation was rejected. Only the exact create operation can establish that.
+func liveBackupCreateDefinitelyRejected(operation string, err error) bool {
+	var apiErr *client.APIError
+	return liveCreateDefinitelyRejected(err) && errors.As(err, &apiErr) && apiErr.Operation == operation
+}
+
+func noteLiveBackupCreateResult(kind, operation string, state *liveCleanupID, err error) error {
+	state.mu.Lock()
+	uncertain := state.id == "" && !liveBackupCreateDefinitelyRejected(operation, err)
+	if uncertain {
+		state.uncertain = true
+	}
+	state.mu.Unlock()
+	if uncertain {
+		recordLiveCleanupFailure(kind, "", errLiveCleanup)
+		if err == nil {
+			return errLiveCleanup
+		}
+	}
+	return err
 }
 
 func (c *liveCleanupID) current() string {
@@ -143,10 +196,46 @@ func runLiveCleanupOnce(state *liveCleanupID, remove func(string) error) error {
 	return err
 }
 
+// Keep ownership through both deletion and bounded absence verification. The
+// legacy once helper must receive the whole operation, not just the delete.
+func runLiveBackupCleanup(ctx context.Context, state *liveCleanupID, remove func(context.Context, string) error, read func(context.Context, string) (string, error)) error {
+	return runLiveCleanupOnce(state, func(id string) error {
+		return verifyLiveCleanup(ctx, func(c context.Context) error {
+			return remove(c, id)
+		}, func(c context.Context) (string, error) {
+			return read(c, id)
+		})
+	})
+}
+
+// Explicit deletion and fallback use the same owner and each receives a fresh
+// cleanup context. Only unresolved fallback cleanup raises a safety stop.
+func registerLiveBackupCleanup(t *testing.T, kind string, state *liveCleanupID, remove func(context.Context, string) error, read func(context.Context, string) (string, error)) func() error {
+	t.Helper()
+	cleanup := func() error {
+		ctx, cancel := cleanupContext()
+		defer cancel()
+		return runLiveBackupCleanup(ctx, state, remove, read)
+	}
+	if state.current() != "" {
+		t.Cleanup(func() {
+			if err := cleanup(); err != nil {
+				// Never include untrusted API diagnostics or identities in a stop.
+				reportLiveCleanup(t, kind, state.current(), errLiveCleanup)
+			}
+		})
+	}
+	return cleanup
+}
+
 func (target liveBackupTarget) cleanup(t *testing.T) {
 	t.Helper()
 	if target.id == "" {
 		target.lease.releaseIfNeeded(t)
+		return
+	}
+	if target.dependent != nil && target.dependent.pending() {
+		reportLiveCleanup(t, target.resource, target.id, errLiveCleanup)
 		return
 	}
 	ctx, cancel := cleanupContext()
@@ -162,8 +251,12 @@ func (target liveBackupTarget) cleanup(t *testing.T) {
 	target.lease.releaseIfNeeded(t)
 }
 
-func cleanupLiveResource(t *testing.T, kind, id string, remove func(context.Context) error, read func(context.Context) (string, error)) {
+func cleanupLiveResource(t *testing.T, kind, id string, dependent *liveCleanupID, remove func(context.Context) error, read func(context.Context) (string, error)) {
 	t.Helper()
+	if dependent.pending() {
+		reportLiveCleanup(t, kind, id, errLiveCleanup)
+		return
+	}
 	ctx, cancel := cleanupContext()
 	defer cancel()
 	if err := remove(ctx); err != nil && !client.IsNotFound(err) {
@@ -190,7 +283,7 @@ func liveBackupForPostgres(t *testing.T, ctx context.Context, api *client.Client
 	t.Cleanup(func() { target.cleanup(t) })
 	requireNoError(t, err)
 	requireLiveEqual(t, "backup.postgres.status", statusDone, created.Output.Status)
-	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", PostgresID: &created.ID}, created.ID, "postgresId", target)
+	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", PostgresID: &created.ID}, created.ID, "postgresId", &target)
 }
 
 func liveBackupForMySQL(t *testing.T, ctx context.Context, api *client.Client, environmentID, destinationID string) {
@@ -209,7 +302,7 @@ func liveBackupForMySQL(t *testing.T, ctx context.Context, api *client.Client, e
 	t.Cleanup(func() { target.cleanup(t) })
 	requireNoError(t, err)
 	requireLiveEqual(t, "backup.mysql.status", statusDone, created.Output.Status)
-	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", MySQLID: &created.ID}, created.ID, "mysqlId", target)
+	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", MySQLID: &created.ID}, created.ID, "mysqlId", &target)
 }
 
 func liveBackupForMariaDB(t *testing.T, ctx context.Context, api *client.Client, environmentID, destinationID string) {
@@ -227,7 +320,7 @@ func liveBackupForMariaDB(t *testing.T, ctx context.Context, api *client.Client,
 	t.Cleanup(func() { target.cleanup(t) })
 	requireNoError(t, err)
 	requireLiveEqual(t, "backup.mariadb.status", statusDone, created.Output.Status)
-	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", MariaDBID: &created.ID}, created.ID, "mariadbId", target)
+	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", MariaDBID: &created.ID}, created.ID, "mariadbId", &target)
 }
 
 func liveBackupForMongoDB(t *testing.T, ctx context.Context, api *client.Client, environmentID, destinationID string) {
@@ -246,31 +339,23 @@ func liveBackupForMongoDB(t *testing.T, ctx context.Context, api *client.Client,
 	t.Cleanup(func() { target.cleanup(t) })
 	requireNoError(t, err)
 	requireLiveEqual(t, "backup.mongodb.status", statusDone, created.Output.Status)
-	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", MongoID: &created.ID}, created.ID, "mongoId", target)
+	liveBackupCRUD(t, ctx, Backup{client: fixedClient(api)}, BackupArgs{Schedule: "0 0 * * *", Enabled: false, Prefix: "live-test-", DestinationID: destinationID, Database: "app", MongoID: &created.ID}, created.ID, "mongoId", &target)
 }
 
-func liveBackupCRUD(t *testing.T, ctx context.Context, r Backup, inputs BackupArgs, targetID, replacementField string, target liveBackupTarget) {
+func liveBackupCRUD(t *testing.T, ctx context.Context, r Backup, inputs BackupArgs, targetID, replacementField string, target *liveBackupTarget) {
 	t.Helper()
 	created, err := r.Create(ctx, infer.CreateRequest[BackupArgs]{Inputs: inputs})
 	backupID := created.ID
 	cleanupID := &liveCleanupID{id: backupID}
-	if backupID != "" {
-		t.Cleanup(func() {
-			id := cleanupID.current()
-			if id == "" {
-				return
-			}
-			liveCleanupVerified(t, "backup", id, func(c context.Context) error {
-				return runLiveCleanupOnce(cleanupID, func(id string) error {
-					_, e := r.Delete(c, infer.DeleteRequest[BackupState]{ID: id})
-					return e
-				})
-			}, func(c context.Context) (string, error) {
-				v, e := r.Read(c, infer.ReadRequest[BackupArgs, BackupState]{ID: id})
-				return v.ID, e
-			})
-		})
-	}
+	target.dependent = cleanupID
+	err = noteLiveBackupCreateResult("backup", "backup.create", cleanupID, err)
+	deleteBackup := registerLiveBackupCleanup(t, "backup", cleanupID, func(c context.Context, id string) error {
+		_, e := r.Delete(c, infer.DeleteRequest[BackupState]{ID: id})
+		return e
+	}, func(c context.Context, id string) (string, error) {
+		v, e := r.Read(c, infer.ReadRequest[BackupArgs, BackupState]{ID: id})
+		return v.ID, e
+	})
 	requireNoError(t, err)
 	requireLivePresent(t, "backup.id", backupID)
 	read, err := r.Read(ctx, infer.ReadRequest[BackupArgs, BackupState]{ID: backupID})
@@ -314,12 +399,7 @@ func liveBackupCRUD(t *testing.T, ctx context.Context, r Backup, inputs BackupAr
 	diff, err = r.Diff(ctx, infer.DiffRequest[BackupArgs, BackupState]{Inputs: replacement, State: post.State})
 	requireNoError(t, err)
 	requireLiveEqual(t, "backup.target diff", p.UpdateReplace, diff.DetailedDiff[replacementField].Kind)
-	requireLiveLifecycleNoError(t, "backup", "delete", func() error { _, e := r.Delete(ctx, infer.DeleteRequest[BackupState]{ID: backupID}); return e }())
-	backupID = ""
-	cleanupID.clear()
-	gone, err := r.Read(ctx, infer.ReadRequest[BackupArgs, BackupState]{ID: created.ID})
-	requireNoError(t, err)
-	requireLiveEqual(t, "backup.id after delete", "", gone.ID)
+	requireLiveLifecycleNoError(t, "backup", "delete", deleteBackup())
 }
 
 func liveVolumeBackupForApplication(t *testing.T, ctx context.Context, api *client.Client, environmentID, destinationID string) {
@@ -330,6 +410,7 @@ func liveVolumeBackupForCompose(t *testing.T, ctx context.Context, api *client.C
 }
 
 func liveVolumeBackupTarget(t *testing.T, ctx context.Context, api *client.Client, environmentID, destinationID string, application bool) {
+	backupCleanupID := &liveCleanupID{}
 	var targetID string
 	var remove func(context.Context) error
 	var readID func(context.Context) (string, error)
@@ -347,9 +428,15 @@ func liveVolumeBackupTarget(t *testing.T, ctx context.Context, api *client.Clien
 		}
 		if targetID != "" {
 			cleanupID := targetID
-			t.Cleanup(func() { cleanupLiveResource(t, "application", cleanupID, remove, readID) })
+			t.Cleanup(func() { cleanupLiveResource(t, "application", cleanupID, backupCleanupID, remove, readID) })
+		}
+		if targetID == "" {
+			cleanupAfterCreateError(t, "application", "", err, remove, readID)
 		}
 		requireNoError(t, err)
+		if targetID == "" {
+			requireLiveLifecycleNoError(t, "application", "create", errLiveCleanup)
+		}
 		requireLivePresent(t, "application.id", targetID)
 		requireLiveEqual(t, "application.status", statusDone, created.Output.Status)
 	} else {
@@ -366,9 +453,15 @@ func liveVolumeBackupTarget(t *testing.T, ctx context.Context, api *client.Clien
 		}
 		if targetID != "" {
 			cleanupID := targetID
-			t.Cleanup(func() { cleanupLiveResource(t, "compose", cleanupID, remove, readID) })
+			t.Cleanup(func() { cleanupLiveResource(t, "compose", cleanupID, backupCleanupID, remove, readID) })
+		}
+		if targetID == "" {
+			cleanupAfterCreateError(t, "compose", "", err, remove, readID)
 		}
 		requireNoError(t, err)
+		if targetID == "" {
+			requireLiveLifecycleNoError(t, "compose", "create", errLiveCleanup)
+		}
 		requireLivePresent(t, "compose.id", targetID)
 		requireLiveEqual(t, "compose.status", statusDone, created.Output.Status)
 	}
@@ -382,24 +475,15 @@ func liveVolumeBackupTarget(t *testing.T, ctx context.Context, api *client.Clien
 	inputs := VolumeBackupArgs{Name: liveRunName("volume-backup"), VolumeName: "live-test-volume", Prefix: "live-test-", DestinationID: destinationID, CronExpression: "0 0 * * *", Enabled: false, ApplicationID: optionalID(appID), ComposeID: optionalID(composeID), ServiceName: optionalID(service)}
 	created, err := r.Create(ctx, infer.CreateRequest[VolumeBackupArgs]{Inputs: inputs})
 	id := created.ID
-	cleanupID := &liveCleanupID{id: id}
-	if id != "" {
-		t.Cleanup(func() {
-			cleanupIDValue := cleanupID.current()
-			if cleanupIDValue == "" {
-				return
-			}
-			liveCleanupVerified(t, "volume-backup", cleanupIDValue, func(c context.Context) error {
-				return runLiveCleanupOnce(cleanupID, func(id string) error {
-					_, e := r.Delete(c, infer.DeleteRequest[VolumeBackupState]{ID: id})
-					return e
-				})
-			}, func(c context.Context) (string, error) {
-				v, e := r.Read(c, infer.ReadRequest[VolumeBackupArgs, VolumeBackupState]{ID: cleanupIDValue})
-				return v.ID, e
-			})
-		})
-	}
+	backupCleanupID.id = id
+	err = noteLiveBackupCreateResult("volume-backup", "volumeBackups.create", backupCleanupID, err)
+	deleteBackup := registerLiveBackupCleanup(t, "volume-backup", backupCleanupID, func(c context.Context, id string) error {
+		_, e := r.Delete(c, infer.DeleteRequest[VolumeBackupState]{ID: id})
+		return e
+	}, func(c context.Context, id string) (string, error) {
+		v, e := r.Read(c, infer.ReadRequest[VolumeBackupArgs, VolumeBackupState]{ID: id})
+		return v.ID, e
+	})
 	requireNoError(t, err)
 	requireLivePresent(t, "volumeBackup.id", id)
 	read, err := r.Read(ctx, infer.ReadRequest[VolumeBackupArgs, VolumeBackupState]{ID: id})
@@ -440,11 +524,7 @@ func liveVolumeBackupTarget(t *testing.T, ctx context.Context, api *client.Clien
 	requireNoError(t, err)
 	requireLiveEqual(t, "volumeBackup.applicationId diff", p.UpdateReplace, diff.DetailedDiff["applicationId"].Kind)
 	requireLiveEqual(t, "volumeBackup.composeId diff", p.UpdateReplace, diff.DetailedDiff["composeId"].Kind)
-	requireLiveLifecycleNoError(t, "volumeBackup", "delete", func() error { _, e := r.Delete(ctx, infer.DeleteRequest[VolumeBackupState]{ID: id}); return e }())
-	cleanupID.clear()
-	gone, err := r.Read(ctx, infer.ReadRequest[VolumeBackupArgs, VolumeBackupState]{ID: id})
-	requireNoError(t, err)
-	requireLiveEqual(t, "volumeBackup.id after delete", "", gone.ID)
+	requireLiveLifecycleNoError(t, "volumeBackup", "delete", deleteBackup())
 }
 
 func optionalID(value string) *string {

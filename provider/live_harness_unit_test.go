@@ -901,10 +901,10 @@ func TestTier2WorkloadLifecycleDeletesTargetsOnlyAfterDependents(t *testing.T) {
 	text := string(source)
 	ordered := []string{
 		"workloadTargets :=",
-		"t.Run(\"Domain/\"+target.name",
-		"t.Run(\"Mounts/\"+target.name",
-		"t.Run(\"MountDispatch/\"+target",
-		"t.Run(\"SourceVariants\"",
+		"runLiveCase(t, \"Domain/\"+target.name",
+		"runLiveCase(t, \"Mounts/\"+target.name",
+		"runLiveCase(t, \"MountDispatch/\"+target",
+		"runLiveCase(t, \"SourceVariants\"",
 		"deleteAndReadApplication(t, ctx",
 		"deleteAndReadCompose(t, ctx",
 	}
@@ -1689,7 +1689,7 @@ func TestHeavyOperationCreateFailureReleasesAndCleansOwnership(t *testing.T) {
 	resetLiveHarnessState()
 	t.Cleanup(resetLiveHarnessState)
 	lease := beginLiveHeavyOperation(t, "postgres")
-	cleanupLiveHeavyCreateFailure(t, lease, "", context.Canceled, nil)
+	cleanupLiveHeavyCreateFailure(t, lease, "", &client.APIError{StatusCode: http.StatusBadRequest, Code: "BAD_REQUEST"}, nil)
 	require.True(t, lease.release(t))
 	second := beginLiveHeavyOperation(t, "redis")
 	require.True(t, second.release(t))

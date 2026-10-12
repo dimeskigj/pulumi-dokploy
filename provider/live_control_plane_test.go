@@ -2,6 +2,7 @@ package dokploy
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -85,26 +86,41 @@ func liveDestinationUpdatedProvider(base *string) (*string, bool) {
 	return &updated, true
 }
 
+// Invoke only after acknowledged ownership has been registered for cleanup.
+func confirmLiveControlPlaneCreate(kind, id string, err error) error {
+	if id == "" {
+		if !liveCreateDefinitelyRejected(err) {
+			recordLiveCleanupFailure(kind, "", err)
+		}
+		if err == nil {
+			err = errors.New("live create returned no confirmed identity")
+		}
+	}
+	return err
+}
+
 // TestLiveTier1ControlPlane is deliberately serial: these are the low-load
 // control-plane checks that establish fixtures for the heavier live tiers.
 func TestLiveTier1ControlPlane(t *testing.T) {
 	api := liveClient(t)
+	runLiveCase(t, "Server", func(t *testing.T) {
+		requireLiveAcceptance(t)
+		ctx := liveContext(t, 2*time.Minute)
+		err := runLiveServerLifecycle(t, ctx, api, func(id, name string) {
+			t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Server", id, name) })
+		})
+		requireLiveLifecycleNoError(t, "Server", "lifecycle", err)
+	})
+	runLiveCase(t, "Notification", func(t *testing.T) {
+		requireLiveAcceptance(t)
+		runLiveNotificationCases(t, liveContext(t, 10*time.Minute), api)
+	})
 
-	t.Run("Project", func(t *testing.T) {
+	runLiveCase(t, "Project", func(t *testing.T) {
 		ctx := liveContext(t, 2*time.Minute)
 		r := Project{client: fixedClient(api)}
 		created, err := r.Create(ctx, infer.CreateRequest[ProjectArgs]{Inputs: ProjectArgs{Name: liveRunName("project")}})
-		release := func() {}
-		if created.ID != "" {
-			release = deferLiveDelete(t, "project", created.ID, func(ctx context.Context) error {
-				_, err := r.Delete(ctx, infer.DeleteRequest[ProjectState]{ID: created.ID})
-				return err
-			}, func(ctx context.Context) (string, error) {
-				v, err := r.Read(ctx, infer.ReadRequest[ProjectArgs, ProjectState]{ID: created.ID})
-				return v.ID, err
-			})
-		}
-		requireNoError(t, err)
+		_, _, release := finalizeLiveProjectCreate(t, api, created, err)
 		requireLivePresent(t, "project.id", created.ID)
 
 		read, err := r.Read(ctx, infer.ReadRequest[ProjectArgs, ProjectState]{ID: created.ID})
@@ -119,6 +135,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		requireNoError(t, err)
 		requireLiveEqual(t, "project.name", updatedName, postUpdate.Inputs.Name)
 		requireLiveEqual(t, "project.description", updatedDescription, value(postUpdate.Inputs.Description))
+		t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Project", created.ID, postUpdate.Inputs.Name) })
 		imported, err := r.Read(ctx, infer.ReadRequest[ProjectArgs, ProjectState]{ID: created.ID})
 		requireNoError(t, err)
 		requireLiveEqual(t, "project.id", created.ID, imported.State.ProjectID)
@@ -128,9 +145,9 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		deleteAndReadProject(t, ctx, r, created.ID, release)
 	})
 
-	t.Run("Environment", func(t *testing.T) {
+	runLiveCase(t, "Environment", func(t *testing.T) {
 		ctx := liveContext(t, 2*time.Minute)
-		projectID, _, _ := liveProject(t, ctx, api)
+		projectID, _, releaseProject := liveProject(t, ctx, api)
 		r := Environment{client: fixedClient(api)}
 		created, err := r.Create(ctx, infer.CreateRequest[EnvironmentArgs]{Inputs: EnvironmentArgs{ProjectID: projectID, Name: liveRunName("environment")}})
 		release := func() {}
@@ -143,7 +160,11 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 				return v.ID, err
 			})
 		}
-		requireNoError(t, err)
+		createErr := confirmLiveControlPlaneCreate("environment", created.ID, err)
+		if created.ID == "" && heavyLiveTierStopped() {
+			releaseProject() // Do not cascade through an unidentified environment.
+		}
+		requireNoError(t, createErr)
 		read, err := r.Read(ctx, infer.ReadRequest[EnvironmentArgs, EnvironmentState]{ID: created.ID})
 		requireNoError(t, err)
 		updatedName := read.Inputs.Name + "-updated"
@@ -157,6 +178,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		postUpdate, err := r.Read(ctx, infer.ReadRequest[EnvironmentArgs, EnvironmentState]{ID: created.ID})
 		requireNoError(t, err)
 		requireLiveEqual(t, "environment.name", updatedName, postUpdate.Inputs.Name)
+		t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Environment", created.ID, postUpdate.Inputs.Name) })
 		imported, err := r.Read(ctx, infer.ReadRequest[EnvironmentArgs, EnvironmentState]{ID: created.ID})
 		requireNoError(t, err)
 		requireLiveEqual(t, "environment.id", created.ID, imported.State.EnvironmentID)
@@ -166,7 +188,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		deleteAndReadEnvironment(t, ctx, r, created.ID, release)
 	})
 
-	t.Run("Destination", func(t *testing.T) {
+	runLiveCase(t, "Destination", func(t *testing.T) {
 		ctx := liveContext(t, 2*time.Minute)
 		r := Destination{client: fixedClient(api)}
 		inputs := DestinationArgs{Name: liveRunName("destination"), Provider: stringPtr("s3"), AccessKey: "AKIALIVETEST", SecretAccessKey: "live-test-secret", Bucket: "live-test-bucket", Region: "us-east-1", Endpoint: "https://pulumi-acceptance.invalid"}
@@ -185,7 +207,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 				return v.ID, err
 			})
 		}
-		requireNoError(t, err)
+		requireNoError(t, confirmLiveControlPlaneCreate("destination", created.ID, err))
 		read, err := r.Read(ctx, infer.ReadRequest[DestinationArgs, DestinationState]{ID: created.ID})
 		requireNoError(t, err)
 		updatedInputs := read.Inputs
@@ -229,7 +251,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		deleteAndReadDestination(t, ctx, r, created.ID, release)
 	})
 
-	t.Run("SSHKey", func(t *testing.T) {
+	runLiveCase(t, "SSHKey", func(t *testing.T) {
 		ctx := liveContext(t, 2*time.Minute)
 		organization, err := api.OrganizationActiveWithResponse(ctx)
 		requireNoError(t, err)
@@ -254,7 +276,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 				return v.ID, err
 			})
 		}
-		requireNoError(t, err)
+		requireNoError(t, confirmLiveControlPlaneCreate("ssh-key", created.ID, err))
 		read, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID})
 		requireNoError(t, err)
 		description := "updated by live test"
@@ -263,6 +285,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		postUpdate, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID})
 		requireNoError(t, err)
 		requireLiveEqual(t, "sshKey.description", description, value(postUpdate.Inputs.Description))
+		t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "SSHKey", created.ID, postUpdate.Inputs.Name) })
 		requireLiveEqual(t, "sshKey.privateKey", privateKey, postUpdate.Inputs.PrivateKey)
 		requireLiveEqual(t, "sshKey.publicKey", publicKey, postUpdate.Inputs.PublicKey)
 		imported, err := r.Read(ctx, infer.ReadRequest[SSHKeyArgs, SSHKeyState]{ID: created.ID})
@@ -277,7 +300,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		deleteAndReadSSHKey(t, ctx, r, created.ID, imported.State, release)
 	})
 
-	t.Run("Registry", func(t *testing.T) {
+	runLiveCase(t, "Registry", func(t *testing.T) {
 		args, ok := liveRegistryArgs(t)
 		if !ok {
 			t.Skip("dedicated registry credentials are not configured")
@@ -299,7 +322,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 				return v.ID, err
 			})
 		}
-		requireNoError(t, err)
+		requireNoError(t, confirmLiveControlPlaneCreate("registry", created.ID, err))
 		read, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID})
 		requireNoError(t, err)
 		postUpdate := read
@@ -327,13 +350,14 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		imported, err := r.Read(ctx, infer.ReadRequest[RegistryArgs, RegistryState]{ID: created.ID})
 		requireNoError(t, err)
 		requireLiveEqual(t, "registry.id", created.ID, imported.State.RegistryID)
+		t.Run("Lookup", func(t *testing.T) { runLiveLookup(t, ctx, api, "Registry", created.ID, imported.Inputs.Name) })
 		diff, err := r.Diff(ctx, infer.DiffRequest[RegistryArgs, RegistryState]{Inputs: postUpdate.Inputs, State: postUpdate.State})
 		requireNoError(t, err)
 		require.False(t, diff.HasChanges)
 		deleteAndReadRegistry(t, ctx, r, created.ID, imported.State, release)
 	})
 
-	t.Run("Tag", func(t *testing.T) {
+	runLiveCase(t, "Tag", func(t *testing.T) {
 		ctx := liveContext(t, 2*time.Minute)
 		r := Tag{client: fixedClient(api)}
 		created, err := r.Create(ctx, infer.CreateRequest[TagArgs]{Inputs: TagArgs{Name: liveRunName("tag"), Color: stringPtr("#123456")}})
@@ -347,7 +371,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 				return v.ID, err
 			})
 		}
-		requireNoError(t, err)
+		requireNoError(t, confirmLiveControlPlaneCreate("tag", created.ID, err))
 		read, err := r.Read(ctx, infer.ReadRequest[TagArgs, TagState]{ID: created.ID})
 		requireNoError(t, err)
 		updated := read.Inputs
@@ -368,7 +392,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		deleteAndReadTag(t, ctx, r, created.ID, release)
 	})
 
-	t.Run("ProjectTag", func(t *testing.T) {
+	runLiveCase(t, "ProjectTag", func(t *testing.T) {
 		ctx := liveContext(t, 2*time.Minute)
 		projectID, _, _ := liveProject(t, ctx, api)
 		tag := Tag{client: fixedClient(api)}
@@ -383,7 +407,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 				return v.ID, err
 			})
 		}
-		requireNoError(t, err)
+		requireNoError(t, confirmLiveControlPlaneCreate("tag", tagCreated.ID, err))
 		r := ProjectTag{client: fixedClient(api)}
 		created, err := r.Create(ctx, infer.CreateRequest[ProjectTagArgs]{Inputs: ProjectTagArgs{ProjectID: projectID, TagID: tagCreated.ID}})
 		if err != nil && created.ID != "" {
@@ -414,7 +438,7 @@ func TestLiveTier1ControlPlane(t *testing.T) {
 		requireNoError(t, err)
 		require.Equal(t, p.UpdateReplace, diff.DetailedDiff["tagId"].Kind)
 		deleteAndReadProjectTag(t, ctx, r, created.ID, read.State, release)
-		tagRelease()
+		deleteAndReadTag(t, ctx, tag, tagCreated.ID, tagRelease)
 	})
 }
 

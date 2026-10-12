@@ -92,9 +92,7 @@ func TestNotificationChannelEndpoints(t *testing.T) {
 							want[key] = value
 						}
 						for _, field := range notificationEventFields {
-							if field.name != "serverThreshold" || kind != notificationGotify && kind != notificationNtfy {
-								want[field.name] = operation == "update" && field.name == "appDeploy"
-							}
+							want[field.name] = operation == "update" && field.name == "appDeploy"
 						}
 						if operation == "update" {
 							want["name"] = "example"
