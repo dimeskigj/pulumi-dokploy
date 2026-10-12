@@ -31,7 +31,7 @@ func notificationGotifyUpdateBody(id, channelID string, a NotificationArgs) gene
 	return generated.NotificationUpdateGotifyJSONRequestBody{
 		NotificationId: id, GotifyId: channelID, Name: ptr(a.Name), ServerUrl: ptr(v.ServerURL), AppToken: ptr(v.AppToken), Priority: v.Priority, Decoration: v.Decoration,
 		AppDeploy: ptr(e.AppDeploy), AppBuildError: ptr(e.AppBuildError), DatabaseBackup: ptr(e.DatabaseBackup), VolumeBackup: ptr(e.VolumeBackup),
-		DokployBackup: ptr(e.DokployBackup), DokployRestart: ptr(e.DokployRestart), DockerCleanup: ptr(e.DockerCleanup),
+		DokployBackup: ptr(e.DokployBackup), DokployRestart: ptr(e.DokployRestart), DockerCleanup: ptr(e.DockerCleanup), ServerThreshold: ptr(false),
 	}
 }
 
@@ -46,7 +46,7 @@ func notificationNtfyUpdateBody(id, channelID string, a NotificationArgs) genera
 	return generated.NotificationUpdateNtfyJSONRequestBody{
 		NotificationId: id, NtfyId: channelID, Name: ptr(a.Name), ServerUrl: ptr(v.ServerURL), Topic: ptr(v.Topic), AccessToken: v.AccessToken, Priority: ptr(float32(*v.Priority)),
 		AppDeploy: ptr(e.AppDeploy), AppBuildError: ptr(e.AppBuildError), DatabaseBackup: ptr(e.DatabaseBackup), VolumeBackup: ptr(e.VolumeBackup),
-		DokployBackup: ptr(e.DokployBackup), DokployRestart: ptr(e.DokployRestart), DockerCleanup: ptr(e.DockerCleanup),
+		DokployBackup: ptr(e.DokployBackup), DokployRestart: ptr(e.DokployRestart), DockerCleanup: ptr(e.DockerCleanup), ServerThreshold: ptr(false),
 	}
 }
 

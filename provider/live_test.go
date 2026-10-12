@@ -143,6 +143,12 @@ func liveProject(t *testing.T, ctx context.Context, api *client.Client) (id, def
 	t.Helper()
 	r := Project{client: fixedClient(api)}
 	created, err := r.Create(ctx, infer.CreateRequest[ProjectArgs]{Inputs: ProjectArgs{Name: liveRunName("project")}})
+	return finalizeLiveProjectCreate(t, api, created, err)
+}
+
+func finalizeLiveProjectCreate(t *testing.T, api *client.Client, created infer.CreateResponse[ProjectState], err error) (id, defaultEnvironmentID string, release func()) {
+	t.Helper()
+	r := Project{client: fixedClient(api)}
 	release = func() {}
 	var owner *liveCleanupOwner
 	if created.ID != "" {
@@ -154,6 +160,18 @@ func liveProject(t *testing.T, ctx context.Context, api *client.Client) (id, def
 			return read.ID, err
 		})
 		release = owner.release
+	}
+	if created.ID == "" {
+		if !liveCreateDefinitelyRejected(err) {
+			recordLiveCleanupFailure("project", "", err)
+		}
+		if err == nil {
+			err = fmt.Errorf("project create returned no confirmed identity")
+		}
+		requireNoError(t, err, "Project", "create")
+	}
+	if err == nil && created.Output.DefaultEnvironmentID == "" {
+		err = fmt.Errorf("project create returned no confirmed default environment")
 	}
 	if err != nil && created.ID != "" {
 		cleanupCtx, cancel := cleanupContext()
@@ -173,6 +191,6 @@ func liveProject(t *testing.T, ctx context.Context, api *client.Client) (id, def
 			reportLiveCleanup(t, "project", created.ID, cleanupErr)
 		}
 	}
-	requireNoError(t, err)
+	requireNoError(t, err, "Project", "create")
 	return created.ID, created.Output.DefaultEnvironmentID, release
 }

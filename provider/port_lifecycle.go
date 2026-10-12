@@ -58,6 +58,43 @@ func readPort(ctx context.Context, api *client.Client, id string) (PortState, er
 	return PortState{PortArgs: a, PortID: id}, nil
 }
 
+// Dokploy v0.30.8 wraps missing-port AND permission failures as BAD_REQUEST.
+// The message alone is not absence evidence. Require an authenticated read of
+// the known owner's explicit, complete ports relation before forgetting state.
+func confirmAmbiguousPortAbsence(ctx context.Context, api *client.Client, id, owner string, err error) bool {
+	var apiErr *client.APIError
+	if !validPortID(owner) || !errors.As(err, &apiErr) || apiErr.StatusCode != 400 || apiErr.Code != notificationBadRequest || apiErr.Message != "Port not found" {
+		return false
+	}
+	resp, readErr := api.ApplicationOne(ctx, &generated.ApplicationOneParams{ApplicationId: owner})
+	if readErr != nil {
+		return false
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != 200 {
+		return false
+	}
+	data, readErr := io.ReadAll(io.LimitReader(resp.Body, portCreateBodyLimit+1))
+	if readErr != nil || len(data) > portCreateBodyLimit {
+		return false
+	}
+	var application struct {
+		ApplicationID string `json:"applicationId"`
+		Ports         *[]struct {
+			PortID string `json:"portId"`
+		} `json:"ports"`
+	}
+	if json.Unmarshal(data, &application) != nil || application.ApplicationID != owner || application.Ports == nil {
+		return false
+	}
+	for _, port := range *application.Ports {
+		if !validPortID(port.PortID) || port.PortID == id {
+			return false
+		}
+	}
+	return true
+}
+
 func createPort(ctx context.Context, api *client.Client, args PortArgs) (string, error) {
 	resp, err := api.PortCreate(ctx, generated.PortCreateJSONRequestBody{ApplicationId: args.ApplicationID, PublishedPort: float32(args.PublishedPort), TargetPort: float32(args.TargetPort), Protocol: generated.PortCreateJSONBodyProtocol(portProtocol(args.Protocol)), PublishMode: generated.PortCreateJSONBodyPublishMode(portMode(args.PublishMode))})
 	if err != nil {
@@ -107,8 +144,9 @@ func (r Port) Read(ctx context.Context, req infer.ReadRequest[PortArgs, PortStat
 	if !validPortID(req.ID) {
 		return infer.ReadResponse[PortArgs, PortState]{}, errors.New("port.one invalid identity")
 	}
-	state, err := readPort(ctx, r.client(ctx), req.ID)
-	if client.IsNotFound(err) {
+	api := r.client(ctx)
+	state, err := readPort(ctx, api, req.ID)
+	if client.IsNotFound(err) || confirmAmbiguousPortAbsence(ctx, api, req.ID, req.State.ApplicationID, err) {
 		return infer.ReadResponse[PortArgs, PortState]{}, nil
 	}
 	if err != nil {
@@ -149,8 +187,9 @@ func (r Port) Delete(ctx context.Context, req infer.DeleteRequest[PortState]) (i
 	if !validPortID(req.ID) {
 		return infer.DeleteResponse{}, errors.New("port.delete invalid identity")
 	}
-	resp, err := r.client(ctx).PortDelete(ctx, generated.PortDeleteJSONRequestBody{PortId: req.ID})
-	if client.IsNotFound(err) {
+	api := r.client(ctx)
+	resp, err := api.PortDelete(ctx, generated.PortDeleteJSONRequestBody{PortId: req.ID})
+	if client.IsNotFound(err) || confirmAmbiguousPortAbsence(ctx, api, req.ID, req.State.ApplicationID, err) {
 		return infer.DeleteResponse{}, nil
 	}
 	if err != nil {

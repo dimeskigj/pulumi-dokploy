@@ -19,10 +19,10 @@ func TestNotificationChannelBodiesMessaging(t *testing.T) {
 			settings = map[string]any{"botToken": "placeholder", "chatId": "placeholder", "messageThreadId": ""}
 		case notificationGotify:
 			create, update = notificationGotifyCreateBody("requested-name", a), notificationGotifyUpdateBody("placeholder-notification", "placeholder-channel", a)
-			settings = map[string]any{"serverUrl": "https://example.com", "appToken": "placeholder", "priority": float64(5), "decoration": false}
+			settings = map[string]any{"serverUrl": "https://example.com", "appToken": "placeholder", "priority": float64(5), "decoration": false, "serverThreshold": false}
 		case notificationNtfy:
 			create, update = notificationNtfyCreateBody("requested-name", a), notificationNtfyUpdateBody("placeholder-notification", "placeholder-channel", a)
-			settings = map[string]any{"serverUrl": "https://example.com", "topic": "placeholder", "accessToken": "", "priority": float64(3)}
+			settings = map[string]any{"serverUrl": "https://example.com", "topic": "placeholder", "accessToken": "", "priority": float64(3), "serverThreshold": false}
 		case notificationPushover:
 			create, update = notificationPushoverCreateBody("requested-name", a), notificationPushoverUpdateBody("placeholder-notification", "placeholder-channel", a)
 			settings = map[string]any{"userKey": "placeholder", "apiToken": "placeholder", "priority": float64(0), "retry": nil, "expire": nil}

@@ -41,6 +41,10 @@ func pulumiCLIAvailable(lookPath func(string) (string, error)) bool {
 
 func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 	t.Helper()
+	marker := os.Getenv("DOKPLOY_ACCEPTANCE_STOP_FILE")
+	if err := lifecycleSmokeGate(marker); err != nil {
+		t.Fatal(err)
+	}
 	backend := t.TempDir()
 	stackName := acceptanceStackName(cfg.NameSuffix)
 	stack, err := auto.NewStackInlineSource(ctx, stackName, acceptanceProjectName(cfg.NameSuffix), lifecycleRevisionOne(cfg),
@@ -74,6 +78,9 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 				}
 				return validateStackRemoved(stacks, stackName)
 			})
+		if err := recordLifecycleCleanupStop(marker, destroyErr, exportErr, removeErr, listErr); err != nil {
+			t.Error(err)
+		}
 		if destroyErr != nil {
 			t.Error(acceptanceStageError("destroy", destroyErr))
 		}
@@ -135,6 +142,41 @@ func runLifecycleSmoke(t *testing.T, ctx context.Context, cfg liveConfig) {
 		t.Fatal(acceptanceStageError("refresh-2", err))
 	}
 	assertRefreshedLifecycleOutputs(t, ctx, stack, "refresh-2", lifecycleRevisionTwoValues(), cfg, &revisionOne)
+}
+
+func lifecycleSmokeGate(marker string) error {
+	if strings.TrimSpace(marker) == "" {
+		return errors.New("Pulumi acceptance stop-marker safety setup is required")
+	}
+	_, err := os.Lstat(marker)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	// Existing files, directories, and even dangling symlinks block the run.
+	return errors.New("Pulumi acceptance blocked by stop marker or unsafe marker path")
+}
+
+func recordLifecycleCleanupStop(marker string, failures ...error) error {
+	failed := false
+	for _, err := range failures {
+		failed = failed || err != nil
+	}
+	if !failed {
+		return nil
+	}
+	file, err := os.OpenFile(marker, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if errors.Is(err, os.ErrExist) {
+		return nil // Never clear, truncate, or follow an existing marker.
+	}
+	if err != nil {
+		return errors.New("Pulumi acceptance cleanup stop-marker write failed")
+	}
+	_, writeErr := file.WriteString("stop\n")
+	closeErr := file.Close()
+	if writeErr != nil || closeErr != nil {
+		return errors.New("Pulumi acceptance cleanup stop-marker write failed")
+	}
+	return nil
 }
 
 func drainPreviewEvents(eventChannel <-chan events.EngineEvent, stop <-chan struct{}) string {
@@ -257,6 +299,13 @@ func lifecycleSmokeProgram(cfg liveConfig, description, environmentName, tagColo
 		if _, err = dokploy.GetTag(ctx, acceptanceEntityName("read-tag", cfg.NameSuffix), asID(tag.TagId), nil); err != nil {
 			return err
 		}
+		// Output-form invokes wait for the owned IDs produced by the resources.
+		projectLookup := dokploy.LookupProjectOutput(ctx, dokploy.LookupProjectOutputArgs{ProjectId: project.ProjectId})
+		environmentLookup := dokploy.LookupEnvironmentOutput(ctx, dokploy.LookupEnvironmentOutputArgs{EnvironmentId: environment.EnvironmentId})
+		ctx.Export("lookupProjectId", projectLookup.ProjectId())
+		ctx.Export("lookupProjectName", projectLookup.Name())
+		ctx.Export("lookupEnvironmentId", environmentLookup.EnvironmentId())
+		ctx.Export("lookupEnvironmentName", environmentLookup.Name())
 
 		ctx.Export("projectId", project.ProjectId)
 		ctx.Export("projectDescription", project.Description)
@@ -520,10 +569,14 @@ func assertLifecycleOutputs(t *testing.T, outputs auto.OutputMap, expected lifec
 	if previous != nil && *previous != ids {
 		t.Fatal(acceptanceFailure("stable resource identity"))
 	}
-	for key, want := range map[string]string{"projectDescription": expected.description, "environmentName": acceptanceEntityName(expected.environment, cfg.NameSuffix), "tagColor": expected.color} {
+	for key, want := range map[string]string{
+		"projectDescription": expected.description, "environmentName": acceptanceEntityName(expected.environment, cfg.NameSuffix), "tagColor": expected.color,
+		"lookupProjectId": ids.project, "lookupProjectName": acceptanceEntityName("project", cfg.NameSuffix),
+		"lookupEnvironmentId": ids.environment, "lookupEnvironmentName": acceptanceEntityName(expected.environment, cfg.NameSuffix),
+	} {
 		output, ok := outputs[key]
 		got, isString := output.Value.(string)
-		if !ok || !isString || got != want {
+		if !ok || !isString || output.Secret || got != want {
 			t.Error(acceptanceFailure("stack output", key))
 		}
 	}

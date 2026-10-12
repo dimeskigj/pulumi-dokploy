@@ -109,6 +109,27 @@ func TestNotificationGotifyIntegerRequestContract(t *testing.T) {
 	}
 }
 
+func TestNotificationMessagingServerThresholdContract(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, channel := range []string{"Gotify", "Ntfy"} {
+		for _, action := range []string{"create", "update"} {
+			name := "notification." + action + channel
+			t.Run(name, func(t *testing.T) {
+				schema := operationRequestSchema(t, d, name)
+				properties := schema["properties"].(map[string]any)
+				require.Contains(t, properties, "serverThreshold")
+				require.Equal(t, "boolean", properties["serverThreshold"].(map[string]any)["type"])
+				if action == "create" {
+					require.Contains(t, schema["required"], "serverThreshold")
+				} else {
+					require.NotContains(t, schema["required"], "serverThreshold")
+				}
+				require.Contains(t, properties, "priority", "retain other upstream fields")
+			})
+		}
+	}
+}
+
 func normalizedOperationIDs(t *testing.T, d *Document) []string {
 	t.Helper()
 	ids := make([]string, 0, len(d.Paths))

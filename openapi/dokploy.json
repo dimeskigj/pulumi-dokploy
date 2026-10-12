@@ -10477,6 +10477,9 @@
                     "minimum": 1,
                     "type": "integer"
                   },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
                   "serverUrl": {
                     "minLength": 1,
                     "type": "string"
@@ -10497,7 +10500,8 @@
                   "serverUrl",
                   "appToken",
                   "priority",
-                  "decoration"
+                  "decoration",
+                  "serverThreshold"
                 ],
                 "type": "object"
               }
@@ -10831,6 +10835,9 @@
                     "minimum": 1,
                     "type": "number"
                   },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
                   "serverUrl": {
                     "minLength": 1,
                     "type": "string"
@@ -10855,7 +10862,8 @@
                   "serverUrl",
                   "topic",
                   "accessToken",
-                  "priority"
+                  "priority",
+                  "serverThreshold"
                 ],
                 "type": "object"
               }
@@ -12142,6 +12150,9 @@
                     "minimum": 1,
                     "type": "integer"
                   },
+                  "serverThreshold": {
+                    "type": "boolean"
+                  },
                   "serverUrl": {
                     "minLength": 1,
                     "type": "string"
@@ -12502,6 +12513,9 @@
                   "priority": {
                     "minimum": 1,
                     "type": "number"
+                  },
+                  "serverThreshold": {
+                    "type": "boolean"
                   },
                   "serverUrl": {
                     "minLength": 1,
