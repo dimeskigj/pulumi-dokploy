@@ -312,7 +312,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		if url == "" || branch == "" {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required git url or branch")
 		}
-		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: optionalStringPointer(m, "buildPath", "customGitBuildPath"), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: sourceBuildPathPointer(m, "customGitBuildPath", "buildPath", true), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
 		if isRepositoryRootBuildPath(result.Git.BuildPath) {
 			if prior.Type != SourceGit || prior.Git == nil || prior.Git.BuildPath == nil {
 				result.Git.BuildPath = nil
@@ -327,7 +327,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		if integration == "" || owner == "" || namespace == "" || repo == "" || branch == "" {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab source fields")
 		}
-		result.GitLab = &GitLabAppSource{IntegrationID: integration, ProjectID: int(numberValue(m, "projectId", "gitlabProjectId")), Owner: owner, Namespace: namespace, Repository: repo, Branch: branch, BuildPath: stringPointer(m, "buildPath", "gitlabBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.GitLab = &GitLabAppSource{IntegrationID: integration, ProjectID: int(numberValue(m, "projectId", "gitlabProjectId")), Owner: owner, Namespace: namespace, Repository: repo, Branch: branch, BuildPath: sourceBuildPathPointer(m, "gitlabBuildPath", "buildPath", false), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
 		if result.GitLab.ProjectID == 0 {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab projectId")
 		}
@@ -517,6 +517,26 @@ func optionalStringPointer(m map[string]interface{}, keys ...string) *string {
 		}
 	}
 	return nil
+}
+
+// sourceBuildPathPointer prefers a provider-specific path and treats any
+// present selected field (including null or empty) as authoritative. The
+// simplified buildPath field is a compatibility alias only when that field is
+// absent. Generic Git preserves explicit empty strings; GitLab retains its
+// existing empty-as-unset behavior.
+func sourceBuildPathPointer(m map[string]interface{}, selectedField, legacyField string, preserveEmpty bool) *string {
+	value, present := m[selectedField]
+	if !present {
+		value, present = m[legacyField]
+	}
+	if !present {
+		return nil
+	}
+	path, ok := value.(string)
+	if !ok || (!preserveEmpty && path == "") {
+		return nil
+	}
+	return &path
 }
 
 func (r Application) Update(ctx context.Context, req infer.UpdateRequest[ApplicationArgs, ApplicationState]) (infer.UpdateResponse[ApplicationState], error) {

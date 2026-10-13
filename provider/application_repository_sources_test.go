@@ -108,6 +108,112 @@ func TestApplicationRepositorySourceReadAndImport(t *testing.T) {
 	}
 }
 
+func TestApplicationRepositorySourceBuildPathFieldPrecedence(t *testing.T) {
+	tests := []struct {
+		name     string
+		kind     ApplicationSourceType
+		response string
+		prior    ApplicationSource
+		want     *string
+	}{
+		{
+			name:     "git selected path wins shared root default on import",
+			kind:     SourceGit,
+			response: `{"applicationId":"a1","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","buildPath":"/","customGitBuildPath":"services/api"}`,
+			want:     appStringPtr("services/api"),
+		},
+		{
+			name:     "git selected path wins shared root default over prior",
+			kind:     SourceGit,
+			response: `{"applicationId":"a1","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","buildPath":"/","customGitBuildPath":"services/api"}`,
+			prior:    ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{BuildPath: appStringPtr("old/path")}},
+			want:     appStringPtr("services/api"),
+		},
+		{
+			name:     "git selected null blocks shared alias",
+			kind:     SourceGit,
+			response: `{"applicationId":"a1","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","buildPath":"legacy/path","customGitBuildPath":null}`,
+			want:     nil,
+		},
+		{
+			name:     "git selected empty retains explicit empty pointer",
+			kind:     SourceGit,
+			response: `{"applicationId":"a1","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","buildPath":"legacy/path","customGitBuildPath":""}`,
+			want:     appStringPtr(""),
+		},
+		{
+			name:     "git legacy alias is used when selected field is absent",
+			kind:     SourceGit,
+			response: `{"applicationId":"a1","type":"git","customGitUrl":"https://git.test/repo","customGitBranch":"main","buildPath":"services/legacy"}`,
+			want:     appStringPtr("services/legacy"),
+		},
+		{
+			name:     "gitlab selected path wins shared root default on import",
+			kind:     SourceGitLab,
+			response: `{"applicationId":"a1","type":"gitlab","gitlabId":"i","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","buildPath":"/","gitlabBuildPath":"services/api"}`,
+			want:     appStringPtr("services/api"),
+		},
+		{
+			name:     "gitlab selected path wins shared root default over prior",
+			kind:     SourceGitLab,
+			response: `{"applicationId":"a1","type":"gitlab","gitlabId":"i","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","buildPath":"/","gitlabBuildPath":"services/api"}`,
+			prior:    ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{BuildPath: appStringPtr("old/path")}},
+			want:     appStringPtr("services/api"),
+		},
+		{
+			name:     "gitlab selected null blocks shared alias",
+			kind:     SourceGitLab,
+			response: `{"applicationId":"a1","type":"gitlab","gitlabId":"i","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","buildPath":"legacy/path","gitlabBuildPath":null}`,
+			want:     nil,
+		},
+		{
+			name:     "gitlab selected empty preserves nil contract",
+			kind:     SourceGitLab,
+			response: `{"applicationId":"a1","type":"gitlab","gitlabId":"i","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","buildPath":"legacy/path","gitlabBuildPath":""}`,
+			want:     nil,
+		},
+		{
+			name:     "gitlab legacy alias is used when selected field is absent",
+			kind:     SourceGitLab,
+			response: `{"applicationId":"a1","type":"gitlab","gitlabId":"i","gitlabProjectId":42,"gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabRepository":"repo","gitlabBranch":"main","buildPath":"services/legacy"}`,
+			want:     appStringPtr("services/legacy"),
+		},
+		{
+			name:     "gitea prefixed path wins shared root default",
+			kind:     SourceGitea,
+			response: `{"applicationId":"a1","type":"gitea","giteaId":"i","giteaOwner":"owner","giteaRepository":"repo","giteaBranch":"main","buildPath":"/","giteaBuildPath":"services/gitea"}`,
+			want:     appStringPtr("services/gitea"),
+		},
+		{
+			name:     "bitbucket prefixed path wins shared root default",
+			kind:     SourceBitbucket,
+			response: `{"applicationId":"a1","type":"bitbucket","bitbucketId":"i","bitbucketOwner":"owner","bitbucketRepository":"repo","bitbucketRepositorySlug":"owner/repo","bitbucketBranch":"main","buildPath":"/","bitbucketBuildPath":"services/bitbucket"}`,
+			want:     appStringPtr("services/bitbucket"),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newScriptedServer(t, expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, tc.response))
+			got, err := (Application{client: fixedClient(s.API())}).Read(t.Context(), infer.ReadRequest[ApplicationArgs, ApplicationState]{
+				ID: "a1", State: ApplicationState{ApplicationArgs: ApplicationArgs{Source: tc.prior}},
+			})
+			require.NoError(t, err)
+			require.Equal(t, tc.kind, got.Inputs.Source.Type)
+			switch tc.kind {
+			case SourceGit:
+				require.Equal(t, tc.want, got.Inputs.Source.Git.BuildPath)
+			case SourceGitLab:
+				require.Equal(t, tc.want, got.Inputs.Source.GitLab.BuildPath)
+			case SourceGitea:
+				require.Equal(t, tc.want, got.Inputs.Source.Gitea.BuildPath)
+			case SourceBitbucket:
+				require.Equal(t, tc.want, got.Inputs.Source.Bitbucket.BuildPath)
+			}
+		})
+	}
+}
+
 func TestApplicationRepositorySourceBuilderMatrix(t *testing.T) {
 	builders := []BuildType{BuildDockerfile, BuildNixpacks, BuildHerokuBuildpacks, BuildPaketoBuildpacks, BuildStatic, BuildRailpack}
 	for _, source := range repositorySourcesForTest() {
