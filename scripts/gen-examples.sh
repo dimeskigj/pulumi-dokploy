@@ -8,12 +8,8 @@ pack=$4
 version=$5
 temporary_parent=${TMPDIR:-/tmp}
 yaml_converter_version=1.38.7
-yaml_converter_binary=${PULUMI_YAML_CONVERTER_BINARY:-/home/dimeskigj/.pulumi/plugins/converter-yaml-v1.38.7/pulumi-converter-yaml}
-
-case "$temporary_parent" in
-	/tmp/opencode/*) ;;
-	*) echo "TMPDIR must be an approved /tmp/opencode child" >&2; exit 1 ;;
-esac
+yaml_converter_override=${PULUMI_YAML_CONVERTER_BINARY:-}
+source_pulumi_home=${PULUMI_HOME:-${HOME:-}/.pulumi}
 
 if ! cache=$(mktemp -d "$temporary_parent/pulumi-dokploy-examples.XXXXXX"); then
 	echo "unable to create isolated Pulumi home under TMPDIR" >&2
@@ -31,11 +27,25 @@ unset PULUMI_HOME_OWNER_TOKEN
 cd "$repository_root"
 # Resolve and install the pinned converter into the isolated home before any
 # tracked translation directories are removed. Never discover/download latest.
-if [ ! -x "$yaml_converter_binary" ]; then
-	echo "YAML converter $yaml_converter_version unavailable at configured cache source" >&2
-	exit 1
+if [ -n "$yaml_converter_override" ]; then
+	if [ ! -x "$yaml_converter_override" ]; then
+		echo "configured YAML converter override is not executable" >&2
+		exit 1
+	fi
+	mise exec pulumi@3.259.0 -- pulumi plugin install converter yaml "$yaml_converter_version" --file "$yaml_converter_override" --exact --reinstall
+else
+	yaml_converter_binary=
+	for candidate in \
+		"$source_pulumi_home/plugins/converter-yaml-v$yaml_converter_version/pulumi-converter-yaml" \
+		"$source_pulumi_home/plugins/converter-yaml-v$yaml_converter_version/pulumi-converter-yaml.exe"; do
+		if [ -x "$candidate" ]; then yaml_converter_binary=$candidate; break; fi
+	done
+	if [ -n "$yaml_converter_binary" ]; then
+		mise exec pulumi@3.259.0 -- pulumi plugin install converter yaml "$yaml_converter_version" --file "$yaml_converter_binary" --exact --reinstall
+	else
+		mise exec pulumi@3.259.0 -- pulumi plugin install converter yaml "$yaml_converter_version" --exact
+	fi
 fi
-mise exec pulumi@3.259.0 -- pulumi plugin install converter yaml "$yaml_converter_version" --file "$yaml_converter_binary" --exact --reinstall
 mise exec pulumi@3.259.0 -- pulumi plugin ls | grep -E "yaml[[:space:]]+converter[[:space:]]+$yaml_converter_version([[:space:]]|$)" >/dev/null || {
 	echo "isolated Pulumi home does not contain YAML converter $yaml_converter_version" >&2
 	exit 1
