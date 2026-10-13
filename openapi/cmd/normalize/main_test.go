@@ -537,7 +537,7 @@ func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
 		require.True(t, ok, "missing path %s", operation.path)
 		require.NotNil(t, path.Methods[operation.method], "missing %s operation at %s", operation.method, operation.path)
 	}
-	require.Len(t, d.Paths, 110, "the six GitLab integration operations are the only operations added")
+	require.Len(t, d.Paths, 145, "the 139 baseline operations and six GitLab integration operations are the complete inventory")
 	require.Equal(t, "#/components/schemas/GitLabIntegrationRecord", responseSchema(t, d, "/gitlab.one", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/GitProviderList", responseSchema(t, d, "/gitProvider.getAll", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/AuthenticatedGitProviderMember", responseSchema(t, d, "/user.get", httpMethodGet, "200").Ref)
