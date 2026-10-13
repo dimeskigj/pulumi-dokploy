@@ -9,12 +9,20 @@ import java.lang.String;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.dimeski.pulumi.dokploy.outputs.BitbucketAppSource;
 import net.dimeski.pulumi.dokploy.outputs.DockerSource;
 import net.dimeski.pulumi.dokploy.outputs.GitApplicationSource;
+import net.dimeski.pulumi.dokploy.outputs.GitHubAppSource;
 import net.dimeski.pulumi.dokploy.outputs.GitLabAppSource;
+import net.dimeski.pulumi.dokploy.outputs.GiteaAppSource;
 
 @CustomType
 public final class ApplicationSource {
+    /**
+     * @return Bitbucket source configuration.
+     *
+     */
+    private @Nullable BitbucketAppSource bitbucket;
     /**
      * @return Docker source configuration.
      *
@@ -25,6 +33,16 @@ public final class ApplicationSource {
      *
      */
     private @Nullable GitApplicationSource git;
+    /**
+     * @return Gitea source configuration.
+     *
+     */
+    private @Nullable GiteaAppSource gitea;
+    /**
+     * @return GitHub source configuration.
+     *
+     */
+    private @Nullable GitHubAppSource github;
     /**
      * @return GitLab source configuration.
      *
@@ -38,6 +56,13 @@ public final class ApplicationSource {
 
     private ApplicationSource() {}
     /**
+     * @return Bitbucket source configuration.
+     *
+     */
+    public Optional<BitbucketAppSource> bitbucket() {
+        return Optional.ofNullable(this.bitbucket);
+    }
+    /**
      * @return Docker source configuration.
      *
      */
@@ -50,6 +75,20 @@ public final class ApplicationSource {
      */
     public Optional<GitApplicationSource> git() {
         return Optional.ofNullable(this.git);
+    }
+    /**
+     * @return Gitea source configuration.
+     *
+     */
+    public Optional<GiteaAppSource> gitea() {
+        return Optional.ofNullable(this.gitea);
+    }
+    /**
+     * @return GitHub source configuration.
+     *
+     */
+    public Optional<GitHubAppSource> github() {
+        return Optional.ofNullable(this.github);
     }
     /**
      * @return GitLab source configuration.
@@ -75,19 +114,31 @@ public final class ApplicationSource {
     }
     @CustomType.Builder
     public static final class Builder {
+        private @Nullable BitbucketAppSource bitbucket;
         private @Nullable DockerSource docker;
         private @Nullable GitApplicationSource git;
+        private @Nullable GiteaAppSource gitea;
+        private @Nullable GitHubAppSource github;
         private @Nullable GitLabAppSource gitlab;
         private String type;
         public Builder() {}
         public Builder(ApplicationSource defaults) {
-    	      Objects.requireNonNull(defaults);
-    	      this.docker = defaults.docker;
-    	      this.git = defaults.git;
-    	      this.gitlab = defaults.gitlab;
-    	      this.type = defaults.type;
+	      Objects.requireNonNull(defaults);
+	      this.bitbucket = defaults.bitbucket;
+	      this.docker = defaults.docker;
+	      this.git = defaults.git;
+	      this.gitea = defaults.gitea;
+	      this.github = defaults.github;
+	      this.gitlab = defaults.gitlab;
+	      this.type = defaults.type;
         }
 
+        @CustomType.Setter
+        public Builder bitbucket(@Nullable BitbucketAppSource bitbucket) {
+
+            this.bitbucket = bitbucket;
+            return this;
+        }
         @CustomType.Setter
         public Builder docker(@Nullable DockerSource docker) {
 
@@ -98,6 +149,18 @@ public final class ApplicationSource {
         public Builder git(@Nullable GitApplicationSource git) {
 
             this.git = git;
+            return this;
+        }
+        @CustomType.Setter
+        public Builder gitea(@Nullable GiteaAppSource gitea) {
+
+            this.gitea = gitea;
+            return this;
+        }
+        @CustomType.Setter
+        public Builder github(@Nullable GitHubAppSource github) {
+
+            this.github = github;
             return this;
         }
         @CustomType.Setter
@@ -116,8 +179,11 @@ public final class ApplicationSource {
         }
         public ApplicationSource build() {
             final var _resultValue = new ApplicationSource();
+            _resultValue.bitbucket = bitbucket;
             _resultValue.docker = docker;
             _resultValue.git = git;
+            _resultValue.gitea = gitea;
+            _resultValue.github = github;
             _resultValue.gitlab = gitlab;
             _resultValue.type = type;
             return _resultValue;

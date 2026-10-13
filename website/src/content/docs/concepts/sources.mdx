@@ -3,11 +3,18 @@ title: Sources
 description: Choose the source discriminator for applications and Compose stacks.
 ---
 
-Applications use one `ApplicationSource` discriminator:
+Applications use exactly one `ApplicationSource` discriminator:
 
 - `type: "docker"` with `docker` settings for a Docker image.
 - `type: "git"` with `git` settings for a public Git repository.
 - `type: "gitlab"` with `gitlab` settings for an existing GitLab integration and repository.
+- `type: "github"` with `github` settings for an existing GitHub integration and repository. Optional `triggerType` is `push` (default) or `tag`.
+- `type: "gitea"` with `gitea` settings for an existing Gitea integration and repository.
+- `type: "bitbucket"` with `bitbucket` settings for an existing Bitbucket integration and repository. `repositorySlug` is required.
+
+Each repository source requires its integration reference, owner, repository, branch, and a build configuration. Optional build path, watch paths, and submodule settings are available where supported. Repository source integration records remain external and unmanaged; this provider stores references and does not manage integration credentials.
+
+Repository sources support `dockerfile`, `nixpacks`, `heroku_buildpacks`, `paketo_buildpacks`, `static`, and `railpack`. `publishDirectory` is Nixpacks-only; `isStaticSpa` is valid for Nixpacks and Static; `herokuVersion` and `railpackVersion` apply only to their respective builders. Docker image sources do not send build configuration. See the [Applications guide](../../guides/applications/) for the option table and checked example.
 
 Compose stacks use one `ComposeSource` discriminator:
 
@@ -15,4 +22,4 @@ Compose stacks use one `ComposeSource` discriminator:
 - `type: "git"` with a Git repository and path.
 - `type: "gitlab"` with an existing GitLab integration and repository details.
 
-GitLab integrations are referenced, not managed, by this provider. SSH keys can be managed with an `SSHKey` resource and passed to a generic Git application through `sshKeyId`. Change a source discriminator only when you intend to replace the resource; source transitions are not in-place conversions. See the [Application](../../reference/application/), [Compose](../../reference/compose/), and [complex types](../../reference/types/) references.
+GitHub, Gitea, Bitbucket, and GitLab integrations are referenced, not managed, by this provider. SSH keys can be managed with an `SSHKey` resource and passed to a generic Git application through `sshKeyId`. Change a source discriminator only when you intend to replace the resource; source transitions are not in-place conversions. See the [Application](../../reference/application/), [Compose](../../reference/compose/), and [complex types](../../reference/types/) references.

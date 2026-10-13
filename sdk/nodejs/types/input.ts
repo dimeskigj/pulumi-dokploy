@@ -25,6 +25,22 @@ export interface ApplicationBuildArgs {
      */
     dockerfile?: pulumi.Input<string | undefined>;
     /**
+     * The Heroku buildpack version.
+     */
+    herokuVersion?: pulumi.Input<string | undefined>;
+    /**
+     * Whether to configure static single-page-application routing.
+     */
+    isStaticSpa?: pulumi.Input<boolean | undefined>;
+    /**
+     * The static publish directory.
+     */
+    publishDirectory?: pulumi.Input<string | undefined>;
+    /**
+     * The Railpack version.
+     */
+    railpackVersion?: pulumi.Input<string | undefined>;
+    /**
      * The build type.
      */
     type: pulumi.Input<string>;
@@ -35,6 +51,10 @@ export interface ApplicationBuildArgs {
  */
 export interface ApplicationSourceArgs {
     /**
+     * Bitbucket source configuration.
+     */
+    bitbucket?: pulumi.Input<inputs.BitbucketAppSourceArgs | undefined>;
+    /**
      * Docker source configuration.
      */
     docker?: pulumi.Input<inputs.DockerSourceArgs | undefined>;
@@ -43,6 +63,14 @@ export interface ApplicationSourceArgs {
      */
     git?: pulumi.Input<inputs.GitApplicationSourceArgs | undefined>;
     /**
+     * Gitea source configuration.
+     */
+    gitea?: pulumi.Input<inputs.GiteaAppSourceArgs | undefined>;
+    /**
+     * GitHub source configuration.
+     */
+    github?: pulumi.Input<inputs.GitHubAppSourceArgs | undefined>;
+    /**
      * GitLab source configuration.
      */
     gitlab?: pulumi.Input<inputs.GitLabAppSourceArgs | undefined>;
@@ -50,6 +78,48 @@ export interface ApplicationSourceArgs {
      * The application source type.
      */
     type: pulumi.Input<string>;
+}
+
+/**
+ * Bitbucket source configuration.
+ */
+export interface BitbucketAppSourceArgs {
+    /**
+     * The Bitbucket branch.
+     */
+    branch: pulumi.Input<string>;
+    /**
+     * The build configuration.
+     */
+    build: pulumi.Input<inputs.ApplicationBuildArgs>;
+    /**
+     * The build path.
+     */
+    buildPath?: pulumi.Input<string | undefined>;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: pulumi.Input<boolean | undefined>;
+    /**
+     * The Bitbucket integration ID.
+     */
+    integrationId: pulumi.Input<string>;
+    /**
+     * The Bitbucket owner.
+     */
+    owner: pulumi.Input<string>;
+    /**
+     * The Bitbucket repository.
+     */
+    repository: pulumi.Input<string>;
+    /**
+     * The Bitbucket repository slug.
+     */
+    repositorySlug: pulumi.Input<string>;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
 }
 
 /**
@@ -161,6 +231,48 @@ export interface GitComposeSourceArgs {
 }
 
 /**
+ * GitHub source configuration.
+ */
+export interface GitHubAppSourceArgs {
+    /**
+     * The GitHub branch.
+     */
+    branch: pulumi.Input<string>;
+    /**
+     * The build configuration.
+     */
+    build: pulumi.Input<inputs.ApplicationBuildArgs>;
+    /**
+     * The build path.
+     */
+    buildPath?: pulumi.Input<string | undefined>;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: pulumi.Input<boolean | undefined>;
+    /**
+     * The GitHub integration ID.
+     */
+    integrationId: pulumi.Input<string>;
+    /**
+     * The GitHub owner.
+     */
+    owner: pulumi.Input<string>;
+    /**
+     * The GitHub repository.
+     */
+    repository: pulumi.Input<string>;
+    /**
+     * The GitHub trigger type; defaults to push.
+     */
+    triggerType?: pulumi.Input<string | undefined>;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+}
+
+/**
  * GitLab source configuration.
  */
 export interface GitLabAppSourceArgs {
@@ -240,6 +352,44 @@ export interface GitLabComposeSourceArgs {
     projectId: pulumi.Input<number>;
     /**
      * The GitLab repository.
+     */
+    repository: pulumi.Input<string>;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: pulumi.Input<pulumi.Input<string>[] | undefined>;
+}
+
+/**
+ * Gitea source configuration.
+ */
+export interface GiteaAppSourceArgs {
+    /**
+     * The Gitea branch.
+     */
+    branch: pulumi.Input<string>;
+    /**
+     * The build configuration.
+     */
+    build: pulumi.Input<inputs.ApplicationBuildArgs>;
+    /**
+     * The build path.
+     */
+    buildPath?: pulumi.Input<string | undefined>;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: pulumi.Input<boolean | undefined>;
+    /**
+     * The Gitea integration ID.
+     */
+    integrationId: pulumi.Input<string>;
+    /**
+     * The Gitea owner.
+     */
+    owner: pulumi.Input<string>;
+    /**
+     * The Gitea repository.
      */
     repository: pulumi.Input<string>;
     /**

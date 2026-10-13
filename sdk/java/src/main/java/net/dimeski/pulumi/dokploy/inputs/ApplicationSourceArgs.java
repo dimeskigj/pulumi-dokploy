@@ -10,9 +10,12 @@ import java.lang.String;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.dimeski.pulumi.dokploy.inputs.BitbucketAppSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.DockerSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
+import net.dimeski.pulumi.dokploy.inputs.GitHubAppSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitLabAppSourceArgs;
+import net.dimeski.pulumi.dokploy.inputs.GiteaAppSourceArgs;
 
 
 /**
@@ -22,6 +25,21 @@ import net.dimeski.pulumi.dokploy.inputs.GitLabAppSourceArgs;
 public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     public static final ApplicationSourceArgs Empty = new ApplicationSourceArgs();
+
+    /**
+     * Bitbucket source configuration.
+     *
+     */
+    @Import(name="bitbucket")
+    private @Nullable Output<BitbucketAppSourceArgs> bitbucket;
+
+    /**
+     * @return Bitbucket source configuration.
+     *
+     */
+    public Optional<Output<BitbucketAppSourceArgs>> bitbucket() {
+        return Optional.ofNullable(this.bitbucket);
+    }
 
     /**
      * Docker source configuration.
@@ -51,6 +69,36 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
      */
     public Optional<Output<GitApplicationSourceArgs>> git() {
         return Optional.ofNullable(this.git);
+    }
+
+    /**
+     * Gitea source configuration.
+     *
+     */
+    @Import(name="gitea")
+    private @Nullable Output<GiteaAppSourceArgs> gitea;
+
+    /**
+     * @return Gitea source configuration.
+     *
+     */
+    public Optional<Output<GiteaAppSourceArgs>> gitea() {
+        return Optional.ofNullable(this.gitea);
+    }
+
+    /**
+     * GitHub source configuration.
+     *
+     */
+    @Import(name="github")
+    private @Nullable Output<GitHubAppSourceArgs> github;
+
+    /**
+     * @return GitHub source configuration.
+     *
+     */
+    public Optional<Output<GitHubAppSourceArgs>> github() {
+        return Optional.ofNullable(this.github);
     }
 
     /**
@@ -86,8 +134,11 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
     private ApplicationSourceArgs() {}
 
     private ApplicationSourceArgs(ApplicationSourceArgs $) {
+        this.bitbucket = $.bitbucket;
         this.docker = $.docker;
         this.git = $.git;
+        this.gitea = $.gitea;
+        this.github = $.github;
         this.gitlab = $.gitlab;
         this.type = $.type;
     }
@@ -108,6 +159,27 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
 
         public Builder(ApplicationSourceArgs defaults) {
             $ = new ApplicationSourceArgs(Objects.requireNonNull(defaults));
+        }
+
+        /**
+         * @param bitbucket Bitbucket source configuration.
+         *
+         * @return builder
+         *
+         */
+        public Builder bitbucket(@Nullable Output<BitbucketAppSourceArgs> bitbucket) {
+            $.bitbucket = bitbucket;
+            return this;
+        }
+
+        /**
+         * @param bitbucket Bitbucket source configuration.
+         *
+         * @return builder
+         *
+         */
+        public Builder bitbucket(BitbucketAppSourceArgs bitbucket) {
+            return bitbucket(Output.of(bitbucket));
         }
 
         /**
@@ -150,6 +222,48 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
          */
         public Builder git(GitApplicationSourceArgs git) {
             return git(Output.of(git));
+        }
+
+        /**
+         * @param gitea Gitea source configuration.
+         *
+         * @return builder
+         *
+         */
+        public Builder gitea(@Nullable Output<GiteaAppSourceArgs> gitea) {
+            $.gitea = gitea;
+            return this;
+        }
+
+        /**
+         * @param gitea Gitea source configuration.
+         *
+         * @return builder
+         *
+         */
+        public Builder gitea(GiteaAppSourceArgs gitea) {
+            return gitea(Output.of(gitea));
+        }
+
+        /**
+         * @param github GitHub source configuration.
+         *
+         * @return builder
+         *
+         */
+        public Builder github(@Nullable Output<GitHubAppSourceArgs> github) {
+            $.github = github;
+            return this;
+        }
+
+        /**
+         * @param github GitHub source configuration.
+         *
+         * @return builder
+         *
+         */
+        public Builder github(GitHubAppSourceArgs github) {
+            return github(Output.of(github));
         }
 
         /**

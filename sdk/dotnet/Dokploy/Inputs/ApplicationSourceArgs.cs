@@ -17,6 +17,12 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
     public sealed class ApplicationSourceArgs : global::Pulumi.ResourceArgs
     {
         /// <summary>
+        /// Bitbucket source configuration.
+        /// </summary>
+        [Input("bitbucket")]
+        public Input<Inputs.BitbucketAppSourceArgs>? Bitbucket { get; set; }
+
+        /// <summary>
         /// Docker source configuration.
         /// </summary>
         [Input("docker")]
@@ -27,6 +33,18 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
         /// </summary>
         [Input("git")]
         public Input<Inputs.GitApplicationSourceArgs>? Git { get; set; }
+
+        /// <summary>
+        /// Gitea source configuration.
+        /// </summary>
+        [Input("gitea")]
+        public Input<Inputs.GiteaAppSourceArgs>? Gitea { get; set; }
+
+        /// <summary>
+        /// GitHub source configuration.
+        /// </summary>
+        [Input("github")]
+        public Input<Inputs.GitHubAppSourceArgs>? Github { get; set; }
 
         /// <summary>
         /// GitLab source configuration.

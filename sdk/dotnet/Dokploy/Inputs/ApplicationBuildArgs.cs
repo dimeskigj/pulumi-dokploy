@@ -35,6 +35,30 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
         public Input<string>? Dockerfile { get; set; }
 
         /// <summary>
+        /// The Heroku buildpack version.
+        /// </summary>
+        [Input("herokuVersion")]
+        public Input<string>? HerokuVersion { get; set; }
+
+        /// <summary>
+        /// Whether to configure static single-page-application routing.
+        /// </summary>
+        [Input("isStaticSpa")]
+        public Input<bool>? IsStaticSpa { get; set; }
+
+        /// <summary>
+        /// The static publish directory.
+        /// </summary>
+        [Input("publishDirectory")]
+        public Input<string>? PublishDirectory { get; set; }
+
+        /// <summary>
+        /// The Railpack version.
+        /// </summary>
+        [Input("railpackVersion")]
+        public Input<string>? RailpackVersion { get; set; }
+
+        /// <summary>
         /// The build type.
         /// </summary>
         [Input("type", required: true)]

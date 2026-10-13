@@ -18,6 +18,10 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
     public sealed class ApplicationSource
     {
         /// <summary>
+        /// Bitbucket source configuration.
+        /// </summary>
+        public readonly Outputs.BitbucketAppSource? Bitbucket;
+        /// <summary>
         /// Docker source configuration.
         /// </summary>
         public readonly Outputs.DockerSource? Docker;
@@ -25,6 +29,14 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         /// Git source configuration.
         /// </summary>
         public readonly Outputs.GitApplicationSource? Git;
+        /// <summary>
+        /// Gitea source configuration.
+        /// </summary>
+        public readonly Outputs.GiteaAppSource? Gitea;
+        /// <summary>
+        /// GitHub source configuration.
+        /// </summary>
+        public readonly Outputs.GitHubAppSource? Github;
         /// <summary>
         /// GitLab source configuration.
         /// </summary>
@@ -36,16 +48,25 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
 
         [OutputConstructor]
         private ApplicationSource(
+            Outputs.BitbucketAppSource? bitbucket,
+
             Outputs.DockerSource? docker,
 
             Outputs.GitApplicationSource? git,
+
+            Outputs.GiteaAppSource? gitea,
+
+            Outputs.GitHubAppSource? github,
 
             Outputs.GitLabAppSource? gitlab,
 
             string type)
         {
+            Bitbucket = bitbucket;
             Docker = docker;
             Git = git;
+            Gitea = gitea;
+            Github = github;
             Gitlab = gitlab;
             Type = type;
         }

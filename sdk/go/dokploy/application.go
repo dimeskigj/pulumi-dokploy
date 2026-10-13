@@ -20,6 +20,8 @@ type Application struct {
 	AppName pulumi.StringPtrOutput `pulumi:"appName"`
 	// The stable Dokploy application ID.
 	ApplicationId pulumi.StringOutput `pulumi:"applicationId"`
+	// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+	AutoDeploy pulumi.BoolPtrOutput `pulumi:"autoDeploy"`
 	// Build arguments for the application.
 	BuildArgs pulumi.StringPtrOutput `pulumi:"buildArgs"`
 	// The optional build registry ID.
@@ -117,6 +119,8 @@ func (ApplicationState) ElementType() reflect.Type {
 type applicationArgs struct {
 	// The optional deployed application name.
 	AppName *string `pulumi:"appName"`
+	// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+	AutoDeploy *bool `pulumi:"autoDeploy"`
 	// Build arguments for the application.
 	BuildArgs *string `pulumi:"buildArgs"`
 	// The optional build registry ID.
@@ -145,6 +149,8 @@ type applicationArgs struct {
 type ApplicationArgs struct {
 	// The optional deployed application name.
 	AppName pulumi.StringPtrInput
+	// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+	AutoDeploy pulumi.BoolPtrInput
 	// Build arguments for the application.
 	BuildArgs pulumi.StringPtrInput
 	// The optional build registry ID.
@@ -214,6 +220,11 @@ func (o ApplicationOutput) AppName() pulumi.StringPtrOutput {
 // The stable Dokploy application ID.
 func (o ApplicationOutput) ApplicationId() pulumi.StringOutput {
 	return o.ApplyT(func(v *Application) pulumi.StringOutput { return v.ApplicationId }).(pulumi.StringOutput)
+}
+
+// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+func (o ApplicationOutput) AutoDeploy() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v *Application) pulumi.BoolPtrOutput { return v.AutoDeploy }).(pulumi.BoolPtrOutput)
 }
 
 // Build arguments for the application.
