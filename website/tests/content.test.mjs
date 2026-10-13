@@ -375,6 +375,22 @@ test("Application guide documents all builders, repository sources, and automati
   }
 });
 
+test("source concepts distinguish generic Git from integration-backed repository sources", async () => {
+  const sources = await readFile(new URL("../src/content/docs/concepts/sources.mdx", import.meta.url), "utf8");
+  assert.match(sources, /generic Git[^.]*URL[^.]*does not require[^.]*integration/i);
+  assert.match(sources, /GitHub[^.]*Gitea[^.]*Bitbucket[^.]*GitLab[^.]*existing Dokploy integrations/i);
+  assert.match(sources, /GitLab additionally requires `projectId` and `namespace`/);
+  assert.match(sources, /integration records and credentials remain external and unmanaged/i);
+});
+
+test("live Application configuration coverage promises no clone, build, or deployment operations", async () => {
+  const applications = await readFile(new URL("../src/content/docs/guides/applications.mdx", import.meta.url), "utf8");
+  const liveCoverage = applications.match(/The optional live Application configuration coverage[^.]*\./i)?.[0];
+  assert.ok(liveCoverage, "live configuration coverage must be described");
+  assert.match(liveCoverage, /configuration persistence only/i);
+  assert.match(liveCoverage, /never[^.]*clone[^.]*fetch[^.]*build[^.]*deploy[^.]*redeploy/i);
+});
+
 test("Compose raw quickstart nests composeFile under the raw source", async () => {
   const compose = await readFile(new URL("../src/content/docs/guides/compose.mdx", import.meta.url), "utf8");
   assert.match(compose, /source: \{ type: "raw", raw: \{ composeFile:/);
