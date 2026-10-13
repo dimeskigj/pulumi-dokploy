@@ -12,7 +12,9 @@ Applications use exactly one `ApplicationSource` discriminator:
 - `type: "gitea"` with `gitea` settings for an existing Gitea integration and repository.
 - `type: "bitbucket"` with `bitbucket` settings for an existing Bitbucket integration and repository. `repositorySlug` is required.
 
-Each repository source requires its integration reference, owner, repository, branch, and a build configuration. Optional build path, watch paths, and submodule settings are available where supported. Repository source integration records remain external and unmanaged; this provider stores references and does not manage integration credentials.
+Generic Git is URL-based: provide the repository URL, branch, and build settings; it does not require a Dokploy integration or integration identity fields. An SSH-backed generic Git repository can also use `sshKeyId`.
+
+The GitHub, Gitea, Bitbucket, and GitLab variants use existing Dokploy integrations and require the relevant integration ID, owner, repository, branch, and build configuration. GitLab additionally requires `projectId` and `namespace`; Bitbucket also requires `repositorySlug`. Optional build path, watch paths, and submodule settings are available where supported. These integration records and credentials remain external and unmanaged by this provider.
 
 Repository sources support `dockerfile`, `nixpacks`, `heroku_buildpacks`, `paketo_buildpacks`, `static`, and `railpack`. `publishDirectory` is Nixpacks-only; `isStaticSpa` is valid for Nixpacks and Static; `herokuVersion` and `railpackVersion` apply only to their respective builders. Docker image sources do not send build configuration. See the [Applications guide](../../guides/applications/) for the option table and checked example.
 
