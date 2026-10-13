@@ -18,6 +18,9 @@ const (
 	SourceDocker          ApplicationSourceType = "docker"
 	SourceGit             ApplicationSourceType = "git"
 	SourceGitLab          ApplicationSourceType = "gitlab"
+	SourceGitHub          ApplicationSourceType = "github"
+	SourceGitea           ApplicationSourceType = "gitea"
+	SourceBitbucket       ApplicationSourceType = "bitbucket"
 	BuildNixpacks         BuildType             = "nixpacks"
 	BuildDockerfile       BuildType             = "dockerfile"
 	BuildHerokuBuildpacks BuildType             = "heroku_buildpacks"
@@ -27,10 +30,13 @@ const (
 )
 
 type ApplicationSource struct {
-	Type   ApplicationSourceType `pulumi:"type"`
-	Docker *DockerSource         `pulumi:"docker,optional"`
-	Git    *GitApplicationSource `pulumi:"git,optional"`
-	GitLab *GitLabAppSource      `pulumi:"gitlab,optional"`
+	Type      ApplicationSourceType `pulumi:"type"`
+	Docker    *DockerSource         `pulumi:"docker,optional"`
+	Git       *GitApplicationSource `pulumi:"git,optional"`
+	GitLab    *GitLabAppSource      `pulumi:"gitlab,optional"`
+	GitHub    *GitHubAppSource      `pulumi:"github,optional"`
+	Gitea     *GiteaAppSource       `pulumi:"gitea,optional"`
+	Bitbucket *BitbucketAppSource   `pulumi:"bitbucket,optional"`
 }
 
 func (s *ApplicationSource) Annotate(a infer.Annotator) {
@@ -39,6 +45,9 @@ func (s *ApplicationSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.Docker, "Docker source configuration.")
 	a.Describe(&s.Git, "Git source configuration.")
 	a.Describe(&s.GitLab, "GitLab source configuration.")
+	a.Describe(&s.GitHub, "GitHub source configuration.")
+	a.Describe(&s.Gitea, "Gitea source configuration.")
+	a.Describe(&s.Bitbucket, "Bitbucket source configuration.")
 }
 
 type DockerSource struct {
@@ -90,6 +99,86 @@ type GitLabAppSource struct {
 	Build            ApplicationBuild `pulumi:"build"`
 }
 
+type GitHubTriggerType string
+
+const (
+	GitHubTriggerPush GitHubTriggerType = "push"
+	GitHubTriggerTag  GitHubTriggerType = "tag"
+)
+
+type GitHubAppSource struct {
+	IntegrationID    string             `pulumi:"integrationId"`
+	Owner            string             `pulumi:"owner"`
+	Repository       string             `pulumi:"repository"`
+	Branch           string             `pulumi:"branch"`
+	BuildPath        *string            `pulumi:"buildPath,optional"`
+	TriggerType      *GitHubTriggerType `pulumi:"triggerType,optional"`
+	WatchPaths       []string           `pulumi:"watchPaths,optional"`
+	EnableSubmodules bool               `pulumi:"enableSubmodules,optional"`
+	Build            ApplicationBuild   `pulumi:"build"`
+}
+
+func (s *GitHubAppSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "GitHub source configuration.")
+	a.Describe(&s.IntegrationID, "The GitHub integration ID.")
+	a.Describe(&s.Owner, "The GitHub owner.")
+	a.Describe(&s.Repository, "The GitHub repository.")
+	a.Describe(&s.Branch, "The GitHub branch.")
+	a.Describe(&s.BuildPath, "The build path.")
+	a.Describe(&s.TriggerType, "The GitHub trigger type; defaults to push.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
+	a.Describe(&s.Build, "The build configuration.")
+}
+
+type GiteaAppSource struct {
+	IntegrationID    string           `pulumi:"integrationId"`
+	Owner            string           `pulumi:"owner"`
+	Repository       string           `pulumi:"repository"`
+	Branch           string           `pulumi:"branch"`
+	BuildPath        *string          `pulumi:"buildPath,optional"`
+	WatchPaths       []string         `pulumi:"watchPaths,optional"`
+	EnableSubmodules bool             `pulumi:"enableSubmodules,optional"`
+	Build            ApplicationBuild `pulumi:"build"`
+}
+
+func (s *GiteaAppSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Gitea source configuration.")
+	a.Describe(&s.IntegrationID, "The Gitea integration ID.")
+	a.Describe(&s.Owner, "The Gitea owner.")
+	a.Describe(&s.Repository, "The Gitea repository.")
+	a.Describe(&s.Branch, "The Gitea branch.")
+	a.Describe(&s.BuildPath, "The build path.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
+	a.Describe(&s.Build, "The build configuration.")
+}
+
+type BitbucketAppSource struct {
+	IntegrationID    string           `pulumi:"integrationId"`
+	Owner            string           `pulumi:"owner"`
+	Repository       string           `pulumi:"repository"`
+	RepositorySlug   string           `pulumi:"repositorySlug"`
+	Branch           string           `pulumi:"branch"`
+	BuildPath        *string          `pulumi:"buildPath,optional"`
+	WatchPaths       []string         `pulumi:"watchPaths,optional"`
+	EnableSubmodules bool             `pulumi:"enableSubmodules,optional"`
+	Build            ApplicationBuild `pulumi:"build"`
+}
+
+func (s *BitbucketAppSource) Annotate(a infer.Annotator) {
+	a.Describe(&s, "Bitbucket source configuration.")
+	a.Describe(&s.IntegrationID, "The Bitbucket integration ID.")
+	a.Describe(&s.Owner, "The Bitbucket owner.")
+	a.Describe(&s.Repository, "The Bitbucket repository.")
+	a.Describe(&s.RepositorySlug, "The Bitbucket repository slug.")
+	a.Describe(&s.Branch, "The Bitbucket branch.")
+	a.Describe(&s.BuildPath, "The build path.")
+	a.Describe(&s.WatchPaths, "Paths to watch.")
+	a.Describe(&s.EnableSubmodules, "Whether to enable submodules.")
+	a.Describe(&s.Build, "The build configuration.")
+}
+
 func (s *GitLabAppSource) Annotate(a infer.Annotator) {
 	a.Describe(&s, "GitLab source configuration.")
 	a.Describe(&s.IntegrationID, "The GitLab integration ID.")
@@ -137,6 +226,18 @@ func (s ApplicationSource) applicationBuild() (ApplicationBuild, bool) {
 		if s.GitLab != nil {
 			return s.GitLab.Build, true
 		}
+	case SourceGitHub:
+		if s.GitHub != nil {
+			return s.GitHub.Build, true
+		}
+	case SourceGitea:
+		if s.Gitea != nil {
+			return s.Gitea.Build, true
+		}
+	case SourceBitbucket:
+		if s.Bitbucket != nil {
+			return s.Bitbucket.Build, true
+		}
 	}
 	return ApplicationBuild{}, false
 }
@@ -152,6 +253,15 @@ func (s ApplicationSource) validate() error {
 	if s.GitLab != nil {
 		count++
 	}
+	if s.GitHub != nil {
+		count++
+	}
+	if s.Gitea != nil {
+		count++
+	}
+	if s.Bitbucket != nil {
+		count++
+	}
 	switch s.Type {
 	case SourceDocker:
 		if s.Docker == nil {
@@ -162,6 +272,15 @@ func (s ApplicationSource) validate() error {
 		}
 		if s.GitLab != nil {
 			return fmt.Errorf("source.gitlab must be omitted when source.type is docker")
+		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is docker")
+		}
+		if s.Gitea != nil {
+			return fmt.Errorf("source.gitea must be omitted when source.type is docker")
+		}
+		if s.Bitbucket != nil {
+			return fmt.Errorf("source.bitbucket must be omitted when source.type is docker")
 		}
 		if s.Docker.Image == "" {
 			return fmt.Errorf("source.docker.image must not be empty")
@@ -176,6 +295,15 @@ func (s ApplicationSource) validate() error {
 		if s.GitLab != nil {
 			return fmt.Errorf("source.gitlab must be omitted when source.type is git")
 		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is git")
+		}
+		if s.Gitea != nil {
+			return fmt.Errorf("source.gitea must be omitted when source.type is git")
+		}
+		if s.Bitbucket != nil {
+			return fmt.Errorf("source.bitbucket must be omitted when source.type is git")
+		}
 		if err := validateGit("source.git", s.Git.URL, s.Git.Branch, s.Git.Build); err != nil {
 			return err
 		}
@@ -189,19 +317,64 @@ func (s ApplicationSource) validate() error {
 		if s.Git != nil {
 			return fmt.Errorf("source.git must be omitted when source.type is gitlab")
 		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is gitlab")
+		}
+		if s.Gitea != nil {
+			return fmt.Errorf("source.gitea must be omitted when source.type is gitlab")
+		}
+		if s.Bitbucket != nil {
+			return fmt.Errorf("source.bitbucket must be omitted when source.type is gitlab")
+		}
 		if s.GitLab.IntegrationID == "" {
 			return fmt.Errorf("source.gitlab.integrationId must not be empty")
 		}
 		if s.GitLab.ProjectID == 0 {
 			return fmt.Errorf("source.gitlab.projectId must not be zero")
 		}
-		for name, value := range map[string]string{"owner": s.GitLab.Owner, "namespace": s.GitLab.Namespace, "repository": s.GitLab.Repository, "branch": s.GitLab.Branch} {
-			if value == "" {
-				return fmt.Errorf("source.gitlab.%s must not be empty", name)
+		for _, field := range []struct{ name, value string }{{"owner", s.GitLab.Owner}, {"namespace", s.GitLab.Namespace}, {"repository", s.GitLab.Repository}, {"branch", s.GitLab.Branch}} {
+			if field.value == "" {
+				return fmt.Errorf("source.gitlab.%s must not be empty", field.name)
 			}
 		}
 		if err := validateBuild("source.gitlab", s.GitLab.Build); err != nil {
 			return err
+		}
+	case SourceGitHub:
+		if s.GitHub == nil {
+			return fmt.Errorf("source.github is required when source.type is github")
+		}
+		if err := validateOtherVariants(s, SourceGitHub); err != nil {
+			return err
+		}
+		if err := validateIntegratedSource("source.github", s.GitHub.IntegrationID, s.GitHub.Owner, s.GitHub.Repository, s.GitHub.Branch, s.GitHub.Build); err != nil {
+			return err
+		}
+		if s.GitHub.TriggerType != nil && *s.GitHub.TriggerType != GitHubTriggerPush && *s.GitHub.TriggerType != GitHubTriggerTag {
+			return fmt.Errorf("source.github.triggerType must be one of push or tag")
+		}
+	case SourceGitea:
+		if s.Gitea == nil {
+			return fmt.Errorf("source.gitea is required when source.type is gitea")
+		}
+		if err := validateOtherVariants(s, SourceGitea); err != nil {
+			return err
+		}
+		if err := validateIntegratedSource("source.gitea", s.Gitea.IntegrationID, s.Gitea.Owner, s.Gitea.Repository, s.Gitea.Branch, s.Gitea.Build); err != nil {
+			return err
+		}
+	case SourceBitbucket:
+		if s.Bitbucket == nil {
+			return fmt.Errorf("source.bitbucket is required when source.type is bitbucket")
+		}
+		if err := validateOtherVariants(s, SourceBitbucket); err != nil {
+			return err
+		}
+		if err := validateIntegratedSource("source.bitbucket", s.Bitbucket.IntegrationID, s.Bitbucket.Owner, s.Bitbucket.Repository, s.Bitbucket.Branch, s.Bitbucket.Build); err != nil {
+			return err
+		}
+		if s.Bitbucket.RepositorySlug == "" {
+			return fmt.Errorf("source.bitbucket.repositorySlug must not be empty")
 		}
 	default:
 		if count == 0 {
@@ -210,9 +383,31 @@ func (s ApplicationSource) validate() error {
 		if count > 1 {
 			return fmt.Errorf("exactly one source variant must be set")
 		}
-		return fmt.Errorf("source.type must be one of docker, git, or gitlab")
+		return fmt.Errorf("source.type must be one of docker, git, gitlab, github, gitea, or bitbucket")
 	}
 	return nil
+}
+
+func validateOtherVariants(s ApplicationSource, selected ApplicationSourceType) error {
+	variants := []struct {
+		kind ApplicationSourceType
+		set  bool
+	}{{SourceDocker, s.Docker != nil}, {SourceGit, s.Git != nil}, {SourceGitLab, s.GitLab != nil}, {SourceGitHub, s.GitHub != nil}, {SourceGitea, s.Gitea != nil}, {SourceBitbucket, s.Bitbucket != nil}}
+	for _, variant := range variants {
+		if variant.kind != selected && variant.set {
+			return fmt.Errorf("source.%s must be omitted when source.type is %s", variant.kind, selected)
+		}
+	}
+	return nil
+}
+
+func validateIntegratedSource(prefix, integration, owner, repository, branch string, build ApplicationBuild) error {
+	for _, field := range []struct{ name, value string }{{"integrationId", integration}, {"owner", owner}, {"repository", repository}, {"branch", branch}} {
+		if field.value == "" {
+			return fmt.Errorf("%s.%s must not be empty", prefix, field.name)
+		}
+	}
+	return validateBuild(prefix, build)
 }
 
 func validateGit(prefix, url, branch string, build ApplicationBuild) error {
@@ -365,6 +560,34 @@ func configureApplicationSource(ctx context.Context, api *client.Client, id stri
 			body.GitlabBuildPath = nullable.NewNullableWithValue(*s.BuildPath)
 		}
 		_, err = api.ApplicationSaveGitlabProviderWithResponse(ctx, body)
+	case SourceGitHub:
+		s := source.GitHub
+		path := ""
+		if s.BuildPath != nil {
+			path = *s.BuildPath
+		}
+		trigger := GitHubTriggerPush
+		if s.TriggerType != nil {
+			trigger = *s.TriggerType
+		}
+		body := generated.ApplicationSaveGithubProviderJSONRequestBody{ApplicationId: id, Branch: s.Branch, BuildPath: nullable.NewNullableWithValue(path), EnableSubmodules: &s.EnableSubmodules, GithubId: nullable.NewNullableWithValue(s.IntegrationID), Owner: nullable.NewNullableWithValue(s.Owner), Repository: nullable.NewNullableWithValue(s.Repository), TriggerType: generated.ApplicationSaveGithubProviderJSONBodyTriggerType(trigger), WatchPaths: nullable.NewNullableWithValue(s.WatchPaths)}
+		_, err = api.ApplicationSaveGithubProviderWithResponse(ctx, body)
+	case SourceGitea:
+		s := source.Gitea
+		path := ""
+		if s.BuildPath != nil {
+			path = *s.BuildPath
+		}
+		body := generated.ApplicationSaveGiteaProviderJSONRequestBody{ApplicationId: id, GiteaBranch: s.Branch, GiteaBuildPath: nullable.NewNullableWithValue(path), GiteaId: nullable.NewNullableWithValue(s.IntegrationID), GiteaOwner: nullable.NewNullableWithValue(s.Owner), GiteaRepository: nullable.NewNullableWithValue(s.Repository), EnableSubmodules: &s.EnableSubmodules, WatchPaths: nullable.NewNullableWithValue(s.WatchPaths)}
+		_, err = api.ApplicationSaveGiteaProviderWithResponse(ctx, body)
+	case SourceBitbucket:
+		s := source.Bitbucket
+		path := ""
+		if s.BuildPath != nil {
+			path = *s.BuildPath
+		}
+		body := generated.ApplicationSaveBitbucketProviderJSONRequestBody{ApplicationId: id, BitbucketBranch: s.Branch, BitbucketBuildPath: nullable.NewNullableWithValue(path), BitbucketId: nullable.NewNullableWithValue(s.IntegrationID), BitbucketOwner: nullable.NewNullableWithValue(s.Owner), BitbucketRepository: nullable.NewNullableWithValue(s.Repository), BitbucketRepositorySlug: nullable.NewNullableWithValue(s.RepositorySlug), EnableSubmodules: &s.EnableSubmodules, WatchPaths: nullable.NewNullableWithValue(s.WatchPaths)}
+		_, err = api.ApplicationSaveBitbucketProviderWithResponse(ctx, body)
 	}
 	if source.Docker != nil && source.Docker.Password != nil {
 		return sanitizeError(err, *source.Docker.Password)

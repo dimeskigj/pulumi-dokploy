@@ -318,11 +318,79 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab projectId")
 		}
 		result.GitLab.Build = decodeBuild(m, priorBuild)
+	case SourceGitHub:
+		integration := stringValue(m, "githubId")
+		owner, repo, branch := stringValue(m, "owner"), stringValue(m, "repository"), stringValue(m, "branch")
+		if integration == "" || owner == "" || repo == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required github source fields")
+		}
+		github := &GitHubAppSource{IntegrationID: integration, Owner: owner, Repository: repo, Branch: branch, BuildPath: optionalStringPointer(m, "buildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		github.BuildPath = normalizeRepositoryBuildPath(github.BuildPath, prior, result.Type)
+		if trigger := stringValue(m, "triggerType"); trigger != "" && trigger != string(GitHubTriggerPush) {
+			if trigger != string(GitHubTriggerTag) {
+				return ApplicationSource{}, fmt.Errorf("application source data has unsupported github triggerType %q", trigger)
+			}
+			github.TriggerType = githubTriggerPointer(GitHubTriggerTag)
+		} else if prior.GitHub != nil && prior.GitHub.TriggerType != nil && *prior.GitHub.TriggerType == GitHubTriggerPush {
+			github.TriggerType = prior.GitHub.TriggerType
+		}
+		github.Build = decodeBuild(m, priorBuild)
+		result.GitHub = github
+	case SourceGitea:
+		integration, owner, repo, branch := stringValue(m, "giteaId"), stringValue(m, "giteaOwner"), stringValue(m, "giteaRepository"), stringValue(m, "giteaBranch")
+		if integration == "" || owner == "" || repo == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required gitea source fields")
+		}
+		gitea := &GiteaAppSource{IntegrationID: integration, Owner: owner, Repository: repo, Branch: branch, BuildPath: optionalStringPointer(m, "giteaBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		gitea.BuildPath = normalizeRepositoryBuildPath(gitea.BuildPath, prior, result.Type)
+		gitea.Build = decodeBuild(m, priorBuild)
+		result.Gitea = gitea
+	case SourceBitbucket:
+		integration, owner, repo, slug, branch := stringValue(m, "bitbucketId"), stringValue(m, "bitbucketOwner"), stringValue(m, "bitbucketRepository"), stringValue(m, "bitbucketRepositorySlug"), stringValue(m, "bitbucketBranch")
+		if integration == "" || owner == "" || repo == "" || slug == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required bitbucket source fields")
+		}
+		bitbucket := &BitbucketAppSource{IntegrationID: integration, Owner: owner, Repository: repo, RepositorySlug: slug, Branch: branch, BuildPath: optionalStringPointer(m, "bitbucketBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		bitbucket.BuildPath = normalizeRepositoryBuildPath(bitbucket.BuildPath, prior, result.Type)
+		bitbucket.Build = decodeBuild(m, priorBuild)
+		result.Bitbucket = bitbucket
 	default:
 		return ApplicationSource{}, fmt.Errorf("application source data has unsupported source.type %q", kind)
 	}
 	return result, nil
 }
+
+func normalizeRepositoryBuildPath(observed *string, prior ApplicationSource, kind ApplicationSourceType) *string {
+	if !isRepositoryDefaultBuildPath(observed) {
+		return observed
+	}
+	var priorPath *string
+	if prior.Type == kind {
+		switch kind {
+		case SourceGitHub:
+			if prior.GitHub != nil {
+				priorPath = prior.GitHub.BuildPath
+			}
+		case SourceGitea:
+			if prior.Gitea != nil {
+				priorPath = prior.Gitea.BuildPath
+			}
+		case SourceBitbucket:
+			if prior.Bitbucket != nil {
+				priorPath = prior.Bitbucket.BuildPath
+			}
+		}
+	}
+	if priorPath == nil {
+		return nil
+	}
+	if isRepositoryDefaultBuildPath(priorPath) {
+		return priorPath
+	}
+	return observed
+}
+
+func githubTriggerPointer(trigger GitHubTriggerType) *GitHubTriggerType { return &trigger }
 
 func isRepositoryRootBuildPath(path *string) bool {
 	if path == nil {
@@ -334,6 +402,10 @@ func isRepositoryRootBuildPath(path *string) bool {
 	default:
 		return false
 	}
+}
+
+func isRepositoryDefaultBuildPath(path *string) bool {
+	return path != nil && *path == "" || isRepositoryRootBuildPath(path)
 }
 
 func decodeBuild(m map[string]interface{}, prior ApplicationBuild) ApplicationBuild {
