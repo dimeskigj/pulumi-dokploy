@@ -459,7 +459,7 @@ func TestGenExamplesUsesIsolatedCanonicalGenerator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, contract := range []string{"/tmp/opencode/*", "export PULUMI_HOME=$cache", "install_plugin PULUMI_HOME=", "pulumi convert", "npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs", "-e ../../sdk/python", "use_local_dotnet_sdk.py", "use_local_java_sdk.py", "normalize-examples.py", "normalize-converted-examples.py", "yaml_converter_version=1.38.7", "pulumi plugin install converter yaml", "--file \"$yaml_converter_binary\"", "pulumi plugin ls", "lookup_test.go notification_test.go", "examples/go/$test_file\" \"$cache/go-tests/$test_file", "cp \"$test_file\" examples/go/"} {
+	for _, contract := range []string{"temporary_parent=${TMPDIR:-/tmp}", "yaml_converter_override=${PULUMI_YAML_CONVERTER_BINARY:-}", "configured YAML converter override is not executable", "export PULUMI_HOME=$cache", "install_plugin PULUMI_HOME=", "pulumi convert", "npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs", "-e ../../sdk/python", "use_local_dotnet_sdk.py", "use_local_java_sdk.py", "normalize-examples.py", "normalize-converted-examples.py", "yaml_converter_version=1.38.7", "pulumi plugin install converter yaml", "--file \"$yaml_converter_binary\"", "pulumi plugin ls", "lookup_test.go notification_test.go", "examples/go/$test_file\" \"$cache/go-tests/$test_file", "cp \"$test_file\" examples/go/"} {
 		if !strings.Contains(string(script), contract) {
 			t.Errorf("canonical generator missing %q", contract)
 		}
