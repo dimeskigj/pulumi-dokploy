@@ -35,14 +35,20 @@ class NormalizeGeneratedTests(unittest.TestCase):
             java = root / "java" / "Notification.java"
             java.parent.mkdir()
             java.write_text("/**\n * \n */\nclass Schedule {}  \n    \t  this.value = defaults.value;\n\n")
+            generated_java = root / "java" / "ApplicationBuild.java"
+            generated_java.write_text("class ApplicationBuild {\n    \t      this.value = defaults.value;\n}\n")
+            generated_source = root / "java" / "GitHubAppSource.java"
+            generated_source.write_text("class GitHubAppSource {\n    \t      this.value = defaults.value;\n}\n")
             python = root / "schedule.py"
             python.write_text("VERSION = '0.0.1-alpha.0+dev'\n\n")
             metadata = root / "package.json"
             metadata.write_text('{"version":"0.0.1-alpha.0+dev"}\n')
             module.normalize_sdks(root)
             self.assertEqual(java.read_text(), "/**\n *\n */\nclass Schedule {}\n\t  this.value = defaults.value;\n")
+            self.assertEqual(generated_java.read_text(), "class ApplicationBuild {\n\t      this.value = defaults.value;\n}\n")
+            self.assertEqual(generated_source.read_text(), "class GitHubAppSource {\n\t      this.value = defaults.value;\n}\n")
             self.assertEqual(python.read_text(), "VERSION = '0.0.1-alpha.0+dev'\n")
-            first = {path: path.read_bytes() for path in [java, python, metadata]}
+            first = {path: path.read_bytes() for path in [java, generated_java, generated_source, python, metadata]}
             module.normalize_sdks(root)
             self.assertEqual({path: path.read_bytes() for path in first}, first)
             self.assertEqual(json.loads(metadata.read_text())["version"], "0.0.1-alpha.0+dev")

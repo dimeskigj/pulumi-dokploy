@@ -29,6 +29,12 @@ namespace Dimeskigj.Pulumi.Dokploy
         public Output<string> ApplicationId { get; private set; } = null!;
 
         /// <summary>
+        /// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        /// </summary>
+        [Output("autoDeploy")]
+        public Output<bool?> AutoDeploy { get; private set; } = null!;
+
+        /// <summary>
         /// Build arguments for the application.
         /// </summary>
         [Output("buildArgs")]
@@ -162,6 +168,12 @@ namespace Dimeskigj.Pulumi.Dokploy
         /// </summary>
         [Input("appName")]
         public Input<string>? AppName { get; set; }
+
+        /// <summary>
+        /// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        /// </summary>
+        [Input("autoDeploy")]
+        public Input<bool>? AutoDeploy { get; set; }
 
         [Input("buildArgs")]
         private Input<string>? _buildArgs;

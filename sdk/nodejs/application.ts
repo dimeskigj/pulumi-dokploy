@@ -46,6 +46,10 @@ export class Application extends pulumi.CustomResource {
      */
     declare public /*out*/ readonly applicationId: pulumi.Output<string>;
     /**
+     * Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     */
+    declare public readonly autoDeploy: pulumi.Output<boolean | undefined>;
+    /**
      * Build arguments for the application.
      */
     declare public readonly buildArgs: pulumi.Output<string | undefined>;
@@ -115,6 +119,7 @@ export class Application extends pulumi.CustomResource {
                 throw new Error("Missing required property 'source'");
             }
             resourceInputs["appName"] = args?.appName;
+            resourceInputs["autoDeploy"] = args?.autoDeploy;
             resourceInputs["buildArgs"] = args?.buildArgs ? pulumi.secret(args.buildArgs) : undefined;
             resourceInputs["buildRegistryId"] = args?.buildRegistryId;
             resourceInputs["buildSecrets"] = args?.buildSecrets ? pulumi.secret(args.buildSecrets) : undefined;
@@ -131,6 +136,7 @@ export class Application extends pulumi.CustomResource {
         } else {
             resourceInputs["appName"] = undefined /*out*/;
             resourceInputs["applicationId"] = undefined /*out*/;
+            resourceInputs["autoDeploy"] = undefined /*out*/;
             resourceInputs["buildArgs"] = undefined /*out*/;
             resourceInputs["buildRegistryId"] = undefined /*out*/;
             resourceInputs["buildSecrets"] = undefined /*out*/;
@@ -161,6 +167,10 @@ export interface ApplicationArgs {
      * The optional deployed application name.
      */
     appName?: pulumi.Input<string | undefined>;
+    /**
+     * Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     */
+    autoDeploy?: pulumi.Input<boolean | undefined>;
     /**
      * Build arguments for the application.
      */

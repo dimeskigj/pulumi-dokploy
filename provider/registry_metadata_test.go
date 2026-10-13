@@ -659,7 +659,7 @@ func TestRegistryMetadata(t *testing.T) {
 		"pulumi config set dokploy:endpoint https://dokploy.example.com",
 		"pulumi config set --secret dokploy:apiKey \"$DOKPLOY_API_KEY\"",
 		"Project owns the default environment", "Source type changes replace",
-		"referenced GitLab integration is not managed", "SSH keys can be managed using the `SSHKey` resource",
+		"Git-provider integrations are referenced, not managed", "SSH keys can be managed",
 		"Use an `SSHKey` output as the `sshKeyId`",
 		"deployment errors preserve partial state", "Compose volumes are preserved",
 		"SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "registryPassword", "sshPrivateKey",
