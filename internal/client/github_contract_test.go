@@ -25,7 +25,7 @@ func TestGitHubGeneratedClientContract(t *testing.T) {
 			_, _ = w.Write([]byte(`{"githubId":"opaque/id +?","gitProviderId":"parent-1","githubAppName":null,"gitProvider":{"gitProviderId":"parent-1","name":"parent","providerType":"github","organizationId":"org-1"},"privateKey":"ignore"}`))
 		case "/api/github.update":
 			require.NoError(t, json.NewDecoder(r.Body).Decode(&updateBody))
-			_, _ = w.Write([]byte(`{"irrelevant":"success"}`))
+			_, _ = w.Write([]byte(`{"irrelevant":`))
 		case "/api/gitProvider.remove":
 			require.NoError(t, json.NewDecoder(r.Body).Decode(&removeBody))
 			_, _ = w.Write([]byte(`{not-json`))
@@ -51,6 +51,9 @@ func TestGitHubGeneratedClientContract(t *testing.T) {
 	_, err = c.GithubUpdate(t.Context(), generated.GithubUpdateJSONRequestBody{GithubId: "relation-1", GitProviderId: "parent-1", Name: "display", GithubAppName: "App"})
 	require.NoError(t, err)
 	require.Equal(t, map[string]any{"githubId": "relation-1", "gitProviderId": "parent-1", "name": "display", "githubAppName": "App"}, updateBody)
+	response, err := c.GithubUpdateWithResponse(t.Context(), generated.GithubUpdateJSONRequestBody{GithubId: "relation-2", GitProviderId: "parent-2", Name: "second", GithubAppName: "App 2"})
+	require.NoError(t, err, "acknowledged HTTP 200 must ignore irrelevant malformed JSON")
+	require.Equal(t, http.StatusOK, response.HTTPResponse.StatusCode)
 	_, err = c.GitProviderRemove(t.Context(), generated.GitProviderRemoveJSONRequestBody{GitProviderId: "parent-1"})
 	require.NoError(t, err)
 	require.Equal(t, "parent-1", removeBody["gitProviderId"])
