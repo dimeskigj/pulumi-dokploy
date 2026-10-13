@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.dimeski.pulumi.dokploy.inputs.GitComposeSourceArgs;
+import net.dimeski.pulumi.dokploy.inputs.GitHubComposeSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitLabComposeSourceArgs;
 import net.dimeski.pulumi.dokploy.inputs.RawComposeSourceArgs;
 
@@ -36,6 +37,21 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
      */
     public Optional<Output<GitComposeSourceArgs>> git() {
         return Optional.ofNullable(this.git);
+    }
+
+    /**
+     * GitHub Compose source.
+     * 
+     */
+    @Import(name="github")
+    private @Nullable Output<GitHubComposeSourceArgs> github;
+
+    /**
+     * @return GitHub Compose source.
+     * 
+     */
+    public Optional<Output<GitHubComposeSourceArgs>> github() {
+        return Optional.ofNullable(this.github);
     }
 
     /**
@@ -87,6 +103,7 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
 
     private ComposeSourceArgs(ComposeSourceArgs $) {
         this.git = $.git;
+        this.github = $.github;
         this.gitlab = $.gitlab;
         this.raw = $.raw;
         this.type = $.type;
@@ -129,6 +146,27 @@ public final class ComposeSourceArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder git(GitComposeSourceArgs git) {
             return git(Output.of(git));
+        }
+
+        /**
+         * @param github GitHub Compose source.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder github(@Nullable Output<GitHubComposeSourceArgs> github) {
+            $.github = github;
+            return this;
+        }
+
+        /**
+         * @param github GitHub Compose source.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder github(GitHubComposeSourceArgs github) {
+            return github(Output.of(github));
         }
 
         /**

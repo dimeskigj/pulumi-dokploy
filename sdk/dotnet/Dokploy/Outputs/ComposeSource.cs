@@ -22,6 +22,10 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         /// </summary>
         public readonly Outputs.GitComposeSource? Git;
         /// <summary>
+        /// GitHub Compose source.
+        /// </summary>
+        public readonly Outputs.GitHubComposeSource? Github;
+        /// <summary>
         /// GitLab Compose source.
         /// </summary>
         public readonly Outputs.GitLabComposeSource? Gitlab;
@@ -38,6 +42,8 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         private ComposeSource(
             Outputs.GitComposeSource? git,
 
+            Outputs.GitHubComposeSource? github,
+
             Outputs.GitLabComposeSource? gitlab,
 
             Outputs.RawComposeSource? raw,
@@ -45,6 +51,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
             string type)
         {
             Git = git;
+            Github = github;
             Gitlab = gitlab;
             Raw = raw;
             Type = type;
