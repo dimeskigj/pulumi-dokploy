@@ -6,7 +6,9 @@ Pulumi users must be able to configure every application builder exposed by the
 checked-in Dokploy API, use GitHub/Gitea/Bitbucket integrations as application
 sources, and configure application-level `autoDeploy`. Existing applications
 remain compatible. The user approved configuration-only live acceptance tests,
-SDD execution with GPT-6 Luna subagents, and an isolated worktree.
+SDD execution with GPT-6 Luna subagents, and an isolated worktree. After approving
+the written plan, the user explicitly authorized running live tests against their
+test environment; execution remains limited to these configuration-only cases.
 
 ## Scope and architecture
 
@@ -110,8 +112,10 @@ ID, or cascade-delete an uncertain fixture via the parent project. Add offline
 tests proving these safety properties, not just tests that inspect source text.
 
 Update the manually dispatched workflow with protected source prerequisites and
-document them in `tests/README.md`. Do not dispatch or run live tests as part of
-implementation verification. Offline Go commands must override
+document them in `tests/README.md`. The controller may run these new configuration
+cases after offline safety verification, using protected credentials and the
+documented preflight/stop-marker procedure. Do not run unrelated live deployment
+tiers or dispatch workflows. Offline Go commands must override
 `DOKPLOY_ACCEPTANCE=0` after `mise exec` because `.mise.toml` defaults to live mode.
 
 ## Generated surfaces, documentation, and validation
@@ -124,7 +128,7 @@ autoDeploy omission semantics, and explicit-versus-automatic deployment behavior
 Run relevant Makefile checks: lint, provider tests, race tests, provider build,
 OpenAPI reproducibility, codegen reproducibility, SDK builds, language example
 tests, and website checks. Record unavailable checks honestly. No release,
-publication, merge, push, or live workflow is authorized.
+publication, merge, push, or live workflow dispatch is authorized.
 
 ## Non-goals
 
