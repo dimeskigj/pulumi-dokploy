@@ -101,6 +101,15 @@ are sent only when supplied; omitted values preserve server state and remain
 represented observationally without perpetual diffs. Active mode's identity must
 be supplied and valid on apply. No implicit email clear is supported.
 
+For post-mutation verification, track credential response presence/clear evidence
+separately from refresh's prior-secret preservation. Explicit observed null/empty
+for a deliberately deactivated credential confirms its clear and must be reflected
+as absent in the resulting update state; an omitted field does not confirm a clear.
+Likewise, a newly selected/rotated credential requires a nonempty observed value
+matching the desired credential, not a value retained from prior state. This
+prevents refresh preservation from masking a successful mode switch or falsely
+confirming an unobservable rotation.
+
 Legacy app-password support is present in Dokploy's schema, but external Bitbucket
 acceptance is not established. Do not claim legacy auth compatibility with current
 Bitbucket or live connectivity.
