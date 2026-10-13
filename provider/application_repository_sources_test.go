@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
@@ -209,6 +210,44 @@ func TestApplicationRepositorySourceUpdateRedeploys(t *testing.T) {
 	}
 }
 
+func TestApplicationRepositorySourceMetadataUpdateRedeploys(t *testing.T) {
+	oldInterval := waitPollInterval
+	waitPollInterval = 0
+	t.Cleanup(func() { waitPollInterval = oldInterval })
+	for _, tc := range repositoryRequestFixtures() {
+		t.Run(tc.name, func(t *testing.T) {
+			updatedSource := repositorySourceWithRepository(tc.source, "r-updated")
+			field := ""
+			switch tc.source.Type {
+			case SourceGitHub:
+				field = `"repository":"r"`
+			case SourceGitea:
+				field = `"giteaRepository":"r"`
+			case SourceBitbucket:
+				field = `"bitbucketRepository":"r"`
+			}
+			updatedBody := strings.Replace(tc.body, field, strings.Replace(field, `"r"`, `"r-updated"`, 1), 1)
+			require.NotEqual(t, tc.body, updatedBody)
+			args := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: updatedSource}
+			prior := ApplicationArgs{Name: "demo", EnvironmentID: "e1", Source: tc.source}
+			diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{Inputs: args, State: ApplicationState{ApplicationArgs: prior}})
+			require.NoError(t, err)
+			require.Equal(t, p.Update, diff.DetailedDiff["source"].Kind)
+			require.NotContains(t, diff.DetailedDiff, "source.type")
+
+			s := newScriptedServer(t,
+				expectPOST(tc.path, updatedBody, `true`),
+				expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`, `true`),
+				expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
+				expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
+				expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
+			)
+			_, err = (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: args, State: ApplicationState{ApplicationArgs: prior}})
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestApplicationRepositorySourceSetupFailureRedactsEchoedSecrets(t *testing.T) {
 	for _, tc := range repositoryRequestFixtures() {
 		t.Run(tc.name, func(t *testing.T) {
@@ -272,6 +311,24 @@ func repositoryRequestFixtures() []struct {
 		{"gitea", "/api/application.saveGiteaProvider", `{"applicationId":"a1","enableSubmodules":false,"giteaBranch":"main","giteaBuildPath":"","giteaId":"i","giteaOwner":"o","giteaRepository":"r","watchPaths":null}`, repositorySourceWithBuild(SourceGitea, ApplicationBuild{Type: BuildNixpacks})},
 		{"bitbucket", "/api/application.saveBitbucketProvider", `{"applicationId":"a1","bitbucketBranch":"main","bitbucketBuildPath":"","bitbucketId":"i","bitbucketOwner":"o","bitbucketRepository":"r","bitbucketRepositorySlug":"o/r","enableSubmodules":false,"watchPaths":null}`, repositorySourceWithBuild(SourceBitbucket, ApplicationBuild{Type: BuildNixpacks})},
 	}
+}
+
+func repositorySourceWithRepository(source ApplicationSource, repository string) ApplicationSource {
+	switch source.Type {
+	case SourceGitHub:
+		copy := *source.GitHub
+		copy.Repository = repository
+		source.GitHub = &copy
+	case SourceGitea:
+		copy := *source.Gitea
+		copy.Repository = repository
+		source.Gitea = &copy
+	case SourceBitbucket:
+		copy := *source.Bitbucket
+		copy.Repository = repository
+		source.Bitbucket = &copy
+	}
+	return source
 }
 
 func repositorySourceWithBuild(kind ApplicationSourceType, build ApplicationBuild) ApplicationSource {
