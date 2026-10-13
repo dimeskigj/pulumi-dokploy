@@ -14,6 +14,21 @@ Restored ordinary `${TMPDIR:-/tmp}` behavior and removed machine-specific conver
 
 OpenAPI/codegen checks and full SDK/example/docs checks were not run separately. No OpenAPI/output edits were made. No credentials, live Dokploy calls, or authenticated downloads were used.
 
+## Follow-up: YAML generator source-test portability
+
+Controller RED reproduced: `TMPDIR=/tmp/opencode /tmp/opencode/gitlab-integration-tools-fwQ0lcJ2/bin/safe-run go test ./examples -tags=yaml -run 'TestGenExamplesUsesIsolatedCanonicalGenerator|TestGeneratedExamplesContainPortAndManagedGitLab' -count=1` — exit 1 at `examples/yaml_test.go:464`, requiring literal `/tmp/opencode/*`. Replaced only that conflicting source-contract assertion with checks for the portable `${TMPDIR:-/tmp}` default, override variable, and invalid-override diagnostic. Existing one-recipe, isolated installation, fixture preservation, translation, normalization, pinned-version, and preflight-order assertions remain.
+
+New GREEN and follow-up checks (all actual tool invocations used `SAFE=/tmp/opencode/gitlab-integration-tools-fwQ0lcJ2/bin/safe-run`, `TMPDIR=/tmp/opencode`):
+
+- Focused YAML tests above — exit 0.
+- `python3 scripts/test_gen_examples.py` — exit 0, 5 tests.
+- `python3 scripts/test_normalize_generated.py` — exit 0, 3 tests.
+- `go test ./examples -tags=yaml -count=1` — exit 0.
+- Isolated-home `make test_examples` (preseeded only with cached converter 1.38.7) — exit 0 across Go, Python, Node.js, .NET, and Java examples. .NET emitted two nullable warnings; Java emitted Javadoc/deprecation warnings.
+- `make docs_check` — exit 0 (generated docs check, Astro checks, 68 website tests, site build, and built-site tests). npm reported 20 dependency audit vulnerabilities; Astro warned `src/icons` is absent. Neither caused failure.
+
+This follow-up edits only `examples/yaml_test.go` plus this report. The untracked controller-authored GitHub integration design spec was left untouched.
+
 ## Changed paths
 
 - `scripts/gen-examples.sh`
