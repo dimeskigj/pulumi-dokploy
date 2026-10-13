@@ -51,3 +51,10 @@ Reviewed the complete source/test and generated OpenAPI/client diff. Changes are
 - Covering test command: `mise exec -- /usr/bin/env DOKPLOY_ACCEPTANCE=0 go test ./provider -run 'TestApplicationBuild(Type|Option)ChangesProduceRuntimeDiff' -count=1`.
 - Output: `ok github.com/dimeskigj/pulumi-dokploy/provider 0.033s`.
 - Self-review: the regression directly changes the build type, retains repository source type, and checks both supported variants. No production changes or unrelated suites/live tests were run.
+
+### Follow-up correction: isolate the build-type change
+
+- Removed `HerokuVersion` from the new builder input so Nixpacks-to-HerokuBuildpacks changes only `ApplicationBuild.Type`; all optional builder settings are nil before and after. Git and GitLab subtests remain.
+- Covering command: `mise exec -- /usr/bin/env DOKPLOY_ACCEPTANCE=0 go test ./provider -run 'TestApplicationBuild(Type|Option)ChangesProduceRuntimeDiff' -count=1`.
+- Output: `ok github.com/dimeskigj/pulumi-dokploy/provider 0.032s`.
+- Covering test: `TestApplicationBuildTypeChangesProduceRuntimeDiff` (Git and GitLab) and `TestApplicationBuildOptionChangesProduceRuntimeDiff` passed. Self-review confirmed the type-switch assertion can no longer pass from a simultaneous option change.

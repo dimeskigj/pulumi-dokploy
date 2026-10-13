@@ -186,7 +186,7 @@ func TestApplicationBuildTypeChangesProduceRuntimeDiff(t *testing.T) {
 	for _, sourceType := range []ApplicationSourceType{SourceGit, SourceGitLab} {
 		t.Run(string(sourceType), func(t *testing.T) {
 			oldBuild := ApplicationBuild{Type: BuildNixpacks}
-			newBuild := ApplicationBuild{Type: BuildHerokuBuildpacks, HerokuVersion: appStringPtr("unrestricted")}
+			newBuild := ApplicationBuild{Type: BuildHerokuBuildpacks}
 			oldSource := applicationBuildTestSource(sourceType, oldBuild)
 			newSource := applicationBuildTestSource(sourceType, newBuild)
 			diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{
