@@ -27,6 +27,7 @@ type ApplicationArgs struct {
 	BuildArgs       *string           `pulumi:"buildArgs,optional" provider:"secret"`
 	BuildSecrets    *string           `pulumi:"buildSecrets,optional" provider:"secret"`
 	CreateEnvFile   bool              `pulumi:"createEnvFile,optional"`
+	AutoDeploy      *bool             `pulumi:"autoDeploy,optional"`
 }
 
 type ApplicationState struct {
@@ -59,6 +60,7 @@ func (a *ApplicationArgs) Annotate(annotator infer.Annotator) {
 	annotator.Describe(&a.BuildArgs, "Build arguments for the application.")
 	annotator.Describe(&a.BuildSecrets, "Build secrets for the application.")
 	annotator.Describe(&a.CreateEnvFile, "Whether to create an environment file.")
+	annotator.Describe(&a.AutoDeploy, "Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.")
 }
 
 func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ApplicationArgs], error) {
@@ -119,6 +121,9 @@ func (r Application) Diff(_ context.Context, req infer.DiffRequest[ApplicationAr
 	if req.Inputs.CreateEnvFile != req.State.CreateEnvFile {
 		d["createEnvFile"] = p.PropertyDiff{Kind: p.Update}
 	}
+	if req.Inputs.AutoDeploy != nil && !sameOptionalBool(req.Inputs.AutoDeploy, req.State.AutoDeploy) {
+		d["autoDeploy"] = p.PropertyDiff{Kind: p.Update}
+	}
 	return infer.DiffResponse{HasChanges: len(d) > 0, DetailedDiff: d}, nil
 }
 
@@ -151,6 +156,12 @@ func (r Application) Create(ctx context.Context, req infer.CreateRequest[Applica
 			p.GetLogger(ctx).Warningf("application cleanup failed for %s: %s", state.ApplicationID, sanitizeApplicationError(cleanupErr, req.Inputs))
 		}
 		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, setupErr
+	}
+	if req.Inputs.AutoDeploy != nil {
+		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: state.ApplicationID, AutoDeploy: nullable.NewNullableWithValue(*req.Inputs.AutoDeploy)}
+		if _, err := api.ApplicationUpdateWithResponse(ctx, body); err != nil {
+			return failSetup(sanitizeApplicationError(err, req.Inputs))
+		}
 	}
 	if err := configureApplicationSource(ctx, api, state.ApplicationID, req.Inputs.Source); err != nil {
 		return failSetup(sanitizeApplicationError(err, req.Inputs))
@@ -255,6 +266,9 @@ func (r Application) Read(ctx context.Context, req infer.ReadRequest[Application
 	args.AppName, args.Description, args.ServerID = a.AppName, a.Description, a.ServerId
 	args.RegistryID = stringPointer(readProperties, "registryId")
 	args.BuildRegistryID = stringPointer(readProperties, "buildRegistryId")
+	if autoDeploy, ok := readProperties["autoDeploy"].(bool); ok {
+		args.AutoDeploy = &autoDeploy
+	}
 	if a.CreateEnvFile != nil {
 		args.CreateEnvFile = *a.CreateEnvFile
 	}
@@ -507,14 +521,21 @@ func optionalStringPointer(m map[string]interface{}, keys ...string) *string {
 
 func (r Application) Update(ctx context.Context, req infer.UpdateRequest[ApplicationArgs, ApplicationState]) (infer.UpdateResponse[ApplicationState], error) {
 	state := ApplicationState{ApplicationArgs: req.Inputs, ApplicationID: req.ID, Status: req.State.Status}
+	if state.AutoDeploy == nil {
+		state.AutoDeploy = req.State.AutoDeploy
+	}
 	if req.DryRun {
 		return infer.UpdateResponse[ApplicationState]{Output: state}, nil
 	}
 	metadataChanged := req.Inputs.Name != req.State.Name || !sameOptionalString(req.Inputs.AppName, req.State.AppName) || !sameOptionalString(req.Inputs.Description, req.State.Description)
 	registryChanged := !sameOptionalString(req.Inputs.RegistryID, req.State.RegistryID) || !sameOptionalString(req.Inputs.BuildRegistryID, req.State.BuildRegistryID)
+	autoDeployChanged := req.Inputs.AutoDeploy != nil && !sameOptionalBool(req.Inputs.AutoDeploy, req.State.AutoDeploy)
 	runtimeChanged := !reflect.DeepEqual(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile || registryChanged
-	if metadataChanged || registryChanged {
+	if metadataChanged || registryChanged || autoDeployChanged {
 		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID, AppName: req.Inputs.AppName, Name: &req.Inputs.Name, Description: nullable.NewNullNullable[string]()}
+		if autoDeployChanged {
+			body.AutoDeploy = nullable.NewNullableWithValue(*req.Inputs.AutoDeploy)
+		}
 		if req.Inputs.Description != nil {
 			body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
 		}
@@ -558,10 +579,11 @@ func (r Application) Delete(ctx context.Context, req infer.DeleteRequest[Applica
 
 func (r Application) WireDependencies(f infer.FieldSelector, args *ApplicationArgs, state *ApplicationState) {
 	deps := []infer.InputField{
-		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.RegistryID), f.InputField(&args.BuildRegistryID), f.InputField(&args.CreateEnvFile),
+		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.RegistryID), f.InputField(&args.BuildRegistryID), f.InputField(&args.CreateEnvFile), f.InputField(&args.AutoDeploy),
 	}
 	f.OutputField(&state.ApplicationID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
+	f.OutputField(&state.AutoDeploy).DependsOn(f.InputField(&args.AutoDeploy))
 	f.OutputField(&state.Environment).DependsOn(f.InputField(&args.Environment).Secret())
 	f.OutputField(&state.BuildArgs).DependsOn(f.InputField(&args.BuildArgs).Secret())
 	f.OutputField(&state.BuildSecrets).DependsOn(f.InputField(&args.BuildSecrets).Secret())
