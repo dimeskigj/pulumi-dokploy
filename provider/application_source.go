@@ -15,11 +15,15 @@ type ApplicationSourceType string
 type BuildType string
 
 const (
-	SourceDocker    ApplicationSourceType = "docker"
-	SourceGit       ApplicationSourceType = "git"
-	SourceGitLab    ApplicationSourceType = "gitlab"
-	BuildNixpacks   BuildType             = "nixpacks"
-	BuildDockerfile BuildType             = "dockerfile"
+	SourceDocker          ApplicationSourceType = "docker"
+	SourceGit             ApplicationSourceType = "git"
+	SourceGitLab          ApplicationSourceType = "gitlab"
+	BuildNixpacks         BuildType             = "nixpacks"
+	BuildDockerfile       BuildType             = "dockerfile"
+	BuildHerokuBuildpacks BuildType             = "heroku_buildpacks"
+	BuildPaketoBuildpacks BuildType             = "paketo_buildpacks"
+	BuildStatic           BuildType             = "static"
+	BuildRailpack         BuildType             = "railpack"
 )
 
 type ApplicationSource struct {
@@ -105,6 +109,10 @@ type ApplicationBuild struct {
 	Dockerfile        *string   `pulumi:"dockerfile,optional"`
 	DockerContextPath *string   `pulumi:"dockerContextPath,optional"`
 	DockerBuildStage  *string   `pulumi:"dockerBuildStage,optional"`
+	HerokuVersion     *string   `pulumi:"herokuVersion,optional"`
+	RailpackVersion   *string   `pulumi:"railpackVersion,optional"`
+	PublishDirectory  *string   `pulumi:"publishDirectory,optional"`
+	IsStaticSpa       *bool     `pulumi:"isStaticSpa,optional"`
 }
 
 func (b *ApplicationBuild) Annotate(a infer.Annotator) {
@@ -113,6 +121,24 @@ func (b *ApplicationBuild) Annotate(a infer.Annotator) {
 	a.Describe(&b.Dockerfile, "The Dockerfile path.")
 	a.Describe(&b.DockerContextPath, "The Docker build context.")
 	a.Describe(&b.DockerBuildStage, "The Docker build stage.")
+	a.Describe(&b.HerokuVersion, "The Heroku buildpack version.")
+	a.Describe(&b.RailpackVersion, "The Railpack version.")
+	a.Describe(&b.PublishDirectory, "The static publish directory.")
+	a.Describe(&b.IsStaticSpa, "Whether to configure static single-page-application routing.")
+}
+
+func (s ApplicationSource) applicationBuild() (ApplicationBuild, bool) {
+	switch s.Type {
+	case SourceGit:
+		if s.Git != nil {
+			return s.Git.Build, true
+		}
+	case SourceGitLab:
+		if s.GitLab != nil {
+			return s.GitLab.Build, true
+		}
+	}
+	return ApplicationBuild{}, false
 }
 
 func (s ApplicationSource) validate() error {
@@ -200,6 +226,18 @@ func validateGit(prefix, url, branch string, build ApplicationBuild) error {
 }
 
 func validateBuild(prefix string, build ApplicationBuild) error {
+	invalidDockerOptions := func() error {
+		if build.Dockerfile != nil {
+			return fmt.Errorf("%s.build.dockerfile is only valid for dockerfile builds", prefix)
+		}
+		if build.DockerContextPath != nil {
+			return fmt.Errorf("%s.build.dockerContextPath is only valid for dockerfile builds", prefix)
+		}
+		if build.DockerBuildStage != nil {
+			return fmt.Errorf("%s.build.dockerBuildStage is only valid for dockerfile builds", prefix)
+		}
+		return nil
+	}
 	switch build.Type {
 	case BuildNixpacks:
 		if build.Dockerfile != nil {
@@ -211,12 +249,85 @@ func validateBuild(prefix string, build ApplicationBuild) error {
 		if build.DockerBuildStage != nil {
 			return fmt.Errorf("%s.build.dockerBuildStage must be omitted for nixpacks builds", prefix)
 		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
 	case BuildDockerfile:
 		if build.Dockerfile == nil || *build.Dockerfile == "" {
 			return fmt.Errorf("%s.build.dockerfile is required for dockerfile builds", prefix)
 		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
+	case BuildHerokuBuildpacks:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
+	case BuildPaketoBuildpacks:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
+	case BuildStatic:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+	case BuildRailpack:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
 	default:
-		return fmt.Errorf("%s.build.type must be one of nixpacks or dockerfile", prefix)
+		return fmt.Errorf("%s.build.type must be one of dockerfile, nixpacks, heroku_buildpacks, paketo_buildpacks, static, or railpack", prefix)
 	}
 	return nil
 }
@@ -265,13 +376,11 @@ func configureApplicationBuild(ctx context.Context, api *client.Client, id strin
 	if source.Type == SourceDocker {
 		return nil
 	}
-	var b ApplicationBuild
-	if source.Type == SourceGit {
-		b = source.Git.Build
-	} else {
-		b = source.GitLab.Build
+	b, ok := source.applicationBuild()
+	if !ok {
+		return fmt.Errorf("cannot configure application build: source variant is missing or does not match source.type %q", source.Type)
 	}
-	body := generated.ApplicationSaveBuildTypeJSONRequestBody{ApplicationId: id, BuildType: generated.ApplicationSaveBuildTypeJSONBodyBuildType(b.Type), Dockerfile: nullable.NewNullNullable[string](), DockerContextPath: nullable.NewNullNullable[string](), DockerBuildStage: nullable.NewNullNullable[string](), HerokuVersion: nullable.NewNullNullable[string](), RailpackVersion: nullable.NewNullNullable[string]()}
+	body := generated.ApplicationSaveBuildTypeJSONRequestBody{ApplicationId: id, BuildType: generated.ApplicationSaveBuildTypeJSONBodyBuildType(b.Type), Dockerfile: nullable.NewNullNullable[string](), DockerContextPath: nullable.NewNullNullable[string](), DockerBuildStage: nullable.NewNullNullable[string](), HerokuVersion: nullable.NewNullNullable[string](), RailpackVersion: nullable.NewNullNullable[string](), PublishDirectory: nullable.NewNullNullable[string](), IsStaticSpa: nullable.NewNullNullable[bool]()}
 	if b.Dockerfile != nil {
 		body.Dockerfile = nullable.NewNullableWithValue(*b.Dockerfile)
 	}
@@ -280,6 +389,18 @@ func configureApplicationBuild(ctx context.Context, api *client.Client, id strin
 	}
 	if b.DockerBuildStage != nil {
 		body.DockerBuildStage = nullable.NewNullableWithValue(*b.DockerBuildStage)
+	}
+	if b.HerokuVersion != nil {
+		body.HerokuVersion = nullable.NewNullableWithValue(*b.HerokuVersion)
+	}
+	if b.RailpackVersion != nil {
+		body.RailpackVersion = nullable.NewNullableWithValue(*b.RailpackVersion)
+	}
+	if b.PublishDirectory != nil {
+		body.PublishDirectory = nullable.NewNullableWithValue(*b.PublishDirectory)
+	}
+	if b.IsStaticSpa != nil {
+		body.IsStaticSpa = nullable.NewNullableWithValue(*b.IsStaticSpa)
 	}
 	_, err := api.ApplicationSaveBuildTypeWithResponse(ctx, body)
 	return err

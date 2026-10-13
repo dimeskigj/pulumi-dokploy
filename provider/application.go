@@ -280,6 +280,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		}
 	}
 	result := ApplicationSource{Type: ApplicationSourceType(kind)}
+	priorBuild, _ := prior.applicationBuild()
 	switch result.Type {
 	case SourceDocker:
 		image := stringValue(m, "image", "dockerImage")
@@ -305,7 +306,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 				result.Git.BuildPath = prior.Git.BuildPath
 			}
 		}
-		result.Git.Build = decodeBuild(m)
+		result.Git.Build = decodeBuild(m, priorBuild)
 	case SourceGitLab:
 		integration := stringValue(m, "integrationId", "gitlabId")
 		owner, namespace, repo, branch := stringValue(m, "owner", "gitlabOwner"), stringValue(m, "namespace", "gitlabPathNamespace"), stringValue(m, "repository", "gitlabRepository"), stringValue(m, "branch", "gitlabBranch")
@@ -316,7 +317,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		if result.GitLab.ProjectID == 0 {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab projectId")
 		}
-		result.GitLab.Build = decodeBuild(m)
+		result.GitLab.Build = decodeBuild(m, priorBuild)
 	default:
 		return ApplicationSource{}, fmt.Errorf("application source data has unsupported source.type %q", kind)
 	}
@@ -335,12 +336,48 @@ func isRepositoryRootBuildPath(path *string) bool {
 	}
 }
 
-func decodeBuild(m map[string]interface{}) ApplicationBuild {
-	b := ApplicationBuild{Type: BuildType(stringValue(m, "buildType")), Dockerfile: stringPointer(m, "dockerfile"), DockerContextPath: stringPointer(m, "dockerContextPath"), DockerBuildStage: stringPointer(m, "dockerBuildStage")}
+func decodeBuild(m map[string]interface{}, prior ApplicationBuild) ApplicationBuild {
+	b := ApplicationBuild{Type: BuildType(stringValue(m, "buildType"))}
 	if b.Type == "" {
 		b.Type = BuildNixpacks
 	}
+	if prior.Type != b.Type {
+		prior = ApplicationBuild{}
+	}
+	switch b.Type {
+	case BuildDockerfile:
+		b.Dockerfile = stringPointer(m, "dockerfile")
+		b.DockerContextPath = stringPointer(m, "dockerContextPath")
+		b.DockerBuildStage = stringPointer(m, "dockerBuildStage")
+	case BuildNixpacks:
+		b.PublishDirectory = optionalStringPointer(m, "publishDirectory")
+		b.IsStaticSpa = decodedStaticSpa(m, prior)
+	case BuildHerokuBuildpacks:
+		b.HerokuVersion = optionalStringPointer(m, "herokuVersion")
+	case BuildStatic:
+		b.IsStaticSpa = decodedStaticSpa(m, prior)
+	case BuildRailpack:
+		b.RailpackVersion = optionalStringPointer(m, "railpackVersion")
+	}
 	return b
+}
+
+func decodedStaticSpa(m map[string]interface{}, prior ApplicationBuild) *bool {
+	value, exists := m["isStaticSpa"]
+	if !exists || value == nil {
+		return nil
+	}
+	spa, ok := value.(bool)
+	if !ok {
+		return nil
+	}
+	if !spa && prior.IsStaticSpa != nil && !*prior.IsStaticSpa {
+		return prior.IsStaticSpa
+	}
+	if !spa {
+		return nil
+	}
+	return &spa
 }
 func stringValue(m map[string]interface{}, keys ...string) string {
 	for _, k := range keys {
