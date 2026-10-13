@@ -196,6 +196,47 @@ func assertApplicationSourceFields(t *testing.T, want, got ApplicationSource) {
 		requireLiveEqual(t, "application.source.gitlab.watchPaths", want.GitLab.WatchPaths, got.GitLab.WatchPaths)
 		requireLiveEqual(t, "application.source.gitlab.enableSubmodules", want.GitLab.EnableSubmodules, got.GitLab.EnableSubmodules)
 		assertApplicationBuildFields(t, "application.source.gitlab.build", want.GitLab.Build, got.GitLab.Build)
+	case SourceGitHub:
+		requireLiveEqual(t, "application.source.github", true, got.GitHub != nil)
+		if got.GitHub == nil {
+			return
+		}
+		requireLiveEqual(t, "application.source.github.integrationId", want.GitHub.IntegrationID, got.GitHub.IntegrationID)
+		requireLiveEqual(t, "application.source.github.owner", want.GitHub.Owner, got.GitHub.Owner)
+		requireLiveEqual(t, "application.source.github.repository", want.GitHub.Repository, got.GitHub.Repository)
+		requireLiveEqual(t, "application.source.github.branch", want.GitHub.Branch, got.GitHub.Branch)
+		requireLiveEqual(t, "application.source.github.buildPath", want.GitHub.BuildPath, got.GitHub.BuildPath)
+		requireLiveEqual(t, "application.source.github.triggerType", want.GitHub.TriggerType, got.GitHub.TriggerType)
+		requireLiveEqual(t, "application.source.github.watchPaths", want.GitHub.WatchPaths, got.GitHub.WatchPaths)
+		requireLiveEqual(t, "application.source.github.enableSubmodules", want.GitHub.EnableSubmodules, got.GitHub.EnableSubmodules)
+		assertApplicationBuildFields(t, "application.source.github.build", want.GitHub.Build, got.GitHub.Build)
+	case SourceGitea:
+		requireLiveEqual(t, "application.source.gitea", true, got.Gitea != nil)
+		if got.Gitea == nil {
+			return
+		}
+		requireLiveEqual(t, "application.source.gitea.integrationId", want.Gitea.IntegrationID, got.Gitea.IntegrationID)
+		requireLiveEqual(t, "application.source.gitea.owner", want.Gitea.Owner, got.Gitea.Owner)
+		requireLiveEqual(t, "application.source.gitea.repository", want.Gitea.Repository, got.Gitea.Repository)
+		requireLiveEqual(t, "application.source.gitea.branch", want.Gitea.Branch, got.Gitea.Branch)
+		requireLiveEqual(t, "application.source.gitea.buildPath", want.Gitea.BuildPath, got.Gitea.BuildPath)
+		requireLiveEqual(t, "application.source.gitea.watchPaths", want.Gitea.WatchPaths, got.Gitea.WatchPaths)
+		requireLiveEqual(t, "application.source.gitea.enableSubmodules", want.Gitea.EnableSubmodules, got.Gitea.EnableSubmodules)
+		assertApplicationBuildFields(t, "application.source.gitea.build", want.Gitea.Build, got.Gitea.Build)
+	case SourceBitbucket:
+		requireLiveEqual(t, "application.source.bitbucket", true, got.Bitbucket != nil)
+		if got.Bitbucket == nil {
+			return
+		}
+		requireLiveEqual(t, "application.source.bitbucket.integrationId", want.Bitbucket.IntegrationID, got.Bitbucket.IntegrationID)
+		requireLiveEqual(t, "application.source.bitbucket.owner", want.Bitbucket.Owner, got.Bitbucket.Owner)
+		requireLiveEqual(t, "application.source.bitbucket.repository", want.Bitbucket.Repository, got.Bitbucket.Repository)
+		requireLiveEqual(t, "application.source.bitbucket.repositorySlug", want.Bitbucket.RepositorySlug, got.Bitbucket.RepositorySlug)
+		requireLiveEqual(t, "application.source.bitbucket.branch", want.Bitbucket.Branch, got.Bitbucket.Branch)
+		requireLiveEqual(t, "application.source.bitbucket.buildPath", want.Bitbucket.BuildPath, got.Bitbucket.BuildPath)
+		requireLiveEqual(t, "application.source.bitbucket.watchPaths", want.Bitbucket.WatchPaths, got.Bitbucket.WatchPaths)
+		requireLiveEqual(t, "application.source.bitbucket.enableSubmodules", want.Bitbucket.EnableSubmodules, got.Bitbucket.EnableSubmodules)
+		assertApplicationBuildFields(t, "application.source.bitbucket.build", want.Bitbucket.Build, got.Bitbucket.Build)
 	}
 }
 
@@ -205,6 +246,10 @@ func assertApplicationBuildFields(t *testing.T, field string, want, got Applicat
 	requireLiveEqual(t, field+".dockerfile", want.Dockerfile, got.Dockerfile)
 	requireLiveEqual(t, field+".dockerContextPath", want.DockerContextPath, got.DockerContextPath)
 	requireLiveEqual(t, field+".dockerBuildStage", want.DockerBuildStage, got.DockerBuildStage)
+	requireLiveEqual(t, field+".herokuVersion", want.HerokuVersion, got.HerokuVersion)
+	requireLiveEqual(t, field+".railpackVersion", want.RailpackVersion, got.RailpackVersion)
+	requireLiveEqual(t, field+".publishDirectory", want.PublishDirectory, got.PublishDirectory)
+	requireLiveEqual(t, field+".isStaticSpa", want.IsStaticSpa, got.IsStaticSpa)
 }
 
 func assertLiveApplicationSource(t *testing.T, label string, want, got ApplicationSource) {

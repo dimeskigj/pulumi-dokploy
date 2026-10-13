@@ -133,12 +133,14 @@ func TestLiveTier2Workloads(t *testing.T) {
 	projectID, environmentID, releaseProject := liveProject(t, ctx, api)
 	_ = projectID
 	scheduleCleanup := newLiveScheduleCleanupGuard()
+	configurationGuard := newLiveApplicationConfigurationGuard()
 	var portGuard *livePortCleanupGuard
 	t.Cleanup(func() {
 		if portGuard != nil {
 			portGuard.retainProjectIfNeeded(releaseProject)
 		}
 	})
+	t.Cleanup(func() { configurationGuard.retainProjectIfNeeded(releaseProject) })
 	// Registered after project cleanup so this runs first even after Fatal.
 	t.Cleanup(func() { scheduleCleanup.retainProjectIfNeeded(releaseProject) })
 
@@ -680,11 +682,22 @@ func TestLiveTier2Workloads(t *testing.T) {
 		})
 	}
 
+	runLiveCase(t, "ApplicationConfiguration", func(t *testing.T) {
+		requireLiveAcceptance(t)
+		runLiveApplicationConfigurationCases(t, ctx, api, environmentID, configurationGuard)
+	})
+
 	// Source variants configure bare resources and do not deploy or clone
 	// anything. Git is always available; external integrations are gated.
 	runLiveCase(t, "SourceVariants", func(t *testing.T) {
 		registrySource := liveRegistryApplicationSource()
-		gitLabSource := liveGitLabApplicationSource()
+		gitLabSource, gitLabConfigured, gitLabErr := liveApplicationSourceFromEnvironment(SourceGitLab)
+		if gitLabErr != nil {
+			t.Fatalf("invalid GitLab application source prerequisites")
+		}
+		if gitLabConfigured {
+			t.Cleanup(registerLiveSecrets(os.Getenv("DOKPLOY_GITLAB_USERNAME"), os.Getenv("DOKPLOY_GITLAB_TOKEN")))
+		}
 		composeGitLabSource := gitLabComposeSource()
 		variants := []struct {
 			name   string
@@ -693,33 +706,21 @@ func TestLiveTier2Workloads(t *testing.T) {
 		}{
 			{name: "git", source: ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://github.com/dimeskigj/pulumi-dokploy", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}, ok: true},
 			{name: "registry", source: registrySource, ok: registrySource.Type != ""},
-			{name: "gitlab", source: gitLabSource, ok: gitLabSource.Type != ""},
+			{name: "gitlab", source: gitLabSource, ok: gitLabConfigured},
 		}
 		for _, variant := range variants {
 			variant := variant
-			t.Run(variant.name, func(t *testing.T) {
+			runLiveCase(t, variant.name, func(t *testing.T) {
 				if !variant.ok {
 					t.Skip("dedicated source prerequisite variables are not configured")
 				}
-				t.Cleanup(registerLiveApplicationSourceMetadata(variant.source))
 				createLease := beginLiveHeavyOperation(t, "application-source-"+variant.name+"-create", liveServerHealthProbe(api))
 				defer createLease.releaseIfNeeded(t)
-				body := generated.ApplicationCreateJSONRequestBody{Name: liveRunName("application-" + variant.name), EnvironmentId: environmentID}
-				response, err := api.ApplicationCreateWithResponse(ctx, body)
+				fixture, err := createLiveApplicationConfigurationFixture(t, ctx, api, environmentID, variant.source, configurationGuard)
 				requireNoError(t, processLiveHeavyOperationError(t, createLease, err, nil, liveServerHealthProbe(api)))
-				require.NotNil(t, response.JSON200)
-				require.NotNil(t, response.JSON200.ApplicationId)
-				id := *response.JSON200.ApplicationId
+				require.NotNil(t, fixture)
+				id := fixture.id
 				r := Application{client: fixedClient(api)}
-				release := registerLiveCleanup(t, "application", id, func(c context.Context) error {
-					_, deleteErr := r.Delete(c, infer.DeleteRequest[ApplicationState]{ID: id})
-					return deleteErr
-				}, func(c context.Context) (string, error) {
-					gone, readErr := r.Read(c, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
-					return gone.ID, readErr
-				})
-				requireNoError(t, processLiveHeavyOperationError(t, createLease, configureApplicationSource(ctx, api, id, variant.source), nil, liveServerHealthProbe(api)))
-				requireNoError(t, processLiveHeavyOperationError(t, createLease, configureApplicationBuild(ctx, api, id, variant.source), nil, liveServerHealthProbe(api)))
 				createLease.releaseIfNeeded(t)
 				read, err := r.Read(ctx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id, State: ApplicationState{ApplicationArgs: ApplicationArgs{Source: variant.source}}})
 				requireNoError(t, err)
@@ -766,17 +767,12 @@ func TestLiveTier2Workloads(t *testing.T) {
 					}
 				}
 				assertLiveApplicationSource(t, variant.name, variant.source, imported.Inputs.Source)
-				cleanupCtx, cancelCleanup := cleanupContext()
-				defer cancelCleanup()
-				err = deleteAndVerifyLiveOwned(cleanupCtx, func() error {
-					_, deleteErr := r.Delete(cleanupCtx, infer.DeleteRequest[ApplicationState]{ID: id})
-					return deleteErr
-				}, func() (string, error) {
-					gone, readErr := r.Read(cleanupCtx, infer.ReadRequest[ApplicationArgs, ApplicationState]{ID: id})
-					return gone.ID, readErr
-				}, release)
+				err = fixture.cleanup()
 				requireNoError(t, err)
 			})
+		}
+		if heavyLiveTierStopped() {
+			return
 		}
 		t.Run("compose-git", func(t *testing.T) {
 			createLease := beginLiveHeavyOperation(t, "compose-source-git-create", liveServerHealthProbe(api))
@@ -1062,6 +1058,7 @@ func registerLiveApplicationSourceMetadata(source ApplicationSource) func() {
 			values = append(values, value)
 		}
 	}
+	add(string(source.Type))
 	addBuild := func(build ApplicationBuild) {
 		add(string(build.Type))
 		if build.Dockerfile != nil {
@@ -1072,6 +1069,18 @@ func registerLiveApplicationSourceMetadata(source ApplicationSource) func() {
 		}
 		if build.DockerBuildStage != nil {
 			add(*build.DockerBuildStage)
+		}
+		if build.HerokuVersion != nil {
+			add(*build.HerokuVersion)
+		}
+		if build.RailpackVersion != nil {
+			add(*build.RailpackVersion)
+		}
+		if build.PublishDirectory != nil {
+			add(*build.PublishDirectory)
+		}
+		if build.IsStaticSpa != nil {
+			add(strconv.FormatBool(*build.IsStaticSpa))
 		}
 	}
 	switch source.Type {
@@ -1087,6 +1096,7 @@ func registerLiveApplicationSourceMetadata(source ApplicationSource) func() {
 		for _, path := range source.Git.WatchPaths {
 			add(path)
 		}
+		add(strconv.FormatBool(source.Git.EnableSubmodules))
 		addBuild(source.Git.Build)
 	case SourceDocker:
 		add(source.Docker.Image)
@@ -1112,7 +1122,51 @@ func registerLiveApplicationSourceMetadata(source ApplicationSource) func() {
 		for _, path := range source.GitLab.WatchPaths {
 			add(path)
 		}
+		add(strconv.FormatBool(source.GitLab.EnableSubmodules))
 		addBuild(source.GitLab.Build)
+	case SourceGitHub:
+		add(source.GitHub.IntegrationID)
+		add(source.GitHub.Owner)
+		add(source.GitHub.Repository)
+		add(source.GitHub.Branch)
+		if source.GitHub.BuildPath != nil {
+			add(*source.GitHub.BuildPath)
+		}
+		if source.GitHub.TriggerType != nil {
+			add(string(*source.GitHub.TriggerType))
+		}
+		for _, path := range source.GitHub.WatchPaths {
+			add(path)
+		}
+		add(strconv.FormatBool(source.GitHub.EnableSubmodules))
+		addBuild(source.GitHub.Build)
+	case SourceGitea:
+		add(source.Gitea.IntegrationID)
+		add(source.Gitea.Owner)
+		add(source.Gitea.Repository)
+		add(source.Gitea.Branch)
+		if source.Gitea.BuildPath != nil {
+			add(*source.Gitea.BuildPath)
+		}
+		for _, path := range source.Gitea.WatchPaths {
+			add(path)
+		}
+		add(strconv.FormatBool(source.Gitea.EnableSubmodules))
+		addBuild(source.Gitea.Build)
+	case SourceBitbucket:
+		add(source.Bitbucket.IntegrationID)
+		add(source.Bitbucket.Owner)
+		add(source.Bitbucket.Repository)
+		add(source.Bitbucket.RepositorySlug)
+		add(source.Bitbucket.Branch)
+		if source.Bitbucket.BuildPath != nil {
+			add(*source.Bitbucket.BuildPath)
+		}
+		for _, path := range source.Bitbucket.WatchPaths {
+			add(path)
+		}
+		add(strconv.FormatBool(source.Bitbucket.EnableSubmodules))
+		addBuild(source.Bitbucket.Build)
 	}
 	return registerLiveSecrets(values...)
 }
@@ -1148,15 +1202,6 @@ func registerLiveComposeSourceMetadata(source ComposeSource) func() {
 		}
 	}
 	return registerLiveSecrets(values...)
-}
-
-func liveGitLabApplicationSource() (source ApplicationSource) {
-	id, project, owner, namespace, repository, branch := os.Getenv("DOKPLOY_GITLAB_INTEGRATION_ID"), os.Getenv("DOKPLOY_GITLAB_PROJECT_ID"), os.Getenv("DOKPLOY_GITLAB_OWNER"), os.Getenv("DOKPLOY_GITLAB_NAMESPACE"), os.Getenv("DOKPLOY_GITLAB_REPOSITORY"), os.Getenv("DOKPLOY_GITLAB_BRANCH")
-	projectID, err := strconv.Atoi(project)
-	if id == "" || err != nil || projectID == 0 || owner == "" || namespace == "" || repository == "" || branch == "" {
-		return ApplicationSource{}
-	}
-	return ApplicationSource{Type: SourceGitLab, GitLab: &GitLabAppSource{IntegrationID: id, ProjectID: projectID, Owner: owner, Namespace: namespace, Repository: repository, Branch: branch, Build: ApplicationBuild{Type: BuildNixpacks}}}
 }
 
 func gitLabSourceValues() (string, int, string, string, string, string, bool) {
