@@ -54,3 +54,41 @@ Self-review: No schema field, annotation, default, OpenAPI, SDK or website descr
 - Implementation commit: `cefc5a0 fix: consolidate GitLab example generation provenance`.
 - Report-only evidence follow-up: recorded separately after implementation.
 - Final `git diff --check` exited 0; status was clean after implementation commit. Regeneration and the remaining checks listed above are concerns/blockers, not claimed passes.
+
+## Resume of same final-fix wave (2026-10-13)
+
+This section supersedes the earlier converter blocker for final disposition; historical deviations above remain part of the audit trail.
+
+### Converter root cause and controlled preseed
+
+- Inspected only the supplied ordinary plugin cache entry: `/home/dimeskigj/.pulumi/plugins/converter-yaml-v1.38.7/`. Its `README.md` identifies PulumiYAML; `file` reported a statically linked x86-64 ELF `pulumi-converter-yaml`; SHA-256: `66d36e8788ae0d41eca88c71351a57ad5e3fd5261f2e925585c0264e11bab143`. No credentials or Pulumi configuration were read.
+- Root cause: the generator's isolated `PULUMI_HOME` contained no YAML converter, so `pulumi convert` fell back to latest-plugin discovery against GitHub and received rate-limited 403. Pulumi `plugin install --help` confirms `converter yaml [version]` plus `--file` accepts a local binary.
+- Preseed proof, no global cache mutation: `TMPDIR=/tmp/opencode/gitlab-final-wave-tmp PULUMI_HOME=/tmp/opencode/gitlab-final-wave-tmp/home DOKPLOY_ACCEPTANCE=0 SAFE mise exec pulumi@3.259.0 -- pulumi plugin install converter yaml 1.38.7 --file /home/dimeskigj/.pulumi/plugins/converter-yaml-v1.38.7/pulumi-converter-yaml --exact --reinstall` exited 0. `pulumi plugin ls` in the same isolated home showed `yaml converter 1.38.7`.
+- `scripts/gen-examples.sh` now pins `yaml_converter_version=1.38.7`, has an explicit `PULUMI_YAML_CONVERTER_BINARY` cache-source override with that pinned default, installs/verifies the converter in its private home before any tracked generated directory is removed, and refuses TMPDIR outside `/tmp/opencode/*`. The local provider install and existing SAFE nested `mise`/pinned Pulumi commands remain.
+- One initial resume invocation installed the converter but failed its first version-list check because the script incorrectly expected the `converter-yaml-v...` display format. It failed before deleting any outputs. The list check was corrected to match Pulumi's actual `yaml converter 1.38.7` columns; subsequent generation passed.
+
+### Canonical generation and provenance
+
+- Final generation command: `TMPDIR=/tmp/opencode/gitlab-final-wave-tmp DOKPLOY_ACCEPTANCE=0 /tmp/opencode/gitlab-integration-tools-fwQ0lcJ2/bin/safe-run make gen_examples` exited 0. Full output: `/tmp/opencode/gitlab-final-gen_examples.log`. Log shows preseed, isolated local Dokploy provider install, five conversions from `examples/yaml`, then the Server identity test. It used the cached pinned converter, not network/latest discovery.
+- Generator-source discovery: the old inline recipe's Java/.NET secret/output/Java 17 compatibility rewrites duplicated those in `normalize-converted-examples.py`; consolidated the transforms in that source helper. Replacement of language directories also deleted tracked Go lookup/Notification example test fixtures. Restored the two previously clean files and taught the generator to preserve/reinsert them around directory replacement. A second SAFE generation exited 0 and retained them.
+- Added `TestGeneratedExamplesContainPortAndManagedGitLab` across TypeScript, Python, Go, C#, and Java. It checks generated Port and managed GitLab resource plus GitLab ID output in every translation. Existing `TestGeneratedServerExamplesInstantiateAndExportIdentity` continues to check baseline Server identity output. Both pass after regeneration. The five language program files were regenerated from canonical `examples/yaml/Pulumi.yaml`; generated program bytes match existing committed source (no generated-file diff). `make docs_check` reran the website embed/reference generator against these sources; `website/src/content/docs/examples/complete.mdx` is unchanged because its generated content already matched.
+
+### Final resumed checks
+
+All commands below used SAFE; where Pulumi/npm/build tools needed a home/temp path, environment was `TMPDIR=/tmp/opencode/gitlab-final-wave-tmp`, `DOKPLOY_ACCEPTANCE=0`, and for `make test_examples`/`make docs_check` the isolated `PULUMI_HOME=/tmp/opencode/gitlab-final-wave-tmp/examples-test-home`. The converter was locally installed in that isolated test home after an initial `make test_examples` attempt proved its canonical-YAML binding test also needs the converter; that initial run exited 2 due latest discovery/403, and retry passed.
+
+| Command | Result | Evidence |
+|---|---|---|
+| `SAFE go test ./examples -tags=yaml -run 'TestGenExamplesUsesIsolatedCanonicalGenerator|TestGeneratedExamplesContainPortAndManagedGitLab|TestGeneratedServerExamplesInstantiateAndExportIdentity' -count=1` | PASS | direct output `ok ... 0.003s` |
+| `SAFE make test_examples` | PASS | `/tmp/opencode/gitlab-final-test_examples.log`; all language compiles/builds pass |
+| `SAFE make docs_check` | PASS | `/tmp/opencode/gitlab-final-docs_check.log`; 61 pages built, all 4 built-output tests pass |
+| `SAFE make test_provider` | PASS | `/tmp/opencode/gitlab-final-test_provider.log` |
+| `SAFE make check_codegen` | PASS | `/tmp/opencode/gitlab-final-check_codegen.log`; SDK diff empty |
+| `SAFE make check_openapi` | PASS | `/tmp/opencode/gitlab-final-check_openapi.log`; generated OpenAPI/client diff empty |
+| `SAFE make lint` | PASS, 0 issues | `/tmp/opencode/gitlab-final-lint.log` |
+| `SAFE python3 -m unittest discover -s scripts -p 'test_*.py'` | PASS, 16 tests | `/tmp/opencode/gitlab-final-script-tests.log` |
+| `sh -n scripts/gen-examples.sh`; `python3 -m py_compile scripts/normalize-converted-examples.py`; `git diff --check` | PASS | no errors/output |
+
+One post-test inspection caught that the first regenerated tree had again removed the two tracked Go test fixtures; they were immediately restored from the known-clean base and generator preservation was added. The subsequent final generation and `make test_examples` passed with both fixtures present. Build artifacts/cache files are ignored. No project credentials, `.env`, live Dokploy requests, release/push/merge, or global plugin installation occurred in this resumed work. The earlier first-wave accidental unauthenticated converter latest request and generic `/tmp` attempt remain explicitly disclosed in the previous section.
+
+Implementation/check-fix commit: `5f1529b fix: preflight pinned YAML converter for examples`. `make build_sdks` was not run separately because `make test_examples` rebuilt/published the Java SDK locally and compiled the generated example in all five SDK languages. Remaining limitation: no live server compatibility validation (prohibited).
