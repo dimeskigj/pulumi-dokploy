@@ -537,7 +537,7 @@ func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
 		require.True(t, ok, "missing path %s", operation.path)
 		require.NotNil(t, path.Methods[operation.method], "missing %s operation at %s", operation.method, operation.path)
 	}
-	require.Len(t, d.Paths, 145, "the 139 baseline operations and six GitLab integration operations are the complete inventory")
+	require.Len(t, d.Paths, 147, "the 139 baseline operations, six GitLab operations, and two GitHub operations are the complete inventory")
 	require.Equal(t, "#/components/schemas/GitLabIntegrationRecord", responseSchema(t, d, "/gitlab.one", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/GitProviderList", responseSchema(t, d, "/gitProvider.getAll", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/AuthenticatedGitProviderMember", responseSchema(t, d, "/user.get", httpMethodGet, "200").Ref)
@@ -576,6 +576,36 @@ func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
 	}
 	for _, path := range []string{"/gitlab.gitlabProviders", "/gitlab.testConnection", "/gitlab.callback"} {
 		require.NotContains(t, d.Paths, path)
+	}
+}
+
+func TestGitHubIntegrationOpenAPIContract(t *testing.T) {
+	d := normalizeRealContract(t)
+	baseCount := 145 // Captured from the task's base operations inventory (including all six GitLab selections).
+	for _, operation := range []struct{ path, method string }{
+		{"/github.one", httpMethodGet}, {"/github.update", httpMethodPost},
+		{"/organization.active", httpMethodGet}, {"/gitProvider.remove", httpMethodPost},
+	} {
+		path, ok := d.Paths[operation.path]
+		require.True(t, ok, "missing path %s", operation.path)
+		require.NotNil(t, path.Methods[operation.method], "missing %s operation at %s", operation.method, operation.path)
+	}
+	require.Equal(t, baseCount+2, len(d.Paths), "GitHub adds only github.one and github.update")
+	require.Equal(t, "#/components/schemas/GitHubIntegrationRecord", responseSchema(t, d, "/github.one", httpMethodGet, "200").Ref)
+	update := operationRequestSchema(t, d, "github.update")
+	for _, field := range []string{"githubId", "gitProviderId", "name", "githubAppName"} {
+		require.Contains(t, update["required"], field)
+	}
+	remove := operationRequestSchema(t, d, "gitProvider.remove")
+	require.Contains(t, remove["required"], "gitProviderId")
+	record := componentSchema(t, d, "GitHubIntegrationRecord")
+	require.ElementsMatch(t, []any{"githubId", "gitProviderId", "githubAppName", "gitProvider"}, record["required"])
+	require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, record, "githubAppName"))
+	identity := componentSchema(t, d, "GitHubProviderIdentity")
+	require.ElementsMatch(t, []any{"gitProviderId", "name", "providerType", "organizationId"}, identity["required"])
+	for _, operation := range []string{"github.update", "gitProvider.remove"} {
+		responses := d.Paths["/"+operation].Post.Raw["responses"].(map[string]any)
+		require.NotContains(t, responses["200"].(map[string]any), "content")
 	}
 }
 

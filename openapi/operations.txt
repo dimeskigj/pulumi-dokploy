@@ -36,6 +36,8 @@ environment.remove
 environment.update
 gitProvider.getAll
 gitProvider.remove
+github.one
+github.update
 gitlab.create
 gitlab.one
 gitlab.update

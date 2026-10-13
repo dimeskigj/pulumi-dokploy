@@ -141,6 +141,8 @@
     "server.remove": "",
     "gitProvider.getAll": "GitProviderList",
     "gitProvider.remove": "",
+    "github.one": "GitHubIntegrationRecord",
+    "github.update": "",
     "gitlab.create": "",
     "gitlab.one": "GitLabIntegrationRecord",
     "gitlab.update": "",
@@ -2012,6 +2014,28 @@
         "gitlabUrl",
         "gitProvider"
       ],
+      "additionalProperties": true
+    },
+    "GitHubIntegrationRecord": {
+      "type": "object",
+      "properties": {
+        "githubId": { "type": "string", "minLength": 1 },
+        "gitProviderId": { "type": "string", "minLength": 1 },
+        "githubAppName": { "type": ["string", "null"] },
+        "gitProvider": { "$ref": "#/components/schemas/GitHubProviderIdentity" }
+      },
+      "required": ["githubId", "gitProviderId", "githubAppName", "gitProvider"],
+      "additionalProperties": true
+    },
+    "GitHubProviderIdentity": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "providerType": { "type": "string", "minLength": 1 },
+        "organizationId": { "type": "string", "minLength": 1 }
+      },
+      "required": ["gitProviderId", "name", "providerType", "organizationId"],
       "additionalProperties": true
     },
     "GitProviderUserIdentity": {
