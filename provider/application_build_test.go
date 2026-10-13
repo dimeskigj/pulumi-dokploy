@@ -182,4 +182,32 @@ func TestApplicationBuildOptionChangesProduceRuntimeDiff(t *testing.T) {
 	require.Equal(t, p.Update, diff.DetailedDiff["source"].Kind)
 }
 
+func TestApplicationBuildTypeChangesProduceRuntimeDiff(t *testing.T) {
+	for _, sourceType := range []ApplicationSourceType{SourceGit, SourceGitLab} {
+		t.Run(string(sourceType), func(t *testing.T) {
+			oldBuild := ApplicationBuild{Type: BuildNixpacks}
+			newBuild := ApplicationBuild{Type: BuildHerokuBuildpacks, HerokuVersion: appStringPtr("unrestricted")}
+			oldSource := applicationBuildTestSource(sourceType, oldBuild)
+			newSource := applicationBuildTestSource(sourceType, newBuild)
+			diff, err := (Application{}).Diff(t.Context(), infer.DiffRequest[ApplicationArgs, ApplicationState]{
+				Inputs: ApplicationArgs{EnvironmentID: "e1", Source: newSource},
+				State:  ApplicationState{ApplicationArgs: ApplicationArgs{EnvironmentID: "e1", Source: oldSource}},
+			})
+			require.NoError(t, err)
+			require.Equal(t, p.Update, diff.DetailedDiff["source"].Kind)
+		})
+	}
+}
+
+func applicationBuildTestSource(sourceType ApplicationSourceType, build ApplicationBuild) ApplicationSource {
+	switch sourceType {
+	case SourceGit:
+		return ApplicationSource{Type: sourceType, Git: &GitApplicationSource{URL: "repo", Branch: "main", Build: build}}
+	case SourceGitLab:
+		return ApplicationSource{Type: sourceType, GitLab: &GitLabAppSource{IntegrationID: "integration", ProjectID: 1, Owner: "owner", Namespace: "namespace", Repository: "repo", Branch: "main", Build: build}}
+	default:
+		return ApplicationSource{Type: sourceType}
+	}
+}
+
 func appBoolPtr(value bool) *bool { return &value }

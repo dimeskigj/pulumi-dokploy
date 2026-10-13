@@ -44,3 +44,10 @@ Implemented Task 1: source save-operation generation and complete application bu
 ## Self-review and concerns
 
 Reviewed the complete source/test and generated OpenAPI/client diff. Changes are limited to Task 1 surfaces. Existing build/source API fields remain additive; requests explicitly clear unset builder options; error paths avoid dereferencing absent repository variants. No unresolved concerns.
+
+## Review follow-up
+
+- Added `TestApplicationBuildTypeChangesProduceRuntimeDiff`, covering a Nixpacks-to-Heroku-Buildpacks switch for both Git and GitLab source variants and asserting an in-place `p.Update` diff.
+- Covering test command: `mise exec -- /usr/bin/env DOKPLOY_ACCEPTANCE=0 go test ./provider -run 'TestApplicationBuild(Type|Option)ChangesProduceRuntimeDiff' -count=1`.
+- Output: `ok github.com/dimeskigj/pulumi-dokploy/provider 0.033s`.
+- Self-review: the regression directly changes the build type, retains repository source type, and checks both supported variants. No production changes or unrelated suites/live tests were run.
