@@ -114,7 +114,6 @@ application_port = dokploy.Port("applicationPort",
     target_port=80,
     protocol=dokploy.PortProtocol.TCP,
     publish_mode=dokploy.PortPublishMode.INGRESS)
->>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 ssh_key = dokploy.SSHKey("sshKey",
     name="mvp-git-ssh",
     private_key=pulumi.Output.secret(ssh_private_key),
@@ -259,7 +258,5 @@ pulumi.export("gitlabOwner", gitlab_owner)
 pulumi.export("gitlabNamespace", gitlab_namespace)
 pulumi.export("gitlabRepository", gitlab_repository)
 pulumi.export("gitBranch", git_branch)
-<<<<<<< HEAD
 pulumi.export("remoteServerId", remote_server.server_id)
-=======
 pulumi.export("managedGitlabIntegrationId", managed_gitlab_integration.gitlab_id)

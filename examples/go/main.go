@@ -172,7 +172,6 @@ func main() {
 		if err != nil {
 			return err
 		}
->>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 		sshKey, err := dokploy.NewSSHKey(ctx, "sshKey", &dokploy.SSHKeyArgs{
 			Name:       pulumi.String("mvp-git-ssh"),
 			PrivateKey: pulumi.ToSecret(sshPrivateKey).(pulumi.StringOutput),
@@ -397,9 +396,7 @@ func main() {
 		ctx.Export("gitlabNamespace", pulumi.String(gitlabNamespace))
 		ctx.Export("gitlabRepository", pulumi.String(gitlabRepository))
 		ctx.Export("gitBranch", pulumi.String(gitBranch))
-<<<<<<< HEAD
 		ctx.Export("remoteServerId", remoteServer.ServerId)
-=======
 		ctx.Export("managedGitlabIntegrationId", managedGitlabIntegration.GitlabId)
 		return nil
 	})
