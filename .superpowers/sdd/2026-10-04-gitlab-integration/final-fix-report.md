@@ -34,6 +34,7 @@ Self-review: No schema field, annotation, default, OpenAPI, SDK or website descr
 - Added `TestGenExamplesUsesIsolatedCanonicalGenerator`, checking unique target definition, script invocation, isolation/install setup, converter and local SDK normalization references.
 - RED: SAFE `go test ./examples -tags=yaml -run '^TestGenExamplesUsesIsolatedCanonicalGenerator$' -count=1` failed because it found 2 recipes.
 - Attempted canonical generation through SAFE launcher. The recursive target reached Pulumi's YAML converter, which tried to fetch the `yaml` converter plugin and failed with GitHub API HTTP 403 rate limit (`could not find latest version for provider yaml`). No generated translation outputs were changed, and website complete-example embed was not regenerated. Generation/provenance parity is explicitly blocked; do not claim generation passed. Log: `/tmp/opencode/gitlab-gen-examples-red.log` captures the initial duplicate override evidence; converter failure was returned by the later command (exit 1).
+- Safety deviation: this mistaken `make -n` attempt did not set the required `TMPDIR` and the wrapper allowed the converter to attempt a GitHub API request. Its temp `PULUMI_HOME` was under the default `/tmp` and removed by the script's cleanup trap. No authenticated/private/live Dokploy request was made. No further generator invocation was made.
 
 ### Finding 2: README resource inventory
 
@@ -47,3 +48,9 @@ Self-review: No schema field, annotation, default, OpenAPI, SDK or website descr
 - SAFE `make test_provider` passed on retry (exit 0; log `/tmp/opencode/gitlab-final-test-provider.log`). The first invocation occurred while generation had removed the example directories and failed only the fixture tests for absent `examples/java/pom.xml` and `examples/go/go.mod`; it passed after restore.
 - `make gen_examples`, `make test_examples`, `make docs_check`, `make test_provider`, `make check_codegen`, and `make check_openapi` have not been verified in this fix wave. Do not infer success from prior adoption-report evidence. Generated output parity and website embed refresh remain unverified and blocked on YAML converter plugin availability.
 - No further generator, live service, credential, release, or protected operation attempted after the plugin error. No approved TMPDIR generator run completed, because converter plugin resolution failed before translating canonical YAML. Full final status/commit/check evidence follows after commit.
+
+### Commit / final state
+
+- Implementation commit: `cefc5a0 fix: consolidate GitLab example generation provenance`.
+- Report-only evidence follow-up: recorded separately after implementation.
+- Final `git diff --check` exited 0; status was clean after implementation commit. Regeneration and the remaining checks listed above are concerns/blockers, not claimed passes.
