@@ -6306,6 +6306,185 @@
         ]
       }
     },
+    "/github.one": {
+      "get": {
+        "operationId": "github-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "githubId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubIntegrationRecord"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "github"
+        ]
+      }
+    },
+    "/github.update": {
+      "post": {
+        "operationId": "github-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "gitProviderId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "githubAppName": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "githubId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "githubId",
+                  "name",
+                  "gitProviderId",
+                  "githubAppName"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "github"
+        ]
+      }
+    },
     "/gitlab.create": {
       "post": {
         "operationId": "gitlab-create",
@@ -20674,6 +20853,63 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "GitHubIntegrationRecord": {
+        "additionalProperties": true,
+        "properties": {
+          "gitProvider": {
+            "$ref": "#/components/schemas/GitHubProviderIdentity"
+          },
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "githubAppName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "githubId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "githubId",
+          "gitProviderId",
+          "githubAppName",
+          "gitProvider"
+        ],
+        "type": "object"
+      },
+      "GitHubProviderIdentity": {
+        "additionalProperties": true,
+        "properties": {
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "organizationId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "providerType": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "gitProviderId",
+          "name",
+          "providerType",
+          "organizationId"
+        ],
         "type": "object"
       },
       "GitLabCreateRequest": {
