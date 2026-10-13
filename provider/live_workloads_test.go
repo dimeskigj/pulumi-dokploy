@@ -117,6 +117,13 @@ func runDomainComparisonAfterCleanup(cleanup func(), stopped func() bool, compar
 	compare()
 }
 
+func livePostgresDispatchMount(postgresID string) MountArgs {
+	// Dokploy creates and removes file sources on the target host. A random
+	// bind source is never provisioned there; Swarm rejects it and may roll back
+	// while postgres.deploy still reports success against the old running task.
+	return MountArgs{Type: mountTypeFile, MountPath: "/mnt/postgres", FilePath: stringPtr("pulumi-postgres-live.conf"), Content: stringPtr("LIVE_MOUNT=1"), PostgresID: &postgresID}
+}
+
 // TestLiveTier2Workloads is intentionally one serial test. Workload creates
 // deploy containers and mounts cause another deploy, so parallel subtests
 // would needlessly increase load on the acceptance server.
@@ -539,9 +546,9 @@ func TestLiveTier2Workloads(t *testing.T) {
 		})
 	}
 
-	// Dispatch-only cases prove every supported target route without adding an
-	// update/redeploy cycle to the matrix. Each database fixture is created and
-	// removed before the next one is started.
+	// PostgreSQL exercises update/redeploy as well as target dispatch. The
+	// remaining dispatch-only cases avoid another update cycle. Each database
+	// fixture is created and removed before the next one is started.
 	runLiveCase(t, "MountDispatch/postgres", func(t *testing.T) {
 		fixture := createDispatchDatabase(t, ctx, api, environmentID, "postgres")
 		// Register the fixture immediately. runLiveMountLifecycle registers its
@@ -551,8 +558,8 @@ func TestLiveTier2Workloads(t *testing.T) {
 		fixtureOwner := newLiveCleanupOwner(func() { fixture.cleanup(t) })
 		t.Cleanup(fixtureOwner.cleanupOnce)
 		fixture.releaseForDependentMount(t)
-		mount := MountArgs{Type: mountTypeBind, MountPath: "/mnt/postgres", HostPath: stringPtr(filepath.Join("/tmp", liveRunName("postgres-mount"))), PostgresID: &fixture.id}
-		t.Cleanup(registerLiveSecrets(value(mount.HostPath)))
+		mount := livePostgresDispatchMount(fixture.id)
+		t.Cleanup(registerLiveSecrets(value(mount.FilePath), value(mount.Content)))
 		targetReplacement := mount
 		targetReplacement.PostgresID = nil
 		targetReplacement.ApplicationID = &applicationID
