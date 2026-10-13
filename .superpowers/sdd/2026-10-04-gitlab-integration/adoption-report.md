@@ -79,3 +79,24 @@ Regression evidence (SAFE launcher: `/tmp/opencode/gitlab-integration-tools-fwQ0
 Conflict audit performed over the manually resolved areas identified in commit history and generated semantic inventories: OpenAPI/provider contract and registry tests, schema/function/resource inventories, canonical YAML inventory, generated examples in all six languages, and website navigation/reference-model/content tests. Provider inventory corrections retain current-base resources/functions plus GitLab; generated codegen checks and the website's route/link tests validate source/schema/reference consistency. Remaining recorded deviation: plan refresh was included in `f1ce942` as noted above; history was not rewritten. No task-specific SDD files were created by this fix; the supplied spec/plan are retained.
 
 The post-commit validation commands and their exact outcomes are appended below after commit; no stale pre-fix evidence is treated as final.
+
+### Post-commit verification evidence
+
+Fix commit: `db90699 fix: resolve GitLab adoption conflicts`.
+
+On committed outputs, using `/tmp/opencode/gitlab-integration-tools-fwQ0lcJ2/bin/safe-run`, all applicable required checks exited 0:
+
+| Command | Exit | Log |
+|---|---:|---|
+| `SAFE make check_openapi` | 0 | `/tmp/opencode/gitlab-postcommit-check_openapi.log` |
+| `SAFE make check_codegen` | 0 | `/tmp/opencode/gitlab-postcommit-check_codegen.log` |
+| `SAFE make test_provider` | 0 | `/tmp/opencode/gitlab-postcommit-test_provider.log` |
+| `SAFE make lint` | 0 | `/tmp/opencode/gitlab-postcommit-lint.log` |
+| `SAFE make test_race` | 0 | `/tmp/opencode/gitlab-postcommit-test_race.log` |
+| `SAFE make provider` | 0 | `/tmp/opencode/gitlab-postcommit-provider.log` |
+| `SAFE make build_sdks` | 0 | `/tmp/opencode/gitlab-postcommit-build_sdks.log` |
+| `SAFE make test_examples` | 0 | `/tmp/opencode/gitlab-postcommit-test_examples.log` |
+| `SAFE make docs_check` | 0 | `/tmp/opencode/gitlab-postcommit-docs_check.log` |
+| `git diff --check` | 0 | no output |
+
+`make build_sdks` mechanically normalized the unrelated Java POM `name` field in `sdk/java/build.gradle`; that normalization was reverted to the committed blank value after validation, and `git status --short` and `git diff --check` were clean after the reversion. The generated GitLab description and all regenerated outputs are unchanged. All code/schema/source checks above operated on committed integration outputs; only that unrelated transient build metadata mutation was discarded.
