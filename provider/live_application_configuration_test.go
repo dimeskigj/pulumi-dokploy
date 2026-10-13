@@ -138,8 +138,11 @@ func readLiveApplicationAutoDeploy(ctx context.Context, api *client.Client, id s
 	if err != nil {
 		return false, false, err
 	}
-	if response == nil || response.JSON200 == nil || response.JSON200.ApplicationId == nil {
+	if response == nil || response.JSON200 == nil || response.JSON200.ApplicationId == nil || strings.TrimSpace(*response.JSON200.ApplicationId) == "" {
 		return false, false, errors.New("application.one returned incomplete identity")
+	}
+	if *response.JSON200.ApplicationId != id {
+		return false, false, errors.New("application.one returned mismatched identity")
 	}
 	var properties map[string]any
 	if err := json.Unmarshal(response.Body, &properties); err != nil {

@@ -175,14 +175,14 @@ func TestApplicationAutoDeployCreateSetupFailureRedactsSecretsAndCleansUp(t *tes
 }
 
 func TestApplicationAutoDeployUpdateFailureRedactsPriorAndCurrentSecrets(t *testing.T) {
-	oldSecret, newSecret := "PRIOR-AUTO-SECRET", "CURRENT-AUTO-SECRET"
+	oldEnvironment, newEnvironment := "PRIOR-AUTO-SECRET", "CURRENT-AUTO-SECRET"
 	s := newScriptedServer(t, scriptedRequest{Method: http.MethodPost, Path: "/api/application.update", Body: json.RawMessage(`{"applicationId":"a1","autoDeploy":false,"description":null,"name":"demo"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"UPDATE_FAILED","message":"PRIOR-AUTO-SECRET CURRENT-AUTO-SECRET"}`)})
-	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(true), Environment: &oldSecret}
-	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(false), Environment: &newSecret}
+	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(true), Environment: &oldEnvironment}
+	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(false), Environment: &newEnvironment}
 	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs}})
 	require.Error(t, err)
-	require.NotContains(t, err.Error(), oldSecret)
-	require.NotContains(t, err.Error(), newSecret)
+	require.NotContains(t, err.Error(), oldEnvironment)
+	require.NotContains(t, err.Error(), newEnvironment)
 }
 
 func boolPtr(v bool) *bool { return &v }
