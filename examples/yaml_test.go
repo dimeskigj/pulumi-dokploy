@@ -459,10 +459,41 @@ func TestGenExamplesUsesIsolatedCanonicalGenerator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, contract := range []string{"export PULUMI_HOME=$cache", "install_plugin PULUMI_HOME=", "pulumi convert", "npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs", "-e ../../sdk/python", "use_local_dotnet_sdk.py", "use_local_java_sdk.py", "normalize-examples.py", "normalize-converted-examples.py"} {
+	for _, contract := range []string{"/tmp/opencode/*", "export PULUMI_HOME=$cache", "install_plugin PULUMI_HOME=", "pulumi convert", "npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs", "-e ../../sdk/python", "use_local_dotnet_sdk.py", "use_local_java_sdk.py", "normalize-examples.py", "normalize-converted-examples.py", "yaml_converter_version=1.38.7", "pulumi plugin install converter yaml", "--file \"$yaml_converter_binary\"", "pulumi plugin ls", "lookup_test.go notification_test.go", "examples/go/$test_file\" \"$cache/go-tests/$test_file", "cp \"$test_file\" examples/go/"} {
 		if !strings.Contains(string(script), contract) {
 			t.Errorf("canonical generator missing %q", contract)
 		}
+	}
+	preflight := strings.Index(string(script), "pulumi plugin install converter yaml")
+	remove := strings.Index(string(script), "rm -rf examples/nodejs")
+	if preflight < 0 || remove < 0 || preflight > remove {
+		t.Fatal("pinned YAML converter preflight must complete before generated directories are removed")
+	}
+	if strings.Contains(string(script), "plugin install converter yaml\n") && strings.Contains(string(script), "plugin install converter yaml latest") {
+		t.Fatal("YAML converter must not use dynamic latest plugin discovery")
+	}
+}
+
+func TestGeneratedExamplesContainPortAndManagedGitLab(t *testing.T) {
+	contracts := map[string][]string{
+		"nodejs/index.ts": {`new dokploy.Port("applicationPort"`, `new dokploy.GitLabIntegration("managedGitlabIntegration"`, `export const managedGitlabIntegrationId = managedGitlabIntegration.gitlabId`},
+		"python/__main__.py": {`dokploy.Port("applicationPort"`, `dokploy.GitLabIntegration("managedGitlabIntegration"`, `pulumi.export("managedGitlabIntegrationId", managed_gitlab_integration.gitlab_id)`},
+		"go/main.go": {`dokploy.NewPort(ctx, "applicationPort"`, `dokploy.NewGitLabIntegration(ctx, "managedGitlabIntegration"`, `ctx.Export("managedGitlabIntegrationId", managedGitlabIntegration.GitlabId)`},
+		"dotnet/Program.cs": {`new Dokploy.Port("applicationPort"`, `new Dokploy.GitLabIntegration("managedGitlabIntegration"`, `["managedGitlabIntegrationId"] = managedGitlabIntegration.GitlabId`},
+		"java/src/main/java/generated_program/App.java": {`new Port("applicationPort"`, `new GitLabIntegration("managedGitlabIntegration"`, `ctx.export("managedGitlabIntegrationId", managedGitlabIntegration.gitlabId())`},
+	}
+	for path, fragments := range contracts {
+		t.Run(path, func(t *testing.T) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, fragment := range fragments {
+				if !strings.Contains(string(data), fragment) {
+					t.Errorf("generated example %s missing %q", path, fragment)
+				}
+			}
+		})
 	}
 }
 
