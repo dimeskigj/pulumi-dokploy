@@ -109,6 +109,65 @@ func TestNotificationGotifyIntegerRequestContract(t *testing.T) {
 	}
 }
 
+func TestApplicationSourceSaveOperationContracts(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, operation := range []struct {
+		name       string
+		properties []string
+		required   []string
+	}{
+		{"application.saveGithubProvider", []string{"applicationId", "repository", "owner", "buildPath", "githubId", "branch", "triggerType", "enableSubmodules", "watchPaths"}, []string{"applicationId", "repository", "owner", "buildPath", "githubId", "branch", "triggerType"}},
+		{"application.saveGiteaProvider", []string{"applicationId", "giteaBuildPath", "giteaOwner", "giteaRepository", "giteaId", "giteaBranch", "enableSubmodules", "watchPaths"}, []string{"applicationId", "giteaBuildPath", "giteaOwner", "giteaRepository", "giteaId", "giteaBranch"}},
+		{"application.saveBitbucketProvider", []string{"applicationId", "bitbucketBuildPath", "bitbucketOwner", "bitbucketRepository", "bitbucketRepositorySlug", "bitbucketId", "bitbucketBranch", "enableSubmodules", "watchPaths"}, []string{"bitbucketBuildPath", "bitbucketOwner", "bitbucketRepository", "bitbucketRepositorySlug", "bitbucketId", "applicationId", "bitbucketBranch"}},
+	} {
+		t.Run(operation.name, func(t *testing.T) {
+			path := d.Paths["/"+operation.name]
+			require.NotNil(t, path)
+			require.NotNil(t, path.Post)
+			require.Equal(t, strings.Replace(operation.name, ".", "-", 1), path.Post.OperationID)
+			require.Equal(t, "boolean", responseSchemaType(t, d, "/"+operation.name, httpMethodPost, "200"))
+			schema := operationRequestSchema(t, d, operation.name)
+			properties := schema["properties"].(map[string]any)
+			for _, name := range operation.properties {
+				require.Contains(t, properties, name)
+			}
+			require.ElementsMatch(t, operation.required, schema["required"])
+			for _, name := range operation.properties {
+				if name == "applicationId" || name == "branch" || name == "giteaBranch" || name == "bitbucketBranch" || name == "triggerType" {
+					continue
+				}
+				field := properties[name].(map[string]any)
+				if name == "enableSubmodules" {
+					require.Equal(t, "boolean", field["type"])
+					continue
+				}
+				if name == "watchPaths" {
+					requireNullableSchema(t, properties[name], "array")
+					continue
+				}
+				requireNullableSchema(t, properties[name], "string")
+			}
+		})
+	}
+}
+
+func requireNullableSchema(t *testing.T, raw any, valueType string) {
+	t.Helper()
+	property := raw.(map[string]any)
+	if types, ok := property["type"].([]any); ok {
+		require.ElementsMatch(t, []any{valueType, "null"}, types)
+		return
+	}
+	anyOf, ok := property["anyOf"].([]any)
+	require.True(t, ok, "property schema is not nullable")
+	require.Len(t, anyOf, 2)
+	types := []string{}
+	for _, variant := range anyOf {
+		types = append(types, variant.(map[string]any)["type"].(string))
+	}
+	require.ElementsMatch(t, []string{valueType, "null"}, types)
+}
+
 func TestNotificationMessagingServerThresholdContract(t *testing.T) {
 	d := normalizeRealContract(t)
 	for _, channel := range []string{"Gotify", "Ntfy"} {

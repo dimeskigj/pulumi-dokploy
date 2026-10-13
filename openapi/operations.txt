@@ -7,8 +7,11 @@ application.redeploy
 application.saveBuildType
 application.saveDockerProvider
 application.saveEnvironment
+application.saveGithubProvider
 application.saveGitProvider
+application.saveGiteaProvider
 application.saveGitlabProvider
+application.saveBitbucketProvider
 application.update
 backup.create
 backup.one
