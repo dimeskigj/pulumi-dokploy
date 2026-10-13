@@ -95,31 +95,6 @@ install_plugin: provider
 
 gen_examples: codegen
 	scripts/gen-examples.sh "$(MAKE)" "$(CURDIR)" "$(PROJECT)" "$(PACK)" "$(VERSION_GENERIC)"
-gen_examples: codegen install_plugin
-	rm -rf examples/nodejs examples/python examples/go examples/dotnet examples/java
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language typescript --cwd examples/yaml --out ../nodejs --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language python --cwd examples/yaml --out ../python --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language go --cwd examples/yaml --out ../go --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language csharp --cwd examples/yaml --out ../dotnet --generate-only
-	mise exec pulumi@3.259.0 -- pulumi convert --from yaml --language java --cwd examples/yaml --out ../java --generate-only
-	go mod edit -require=$(PROJECT)/sdk/go/$(PACK)@v0.0.0 -replace=$(PROJECT)/sdk/go/$(PACK)=../../sdk/go/$(PACK) examples/go/go.mod
-	cd examples/go && go mod tidy
-	python3 -c 'from pathlib import Path; p=Path("examples/go/go.mod"); s=p.read_text(); s=s.replace(" => " + str(Path.cwd() / "sdk/go/$(PACK)"), " => ../../sdk/go/$(PACK)"); p.write_text(s)'
-	cd examples/nodejs && npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs
-	printf '%s\n' '-e ../../sdk/python' > examples/python/requirements.txt
-	python3 scripts/use_local_dotnet_sdk.py examples/dotnet/dokploy-mvp.csproj
-	python3 scripts/use_local_java_sdk.py examples/java/pom.xml $(VERSION_GENERIC)
-	python3 -c 'from pathlib import Path; p=Path("examples/java/pom.xml"); p.write_text(p.read_text().replace("<maven.compiler.source>11</maven.compiler.source>", "<maven.compiler.source>17</maven.compiler.source>").replace("<maven.compiler.target>11</maven.compiler.target>", "<maven.compiler.target>17</maven.compiler.target>").replace("<maven.compiler.release>11</maven.compiler.release>", "<maven.compiler.release>17</maven.compiler.release>"))'
-	python3 -c 'import re; from pathlib import Path; p=Path("examples/java/src/main/java/generated_program/App.java"); s=p.read_text().replace("com.dimeskigj.dokploy", "net.dimeski.pulumi.dokploy").replace("config.requireObject(\"dokploy:endpoint\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.require(\"dokploy:endpoint\")").replace("config.requireObject(\"dokploy:apiKey\", com.pulumi.core.TypeShape.map(String.class, Object.class))", "config.requireSecret(\"dokploy:apiKey\")"); s=re.sub(r'"'"'config\.getSecret\("(\w+)"\)\.orElse\("([^"]*)"\)'"'"', r'"'"'config.getSecret("\1").applyValue(v -> v.orElse("\2"))'"'"', s); p.write_text(s)'
-	python3 -c 'import re; from pathlib import Path; p=Path("examples/dotnet/Program.cs"); s=re.sub(r'"'"'config\.GetSecret\("(\w+)"\) \?\? "([^"]*)"'"'"', r'"'"'config.GetSecret("\1") ?? Output.CreateSecret("\2")'"'"', p.read_text()); p.write_text(s)'
-	python3 -c 'from pathlib import Path; [Path(x).write_text(chr(10).join(line.rstrip() for line in Path(x).read_text().splitlines()).rstrip()+chr(10)) for x in ["examples/dotnet/Program.cs", "examples/java/pom.xml"]]'
-	python3 website/scripts/normalize-examples.py
-	cp examples/yaml/README.md examples/nodejs/README.md
-	cp examples/yaml/README.md examples/python/README.md
-	cp examples/yaml/README.md examples/go/README.md
-	cp examples/yaml/README.md examples/dotnet/README.md
-	cp examples/yaml/README.md examples/java/README.md
-
 test_examples: install_plugin
 	mise exec -- go test ./examples -tags=all -count=1
 	cd examples/go && go test . -count=1

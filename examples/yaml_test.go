@@ -437,6 +437,35 @@ func TestRemovedCacheTargetsAreUnavailable(t *testing.T) {
 	}
 }
 
+func TestGenExamplesUsesIsolatedCanonicalGenerator(t *testing.T) {
+	root := filepath.Clean("..")
+	makefile, err := os.ReadFile(filepath.Join(root, "Makefile"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var targetRecipes int
+	for _, line := range strings.Split(string(makefile), "\n") {
+		if strings.HasPrefix(line, "gen_examples:") {
+			targetRecipes++
+		}
+	}
+	if targetRecipes != 1 {
+		t.Fatalf("Makefile must define one gen_examples recipe, found %d", targetRecipes)
+	}
+	if !strings.Contains(string(makefile), `scripts/gen-examples.sh`) {
+		t.Fatal("gen_examples does not invoke canonical script")
+	}
+	script, err := os.ReadFile(filepath.Join(root, "scripts/gen-examples.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, contract := range []string{"export PULUMI_HOME=$cache", "install_plugin PULUMI_HOME=", "pulumi convert", "npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs", "-e ../../sdk/python", "use_local_dotnet_sdk.py", "use_local_java_sdk.py", "normalize-examples.py", "normalize-converted-examples.py"} {
+		if !strings.Contains(string(script), contract) {
+			t.Errorf("canonical generator missing %q", contract)
+		}
+	}
+}
+
 func TestCanonicalYAMLGitLabIntegration(t *testing.T) {
 	document := loadCanonicalYAML(t)
 	if err := validateYAMLResourceProperties(document, schemaResources(t)); err != nil {
