@@ -79,7 +79,6 @@ const applicationPort = new dokploy.Port("applicationPort", {
     protocol: dokploy.PortProtocol.Tcp,
     publishMode: dokploy.PortPublishMode.Ingress,
 });
->>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 const sshKey = new dokploy.SSHKey("sshKey", {
     name: "mvp-git-ssh",
     privateKey: pulumi.secret(sshPrivateKey),
@@ -244,7 +243,5 @@ export const gitlabOwner = gitlabOwnerConfig;
 export const gitlabNamespace = gitlabNamespaceConfig;
 export const gitlabRepository = gitlabRepositoryConfig;
 export const gitBranch = gitBranchConfig;
-<<<<<<< HEAD
 export const remoteServerId = remoteServer.serverId;
-=======
 export const managedGitlabIntegrationId = managedGitlabIntegration.gitlabId;
