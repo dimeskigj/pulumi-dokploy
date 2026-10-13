@@ -99,7 +99,6 @@ return await Deployment.RunAsync(() =>
         PublishMode = Dokploy.PortPublishMode.Ingress,
     });
 
->>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
     var sshKey = new Dokploy.SSHKey("sshKey", new()
     {
         Name = "mvp-git-ssh",
@@ -311,9 +310,7 @@ return await Deployment.RunAsync(() =>
         ["gitlabNamespace"] = gitlabNamespace,
         ["gitlabRepository"] = gitlabRepository,
         ["gitBranch"] = gitBranch,
-<<<<<<< HEAD
         ["remoteServerId"] = remoteServer.ServerId,
-=======
         ["managedGitlabIntegrationId"] = managedGitlabIntegration.GitlabId,
     };
 });

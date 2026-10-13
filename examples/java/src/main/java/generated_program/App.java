@@ -21,7 +21,6 @@ import net.dimeski.pulumi.dokploy.Port;
 import net.dimeski.pulumi.dokploy.enums.PortProtocol;
 import net.dimeski.pulumi.dokploy.enums.PortPublishMode;
 import net.dimeski.pulumi.dokploy.PortArgs;
->>>>>>> 19e2b98 (docs: publish GitLab integration workflow and examples)
 import net.dimeski.pulumi.dokploy.SSHKey;
 import net.dimeski.pulumi.dokploy.SSHKeyArgs;
 import net.dimeski.pulumi.dokploy.inputs.GitApplicationSourceArgs;
@@ -146,7 +145,6 @@ public class App {
             .command(Output.ofSecret("echo scheduled maintenance"))
             .build());
 
-<<<<<<< HEAD
         var applicationPort = new Port("applicationPort", PortArgs.builder()
             .applicationId(application.applicationId())
             .publishedPort(8081)
@@ -155,7 +153,6 @@ public class App {
             .publishMode(PortPublishMode.Ingress)
             .build());
 
-=======
         var sshKey = new SSHKey("sshKey", SSHKeyArgs.builder()
             .name("mvp-git-ssh")
             .privateKey(sshPrivateKey.asSecret())

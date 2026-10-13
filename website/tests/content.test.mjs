@@ -242,10 +242,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
     "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/servers/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/",
     "/examples/", "/examples/complete/",
-    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/configuration/", "/reference/types/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/git-lab-integration/", "/reference/configuration/", "/reference/types/",
     "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/", "/guides/gitlab-integrations/",
     "/examples/", "/examples/complete/",
-      "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/git-lab-integration/", "/reference/configuration/", "/reference/types/",
     "/contributing/",
     "/reference/schedule/",
     ...lookupRoutes.map((slug) => `/reference/${slug}/`),
@@ -255,8 +254,8 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 58);
-  assert.equal(curatedFiles.length, 19);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 60);
+  assert.equal(curatedFiles.length, 20);
 });
 
 test("Notification guide covers channels and safe recovery", async () => {
@@ -297,9 +296,7 @@ test("Notification guide covers channels and safe recovery", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
   assert.match(config, /label: "Schedules"[^\n]*\n\s*\{ label: "Notifications", link: "\/guides\/notifications\/"/);
   assert.match(config, /label: "Schedule"[^\n]*\n\s*\{ label: "Notification", link: "\/reference\/notification\/"/);
-   assert.equal((config.match(/link: "\//g) ?? []).length, 41);
-  assert.equal(curatedFiles.length, 16);
-});
+ });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
   const applications = await readFile(new URL("../src/content/docs/guides/applications.mdx", import.meta.url), "utf8");
@@ -572,6 +569,8 @@ test("lifecycle and troubleshooting docs scope deployment polling to workloads",
   assert.match(troubleshooting, /Server.{0,20}do not poll|Server.{0,30}no deployment.*poll/i);
   assert.match(troubleshooting, /\.\.\/servers\//);
   assert.doesNotMatch(troubleshooting, /Create and update operations poll Dokploy deployment status/);
+});
+
 test("GitLab authorization remains separate from workload deployment", async () => {
   const guide = await readFile(new URL("../src/content/docs/guides/gitlab-integrations.mdx", import.meta.url), "utf8");
   assert.match(guide, /authorize.*GitLab|GitLab.*authorize/i);
