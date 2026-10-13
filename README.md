@@ -54,14 +54,8 @@ The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
 `dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:Schedule`, `dokploy:index:SSHKey`,
 `dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
-`dokploy:index:Mount`, `dokploy:index:Port`, `dokploy:index:Notification`, and `dokploy:index:Server`.
-The provider exposes twenty resources: `dokploy:index:Project`, `dokploy:index:Environment`,
-`dokploy:index:Application`, `dokploy:index:Compose`, `dokploy:index:Postgres`,
-`dokploy:index:MySQL`, `dokploy:index:MariaDB`, `dokploy:index:MongoDB`,
-`dokploy:index:Redis`, `dokploy:index:Domain`, `dokploy:index:Destination`,
-`dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:SSHKey`,
-`dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`, and
-`dokploy:index:Mount`, `dokploy:index:Schedule`, and `dokploy:index:GitLabIntegration`.
+`dokploy:index:Mount`, `dokploy:index:Port`, `dokploy:index:Notification`,
+`dokploy:index:Server`, and `dokploy:index:GitLabIntegration`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
