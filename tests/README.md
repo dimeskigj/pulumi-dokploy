@@ -145,6 +145,27 @@ sets the stop marker instead of retrying or searching by name.
 
 ## Optional coverage
 
+Tier 2 `ApplicationConfiguration` coverage is independently selectable and
+configuration-only. Run only these cases with the protected live prerequisites
+already exported:
+
+```bash
+mise exec -- go test ./provider -run '^TestLiveTier2Workloads/ApplicationConfiguration$' -parallel=1 -count=1 -v
+```
+
+This selection does not run the deploying `Application` case, the Compose case,
+or Compose source-fetch coverage. The configuration fixture creates a bare
+application record, sets `autoDeploy:false` before attaching a source, and keeps
+it false. It covers all six builders on generic Git and optional GitHub, Gitea,
+Bitbucket, and existing GitLab integrations using the protected prerequisites
+below. Missing optional integration settings skip only that source case;
+partially populated or invalid settings and server/API incompatibilities fail.
+The tests configure, read, import, and delete records only: they do not clone,
+fetch, build, deploy, or redeploy. Passing confirms configuration persistence
+and provider behavior, **not** clone/build/deploy compatibility with an external
+repository or integration. `autoDeploy:true` and webhook-trigger distinctions
+are tested offline only.
+
 Tier 2 Schedule coverage uses only its disposable application and Compose targets,
 always sends `enabled:false`, and never invokes manual command execution. Server
 and Dokploy-server schedules skip unless
@@ -175,7 +196,19 @@ Destination fields are mutated. GitLab coverage requires
 `DOKPLOY_GITLAB_REPOSITORY`, and `DOKPLOY_GITLAB_BRANCH`, plus
 `DOKPLOY_GITLAB_USERNAME` and `DOKPLOY_GITLAB_TOKEN`. Tier 2 receives all
 GitLab variables from the protected workflow environment. The test skips each
-integration when its prerequisite is absent.
+integration when all prerequisites are absent; partially populated or invalid
+prerequisites fail.
+
+ApplicationConfiguration additionally accepts optional GitHub prerequisites
+`DOKPLOY_GITHUB_INTEGRATION_ID`, `DOKPLOY_GITHUB_OWNER`,
+`DOKPLOY_GITHUB_REPOSITORY`, and `DOKPLOY_GITHUB_BRANCH`; Gitea prerequisites
+`DOKPLOY_GITEA_INTEGRATION_ID`, `DOKPLOY_GITEA_OWNER`,
+`DOKPLOY_GITEA_REPOSITORY`, and `DOKPLOY_GITEA_BRANCH`; and Bitbucket
+prerequisites `DOKPLOY_BITBUCKET_INTEGRATION_ID`, `DOKPLOY_BITBUCKET_OWNER`,
+`DOKPLOY_BITBUCKET_REPOSITORY`, `DOKPLOY_BITBUCKET_REPOSITORY_SLUG`, and
+`DOKPLOY_BITBUCKET_BRANCH`. The manually dispatched acceptance workflow passes
+these values from protected secrets in the `dokploy-acceptance` environment.
+Keep them protected; never put integration IDs or repository details in reports.
 
 MongoDB replica coverage requires `DOKPLOY_ACCEPTANCE_ALLOW_REPLICAS=1`; the
 database tier skips replica sets without that opt-in. The
