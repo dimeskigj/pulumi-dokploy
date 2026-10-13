@@ -28,6 +28,7 @@ type liveApplicationConfigurationHTTPFixture struct {
 	counts              map[string]int
 	buildTypes          []string
 	buildBodies         []map[string]any
+	mutationIDs         []string
 	app                 map[string]any
 	name                string
 	typedReadBeforeGone bool
@@ -86,6 +87,8 @@ func (f *liveApplicationConfigurationHTTPFixture) handle(w http.ResponseWriter, 
 		write(map[string]any{"applicationId": "offline-application"})
 	case "application.update":
 		require.NotNil(f.t, f.app)
+		applicationID, _ := body["applicationId"].(string)
+		f.mutationIDs = append(f.mutationIDs, applicationID)
 		require.Equal(f.t, "offline-application", body["applicationId"])
 		require.Equal(f.t, false, body["autoDeploy"], "configuration fixtures must never enable autoDeploy")
 		if f.phase == "auto-deploy-error" {
@@ -143,9 +146,21 @@ func (f *liveApplicationConfigurationHTTPFixture) handle(w http.ResponseWriter, 
 		for key, value := range f.app {
 			copy[key] = value
 		}
+		if f.counts[route] == 1 {
+			switch f.phase {
+			case "missing-auto-deploy-id":
+				delete(copy, "applicationId")
+			case "blank-auto-deploy-id":
+				copy["applicationId"] = "  "
+			case "mismatched-auto-deploy-id", "mismatched-integrated-source-id":
+				copy["applicationId"] = "offline-unrelated-application"
+			}
+		}
 		write(copy)
 	case "application.delete":
 		require.NotNil(f.t, f.app)
+		applicationID, _ := body["applicationId"].(string)
+		f.mutationIDs = append(f.mutationIDs, applicationID)
 		require.Equal(f.t, map[string]any{"applicationId": "offline-application"}, body)
 		if f.phase == "delete-error" {
 			fail(http.StatusForbidden)
@@ -174,6 +189,61 @@ func (f *liveApplicationConfigurationHTTPFixture) appHasValidSource() bool {
 
 func offlineConfigurationGitSource() ApplicationSource {
 	return ApplicationSource{Type: SourceGit, Git: &GitApplicationSource{URL: "https://github.com/pulumi/pulumi-dokploy", Branch: "main", BuildPath: stringPtr("services/api"), WatchPaths: []string{"services/api/**"}, EnableSubmodules: true, Build: ApplicationBuild{Type: BuildNixpacks}}}
+}
+
+func offlineConfigurationGitHubSource() ApplicationSource {
+	return ApplicationSource{Type: SourceGitHub, GitHub: &GitHubAppSource{IntegrationID: "offline-github-integration", Owner: "offline-owner", Repository: "offline-repository", Branch: "main", Build: ApplicationBuild{Type: BuildNixpacks}}}
+}
+
+func TestLiveApplicationConfigurationAutoDeployReadRequiresAcknowledgedIdentity(t *testing.T) {
+	tests := []struct {
+		name   string
+		phase  string
+		source ApplicationSource
+	}{
+		{name: "missing ID", phase: "missing-auto-deploy-id", source: offlineConfigurationGitSource()},
+		{name: "blank ID", phase: "blank-auto-deploy-id", source: offlineConfigurationGitSource()},
+		{name: "mismatched ID", phase: "mismatched-auto-deploy-id", source: offlineConfigurationGitSource()},
+		{name: "mismatched ID before integrated source attachment", phase: "mismatched-integrated-source-id", source: offlineConfigurationGitHubSource()},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			marker := isolateLiveRecordHarness(t)
+			f := newLiveApplicationConfigurationHTTPFixture(t, tc.phase)
+			guard := newLiveApplicationConfigurationGuard()
+			lease := beginLiveHeavyOperation(t, "offline-configuration-create")
+			fixture, setupErr := createLiveApplicationConfigurationFixture(t, t.Context(), f.api, "offline-environment", tc.source, guard)
+			lease.releaseIfNeeded(t)
+			require.NotNil(t, fixture, "the acknowledged fixture must remain owned after identity verification fails")
+			require.NoError(t, fixture.cleanup(), "cleanup must use only the acknowledged create ID")
+
+			f.mu.Lock()
+			sourceRoute := "application.saveGitProvider"
+			if tc.source.Type == SourceGitHub {
+				sourceRoute = "application.saveGithubProvider"
+			}
+			require.Equal(t, 1, f.counts["application.create"])
+			require.Equal(t, 1, f.counts["application.update"], "only autoDeploy:false may mutate the acknowledged fixture before identity verification")
+			require.Zero(t, f.counts[sourceRoute], "source must not attach when application.one identity is untrusted")
+			require.Zero(t, f.counts["application.saveBuildType"], "build must not attach when application.one identity is untrusted")
+			require.Equal(t, 1, f.counts["application.delete"], "the acknowledged fixture must be cleaned up")
+			require.Equal(t, []string{"application.create", "application.update", "application.one", "application.delete", "application.one"}, f.routes)
+			require.Equal(t, []string{"offline-application", "offline-application"}, f.mutationIDs, "update and delete must never target the unrelated ID returned by application.one")
+			require.Nil(t, f.app)
+			f.mu.Unlock()
+
+			require.Error(t, setupErr, "missing, blank, and mismatched read identities must fail closed")
+			for _, private := range []string{"offline-application", "offline-unrelated-application", "private-upstream-detail"} {
+				require.NotContains(t, setupErr.Error(), private, "identity diagnostics must not expose IDs or upstream details")
+			}
+			retained := false
+			guard.retainProjectIfNeeded(func() { retained = true })
+			require.False(t, retained, "successful acknowledged fixture cleanup releases parent retention")
+			require.False(t, heavyLiveTierStopped())
+			_, err := os.Stat(marker)
+			require.True(t, os.IsNotExist(err))
+		})
+	}
 }
 
 func TestLiveApplicationConfigurationNeverDeploys(t *testing.T) {
