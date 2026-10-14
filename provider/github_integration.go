@@ -85,10 +85,14 @@ func gitHubIntegrationPreviewState(inputs GitHubIntegrationArgs, relationID stri
 	return prior
 }
 func (r GitHubIntegration) WireDependencies(f infer.FieldSelector, args *GitHubIntegrationArgs, state *GitHubIntegrationState) {
-	deps := []infer.InputField{f.InputField(&args.Name), f.InputField(&args.GitHubAppName)}
-	f.OutputField(&state.GitHubID).DependsOn(deps...)
-	f.OutputField(&state.GitProviderID).DependsOn(deps...)
-	f.OutputField(&state.OrganizationID).DependsOn(deps...)
+	// Track computedness for the echoed managed fields explicitly. This disables
+	// infer's all-inputs-to-all-outputs fallback while preserving known stable IDs
+	// when a known input changes during an update preview.
+	f.OutputField(&state.Name).DependsOn(f.InputField(&args.Name).Computed())
+	f.OutputField(&state.GitHubAppName).DependsOn(f.InputField(&args.GitHubAppName).Computed())
+	f.OutputField(&state.GitHubID).DependsOn()
+	f.OutputField(&state.GitProviderID).DependsOn()
+	f.OutputField(&state.OrganizationID).DependsOn()
 	f.OutputField(&state.GitHubID).NeverSecret()
 	f.OutputField(&state.GitProviderID).NeverSecret()
 	f.OutputField(&state.OrganizationID).NeverSecret()
