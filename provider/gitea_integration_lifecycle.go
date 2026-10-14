@@ -66,7 +66,7 @@ func (r GiteaIntegration) Create(ctx context.Context, req infer.CreateRequest[Gi
 		return infer.CreateResponse[GiteaIntegrationState]{ID: state.GiteaID, Output: partial}, initFailed(cause)
 	}
 	if !observed.SecretObserved || observed.OwnerUserID == "" || !giteaSettingsMatch(observed.State, req.Inputs) {
-		return infer.CreateResponse[GiteaIntegrationState]{ID: state.GiteaID, Output: observed.State}, initFailed(errors.New("Gitea integration create could not be confirmed"))
+		return infer.CreateResponse[GiteaIntegrationState]{ID: state.GiteaID, Output: observed.State}, initFailed(errors.New("gitea integration create could not be confirmed"))
 	}
 	return infer.CreateResponse[GiteaIntegrationState]{ID: state.GiteaID, Output: observed.State}, nil
 }
@@ -144,10 +144,10 @@ func (r GiteaIntegration) Update(ctx context.Context, req infer.UpdateRequest[Gi
 		if readErr == nil && after.OwnerUserID == before.OwnerUserID {
 			state = after.State
 			if mutErr == nil && (!after.SecretObserved || !giteaSettingsMatch(state, req.Inputs)) {
-				mutErr = errors.New("Gitea integration update could not be confirmed")
+				mutErr = errors.New("gitea integration update could not be confirmed")
 			}
 		} else if mutErr == nil {
-			mutErr = errors.New("Gitea integration update could not be confirmed")
+			mutErr = errors.New("gitea integration update could not be confirmed")
 		}
 	} else if mutErr == nil {
 		mutErr = sanitizeGiteaIntegrationError(ctx.Err())
