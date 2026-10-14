@@ -1,5 +1,16 @@
 # Dokploy MVP example source notes
 
+The canonical program also manages a Gitea integration configuration and a
+Bitbucket integration using API-token mode. The Gitea OAuth app must be created
+and authorized manually in Gitea and Dokploy before use; this provider resource
+does not authorize it, validate connectivity, provide readiness, or add a Gitea
+workload source. The canonical Bitbucket program uses only `apiToken`, supplied
+as secret Pulumi configuration; it does not set `appPassword`. Dokploy supports
+legacy app-password configuration, but current Bitbucket acceptance is not
+guaranteed. Both integrations export relation IDs and destroy only their Dokploy
+records, not external credentials/apps or workloads. See the [Gitea guide](https://dimeskigj.github.io/pulumi-dokploy/guides/gitea-integrations/)
+and [Bitbucket guide](https://dimeskigj.github.io/pulumi-dokploy/guides/bitbucket-integrations/).
+
 The `remoteServer` resource is registration-only, not a host bootstrap or readiness
 check. Its `192.0.2.10` address is reserved for documentation: replace it with an
 appropriate address only after separately preparing a dedicated remote host.

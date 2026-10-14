@@ -1,0 +1,19 @@
+---
+title: "BitbucketIntegration"
+description: "Manages a Dokploy Bitbucket integration using an API token or legacy app password."
+---
+
+import PropertyTable from "../../../components/PropertyTable.astro";
+
+> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.
+
+
+Manages a Dokploy Bitbucket integration using an API token or legacy app password.
+
+## Inputs
+
+<PropertyTable properties={[{"name":"apiToken","type":"string","typeHref":null,"description":"A secret Bitbucket API token; select exactly one credential mode.","required":false,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"appPassword","type":"string","typeHref":null,"description":"A secret Bitbucket app password; select exactly one credential mode.","required":false,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"bitbucketEmail","type":"string","typeHref":null,"description":"The email required for API-token mode.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"bitbucketUsername","type":"string","typeHref":null,"description":"The username required for app-password mode.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"bitbucketWorkspaceName","type":"string","typeHref":null,"description":"An optional Bitbucket workspace; omission preserves the existing value.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The Dokploy integration display name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+## Outputs
+
+<PropertyTable properties={[{"name":"apiToken","type":"string","typeHref":null,"description":"A secret Bitbucket API token; select exactly one credential mode.","required":false,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"appPassword","type":"string","typeHref":null,"description":"A secret Bitbucket app password; select exactly one credential mode.","required":false,"secret":true,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"bitbucketEmail","type":"string","typeHref":null,"description":"The email required for API-token mode.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"bitbucketId","type":"string","typeHref":null,"description":"The stable Bitbucket relation ID used as the Pulumi resource identity.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"bitbucketUsername","type":"string","typeHref":null,"description":"The username required for app-password mode.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"bitbucketWorkspaceName","type":"string","typeHref":null,"description":"An optional Bitbucket workspace; omission preserves the existing value.","required":false,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"gitProviderId","type":"string","typeHref":null,"description":"The associated Dokploy Git-provider ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The Dokploy integration display name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"organizationId","type":"string","typeHref":null,"description":"The owning Dokploy organization ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />

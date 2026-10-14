@@ -24,3 +24,10 @@ require the OAuth client secret to be supplied again before an update. Creating
 the integration does not authorize it: authorize in Dokploy before switching
 workloads to GitLab, and inspect Dokploy before retrying if creation could not be
 verified. See the [GitLab integrations guide](../../guides/gitlab-integrations/).
+`GiteaIntegration` manages Dokploy OAuth settings only; OAuth application setup
+and authorization remain manual, and it does not test connectivity. Bitbucket
+creation uses bounded verified discovery after a bodyless acknowledgment and
+does not retry the mutation or adopt by name alone. Both integration resources
+delete only Dokploy records, not external credentials or unmanaged workloads.
+See the [Gitea integrations guide](../../guides/gitea-integrations/) and
+[Bitbucket integrations guide](../../guides/bitbucket-integrations/).
