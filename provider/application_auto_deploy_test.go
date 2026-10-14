@@ -3,8 +3,10 @@ package dokploy
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
@@ -51,8 +53,8 @@ func TestApplicationAutoDeployUpdateConfigurationOnly(t *testing.T) {
 		metadata   bool
 		want       string
 	}{
-		{name: "false to true", old: boolPtr(false), input: boolPtr(true), want: `{"applicationId":"a1","autoDeploy":true,"description":null,"name":"demo"}`},
-		{name: "true to false", old: boolPtr(true), input: boolPtr(false), want: `{"applicationId":"a1","autoDeploy":false,"description":null,"name":"demo"}`},
+		{name: "false to true", old: boolPtr(false), input: boolPtr(true), want: `{"applicationId":"a1","autoDeploy":true}`},
+		{name: "true to false", old: boolPtr(true), input: boolPtr(false), want: `{"applicationId":"a1","autoDeploy":false}`},
 		{name: "shared metadata", old: boolPtr(false), input: boolPtr(true), metadata: true, want: `{"applicationId":"a1","autoDeploy":true,"description":"updated","name":"demo"}`},
 		{name: "metadata only", old: boolPtr(false), input: boolPtr(false), metadata: true, want: `{"applicationId":"a1","description":"updated","name":"demo"}`},
 		{name: "omission preserves observed value", old: boolPtr(true)},
@@ -148,7 +150,7 @@ func TestApplicationAutoDeployPreviewAndRuntimeUpdate(t *testing.T) {
 	waitPollInterval = 0
 	t.Cleanup(func() { waitPollInterval = oldInterval })
 	s := newScriptedServer(t,
-		expectPOST("/api/application.update", `{"applicationId":"a1","autoDeploy":false,"description":null,"name":"demo"}`, `true`),
+		expectPOST("/api/application.update", `{"applicationId":"a1","autoDeploy":false}`, `true`),
 		expectPOST("/api/application.saveDockerProvider", `{"applicationId":"a1","dockerImage":"redis","password":"","registryUrl":"","username":""}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
@@ -157,6 +159,63 @@ func TestApplicationAutoDeployPreviewAndRuntimeUpdate(t *testing.T) {
 	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(true), Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "nginx"}}}
 	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(false), Source: ApplicationSource{Type: SourceDocker, Docker: &DockerSource{Image: "redis"}}}
 	_, err = (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs}})
+	require.NoError(t, err)
+}
+
+func TestApplicationAutoDeployOnlyPreservesUnmanagedDescription(t *testing.T) {
+	serverApplication := map[string]any{
+		"name":        "demo",
+		"appName":     "configured-app",
+		"description": "existing server description",
+		"autoDeploy":  false,
+	}
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, http.MethodPost, r.Method)
+		require.Equal(t, "/api/application.update", r.URL.Path)
+		var patch map[string]any
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&patch))
+		require.Equal(t, map[string]any{"applicationId": "a1", "autoDeploy": true}, patch)
+		for key, value := range patch {
+			if key != "applicationId" {
+				serverApplication[key] = value
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`true`))
+	}))
+	t.Cleanup(s.Close)
+	api, err := client.New(s.URL, "test-api-key")
+	require.NoError(t, err)
+	oldArgs := ApplicationArgs{Name: "demo", AppName: stringPtr("configured-app"), AutoDeploy: boolPtr(false)}
+	newArgs := oldArgs
+	newArgs.AutoDeploy = boolPtr(true)
+	_, err = (Application{client: fixedClient(api)}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{
+		ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "existing server description", serverApplication["description"])
+}
+
+func TestApplicationAutoDeployOnlyOmitsUnchangedConfiguredMetadata(t *testing.T) {
+	s := newScriptedServer(t, expectPOST("/api/application.update", `{"applicationId":"a1","autoDeploy":true}`, `true`))
+	oldArgs := ApplicationArgs{
+		Name: "demo", AppName: stringPtr("configured-app"), Description: stringPtr("configured description"), AutoDeploy: boolPtr(false),
+	}
+	newArgs := oldArgs
+	newArgs.AutoDeploy = boolPtr(true)
+	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{
+		ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs},
+	})
+	require.NoError(t, err)
+}
+
+func TestApplicationDescriptionRemovalSendsExplicitNullWithAutoDeploy(t *testing.T) {
+	s := newScriptedServer(t, expectPOST("/api/application.update", `{"applicationId":"a1","autoDeploy":true,"description":null,"name":"demo"}`, `true`))
+	oldArgs := ApplicationArgs{Name: "demo", Description: stringPtr("remove me"), AutoDeploy: boolPtr(false)}
+	newArgs := ApplicationArgs{Name: "demo", AutoDeploy: boolPtr(true)}
+	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{
+		ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs},
+	})
 	require.NoError(t, err)
 }
 
@@ -176,7 +235,7 @@ func TestApplicationAutoDeployCreateSetupFailureRedactsSecretsAndCleansUp(t *tes
 
 func TestApplicationAutoDeployUpdateFailureRedactsPriorAndCurrentSecrets(t *testing.T) {
 	oldEnvironment, newEnvironment := "PRIOR-AUTO-SECRET", "CURRENT-AUTO-SECRET"
-	s := newScriptedServer(t, scriptedRequest{Method: http.MethodPost, Path: "/api/application.update", Body: json.RawMessage(`{"applicationId":"a1","autoDeploy":false,"description":null,"name":"demo"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"UPDATE_FAILED","message":"PRIOR-AUTO-SECRET CURRENT-AUTO-SECRET"}`)})
+	s := newScriptedServer(t, scriptedRequest{Method: http.MethodPost, Path: "/api/application.update", Body: json.RawMessage(`{"applicationId":"a1","autoDeploy":false}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"UPDATE_FAILED","message":"PRIOR-AUTO-SECRET CURRENT-AUTO-SECRET"}`)})
 	oldArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(true), Environment: &oldEnvironment}
 	newArgs := ApplicationArgs{Name: "demo", EnvironmentID: "e1", AutoDeploy: boolPtr(false), Environment: &newEnvironment}
 	_, err := (Application{client: fixedClient(s.API())}).Update(t.Context(), infer.UpdateRequest[ApplicationArgs, ApplicationState]{ID: "a1", Inputs: newArgs, State: ApplicationState{ApplicationArgs: oldArgs}})

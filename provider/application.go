@@ -552,11 +552,16 @@ func (r Application) Update(ctx context.Context, req infer.UpdateRequest[Applica
 	autoDeployChanged := req.Inputs.AutoDeploy != nil && !sameOptionalBool(req.Inputs.AutoDeploy, req.State.AutoDeploy)
 	runtimeChanged := !reflect.DeepEqual(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile || registryChanged
 	if metadataChanged || registryChanged || autoDeployChanged {
-		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID, AppName: req.Inputs.AppName, Name: &req.Inputs.Name, Description: nullable.NewNullNullable[string]()}
+		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID}
+		if metadataChanged || registryChanged {
+			body.AppName = req.Inputs.AppName
+			body.Name = &req.Inputs.Name
+			body.Description = nullable.NewNullNullable[string]()
+		}
 		if autoDeployChanged {
 			body.AutoDeploy = nullable.NewNullableWithValue(*req.Inputs.AutoDeploy)
 		}
-		if req.Inputs.Description != nil {
+		if (metadataChanged || registryChanged) && req.Inputs.Description != nil {
 			body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
 		}
 		if registryChanged {
