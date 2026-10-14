@@ -13,6 +13,14 @@ outputs:
   remoteServerId: ${remoteServer.serverId}
   managedGitlabIntegrationId: ${managedGitlabIntegration.gitlabId}
 
+# Opt-in only: after manually setting up and authorizing a GitHub App integration
+# in Dokploy, import its relation ID (not the App or parent provider ID):
+# githubId is the Pulumi identity for the Dokploy relation.
+# pulumi import dokploy:index:GitHubIntegration integration <github-relation-id>
+# Alternatively declare it only in a dedicated program using Pulumi import
+# options (import: "<github-relation-id>"); never enable a GitHub Create
+# resource in this canonical example.
+
 config:
   dokploy:endpoint: https://dokploy.example.invalid
   dokploy:apiKey:
