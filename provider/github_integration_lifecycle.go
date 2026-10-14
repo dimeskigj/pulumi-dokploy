@@ -87,7 +87,13 @@ func (r GitHubIntegration) Update(ctx context.Context, req infer.UpdateRequest[G
 	} else if mutationErr == nil {
 		mutationErr = sanitizeGitHubIntegrationError(ctx.Err())
 	}
+	if ctx.Err() != nil {
+		mutationErr = sanitizeGitHubIntegrationError(ctx.Err())
+	}
 	if mutationErr != nil {
+		if errors.Is(mutationErr, context.Canceled) || errors.Is(mutationErr, context.DeadlineExceeded) {
+			return infer.UpdateResponse[GitHubIntegrationState]{Output: state}, mutationErr
+		}
 		return infer.UpdateResponse[GitHubIntegrationState]{Output: state}, initFailed(mutationErr)
 	}
 	return infer.UpdateResponse[GitHubIntegrationState]{Output: state}, nil
