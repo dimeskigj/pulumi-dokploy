@@ -39,6 +39,7 @@
         "getRegistry.ts",
         "getSSHKey.ts",
         "getServer.ts",
+        "gitHubIntegration.ts",
         "gitLabIntegration.ts",
         "index.ts",
         "mariaDB.ts",
