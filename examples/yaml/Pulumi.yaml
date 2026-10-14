@@ -12,6 +12,8 @@ outputs:
   gitBranch: ${gitBranch}
   remoteServerId: ${remoteServer.serverId}
   managedGitlabIntegrationId: ${managedGitlabIntegration.gitlabId}
+  managedGiteaIntegrationId: ${managedGiteaIntegration.giteaId}
+  managedBitbucketIntegrationId: ${managedBitbucketIntegration.bitbucketId}
 
 # Opt-in only: after manually setting up and authorizing a GitHub App integration
 # in Dokploy, import its relation ID (not the App or parent provider ID):
@@ -57,6 +59,30 @@ config:
     type: string
     secret: true
     default: ""
+  giteaClientId:
+    type: string
+    default: replace-with-gitea-oauth-client-id
+  giteaClientSecret:
+    type: string
+    secret: true
+    default: replace-with-gitea-oauth-client-secret
+  giteaInternalUrl:
+    type: string
+    secret: true
+    default: https://gitea.internal.example.invalid
+  giteaRedirectUri:
+    type: string
+    default: https://dokploy.example.invalid/api/auth/gitea/callback
+  bitbucketApiToken:
+    type: string
+    secret: true
+    default: replace-with-bitbucket-api-token
+  bitbucketEmail:
+    type: string
+    default: example@example.invalid
+  bitbucketWorkspaceName:
+    type: string
+    default: example-workspace
   gitlabRedirectUri:
     type: string
     default: https://dokploy.example.invalid/api/providers/gitlab/callback
@@ -110,6 +136,30 @@ resources:
         fn::secret: ${gitlabApplicationSecret}
       redirectUri: ${gitlabRedirectUri}
       gitlabUrl: https://gitlab.com
+
+  # Gitea's OAuth application setup and authorization happen manually outside Pulumi.
+  # This resource manages Dokploy configuration only; it does not authorize or test it.
+  managedGiteaIntegration:
+    type: dokploy:index:GiteaIntegration
+    properties:
+      name: example-gitea-integration
+      giteaUrl: https://gitea.example.invalid
+      clientId: ${giteaClientId}
+      clientSecret:
+        fn::secret: ${giteaClientSecret}
+      redirectUri: ${giteaRedirectUri}
+      giteaInternalUrl:
+        fn::secret: ${giteaInternalUrl}
+      organizationName: example-team
+
+  # Canonical Bitbucket mode is API-token only; app-password mode is documented separately.
+  managedBitbucketIntegration:
+    type: dokploy:index:BitbucketIntegration
+    properties:
+      name: example-bitbucket-integration
+      apiToken: ${bitbucketApiToken}
+      bitbucketEmail: ${bitbucketEmail}
+      bitbucketWorkspaceName: ${bitbucketWorkspaceName}
 
   project:
     type: dokploy:index:Project

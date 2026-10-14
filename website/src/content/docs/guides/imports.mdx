@@ -62,3 +62,19 @@ before update. Import leaves existing sharing unchanged, and no tokens are
 exported. Before deleting an integration, inspect unmanaged workloads that may
 reference it. If create success is uncertain, inspect Dokploy before retrying.
 See the [GitLab integrations guide](../gitlab-integrations/).
+
+Gitea and Bitbucket integrations also import by their relation IDs, not parent
+Git-provider IDs:
+
+```text
+pulumi import dokploy:index:GiteaIntegration gitea <gitea-id>
+pulumi import dokploy:index:BitbucketIntegration bitbucket <bitbucket-id>
+```
+
+Gitea's OAuth application and authorization are configured manually outside
+Pulumi. Bitbucket imports may represent incomplete or legacy credential state;
+the active credential must be supplied as a Pulumi secret before an update.
+Review provider-specific optional-field semantics and unmanaged workload
+references before changing or deleting either integration. See the
+[Gitea integrations guide](../gitea-integrations/) and
+[Bitbucket integrations guide](../bitbucket-integrations/).

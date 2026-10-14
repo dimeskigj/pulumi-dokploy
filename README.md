@@ -56,7 +56,8 @@ The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
 `dokploy:index:Mount`, `dokploy:index:Port`, `dokploy:index:Notification`,
 `dokploy:index:Server`, `dokploy:index:GitLabIntegration`, and
-`dokploy:index:GitHubIntegration`.
+`dokploy:index:GitHubIntegration`, `dokploy:index:GiteaIntegration`, and
+`dokploy:index:BitbucketIntegration`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -71,6 +72,17 @@ ID; a referenced GitLab integration is not managed unless you declare that resou
 The provider does not perform OAuth: authorize in Dokploy before deploying
 GitLab-backed workloads. See the
 [GitLab integrations guide](https://dimeskigj.github.io/pulumi-dokploy/guides/gitlab-integrations/).
+`GiteaIntegration` manages Dokploy's OAuth configuration only. Create the OAuth
+application in Gitea and authorize it in Dokploy manually; Pulumi does not create
+or authorize the app, test connectivity, or add a Gitea workload source. Import
+by the `giteaId` relation ID. `BitbucketIntegration` supports API-token mode and
+legacy app-password configuration, but current external acceptance is not
+guaranteed. Its API-token mode requires a valid email; credentials are Pulumi
+secrets. Import by `bitbucketId`. Both resources delete only Dokploy's parent
+configuration and relation, not external OAuth/account credentials or workloads;
+review unmanaged workload references first. See the
+[Gitea integrations guide](https://dimeskigj.github.io/pulumi-dokploy/guides/gitea-integrations/)
+and [Bitbucket integrations guide](https://dimeskigj.github.io/pulumi-dokploy/guides/bitbucket-integrations/).
 `GitHubIntegration` manages only an existing Dokploy GitHub App integration;
 set it up and authorize it in Dokploy, then import by the `githubId` relation
 ID. Create is unsupported; destroy removes only Dokploy's record, not the App,
@@ -86,7 +98,8 @@ those volumes should be deleted.
 
 Database passwords, environment values, application build arguments/build secrets, and nested
 Docker credentials are secret inputs. Keep them secret in configuration and never log them.
-GitLab OAuth application secrets are also secret inputs; access and refresh tokens are never exported.
+GitLab and Gitea OAuth client secrets and internal URLs, plus Bitbucket credentials,
+are secret inputs; access and refresh tokens are never exported.
 
 SSH keys, container registries, reusable tags, project-tag associations, and workload mounts are
 managed resources. Use an `SSHKey` output as the `sshKeyId` of a generic Git Application, and a
@@ -136,12 +149,22 @@ pulumi import dokploy:index:Port mapping <port-id>
 pulumi import dokploy:index:Notification notification <notification-id>
 pulumi import dokploy:index:Server server <server-id>
 pulumi import dokploy:index:GitHubIntegration integration <github-relation-id>
+pulumi import dokploy:index:GiteaIntegration gitea <gitea-relation-id>
+pulumi import dokploy:index:BitbucketIntegration bitbucket <bitbucket-relation-id>
 ```
 
 The GitHub integration ID is Dokploy's `githubId` relation ID, not a GitHub
 App ID or parent provider ID. Set up and authorize the App in Dokploy first;
 GitHub integration creation is unsupported. Destroy removes the Dokploy record
 only. Review unmanaged workloads referencing it before deletion.
+
+Gitea and Bitbucket imports also use their Dokploy relation IDs (`giteaId` and
+`bitbucketId`), not parent provider IDs. Gitea's external OAuth application and
+authorization must already be configured manually. Bitbucket's API-token mode
+is the canonical example; legacy app-password mode has no current external
+acceptance guarantee. Optional field omission and destruction behavior are
+provider-specific; see the integration guides before updating or deleting either
+resource.
 
 An imported Notification may have required secrets omitted from Dokploy's response;
 resupply them via secret configuration before update. Never use empty imported credentials.

@@ -86,8 +86,8 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 27 {
-		t.Fatalf("canonical YAML has %d managed resources, want 27", len(resources))
+	if len(resources) != 29 {
+		t.Fatalf("canonical YAML has %d managed resources, want 29", len(resources))
 	}
 	want := map[string]int{
 		"dokploy:index:Project":           1,
@@ -112,6 +112,8 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 		"dokploy:index:Port":              1,
 		"dokploy:index:Server":            1,
 		"dokploy:index:GitLabIntegration": 1,
+		"dokploy:index:GiteaIntegration":  1,
+		"dokploy:index:BitbucketIntegration": 1,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
@@ -137,6 +139,122 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 			t.Errorf("%s is not present in generated provider schema", typeName)
 		}
 	}
+}
+
+func TestCanonicalYAMLGiteaIntegration(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	resource, ok := resources["managedGiteaIntegration"].(map[string]any)
+	if !ok || resource["type"] != "dokploy:index:GiteaIntegration" {
+		t.Fatalf("managedGiteaIntegration must be a GiteaIntegration resource")
+	}
+	properties := resource["properties"].(map[string]any)
+	wantProperties := []string{"clientId", "clientSecret", "giteaInternalUrl", "giteaUrl", "name", "organizationName", "redirectUri"}
+	if got := sortedKeys(properties); !equalStrings(got, wantProperties) {
+		t.Fatalf("Gitea properties = %v, want %v", got, wantProperties)
+	}
+	clientSecret := properties["clientSecret"].(map[string]any)
+	internalURL := properties["giteaInternalUrl"].(map[string]any)
+	if clientSecret["fn::secret"] != "${giteaClientSecret}" || internalURL["fn::secret"] != "${giteaInternalUrl}" {
+		t.Errorf("Gitea credentials and internal URL must come from secret configuration: %#v", properties)
+	}
+	config := document["config"].(map[string]any)
+	for _, key := range []string{"giteaClientSecret", "giteaInternalUrl"} {
+		value, ok := config[key].(map[string]any)
+		if !ok || value["secret"] != true {
+			t.Errorf("config.%s must be secret", key)
+		}
+	}
+	outputs := document["outputs"].(map[string]any)
+	if outputs["managedGiteaIntegrationId"] != "${managedGiteaIntegration.giteaId}" {
+		t.Errorf("managedGiteaIntegrationId must export the relation giteaId")
+	}
+	if got := schemaInputNames(t, "dokploy:index:GiteaIntegration"); !equalStrings(got, wantProperties) {
+		t.Errorf("Gitea public inputs = %v, want %v", got, wantProperties)
+	}
+	if got := schemaRequiredInputNames(t, "dokploy:index:GiteaIntegration"); !equalStrings(got, []string{"clientId", "clientSecret", "giteaUrl", "name", "redirectUri"}) {
+		t.Errorf("Gitea required inputs = %v", got)
+	}
+}
+
+func TestCanonicalYAMLBitbucketIntegration(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	resource, ok := resources["managedBitbucketIntegration"].(map[string]any)
+	if !ok || resource["type"] != "dokploy:index:BitbucketIntegration" {
+		t.Fatalf("managedBitbucketIntegration must be a BitbucketIntegration resource")
+	}
+	properties := resource["properties"].(map[string]any)
+	wantProperties := []string{"apiToken", "bitbucketEmail", "bitbucketWorkspaceName", "name"}
+	if got := sortedKeys(properties); !equalStrings(got, wantProperties) {
+		t.Fatalf("Bitbucket properties = %v, want canonical API-token-only fields %v", got, wantProperties)
+	}
+	if properties["apiToken"] != "${bitbucketApiToken}" {
+		t.Errorf("Bitbucket apiToken must come from secret configuration")
+	}
+	config := document["config"].(map[string]any)
+	secret, ok := config["bitbucketApiToken"].(map[string]any)
+	if !ok || secret["secret"] != true {
+		t.Errorf("bitbucketApiToken config must be secret")
+	}
+	if _, exists := config["bitbucketAppPassword"]; exists {
+		t.Error("canonical example must not configure the legacy app-password mode")
+	}
+	outputs := document["outputs"].(map[string]any)
+	if outputs["managedBitbucketIntegrationId"] != "${managedBitbucketIntegration.bitbucketId}" {
+		t.Errorf("managedBitbucketIntegrationId must export the relation bitbucketId")
+	}
+	if got := schemaInputNames(t, "dokploy:index:BitbucketIntegration"); !equalStrings(got, []string{"apiToken", "appPassword", "bitbucketEmail", "bitbucketUsername", "bitbucketWorkspaceName", "name"}) {
+		t.Errorf("Bitbucket public inputs = %v", got)
+	}
+	if got := schemaRequiredInputNames(t, "dokploy:index:BitbucketIntegration"); !equalStrings(got, []string{"name"}) {
+		t.Errorf("Bitbucket required inputs = %v", got)
+	}
+}
+
+func sortedKeys(values map[string]any) []string {
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func equalStrings(actual, expected []string) bool {
+	if len(actual) != len(expected) {
+		return false
+	}
+	for i := range actual {
+		if actual[i] != expected[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func schemaInputNames(t *testing.T, token string) []string {
+	t.Helper()
+	properties, ok := schemaResources(t)[token].(map[string]any)["inputProperties"].(map[string]any)
+	if !ok {
+		t.Fatalf("schema resource %s has no input properties", token)
+	}
+	return sortedKeys(properties)
+}
+
+func schemaRequiredInputNames(t *testing.T, token string) []string {
+	t.Helper()
+	resource := schemaResources(t)[token].(map[string]any)
+	values, ok := resource["requiredInputs"].([]any)
+	if !ok {
+		t.Fatalf("schema resource %s has no required inputs", token)
+	}
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		result = append(result, value.(string))
+	}
+	sort.Strings(result)
+	return result
 }
 
 func TestCanonicalYAMLPort(t *testing.T) {
@@ -557,8 +675,8 @@ func TestCanonicalYAMLGitLabIntegration(t *testing.T) {
 	if !strings.Contains(string(canonical), "default: gitlab-integration-id") {
 		t.Fatal("existing external integration config alternative must remain documented")
 	}
-	if got := len(resources); got != 27 {
-		t.Fatalf("canonical YAML has %d resources, want 27", got)
+	if got := len(resources); got != 29 {
+		t.Fatalf("canonical YAML has %d resources, want 29", got)
 	}
 }
 
