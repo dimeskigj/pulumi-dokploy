@@ -19,6 +19,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/oapi-codegen/nullable"
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for ScheduleScheduleType.
@@ -1078,6 +1079,38 @@ type Backup struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// BitbucketIntegrationRecord defines model for BitbucketIntegrationRecord.
+type BitbucketIntegrationRecord struct {
+	ApiToken               nullable.Nullable[string] `json:"apiToken,omitempty"`
+	AppPassword            nullable.Nullable[string] `json:"appPassword,omitempty"`
+	BitbucketEmail         nullable.Nullable[string] `json:"bitbucketEmail,omitempty"`
+	BitbucketId            string                    `json:"bitbucketId"`
+	BitbucketUsername      nullable.Nullable[string] `json:"bitbucketUsername,omitempty"`
+	BitbucketWorkspaceName nullable.Nullable[string] `json:"bitbucketWorkspaceName,omitempty"`
+	GitProvider            BitbucketProviderIdentity `json:"gitProvider"`
+	GitProviderId          string                    `json:"gitProviderId"`
+	AdditionalProperties   map[string]interface{}    `json:"-"`
+}
+
+// BitbucketProviderIdentity defines model for BitbucketProviderIdentity.
+type BitbucketProviderIdentity struct {
+	GitProviderId        string                 `json:"gitProviderId"`
+	Name                 string                 `json:"name"`
+	OrganizationId       string                 `json:"organizationId"`
+	ProviderType         string                 `json:"providerType"`
+	UserId               string                 `json:"userId"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// BitbucketProviderSummary defines model for BitbucketProviderSummary.
+type BitbucketProviderSummary struct {
+	BitbucketId          string                    `json:"bitbucketId"`
+	BitbucketUsername    nullable.Nullable[string] `json:"bitbucketUsername"`
+	IsConfigured         bool                      `json:"isConfigured"`
+	IsDeprecated         bool                      `json:"isDeprecated"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
 // Compose defines model for Compose.
 type Compose struct {
 	AppName              *string                `json:"appName,omitempty"`
@@ -1224,15 +1257,74 @@ type GitProviderList = []GitProviderListEntry
 
 // GitProviderListEntry defines model for GitProviderListEntry.
 type GitProviderListEntry struct {
-	GitProviderId        string                                   `json:"gitProviderId"`
-	Gitlab               nullable.Nullable[GitLabProviderSummary] `json:"gitlab,omitempty"`
-	AdditionalProperties map[string]interface{}                   `json:"-"`
+	Bitbucket            nullable.Nullable[BitbucketProviderSummary] `json:"bitbucket,omitempty"`
+	GitProviderId        string                                      `json:"gitProviderId"`
+	Gitlab               nullable.Nullable[GitLabProviderSummary]    `json:"gitlab,omitempty"`
+	AdditionalProperties map[string]interface{}                      `json:"-"`
 }
 
 // GitProviderUserIdentity defines model for GitProviderUserIdentity.
 type GitProviderUserIdentity struct {
 	Id                   string                 `json:"id"`
 	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// GiteaCreateAcknowledgment defines model for GiteaCreateAcknowledgment.
+type GiteaCreateAcknowledgment struct {
+	ClientId             nullable.Nullable[string] `json:"clientId"`
+	GiteaId              string                    `json:"giteaId"`
+	GiteaUrl             string                    `json:"giteaUrl"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// GiteaCreateRequest defines model for GiteaCreateRequest.
+type GiteaCreateRequest struct {
+	ClientId             *string                   `json:"clientId,omitempty"`
+	ClientSecret         *string                   `json:"clientSecret,omitempty"`
+	GiteaInternalUrl     nullable.Nullable[string] `json:"giteaInternalUrl,omitempty"`
+	GiteaUrl             string                    `json:"giteaUrl"`
+	Name                 string                    `json:"name"`
+	OrganizationName     *string                   `json:"organizationName,omitempty"`
+	RedirectUri          *string                   `json:"redirectUri,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// GiteaIntegrationRecord defines model for GiteaIntegrationRecord.
+type GiteaIntegrationRecord struct {
+	ClientId             nullable.Nullable[string] `json:"clientId,omitempty"`
+	ClientSecret         nullable.Nullable[string] `json:"clientSecret,omitempty"`
+	GitProvider          GiteaProviderIdentity     `json:"gitProvider"`
+	GitProviderId        string                    `json:"gitProviderId"`
+	GiteaId              string                    `json:"giteaId"`
+	GiteaInternalUrl     nullable.Nullable[string] `json:"giteaInternalUrl,omitempty"`
+	GiteaUrl             string                    `json:"giteaUrl"`
+	OrganizationName     nullable.Nullable[string] `json:"organizationName,omitempty"`
+	RedirectUri          nullable.Nullable[string] `json:"redirectUri,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
+}
+
+// GiteaProviderIdentity defines model for GiteaProviderIdentity.
+type GiteaProviderIdentity struct {
+	GitProviderId        string                 `json:"gitProviderId"`
+	Name                 string                 `json:"name"`
+	OrganizationId       string                 `json:"organizationId"`
+	ProviderType         string                 `json:"providerType"`
+	UserId               string                 `json:"userId"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// GiteaUpdateRequest defines model for GiteaUpdateRequest.
+type GiteaUpdateRequest struct {
+	ClientId             *string                   `json:"clientId,omitempty"`
+	ClientSecret         *string                   `json:"clientSecret,omitempty"`
+	GitProviderId        string                    `json:"gitProviderId"`
+	GiteaId              string                    `json:"giteaId"`
+	GiteaInternalUrl     nullable.Nullable[string] `json:"giteaInternalUrl,omitempty"`
+	GiteaUrl             string                    `json:"giteaUrl"`
+	Name                 string                    `json:"name"`
+	OrganizationName     *string                   `json:"organizationName,omitempty"`
+	RedirectUri          *string                   `json:"redirectUri,omitempty"`
+	AdditionalProperties map[string]interface{}    `json:"-"`
 }
 
 // MariaDB defines model for MariaDB.
@@ -2105,6 +2197,37 @@ type BackupUpdateJSONBody struct {
 // BackupUpdateJSONBodyDatabaseType defines parameters for BackupUpdate.
 type BackupUpdateJSONBodyDatabaseType string
 
+// BitbucketCreateJSONBody defines parameters for BitbucketCreate.
+type BitbucketCreateJSONBody struct {
+	ApiToken               *string              `json:"apiToken,omitempty"`
+	AppPassword            *string              `json:"appPassword,omitempty"`
+	AuthId                 string               `json:"authId"`
+	BitbucketEmail         *openapi_types.Email `json:"bitbucketEmail,omitempty"`
+	BitbucketId            *string              `json:"bitbucketId,omitempty"`
+	BitbucketUsername      *string              `json:"bitbucketUsername,omitempty"`
+	BitbucketWorkspaceName *string              `json:"bitbucketWorkspaceName,omitempty"`
+	GitProviderId          *string              `json:"gitProviderId,omitempty"`
+	Name                   string               `json:"name"`
+}
+
+// BitbucketOneParams defines parameters for BitbucketOne.
+type BitbucketOneParams struct {
+	BitbucketId string `form:"bitbucketId" json:"bitbucketId"`
+}
+
+// BitbucketUpdateJSONBody defines parameters for BitbucketUpdate.
+type BitbucketUpdateJSONBody struct {
+	ApiToken               *string              `json:"apiToken,omitempty"`
+	AppPassword            *string              `json:"appPassword,omitempty"`
+	BitbucketEmail         *openapi_types.Email `json:"bitbucketEmail,omitempty"`
+	BitbucketId            string               `json:"bitbucketId"`
+	BitbucketUsername      *string              `json:"bitbucketUsername,omitempty"`
+	BitbucketWorkspaceName *string              `json:"bitbucketWorkspaceName,omitempty"`
+	GitProviderId          string               `json:"gitProviderId"`
+	Name                   string               `json:"name"`
+	OrganizationId         *string              `json:"organizationId,omitempty"`
+}
+
 // ComposeCreateJSONBody defines parameters for ComposeCreate.
 type ComposeCreateJSONBody struct {
 	AppName       *string                           `json:"appName,omitempty"`
@@ -2346,6 +2469,11 @@ type EnvironmentUpdateJSONBody struct {
 // GitProviderRemoveJSONBody defines parameters for GitProviderRemove.
 type GitProviderRemoveJSONBody struct {
 	GitProviderId string `json:"gitProviderId"`
+}
+
+// GiteaOneParams defines parameters for GiteaOne.
+type GiteaOneParams struct {
+	GiteaId string `form:"giteaId" json:"giteaId"`
 }
 
 // GithubOneParams defines parameters for GithubOne.
@@ -3924,6 +4052,12 @@ type BackupRemoveJSONRequestBody BackupRemoveJSONBody
 // BackupUpdateJSONRequestBody defines body for BackupUpdate for application/json ContentType.
 type BackupUpdateJSONRequestBody BackupUpdateJSONBody
 
+// BitbucketCreateJSONRequestBody defines body for BitbucketCreate for application/json ContentType.
+type BitbucketCreateJSONRequestBody BitbucketCreateJSONBody
+
+// BitbucketUpdateJSONRequestBody defines body for BitbucketUpdate for application/json ContentType.
+type BitbucketUpdateJSONRequestBody BitbucketUpdateJSONBody
+
 // ComposeCreateJSONRequestBody defines body for ComposeCreate for application/json ContentType.
 type ComposeCreateJSONRequestBody ComposeCreateJSONBody
 
@@ -3974,6 +4108,12 @@ type EnvironmentUpdateJSONRequestBody EnvironmentUpdateJSONBody
 
 // GitProviderRemoveJSONRequestBody defines body for GitProviderRemove for application/json ContentType.
 type GitProviderRemoveJSONRequestBody GitProviderRemoveJSONBody
+
+// GiteaCreateJSONRequestBody defines body for GiteaCreate for application/json ContentType.
+type GiteaCreateJSONRequestBody = GiteaCreateRequest
+
+// GiteaUpdateJSONRequestBody defines body for GiteaUpdate for application/json ContentType.
+type GiteaUpdateJSONRequestBody = GiteaUpdateRequest
 
 // GithubUpdateJSONRequestBody defines body for GithubUpdate for application/json ContentType.
 type GithubUpdateJSONRequestBody GithubUpdateJSONBody
@@ -4801,6 +4941,396 @@ func (a Backup) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'schedule': %w", err)
 		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for BitbucketIntegrationRecord. Returns the specified
+// element and whether it was found
+func (a BitbucketIntegrationRecord) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for BitbucketIntegrationRecord
+func (a *BitbucketIntegrationRecord) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for BitbucketIntegrationRecord to handle AdditionalProperties
+func (a *BitbucketIntegrationRecord) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["apiToken"]; found {
+		err = json.Unmarshal(raw, &a.ApiToken)
+		if err != nil {
+			return fmt.Errorf("error reading 'apiToken': %w", err)
+		}
+		delete(object, "apiToken")
+	}
+
+	if raw, found := object["appPassword"]; found {
+		err = json.Unmarshal(raw, &a.AppPassword)
+		if err != nil {
+			return fmt.Errorf("error reading 'appPassword': %w", err)
+		}
+		delete(object, "appPassword")
+	}
+
+	if raw, found := object["bitbucketEmail"]; found {
+		err = json.Unmarshal(raw, &a.BitbucketEmail)
+		if err != nil {
+			return fmt.Errorf("error reading 'bitbucketEmail': %w", err)
+		}
+		delete(object, "bitbucketEmail")
+	}
+
+	if raw, found := object["bitbucketId"]; found {
+		err = json.Unmarshal(raw, &a.BitbucketId)
+		if err != nil {
+			return fmt.Errorf("error reading 'bitbucketId': %w", err)
+		}
+		delete(object, "bitbucketId")
+	}
+
+	if raw, found := object["bitbucketUsername"]; found {
+		err = json.Unmarshal(raw, &a.BitbucketUsername)
+		if err != nil {
+			return fmt.Errorf("error reading 'bitbucketUsername': %w", err)
+		}
+		delete(object, "bitbucketUsername")
+	}
+
+	if raw, found := object["bitbucketWorkspaceName"]; found {
+		err = json.Unmarshal(raw, &a.BitbucketWorkspaceName)
+		if err != nil {
+			return fmt.Errorf("error reading 'bitbucketWorkspaceName': %w", err)
+		}
+		delete(object, "bitbucketWorkspaceName")
+	}
+
+	if raw, found := object["gitProvider"]; found {
+		err = json.Unmarshal(raw, &a.GitProvider)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProvider': %w", err)
+		}
+		delete(object, "gitProvider")
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for BitbucketIntegrationRecord to handle AdditionalProperties
+func (a BitbucketIntegrationRecord) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ApiToken != nil {
+		object["apiToken"], err = json.Marshal(a.ApiToken)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'apiToken': %w", err)
+		}
+	}
+
+	if a.AppPassword != nil {
+		object["appPassword"], err = json.Marshal(a.AppPassword)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'appPassword': %w", err)
+		}
+	}
+
+	if a.BitbucketEmail != nil {
+		object["bitbucketEmail"], err = json.Marshal(a.BitbucketEmail)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'bitbucketEmail': %w", err)
+		}
+	}
+
+	object["bitbucketId"], err = json.Marshal(a.BitbucketId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'bitbucketId': %w", err)
+	}
+
+	if a.BitbucketUsername != nil {
+		object["bitbucketUsername"], err = json.Marshal(a.BitbucketUsername)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'bitbucketUsername': %w", err)
+		}
+	}
+
+	if a.BitbucketWorkspaceName != nil {
+		object["bitbucketWorkspaceName"], err = json.Marshal(a.BitbucketWorkspaceName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'bitbucketWorkspaceName': %w", err)
+		}
+	}
+
+	object["gitProvider"], err = json.Marshal(a.GitProvider)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProvider': %w", err)
+	}
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for BitbucketProviderIdentity. Returns the specified
+// element and whether it was found
+func (a BitbucketProviderIdentity) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for BitbucketProviderIdentity
+func (a *BitbucketProviderIdentity) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for BitbucketProviderIdentity to handle AdditionalProperties
+func (a *BitbucketProviderIdentity) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+		delete(object, "organizationId")
+	}
+
+	if raw, found := object["providerType"]; found {
+		err = json.Unmarshal(raw, &a.ProviderType)
+		if err != nil {
+			return fmt.Errorf("error reading 'providerType': %w", err)
+		}
+		delete(object, "providerType")
+	}
+
+	if raw, found := object["userId"]; found {
+		err = json.Unmarshal(raw, &a.UserId)
+		if err != nil {
+			return fmt.Errorf("error reading 'userId': %w", err)
+		}
+		delete(object, "userId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for BitbucketProviderIdentity to handle AdditionalProperties
+func (a BitbucketProviderIdentity) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	object["organizationId"], err = json.Marshal(a.OrganizationId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
+	}
+
+	object["providerType"], err = json.Marshal(a.ProviderType)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'providerType': %w", err)
+	}
+
+	object["userId"], err = json.Marshal(a.UserId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'userId': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for BitbucketProviderSummary. Returns the specified
+// element and whether it was found
+func (a BitbucketProviderSummary) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for BitbucketProviderSummary
+func (a *BitbucketProviderSummary) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for BitbucketProviderSummary to handle AdditionalProperties
+func (a *BitbucketProviderSummary) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["bitbucketId"]; found {
+		err = json.Unmarshal(raw, &a.BitbucketId)
+		if err != nil {
+			return fmt.Errorf("error reading 'bitbucketId': %w", err)
+		}
+		delete(object, "bitbucketId")
+	}
+
+	if raw, found := object["bitbucketUsername"]; found {
+		err = json.Unmarshal(raw, &a.BitbucketUsername)
+		if err != nil {
+			return fmt.Errorf("error reading 'bitbucketUsername': %w", err)
+		}
+		delete(object, "bitbucketUsername")
+	}
+
+	if raw, found := object["isConfigured"]; found {
+		err = json.Unmarshal(raw, &a.IsConfigured)
+		if err != nil {
+			return fmt.Errorf("error reading 'isConfigured': %w", err)
+		}
+		delete(object, "isConfigured")
+	}
+
+	if raw, found := object["isDeprecated"]; found {
+		err = json.Unmarshal(raw, &a.IsDeprecated)
+		if err != nil {
+			return fmt.Errorf("error reading 'isDeprecated': %w", err)
+		}
+		delete(object, "isDeprecated")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for BitbucketProviderSummary to handle AdditionalProperties
+func (a BitbucketProviderSummary) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["bitbucketId"], err = json.Marshal(a.BitbucketId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'bitbucketId': %w", err)
+	}
+
+	object["bitbucketUsername"], err = json.Marshal(a.BitbucketUsername)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'bitbucketUsername': %w", err)
+	}
+
+	object["isConfigured"], err = json.Marshal(a.IsConfigured)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'isConfigured': %w", err)
+	}
+
+	object["isDeprecated"], err = json.Marshal(a.IsDeprecated)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'isDeprecated': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -6638,6 +7168,14 @@ func (a *GitProviderListEntry) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
+	if raw, found := object["bitbucket"]; found {
+		err = json.Unmarshal(raw, &a.Bitbucket)
+		if err != nil {
+			return fmt.Errorf("error reading 'bitbucket': %w", err)
+		}
+		delete(object, "bitbucket")
+	}
+
 	if raw, found := object["gitProviderId"]; found {
 		err = json.Unmarshal(raw, &a.GitProviderId)
 		if err != nil {
@@ -6672,6 +7210,13 @@ func (a *GitProviderListEntry) UnmarshalJSON(b []byte) error {
 func (a GitProviderListEntry) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
+
+	if a.Bitbucket != nil {
+		object["bitbucket"], err = json.Marshal(a.Bitbucket)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'bitbucket': %w", err)
+		}
+	}
 
 	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
 	if err != nil {
@@ -6749,6 +7294,730 @@ func (a GitProviderUserIdentity) MarshalJSON() ([]byte, error) {
 	object["id"], err = json.Marshal(a.Id)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling 'id': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GiteaCreateAcknowledgment. Returns the specified
+// element and whether it was found
+func (a GiteaCreateAcknowledgment) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GiteaCreateAcknowledgment
+func (a *GiteaCreateAcknowledgment) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GiteaCreateAcknowledgment to handle AdditionalProperties
+func (a *GiteaCreateAcknowledgment) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["clientId"]; found {
+		err = json.Unmarshal(raw, &a.ClientId)
+		if err != nil {
+			return fmt.Errorf("error reading 'clientId': %w", err)
+		}
+		delete(object, "clientId")
+	}
+
+	if raw, found := object["giteaId"]; found {
+		err = json.Unmarshal(raw, &a.GiteaId)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaId': %w", err)
+		}
+		delete(object, "giteaId")
+	}
+
+	if raw, found := object["giteaUrl"]; found {
+		err = json.Unmarshal(raw, &a.GiteaUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaUrl': %w", err)
+		}
+		delete(object, "giteaUrl")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GiteaCreateAcknowledgment to handle AdditionalProperties
+func (a GiteaCreateAcknowledgment) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["clientId"], err = json.Marshal(a.ClientId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'clientId': %w", err)
+	}
+
+	object["giteaId"], err = json.Marshal(a.GiteaId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'giteaId': %w", err)
+	}
+
+	object["giteaUrl"], err = json.Marshal(a.GiteaUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'giteaUrl': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GiteaCreateRequest. Returns the specified
+// element and whether it was found
+func (a GiteaCreateRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GiteaCreateRequest
+func (a *GiteaCreateRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GiteaCreateRequest to handle AdditionalProperties
+func (a *GiteaCreateRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["clientId"]; found {
+		err = json.Unmarshal(raw, &a.ClientId)
+		if err != nil {
+			return fmt.Errorf("error reading 'clientId': %w", err)
+		}
+		delete(object, "clientId")
+	}
+
+	if raw, found := object["clientSecret"]; found {
+		err = json.Unmarshal(raw, &a.ClientSecret)
+		if err != nil {
+			return fmt.Errorf("error reading 'clientSecret': %w", err)
+		}
+		delete(object, "clientSecret")
+	}
+
+	if raw, found := object["giteaInternalUrl"]; found {
+		err = json.Unmarshal(raw, &a.GiteaInternalUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaInternalUrl': %w", err)
+		}
+		delete(object, "giteaInternalUrl")
+	}
+
+	if raw, found := object["giteaUrl"]; found {
+		err = json.Unmarshal(raw, &a.GiteaUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaUrl': %w", err)
+		}
+		delete(object, "giteaUrl")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["organizationName"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationName)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationName': %w", err)
+		}
+		delete(object, "organizationName")
+	}
+
+	if raw, found := object["redirectUri"]; found {
+		err = json.Unmarshal(raw, &a.RedirectUri)
+		if err != nil {
+			return fmt.Errorf("error reading 'redirectUri': %w", err)
+		}
+		delete(object, "redirectUri")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GiteaCreateRequest to handle AdditionalProperties
+func (a GiteaCreateRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ClientId != nil {
+		object["clientId"], err = json.Marshal(a.ClientId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'clientId': %w", err)
+		}
+	}
+
+	if a.ClientSecret != nil {
+		object["clientSecret"], err = json.Marshal(a.ClientSecret)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'clientSecret': %w", err)
+		}
+	}
+
+	if a.GiteaInternalUrl != nil {
+		object["giteaInternalUrl"], err = json.Marshal(a.GiteaInternalUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'giteaInternalUrl': %w", err)
+		}
+	}
+
+	object["giteaUrl"], err = json.Marshal(a.GiteaUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'giteaUrl': %w", err)
+	}
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	if a.OrganizationName != nil {
+		object["organizationName"], err = json.Marshal(a.OrganizationName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'organizationName': %w", err)
+		}
+	}
+
+	if a.RedirectUri != nil {
+		object["redirectUri"], err = json.Marshal(a.RedirectUri)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'redirectUri': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GiteaIntegrationRecord. Returns the specified
+// element and whether it was found
+func (a GiteaIntegrationRecord) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GiteaIntegrationRecord
+func (a *GiteaIntegrationRecord) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GiteaIntegrationRecord to handle AdditionalProperties
+func (a *GiteaIntegrationRecord) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["clientId"]; found {
+		err = json.Unmarshal(raw, &a.ClientId)
+		if err != nil {
+			return fmt.Errorf("error reading 'clientId': %w", err)
+		}
+		delete(object, "clientId")
+	}
+
+	if raw, found := object["clientSecret"]; found {
+		err = json.Unmarshal(raw, &a.ClientSecret)
+		if err != nil {
+			return fmt.Errorf("error reading 'clientSecret': %w", err)
+		}
+		delete(object, "clientSecret")
+	}
+
+	if raw, found := object["gitProvider"]; found {
+		err = json.Unmarshal(raw, &a.GitProvider)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProvider': %w", err)
+		}
+		delete(object, "gitProvider")
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["giteaId"]; found {
+		err = json.Unmarshal(raw, &a.GiteaId)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaId': %w", err)
+		}
+		delete(object, "giteaId")
+	}
+
+	if raw, found := object["giteaInternalUrl"]; found {
+		err = json.Unmarshal(raw, &a.GiteaInternalUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaInternalUrl': %w", err)
+		}
+		delete(object, "giteaInternalUrl")
+	}
+
+	if raw, found := object["giteaUrl"]; found {
+		err = json.Unmarshal(raw, &a.GiteaUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaUrl': %w", err)
+		}
+		delete(object, "giteaUrl")
+	}
+
+	if raw, found := object["organizationName"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationName)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationName': %w", err)
+		}
+		delete(object, "organizationName")
+	}
+
+	if raw, found := object["redirectUri"]; found {
+		err = json.Unmarshal(raw, &a.RedirectUri)
+		if err != nil {
+			return fmt.Errorf("error reading 'redirectUri': %w", err)
+		}
+		delete(object, "redirectUri")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GiteaIntegrationRecord to handle AdditionalProperties
+func (a GiteaIntegrationRecord) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ClientId != nil {
+		object["clientId"], err = json.Marshal(a.ClientId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'clientId': %w", err)
+		}
+	}
+
+	if a.ClientSecret != nil {
+		object["clientSecret"], err = json.Marshal(a.ClientSecret)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'clientSecret': %w", err)
+		}
+	}
+
+	object["gitProvider"], err = json.Marshal(a.GitProvider)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProvider': %w", err)
+	}
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	object["giteaId"], err = json.Marshal(a.GiteaId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'giteaId': %w", err)
+	}
+
+	if a.GiteaInternalUrl != nil {
+		object["giteaInternalUrl"], err = json.Marshal(a.GiteaInternalUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'giteaInternalUrl': %w", err)
+		}
+	}
+
+	object["giteaUrl"], err = json.Marshal(a.GiteaUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'giteaUrl': %w", err)
+	}
+
+	if a.OrganizationName != nil {
+		object["organizationName"], err = json.Marshal(a.OrganizationName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'organizationName': %w", err)
+		}
+	}
+
+	if a.RedirectUri != nil {
+		object["redirectUri"], err = json.Marshal(a.RedirectUri)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'redirectUri': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GiteaProviderIdentity. Returns the specified
+// element and whether it was found
+func (a GiteaProviderIdentity) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GiteaProviderIdentity
+func (a *GiteaProviderIdentity) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GiteaProviderIdentity to handle AdditionalProperties
+func (a *GiteaProviderIdentity) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["organizationId"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationId': %w", err)
+		}
+		delete(object, "organizationId")
+	}
+
+	if raw, found := object["providerType"]; found {
+		err = json.Unmarshal(raw, &a.ProviderType)
+		if err != nil {
+			return fmt.Errorf("error reading 'providerType': %w", err)
+		}
+		delete(object, "providerType")
+	}
+
+	if raw, found := object["userId"]; found {
+		err = json.Unmarshal(raw, &a.UserId)
+		if err != nil {
+			return fmt.Errorf("error reading 'userId': %w", err)
+		}
+		delete(object, "userId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GiteaProviderIdentity to handle AdditionalProperties
+func (a GiteaProviderIdentity) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	object["organizationId"], err = json.Marshal(a.OrganizationId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'organizationId': %w", err)
+	}
+
+	object["providerType"], err = json.Marshal(a.ProviderType)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'providerType': %w", err)
+	}
+
+	object["userId"], err = json.Marshal(a.UserId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'userId': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GiteaUpdateRequest. Returns the specified
+// element and whether it was found
+func (a GiteaUpdateRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GiteaUpdateRequest
+func (a *GiteaUpdateRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GiteaUpdateRequest to handle AdditionalProperties
+func (a *GiteaUpdateRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["clientId"]; found {
+		err = json.Unmarshal(raw, &a.ClientId)
+		if err != nil {
+			return fmt.Errorf("error reading 'clientId': %w", err)
+		}
+		delete(object, "clientId")
+	}
+
+	if raw, found := object["clientSecret"]; found {
+		err = json.Unmarshal(raw, &a.ClientSecret)
+		if err != nil {
+			return fmt.Errorf("error reading 'clientSecret': %w", err)
+		}
+		delete(object, "clientSecret")
+	}
+
+	if raw, found := object["gitProviderId"]; found {
+		err = json.Unmarshal(raw, &a.GitProviderId)
+		if err != nil {
+			return fmt.Errorf("error reading 'gitProviderId': %w", err)
+		}
+		delete(object, "gitProviderId")
+	}
+
+	if raw, found := object["giteaId"]; found {
+		err = json.Unmarshal(raw, &a.GiteaId)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaId': %w", err)
+		}
+		delete(object, "giteaId")
+	}
+
+	if raw, found := object["giteaInternalUrl"]; found {
+		err = json.Unmarshal(raw, &a.GiteaInternalUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaInternalUrl': %w", err)
+		}
+		delete(object, "giteaInternalUrl")
+	}
+
+	if raw, found := object["giteaUrl"]; found {
+		err = json.Unmarshal(raw, &a.GiteaUrl)
+		if err != nil {
+			return fmt.Errorf("error reading 'giteaUrl': %w", err)
+		}
+		delete(object, "giteaUrl")
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["organizationName"]; found {
+		err = json.Unmarshal(raw, &a.OrganizationName)
+		if err != nil {
+			return fmt.Errorf("error reading 'organizationName': %w", err)
+		}
+		delete(object, "organizationName")
+	}
+
+	if raw, found := object["redirectUri"]; found {
+		err = json.Unmarshal(raw, &a.RedirectUri)
+		if err != nil {
+			return fmt.Errorf("error reading 'redirectUri': %w", err)
+		}
+		delete(object, "redirectUri")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GiteaUpdateRequest to handle AdditionalProperties
+func (a GiteaUpdateRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.ClientId != nil {
+		object["clientId"], err = json.Marshal(a.ClientId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'clientId': %w", err)
+		}
+	}
+
+	if a.ClientSecret != nil {
+		object["clientSecret"], err = json.Marshal(a.ClientSecret)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'clientSecret': %w", err)
+		}
+	}
+
+	object["gitProviderId"], err = json.Marshal(a.GitProviderId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'gitProviderId': %w", err)
+	}
+
+	object["giteaId"], err = json.Marshal(a.GiteaId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'giteaId': %w", err)
+	}
+
+	if a.GiteaInternalUrl != nil {
+		object["giteaInternalUrl"], err = json.Marshal(a.GiteaInternalUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'giteaInternalUrl': %w", err)
+		}
+	}
+
+	object["giteaUrl"], err = json.Marshal(a.GiteaUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'giteaUrl': %w", err)
+	}
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	if a.OrganizationName != nil {
+		object["organizationName"], err = json.Marshal(a.OrganizationName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'organizationName': %w", err)
+		}
+	}
+
+	if a.RedirectUri != nil {
+		object["redirectUri"], err = json.Marshal(a.RedirectUri)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'redirectUri': %w", err)
+		}
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -9968,6 +11237,25 @@ type ClientInterface interface {
 	// Takes a body of the `application/json` content type.
 	BackupUpdate(ctx context.Context, body BackupUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BitbucketCreateWithBody performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request,
+	// with any type of body and a specified content type.
+	BitbucketCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BitbucketCreate performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	BitbucketCreate(ctx context.Context, body BitbucketCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BitbucketOne performs a GET /bitbucket.one (the `BitbucketOne` operationId) request.
+	BitbucketOne(ctx context.Context, params *BitbucketOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BitbucketUpdateWithBody performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	BitbucketUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BitbucketUpdate performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	BitbucketUpdate(ctx context.Context, body BitbucketUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ComposeCreateWithBody performs a POST /compose.create (the `ComposeCreate` operationId) request,
 	// with any type of body and a specified content type.
 	ComposeCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -10118,6 +11406,25 @@ type ClientInterface interface {
 	// GitProviderRemove performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request.
 	// Takes a body of the `application/json` content type.
 	GitProviderRemove(ctx context.Context, body GitProviderRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GiteaCreateWithBody performs a POST /gitea.create (the `GiteaCreate` operationId) request,
+	// with any type of body and a specified content type.
+	GiteaCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GiteaCreate performs a POST /gitea.create (the `GiteaCreate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	GiteaCreate(ctx context.Context, body GiteaCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GiteaOne performs a GET /gitea.one (the `GiteaOne` operationId) request.
+	GiteaOne(ctx context.Context, params *GiteaOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GiteaUpdateWithBody performs a POST /gitea.update (the `GiteaUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	GiteaUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GiteaUpdate performs a POST /gitea.update (the `GiteaUpdate` operationId) request.
+	// Takes a body of the `application/json` content type.
+	GiteaUpdate(ctx context.Context, body GiteaUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GithubOne performs a GET /github.one (the `GithubOne` operationId) request.
 	GithubOne(ctx context.Context, params *GithubOneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11389,6 +12696,75 @@ func (c *Client) BackupUpdate(ctx context.Context, body BackupUpdateJSONRequestB
 	return c.Client.Do(req)
 }
 
+// BitbucketCreateWithBody performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) BitbucketCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBitbucketCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BitbucketCreate performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) BitbucketCreate(ctx context.Context, body BitbucketCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBitbucketCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BitbucketOne performs a GET /bitbucket.one (the `BitbucketOne` operationId) request.
+func (c *Client) BitbucketOne(ctx context.Context, params *BitbucketOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBitbucketOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BitbucketUpdateWithBody performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) BitbucketUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBitbucketUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BitbucketUpdate performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) BitbucketUpdate(ctx context.Context, body BitbucketUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBitbucketUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ComposeCreateWithBody performs a POST /compose.create (the `ComposeCreate` operationId) request,
 // with any type of body and a specified content type.
 func (c *Client) ComposeCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -11920,6 +13296,75 @@ func (c *Client) GitProviderRemoveWithBody(ctx context.Context, contentType stri
 // Takes a body of the `application/json` content type.
 func (c *Client) GitProviderRemove(ctx context.Context, body GitProviderRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGitProviderRemoveRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GiteaCreateWithBody performs a POST /gitea.create (the `GiteaCreate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) GiteaCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGiteaCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GiteaCreate performs a POST /gitea.create (the `GiteaCreate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) GiteaCreate(ctx context.Context, body GiteaCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGiteaCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GiteaOne performs a GET /gitea.one (the `GiteaOne` operationId) request.
+func (c *Client) GiteaOne(ctx context.Context, params *GiteaOneParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGiteaOneRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GiteaUpdateWithBody performs a POST /gitea.update (the `GiteaUpdate` operationId) request,
+// with any type of body and a specified content type.
+func (c *Client) GiteaUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGiteaUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GiteaUpdate performs a POST /gitea.update (the `GiteaUpdate` operationId) request.
+// Takes a body of the `application/json` content type.
+func (c *Client) GiteaUpdate(ctx context.Context, body GiteaUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGiteaUpdateRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -15447,6 +16892,136 @@ func NewBackupUpdateRequestWithBody(server string, contentType string, body io.R
 	return req, nil
 }
 
+// NewBitbucketCreateRequest calls the generic BitbucketCreate builder with application/json body
+func NewBitbucketCreateRequest(server string, body BitbucketCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBitbucketCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBitbucketCreateRequestWithBody constructs an http.Request for the BitbucketCreate method, with any body, and a specified content type
+func NewBitbucketCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/bitbucket.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewBitbucketOneRequest constructs an http.Request for the BitbucketOne method
+func NewBitbucketOneRequest(server string, params *BitbucketOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/bitbucket.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "bitbucketId", params.BitbucketId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewBitbucketUpdateRequest calls the generic BitbucketUpdate builder with application/json body
+func NewBitbucketUpdateRequest(server string, body BitbucketUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBitbucketUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBitbucketUpdateRequestWithBody constructs an http.Request for the BitbucketUpdate method, with any body, and a specified content type
+func NewBitbucketUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/bitbucket.update")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewComposeCreateRequest calls the generic ComposeCreate builder with application/json body
 func NewComposeCreateRequest(server string, body ComposeCreateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -16335,6 +17910,136 @@ func NewGitProviderRemoveRequestWithBody(server string, contentType string, body
 	}
 
 	operationPath := fmt.Sprintf("/gitProvider.remove")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGiteaCreateRequest calls the generic GiteaCreate builder with application/json body
+func NewGiteaCreateRequest(server string, body GiteaCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGiteaCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGiteaCreateRequestWithBody constructs an http.Request for the GiteaCreate method, with any body, and a specified content type
+func NewGiteaCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitea.create")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGiteaOneRequest constructs an http.Request for the GiteaOne method
+func NewGiteaOneRequest(server string, params *GiteaOneParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitea.one")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "giteaId", params.GiteaId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGiteaUpdateRequest calls the generic GiteaUpdate builder with application/json body
+func NewGiteaUpdateRequest(server string, body GiteaUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGiteaUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGiteaUpdateRequestWithBody constructs an http.Request for the GiteaUpdate method, with any body, and a specified content type
+func NewGiteaUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/gitea.update")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -21056,6 +22761,31 @@ type ClientWithResponsesInterface interface {
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	BackupUpdateWithResponse(ctx context.Context, body BackupUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*BackupUpdateResponse, error)
 
+	// BitbucketCreateWithBodyWithResponse performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	BitbucketCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BitbucketCreateResponse, error)
+
+	// BitbucketCreateWithResponse performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	BitbucketCreateWithResponse(ctx context.Context, body BitbucketCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*BitbucketCreateResponse, error)
+
+	// BitbucketOneWithResponse performs a GET /bitbucket.one (the `BitbucketOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	BitbucketOneWithResponse(ctx context.Context, params *BitbucketOneParams, reqEditors ...RequestEditorFn) (*BitbucketOneResponse, error)
+
+	// BitbucketUpdateWithBodyWithResponse performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	BitbucketUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BitbucketUpdateResponse, error)
+
+	// BitbucketUpdateWithResponse performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	BitbucketUpdateWithResponse(ctx context.Context, body BitbucketUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*BitbucketUpdateResponse, error)
+
 	// ComposeCreateWithBodyWithResponse performs a POST /compose.create (the `ComposeCreate` operationId) request,
 	// with any type of body and a specified content type.
 	//
@@ -21250,6 +22980,31 @@ type ClientWithResponsesInterface interface {
 	// GitProviderRemoveWithResponse performs a POST /gitProvider.remove (the `GitProviderRemove` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	GitProviderRemoveWithResponse(ctx context.Context, body GitProviderRemoveJSONRequestBody, reqEditors ...RequestEditorFn) (*GitProviderRemoveResponse, error)
+
+	// GiteaCreateWithBodyWithResponse performs a POST /gitea.create (the `GiteaCreate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GiteaCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GiteaCreateResponse, error)
+
+	// GiteaCreateWithResponse performs a POST /gitea.create (the `GiteaCreate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	GiteaCreateWithResponse(ctx context.Context, body GiteaCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*GiteaCreateResponse, error)
+
+	// GiteaOneWithResponse performs a GET /gitea.one (the `GiteaOne` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GiteaOneWithResponse(ctx context.Context, params *GiteaOneParams, reqEditors ...RequestEditorFn) (*GiteaOneResponse, error)
+
+	// GiteaUpdateWithBodyWithResponse performs a POST /gitea.update (the `GiteaUpdate` operationId) request,
+	// with any type of body and a specified content type.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	GiteaUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GiteaUpdateResponse, error)
+
+	// GiteaUpdateWithResponse performs a POST /gitea.update (the `GiteaUpdate` operationId) request.
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	GiteaUpdateWithResponse(ctx context.Context, body GiteaUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*GiteaUpdateResponse, error)
 
 	// GithubOneWithResponse performs a GET /github.one (the `GithubOne` operationId) request.
 	//
@@ -23520,6 +25275,206 @@ func (r BackupUpdateResponse) ContentType() string {
 	return ""
 }
 
+type BitbucketCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BitbucketCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BitbucketCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BitbucketCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BitbucketCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r BitbucketCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BitbucketCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BitbucketCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BitbucketCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type BitbucketOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *BitbucketIntegrationRecord
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r BitbucketOneResponse) GetJSON200() *BitbucketIntegrationRecord {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BitbucketOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BitbucketOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BitbucketOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r BitbucketOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BitbucketOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r BitbucketOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BitbucketOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BitbucketOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BitbucketOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type BitbucketUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BitbucketUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BitbucketUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BitbucketUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BitbucketUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r BitbucketUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BitbucketUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BitbucketUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BitbucketUpdateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ComposeCreateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -25018,6 +26973,213 @@ func (r GitProviderRemoveResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GitProviderRemoveResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GiteaCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GiteaCreateAcknowledgment
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GiteaCreateResponse) GetJSON200() *GiteaCreateAcknowledgment {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GiteaCreateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GiteaCreateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GiteaCreateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GiteaCreateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GiteaCreateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GiteaCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GiteaCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GiteaCreateResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GiteaOneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GiteaIntegrationRecord
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *ErrorNOTFOUND
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GiteaOneResponse) GetJSON200() *GiteaIntegrationRecord {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GiteaOneResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GiteaOneResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GiteaOneResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GiteaOneResponse) GetJSON404() *ErrorNOTFOUND {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GiteaOneResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GiteaOneResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GiteaOneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GiteaOneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GiteaOneResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GiteaUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ErrorBADREQUEST
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *ErrorUNAUTHORIZED
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ErrorFORBIDDEN
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ErrorINTERNALSERVERERROR
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GiteaUpdateResponse) GetJSON400() *ErrorBADREQUEST {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GiteaUpdateResponse) GetJSON401() *ErrorUNAUTHORIZED {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GiteaUpdateResponse) GetJSON403() *ErrorFORBIDDEN {
+	return r.JSON403
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GiteaUpdateResponse) GetJSON500() *ErrorINTERNALSERVERERROR {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GiteaUpdateResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GiteaUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GiteaUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GiteaUpdateResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -32724,6 +34886,61 @@ func (c *ClientWithResponses) BackupUpdateWithResponse(ctx context.Context, body
 	return ParseBackupUpdateResponse(rsp)
 }
 
+// BitbucketCreateWithBodyWithResponse performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BitbucketCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BitbucketCreateResponse, error) {
+	rsp, err := c.BitbucketCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBitbucketCreateResponse(rsp)
+}
+
+// BitbucketCreateWithResponse performs a POST /bitbucket.create (the `BitbucketCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BitbucketCreateWithResponse(ctx context.Context, body BitbucketCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*BitbucketCreateResponse, error) {
+	rsp, err := c.BitbucketCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBitbucketCreateResponse(rsp)
+}
+
+// BitbucketOneWithResponse performs a GET /bitbucket.one (the `BitbucketOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BitbucketOneWithResponse(ctx context.Context, params *BitbucketOneParams, reqEditors ...RequestEditorFn) (*BitbucketOneResponse, error) {
+	rsp, err := c.BitbucketOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBitbucketOneResponse(rsp)
+}
+
+// BitbucketUpdateWithBodyWithResponse performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BitbucketUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BitbucketUpdateResponse, error) {
+	rsp, err := c.BitbucketUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBitbucketUpdateResponse(rsp)
+}
+
+// BitbucketUpdateWithResponse performs a POST /bitbucket.update (the `BitbucketUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) BitbucketUpdateWithResponse(ctx context.Context, body BitbucketUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*BitbucketUpdateResponse, error) {
+	rsp, err := c.BitbucketUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBitbucketUpdateResponse(rsp)
+}
+
 // ComposeCreateWithBodyWithResponse performs a POST /compose.create (the `ComposeCreate` operationId) request,
 // with any type of body and a specified content type.
 //
@@ -33151,6 +35368,61 @@ func (c *ClientWithResponses) GitProviderRemoveWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseGitProviderRemoveResponse(rsp)
+}
+
+// GiteaCreateWithBodyWithResponse performs a POST /gitea.create (the `GiteaCreate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GiteaCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GiteaCreateResponse, error) {
+	rsp, err := c.GiteaCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGiteaCreateResponse(rsp)
+}
+
+// GiteaCreateWithResponse performs a POST /gitea.create (the `GiteaCreate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GiteaCreateWithResponse(ctx context.Context, body GiteaCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*GiteaCreateResponse, error) {
+	rsp, err := c.GiteaCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGiteaCreateResponse(rsp)
+}
+
+// GiteaOneWithResponse performs a GET /gitea.one (the `GiteaOne` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GiteaOneWithResponse(ctx context.Context, params *GiteaOneParams, reqEditors ...RequestEditorFn) (*GiteaOneResponse, error) {
+	rsp, err := c.GiteaOne(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGiteaOneResponse(rsp)
+}
+
+// GiteaUpdateWithBodyWithResponse performs a POST /gitea.update (the `GiteaUpdate` operationId) request,
+// with any type of body and a specified content type.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GiteaUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GiteaUpdateResponse, error) {
+	rsp, err := c.GiteaUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGiteaUpdateResponse(rsp)
+}
+
+// GiteaUpdateWithResponse performs a POST /gitea.update (the `GiteaUpdate` operationId) request.
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) GiteaUpdateWithResponse(ctx context.Context, body GiteaUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*GiteaUpdateResponse, error) {
+	rsp, err := c.GiteaUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGiteaUpdateResponse(rsp)
 }
 
 // GithubOneWithResponse performs a GET /github.one (the `GithubOne` operationId) request.
@@ -36336,6 +38608,167 @@ func ParseBackupUpdateResponse(rsp *http.Response) (*BackupUpdateResponse, error
 	return response, nil
 }
 
+// ParseBitbucketCreateResponse parses an HTTP response from a BitbucketCreateWithResponse call
+func ParseBitbucketCreateResponse(rsp *http.Response) (*BitbucketCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BitbucketCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBitbucketOneResponse parses an HTTP response from a BitbucketOneWithResponse call
+func ParseBitbucketOneResponse(rsp *http.Response) (*BitbucketOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BitbucketOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BitbucketIntegrationRecord
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBitbucketUpdateResponse parses an HTTP response from a BitbucketUpdateWithResponse call
+func ParseBitbucketUpdateResponse(rsp *http.Response) (*BitbucketUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BitbucketUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseComposeCreateResponse parses an HTTP response from a ComposeCreateWithResponse call
 func ParseComposeCreateResponse(rsp *http.Response) (*ComposeCreateResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -37490,6 +39923,171 @@ func ParseGitProviderRemoveResponse(rsp *http.Response) (*GitProviderRemoveRespo
 	}
 
 	response := &GitProviderRemoveResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGiteaCreateResponse parses an HTTP response from a GiteaCreateWithResponse call
+func ParseGiteaCreateResponse(rsp *http.Response) (*GiteaCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GiteaCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GiteaCreateAcknowledgment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGiteaOneResponse parses an HTTP response from a GiteaOneWithResponse call
+func ParseGiteaOneResponse(rsp *http.Response) (*GiteaOneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GiteaOneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GiteaIntegrationRecord
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorBADREQUEST
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorUNAUTHORIZED
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorFORBIDDEN
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorNOTFOUND
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorINTERNALSERVERERROR
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGiteaUpdateResponse parses an HTTP response from a GiteaUpdateWithResponse call
+func ParseGiteaUpdateResponse(rsp *http.Response) (*GiteaUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GiteaUpdateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -43361,216 +45959,228 @@ func ParseVolumeBackupsUpdateResponse(rsp *http.Response) (*VolumeBackupsUpdateR
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"7H19c+O2tfdX8ah9ZtpG3vUmm+Su79xpvbaz2dbrdSW7nemumwuRkIRrkGBA0GslN/ezP0MCJEESJEGK",
-	"siX5/JN4RbwD53decM7BryOHeQHzsS/C0fGvo9BZYg8lf54EASUOEoT58T+R65L4b0SvOAswFwSHo2PB",
-	"IzweBdovv45QEFwiD8d/ilWAR8ejUHDiL0a/jeNvaaPv3bYSU4FEFBpLzSJC3RO+aPg6wQsSCr7S+/mU",
-	"FhqP/IjS0W1aeIodjoW5NYdjJPC5f/8DofqsZoxRjPy4iItDh5MgXatKE9i/r/udcOZ72Bc1y+HXrSS3",
-	"nF6I+T3mxtZ/G6e/sNn/YEfEzZ5EYol9Ee8Adt8RccXZPXEx/4C9GebdDgLjC+STX7Td9oh/gf2FWI6O",
-	"X42rc4pC2cXvOZ6Pjke/e5kfzpfqZL7UxnQTxhOLRytWaXWLfpLF+zkiHLvxkqla4/Jw1XBuDYv0Fjl3",
-	"UdBtMWZJnZpddpFAMxTixo/XyQdTARwK4jcRFfbRjGLXfHjvMA4ukMChOGWRL7RCxBd4gXlcyEOcIHdW",
-	"077H/AWr+7YKf6Y13wIWigXHYd1njufkwfgpPg5uRLHlsT6ND5Jc32GAzJEN1gxcfa3dse2ElI5QcZpM",
-	"4oqz+IcJDiMquq2vNtQ2qj/XiiYHI+m0rZYaW4Xk0+qF1TJS+llOWh3PjuPgMPwbXpmZXNbODxRJJkYE",
-	"9sz8R/2AOEcryd2cOyx6I4EbMOKLbicjUIhby4lqDmmYsNWTxrXoeOrOmIdId4mkRepw4sLzhOvVE20z",
-	"yUehYN4p5jEpMHpfs1huMvw+ML1koXnXlkIEoblODOA8XiAUs0LTxtZ+YLyGE8T7RRxci4zxX0Gpw2xI",
-	"ph09L8KA/bZaQGQLFJLwDM+RAq7q8jXRQzx660P7jogfo9n7eBF5cgwn2GHc7TbdRS75WAhJP0aztLQu",
-	"I2mNWIlkCyKW0eykzAlNkqYs2l0Ay+qVR1fuvfDdCNc18+67zFYrlB6SlmKdheEUc1M86rikhXX05fIV",
-	"mqwMqWZBL9BMcvoJ/jnCoRgaelEklrZHsevRpSghuhgCbzhtPb4UzVSxtqY5i+plQ8sTwbFLOHbEDScN",
-	"zNOMMPpmqwXMdjmfSP2OrglFUrq5ZnfYb17Umu2vWf8O8HaBhoK3+Ixs33EyNWk8MOaCc47DpcX+lM9Y",
-	"tUwVWeSCGcFazdgKqE07uEGgbkTI9iFOI89DfDUI+NUflw4H0e5kkfCU+XOyiLhZrGzc3Ww3C63Ur9VN",
-	"4G6OTewNZT8doyjwhyaSraeItMQFkTucaa2WJru43rkv+Mqk2BrLbVR2k/NP+vBXH+ej409dGE+KCb+N",
-	"s5VPDslvt73QxmjW7DR90hkGiXk0HxAn6OztcOay1IbZWuAmrFOcW5Q9lzl3mL/30KKFi/Y3nOEHpU3X",
-	"6sak2L1uBW20nw5lkvvA/AXbxL7t7bY0GK4brl4SZjUtXhhpdoPOuxb5YmOShcFsZS7mC+yL5kJzQnHR",
-	"tGMqtWShaC9loAhjsXhxaq8dIl/U2rYqFw+m5k03EHWyd2hz10aceguiqPtwz2jk4TYNoITd6coYAXw1",
-	"/fsFwPdwONFwiTUUeF8yZYJuvGyYIxqa9u5tRKh7zjnjZkxCQXCGA8pW5s/SfJ3c2vrYQhLSB3sq6xrE",
-	"oLTdNsJJj09+sWq4ECNhaqjoPsQzVdk4RtVy6yCTI3oaj6d2jOwuXuLGacgiExwKxGvszthDhPab6HlS",
-	"1TjNpNVWPTRua9Wv73eyrrFz2W5b7xTxu359X8Q1jT3HbbYyGSQE5p66Yene+4e8vnEMefttI6kFE1/r",
-	"rg6IRN+duxR1+xa32Tbmqmm7asyOwiVTd2Ldh3eV1jYOMW27nYWH2O+JHxNZ19i/bNfOD+d6yXG4ZLTm",
-	"ji+kyOlJANOkqnGASatt4xMYSU2+e9fXSVVj10mr7V1TvODI69u7ql0zAPm1bQxSAqsH7rIppUiNVncp",
-	"BpbZjctXeWnjxb5RNMfIxTys77hWav2UzqROHM1G1zb3s5yRd5i8ix3GUVF+/JTtj86mq9xcm8wXPFsy",
-	"dtdi5CtNLW+ybW7nKefuMLMKX9aGO+fMO3FdjsOwRY9BYfhFrWoDCHkiKIq/nzL5t1RsmuBVC+EyNTZs",
-	"5cLySZn6tBaiMBbJO6k96XK1bcW7TJLpJkhb3JpYn8Wq1FO44CWMKxtf02YkG9HtwGb9ti3ShRK4OixR",
-	"WZ5al7hUe60j7WJxLqhSBktzjezWEY6XyPcxtZUsa9bMhgJ6rmyh77b1vRTdicX2FrgsRG6ICGJACojT",
-	"YYXUwNrW5kqTXjuBCbFYHPwQEI5b5m+5TCZRuGC4VDcqDU3E57Hgqte6iFqnbQs5yUTwbsvYMqAOfLIq",
-	"rOtsak1+VlqYrK+2ZZmmYv/Q6FOR/NcF67TBthldp9pEhxlVdIV1B5s22D7YXP/oMN4ZExbk7SxRq9Lv",
-	"4TBECxwrh8i11Zbq7IrFFcjKmhbho6a09LlptHBys7B7pgLpkN4CAeOiluMwwRxGa+wUM0rC5Qfm4qbv",
-	"2K03IgvEF1jUfS9jpxznrXFZ5M0EWPEHs+LX+/M2x6F0NORf5dEJXZyZE0fk89YFWN/ruZdbc/b1uhyw",
-	"YD9HgRZWqJUUM9FEUY43rf0Eu2RIktnTA1+5zux/2tM4y44MJB7zVSm+y86w0RIEafh82RZEWXtjmxYo",
-	"CB6Na2WaQ1XHqzv62oRuG9Z6DU87GXrmnphjSay3xcbmDzuX79x0+qNSYtaMb+l0aWSzS5zcI4HrorMS",
-	"gcepjd0Kl3/DKxtMz0rWL04nC49aT4NtZ6pFhm40aL3G2cZDvmsbP2ZsgjP//CGI1dBarmN7MBoDyjqf",
-	"GqOGqVa7jpeozymZYj/yEsVZSy6QrcwopcpRdk1+qH64HZvajtega/R7g99Ouwd+uMSUlucyQ+EyHvrS",
-	"OEpBPPwL87tYuLU1NVJLZpnvdH3S6cictfs6kKBicLGRPGwgqTH2sNa6JT82JI1QV7B1HKMKZutxhGyw",
-	"9ZtYCawadtPcNLhRIt5ge9i2QWUKcaXjkcq1YSbmgRdf+brrK6hPV81Ba1EbQmEa9Zv3IRKpUbMx9N1I",
-	"j81CdsdjVBEHSyJfA1Pa1SPWiAHbev6yoQ93FK/RoqP8zyjjPcXJtfX3f5S8LB4rqVBL6L6VxLXxFCsN",
-	"Zpn6NChtwfhtHskR9z/O5+ZR6z4xNbM2OS43Wgsw54y/eHty9tPk/O8359PrVtwsINToeokPkjYOiD9n",
-	"3EtFSPyAvEAK/U5ivB3pfYxHJAyjuNFPt5m5fXQ8eu/fI0rcA+IHkThwkUDK0FUgGGkLrhtH8l0bQKlj",
-	"Q0ieHEm5xRP/INFhDtj8QJY5EEskDr5gjg84DgPmh2RG8cGc8QORdq/3HM+txSpn5EXZerQRdlqw3TQ3",
-	"1hutW7m0iL54hh0ZW45qLLcqHhwRNY2pnv/w+ujoj6Pa4/nDx8nb92dn55cbO5x5D/VHM4zmc+IQ7IsD",
-	"edM+wNnU+4WT2fFkVjdknaNZaS0/m980nM33l9fnk8uTi5+m55N/nE9+Op9MPk42dk7NvdWfWWmqPpBC",
-	"izoH65/aulHACe54gk3bs84ZNrSXnuJvGxH28uP1Tz98vLk829jJzXuoO62XTBzMWZS4da97QvXe4FR2",
-	"OpX5NvQ/iVkbOYa+bjh9N5cnN9c/fpy8/9f55g5goZO6M3gSiSXjyhx24DNxoHL0DHEoSyOAc9npXDZs",
-	"Tf+DWt9ofnJfGU6uzPIQcSJWU2eJvbJnXGkDr94f3OHVAcqTuRLmvzh4h33MkcAHyD9Iy8w58w5WLOIH",
-	"Z9LkfuCicDljiLsHke9ifjDFQhB/ER58jo6OvsFJzb/hVfgiPtVxdzKoIE1AdDx6OEQBObzDq3weaqS/",
-	"/ZYkpZszeZ59gaSbhKqYjuAaI280HkWcxq0LEYTHL1+qG4EXThJqWJrxKYt3TcjBucyJPOxL61xySNOG",
-	"Dw9kDOSBZjIIxwce8tECH6TuL+H4APnuAePOEociWbBkgYg/5ygUPHJExPGLg+slCZMOEaXsSxgXOhAs",
-	"3tEFR14MDQ6idJU2jyg9QGGAHRHGlFVYc+KHAvkOjteUEgf7MlepWpeTADlLfPD1i6PKqsgMafGipAuU",
-	"/X9G2eylg3zEVy8v3p+eX07P5YWEPIpp1ydX70fj0T3m0vgxevXi6MVRYqkPsI8CMjoeffPiVdJ1gMQy",
-	"OXgvtfV7IW+UE7NjGkAXYJ7ZSvRE0tLePZLUgkPxlrmr9Cik6f/y0i//J5TmGHnpVzVsakYhDz2kSS++",
-	"+2ZcyoERJI7Q8eT+/Qkd/nJy+K+jwzcvfjq8/er3Jlws2UTz1CDlkqYgS2vvm5bUJLqZs8MIzGbI4qiq",
-	"oFmsJniEpatsjPRyqb8+Ouq0UU13t3pm8aTrIi1Po0Qdmkc0ZTY4XpDXA46gaoUyjMNsHHp99GrgYRTY",
-	"tGEczTLC66NvBh5PbiMwLorRLPHt4Jtj1vmMIzIqnRrHTCgn5ZWfbn+7TSzZYfkeOiGeArK5OOYpVsh2",
-	"JosOiGxFk3aXpD7FymtQO9Al0OV20mWayMKCLtXV31PQZbv/qBLGfgWKBop+zhStHKQWuJmaP/pJGmPE",
-	"kYdFEsf+6Vepg/4cYb7KVdAiwZSJY6ytTzNjvQUxGIjTnjhfH70eeBS5YdkwioIFez+BgeMOzH6CXWD3",
-	"wO6B3W8/VVOGXEuaTopuucmwzQWtSuDqRYvBSN16PSqZjUDyAJzYUpwI0T1+S4R88Up/HaIVNqbGmhuT",
-	"C6pPUKZ9v+XId5ZV2aEGYD5/Pnz5uxqQyduMCHXTvLedrieyJjpfLGh1P37xVfxJr+oTHLCQCKZCRtds",
-	"Y0qjRY9bGjSjeBrNPOZGFNekcf6ChLO8Su+88g6sn2pru50xbGhlmc0LV78UxT0eVzTh8sEElgMsB1hO",
-	"ieXE5Jj6zNuxmqzGI7IYfZRZqEsSoDMnNB7JEnN2F/2UFAyQc5cEm6A7LFjxN588pH+GAgnixLNAhMY/",
-	"GqNlZC/JpKdC+dZ0AmCVSzlemgfRi5NpE+1aVS7LP1KPh461SThN1mgaIGPdnIEYc9Um+WPOkvdc+nDA",
-	"dFv6jb7RzqCfqHHxIFW3y3AGygtbHSzwGuA1wGuKvEZGVHbWbUrVHo/rlDLedAIvPSNIN9QrJvPoVFeP",
-	"2ewPlfq0q0K1FrqZzbE4aoA+gD6AviL0lR5+tsI9vc4ji9onfBF2t1gk8lHyQF/3ytKz9ty//4EUro30",
-	"p0JkXrHhZMC4QX3CpSmUBwW4BrgGuFbEtXeku61ar/N4uCbfbHhHhrRS5232tlJnTcgsXz1s1VkLfSTG",
-	"LbEOl5HZsLCliRYGVd1dwGrAasDqClZj1AettVqPh9d2yLSIRzcgosv2eqN5Ur0Hhif1+t01JlXXuGd8",
-	"dGwvLXFh8tXp5Gta3GwAeAB4APgKwC+jWR+E16s9oqlhQH+R3pBtzWeW0awHsrNeoM7747ngZLHI8wJm",
-	"SQuTt2sSo4e8PVX/FGhhvPZ8dLbAdcxnqT9IkU3ILcgOTnGywBGAIwBHqHAEinpxBL3aFgr9FM2Glfrj",
-	"BtcR+yma9ZP7KZr1FvzjTUJieYk8HAbIwX3b0N9CqdT3I29W9x6xrL9j2kdhq4t7YJiRtrvV9TLvQumE",
-	"AmMCxgSMKWdMUZLC24oZyWzfOxcR0xI6p5XPU/incjlxEzc0Hvm+zFXtsiQSWG6ASVRHlcva/ug5HqFI",
-	"sLMsDrGby58hEqCfzzt4/a/p9T/ruQHrXf7327G45qTwRtLjuR2oyr3yTz2pW7ITU+Epcpa4O5lqjyR0",
-	"u2kMogviEdGn4gTHjAT1SjRm4RvS/NSX4e633xXrzt7zrpPnzcUCOUuVQ+8Siy9MPqRe3YWt8ZXv57O5",
-	"hp+9y1nwdsM2SO3ZhW70jn03YMQX0wA70y+Ie8UmtL/s05fWPht7xbiweTTT2OpV04O1Vy0P1l7VPFib",
-	"KbCja9N7tenn3/o8wlldbXOixA0kVyxdfXa/NHxW15y9DfhlY1OfymBYenTD0hIjKpanS+zcDQV5iUp8",
-	"j6gRWiZYcFJA7vzbVCAurjAnzDXDEi69Btmmto2uiYdZZIliVhi1ZqCYU66U/6Vp2l8fvfn+1bdfjy2a",
-	"NEajXXF8T/AXqZ7G0BieOILc9xCB14pso2iGadjjWJlfmo4/J6+/Nu59t+30sMf4qp+0LuuuI7B7zMVD",
-	"Ud07ymYFmsu5s/z0VzYzfp1gaWVREpN9j6piaCkj5P2okXSRotDDKfOdiHPs14gsTCCqUn4T5tsNqu+p",
-	"sczX7Esd4L07oNlJtdl4avpIlCeUIGVTt4fXM07uMf8YiIbeBqFlJZFaPijWuoqD+R/0jl4LKHJwjMxD",
-	"kf8p80PBEfFFxz38gB4aCHk8uqJIzBn3eusqJ9xZEoGTBPnGEX2ctmdHKjSSVLF55uGK4znm2Hdw79FP",
-	"A45VWirD72fKXKA/n1g3hUqNWxMeVWtYzLQvjgVSTnjb25qpN9DXtKjaOI3Xdp4wiLKlkGIRYt/hq0CM",
-	"xiNf2vmlmcdo80tbTErE7U5wyOh9H/qWLZ33UExV1R+FCGrsFKrERSIlDcch0mZrZZomfUJV7qWEpXWV",
-	"2aBPvxN5+k8ZpWjGOBKMX2HukeQVzrBHbgXZ7D8JdR3UB6afNjdDDAdzjsPlNbvDfu8Q6fePG13Nm9jJ",
-	"Gh57HIeJgsgocVYD8k1Z1khtZ5iilXEeH9DDiRDYU7JP5fs/ie+yLwMqnpxROkPOXV9NLq1/yvw5WQy1",
-	"fPUL9AMiNOI4Hm7N4n5AD6rQJFafzMvMfFLkrvm3j1z5alUtnIgjSjEloWfeAZ3L6oXTRm/X3KQ1rulC",
-	"FnGnwgKlWS5LsSJdZzIHGj2HV+r/P5LGdvPL1oIF7zhysDS2NB6GdvA2TSKaZXltu3nl9qtV9OXN69o5",
-	"8ZoyRNCYfYaDq1k/Ki7koQfixWN7c3T0/as3b77+9vX3r4/evHmVuFjIT4e5Tqk9CX1pp3tO2Vys01GJ",
-	"SFRq0qTVsZzF7UCal3RzAVjaICz1zHfy6G6H4AEIHoDP3QNwlryt3/qCnnyCf+DH82TfFUcd9QZi8nal",
-	"F7AQmz1t5LceIk/WgUU2fVW0PMZ4kRYch6PxyEOcIDeWibxV+DON/8/8BRuNR1/w7FBuUvKk4iz+emtO",
-	"2S+I3+5/38PFgPgOjVx8Lq0ZhPnqsc6qdeAO4+ACCRyKUxb53TVqOb8eu6HWr09NLFACU3rFmosPf8H6",
-	"9LDqN6f0ePSpyvGcPNi8zugssRtRs40zPnbEwZd9mHDMvdd99DEbXDah8jEf63ReIDN4bAIY684xVsnK",
-	"ijy16UUpyU+tH5OSLW7tO1JyNiDcwhNSz/UJKRP9c+yx+1aZeiJLDStT27wAk5UEhgsMdy8Iri2CTRLc",
-	"wMFrDQQHquZGVE17ve+plal6rShdZk0/0mS8BlWpvHjF4WmLA1oVgPxegbwy+LWaKk9luYFtlRuKUVaT",
-	"KkXQVb6bgxkPU/toEp1Y91DKGiFm7dEulq6pYb9QzhJ+qvz2xVE9xiVOEz2o4wbKL0DlU0JldlVSwEoX",
-	"U2yBlWey2FBYWbiaaX2vOO76H4xGnjnAsoQBedvluiDhANnuDdk2Pzieke2gT413I9tBnhnPuwTqBerd",
-	"E+qdY+EspwW/ykYy/qFU/vHpeRNU2dVDKhsLiNFA0VtG0U03uYqIra9ydQF2G+9yQZ+Fy9xnfplrBgGO",
-	"LcXySVoQBHNAD2Dj20PB1i8+KkLe1GuPBXo23MCu+Z6iLmHEjUGYA5A/kD9udQ9RVL8jyY23IR8wJPPt",
-	"k7U0T/Pa9zr4fWPtNJtCi6SoSg+R6nr9W+pHShS7e1lebXOQbmUqS8hFCbkkN5dLkoSMxqCR5x00E0e1",
-	"XCjvjM3FLV1aer4ghnyXeeSXmr7XzL/SeylTH0KZ7a0u+roo2Njnny4mprPPFVZyvGy2WBTdILUuazJl",
-	"98onUJ8uI3sJrS1LBkdfzEkyYgH8wbwug+eb2Hig/eNeIYE9G1TSnVJJNQfvVn/Ws7zs0D6tyaoW/fQ1",
-	"DTPLf/IDReVkfdn7lZ9uxxqDyHXYw8Nciz28/eoP/6Urtccv/3J4+9Uf/2zUbNtBWGGq2Xgmc+qv46wa",
-	"aO/ydc5iVmN2D5NshSeNC647yTbzOuUIG+QvAeZbmS1PNh5tVaoDqe7zUwO2dt4BtAG0nxK0NZg2AHeT",
-	"V4B2iK09A8pRP9voHQDECR4C4CHQAgxtgd8aEQ0c/d0W31mSI4rF4aYfWPSeUWLblZ9GiUNf++2fbmUT",
-	"PP6MtK81VK6ypKcrcqCNAdQD1FtCPfMQsbCgJcWGDwgvvi7d7T55uOcn+ifCdNZ/sUI2ce4LvsqQv+Pj",
-	"nvHe1F9t5M4Deu7S7KkFy/uOOeNfEHdj6jzPE5xUb6qW6vy08Khl/SsbRJ3wXk9aeMR1Kf6COB7ygY7K",
-	"SJpnZ8xnWX5jI8vz/d23337zrZbcO2/Q4v2N/Ea2T+b6NXJcxt+CdItaIo6TM/HkbDghE+DAwIGflAPL",
-	"U1hgvm0pBuTJHTjDgOy7e2RjVg9sHUB+e0F+jZcQSRH7+4eUOLb06gFYINw6PO9bBwP9t1o4k2IDGzeH",
-	"1F63RgetS+EJCuozVFAfVbkcDyKXApMFJruPgq4Wp9Jq6dWidQc297bF1dvfbuXhEl0019zlT9V/aqTQ",
-	"A6MBLgAunhAuNIQwYEaThqwdYms1uRg3t526MhAnKMygMLcAQ5ubnkZEA7vpVUJvu0gCg6W/BkwAhr2N",
-	"dNlm0tLocmC7VpuQr8LsTb93oOd+ysIjgQKIHwA1+w01CyKulL/liwUWJ5TWqgfv8qLvZMkNEo3W2QUJ",
-	"gXBAbn+2crtGogaibZPbNUIaWG7XRtFdbi9WBrkdmOl+0OUymjXa2N4lRazNa1kWpu20rL0j4sdoFq/i",
-	"gqsIPodxF7g1cOtnzK2X0awICG06vASFgdX3buw5Tdh0oiXotCk/nIZfFRBS5FO3fcUJlQcMIgSIEDsP",
-	"FhTNWm/13yXF1r7Qb2HrF2kXE9k+kBOQ0y6QE0UlcmoRxinqJIzL5KRbK4xfIBDGQRgHYbwJECyEcYrW",
-	"F8bbKVV2AfwV+OtOkpOHOEFuu7z6QZbbjRfo43M7QyG21IHT4lcoDL/EvLaYmibv8S+/+3///hwdHX39",
-	"3Z/+8Mefvvr8+fC/Pn3+fPvrb//7n8fjF/GXb5zkv/jP//fft39qHNuEMfGoHd6EMg6l22NbHYNOnDvM",
-	"33togSXEqaQ/I3XKjr8zDXAXXuQvnanSqhqO0FO7KyT0evYWxEbgNU/JaxThl5hN26ODitkM/Ba46t3G",
-	"9SgvCgZJoLo9obomG4qiOGsjSk4g22lFAfYHVpNnbjUxg0Cbo5ECgoGdjAqst8v9ITBioP+9o0HrN3sV",
-	"MW7qzd4+L+z1EqLhzV4gfyD/Avk/qIwlKslHO/3rFQYDgNIoOr112BcJ9D4BEgASABLabzMVEOzIM975",
-	"EIZ4iBnxxYCJmbSXqrsl5AqiC+IR0afiBMcnBfW6Uml+RBouup7oosv6ndjSlVjt8xLTADvTL4h7xbFo",
-	"f2WPKFxpRDxHNMTjEl1/YK65s5jnFt+r7dDqFWeCOYyaW45mlITL+p7ld+ymokZZwBhdI77Aoubzb60P",
-	"2xpKVPfN/GL4Bl4ZX0uwWmJExfJ0iZ27oU5EwrLuETWu/AQLTgqvsOffpgJxcYU5Ya5517BkV/YPIF8T",
-	"D7PIcpOttpCiGaZhj6X61RieHn9eJU+IN82n2xDt7V/jkYc9xlf9mI2suw6/8ZiLhzp17yibFc5cTrzy",
-	"01/ZzPh1gqUEITNGduhRVQwtISTvR42kC8iih1PmOxHnxUfaNdpgAtFT5gUUx23aDarvCbN0kSg+Wz6M",
-	"SKXabDw1fRjOCSVI6Xz28HLGyT3mHwPR0NsgdK8Ylln57f4KuykBKEUOjpnMUPR4yvxQcER80XFRP6CH",
-	"Bsoaj64oEnPGvd6yxQl3lkRgR0TcLD98nLZbGQqNJFUs3sMfXXE8xxz7Du49+mnAMXKr+pX8/UzJmYy3",
-	"T6FS49YEENUaFjPtCyy8aeM5DhMBgVHirAY8prKs8SScYYpWxsF8QA8nQmBP0X7l+z+J77IvAwoenFE6",
-	"Q87dKfPnZDHU9Osn+AMiNOL4xKldnA/oQRWaxOzfvEzMJ8XDmH/7yNUrdVUBHnFEKaYk9MwrqB9KvXDa",
-	"6G3PRQ4FC95x5GAphTaucrtwbeggorGoFQ7Ovn5EUt/Nsja/OTr6/tWbN19/+/r710dv3rzSEjgf5rya",
-	"+AIv5G5YavVTNhfrdFTaPOXgmLQ6lrO4HYijSTMXkMvGyGUTt+dgaAdD++4b2pm/YO1BDnGp3QpxeD4h",
-	"BPHeHL/6dqMRBErYnWJR936x4kEVQ2/NewsbD0fY2viDeLvAARO4wBNzgfgYFnhAa+xBcnAHjjyI27Ry",
-	"lFAFwdkRaG0PaK0x4iAuYR9voAhjS6MNgNlBtMEzjzaoEH9rpEFcaug4g5zRdooyALYLVL8/lGcfXxAX",
-	"36rogq6CMkQWANED0WdEbxdVkFH99sUU9KB/iCcAIAAgyIGgNZYgLgWRBBBJ8Dzuk8BTHzz1wVMfPPVt",
-	"PfXB+x6877ufGku7I/jpg58++OmDn/7m/PSHcV0Cp39w+genf3D6B6f/HXT6X/8yG2zhYAvfeVt45IvQ",
-	"wuM/Ljawy79erYv2PycUX6EY8TtWXLJQ9KqYrFJa0yK7PnGwlZaryl4nv+cme20RR+NkRxYch6PxyFuF",
-	"P9NRlidhpDTqZEdcEpdIjlYY7xEls7iwycAvSv3NiO+OxqN7RqOEvcULbKwoS6Sst7+zfvJVX1Z92Z7e",
-	"JT/y4Ql2wOgnxugYcIsg3ewmHBfp4CccqQCZ7fQTBgoEL+Fn7SVcpf52P+G42OCOwlHNlWBFm5IFwTUY",
-	"mO1ekFu7e1BcbHj/oLTs+x4eM1L271VzVzQxqdX0mGIhtVxfZ+vuSqNdKrsO6mWiAvYYTapF9qia6JY9",
-	"6j1X7XYAXghiNPDWfeStMYW3GxvjUvCCKiSW7pP+JD47x/8B76c+Fo9ZTf9+ATwGeMyT8phEcNRZTGv2",
-	"krjU0NlLcsm8xVaiCoKtBGhtD2it8VoiLmF/K6EIY0tvJYDVwa3Es76VqJB+651EXGroK4mczXbKXQJM",
-	"F6h+fyjPPndJXHyrcpd0FZMhdwkQPRB9RvR2uUsyqt++3CU96B9ylwAQABDkQNDqnBCXgtwlkLsELqsg",
-	"twrkVoHcKpBbBXKrQG6V/c6tYmkXhdwqkFsFcqtAbhV4AxXSoUA6FEiHAulQIB3KMPfjYF4H8/qOm9d9",
-	"JshcDfkForTWse1SK3hC6WiDfmd6VxckhIgecEF7ti5oOn2aSFZegJxGoWBe/fWYTlGneo0B78reRoS6",
-	"58ncjKZ+FARnmZO64SZAXU+8Rc5dFDTdFpzG/6wvklw6NLeSFJlI9cxcJr13sJAwlxi5iY/vZi0qqQ2r",
-	"JjjneslxuGTUNc9HRnrWr0pdqI5aBfAhBDFnT6HzjIROevVqiZ1plR0DT+wwjkrq3pOA62ahbDz6gmdL",
-	"xu5uOO3qM13cicq6llegNJjK7McpkObbV17n6qQL4y9sG6AwoPCeovC5hwjtgsGyAoiv5jJzzrwT1+Xx",
-	"2bG/Hq2KqZpfklWIeAt0h54IUp+PzOqat5bbDuOC06RFi64FU1Ntuw71iP9efnxVveqKwviMW9mUOwrT",
-	"28FUtCXVNkKbt7bdxQNUXGFgQsCE9pQJvYt/WnXhQqrG9rAhFATX7A77Hbxdd1xnCDhhcveNPEW7MbRj",
-	"UUkhG9Vhh/iA1CSys6EtWmGLq0sEYA9gv6dgf4GkT7ot1CflQd8Ai86aFh2AVIDUPYXUD0nokqcA1RZY",
-	"tVrbA6/OEvk+po1RZfsAvbrVo7N8W8blOeMeEqPjUcTJCIAZgBmAeTuA+VJ0M2sk5QcD42SRM6uEKR76",
-	"ecjCLZYKzfo9tKFCsIA4+2fQkNMaF05YwbYB5gyA+GcC8VdRuGTqvswW5rM6w8ndxNb6vHcOgw8B4aVn",
-	"FLKYk1dH/3F0NG4EfVPoqA0jyRKBx+2n/X2tB7V8PTaFpgm+Kg02rfDNkdXorNWL5EgPzXoUp0jbH+dH",
-	"DzAeMH5PMX6CQ+x38lRUNQbEdztqBn+a/iaZYdxZdtJHRZ0vcD8BeH+G8D6lyOl0JSkrgNEc7is36oGe",
-	"bitAL0DvnkLvNUZSyLKFXlkB3EEAXuHWEUAVQNUMqhQvOPK64aqqsz3QOmPC1qjtLJHd+8fbBdceDkO0",
-	"wDFCIbflpchHCT/fDpTONj7b2OpSAXwDfO8dfDe9b6dDtvUzd3rrW/vanT4zyDgEGYcg45AZHdqewNPp",
-	"aOCX8Eo40lH3K9UG1g2se++IUyUR7ZAO7EavsUV3CcmAdlCZ2qHMYR3hdDxifIF8Rdg1euJGspGVxcfs",
-	"cACGA4bvKYZ3ykt2U6iyZ3nJ5KzsWMHTX3FsLaiuc21SQeB8UwCCAYL3FII7JCW70SrArXCNZByvjhUk",
-	"DuRuuQkohpRog7jvl/lJejaAmwA32VNu0iW72I1eA7KLbZw1LZKV7vSW4ONwm51JblZB9GxJAdIB0vcU",
-	"0u1ziN3k5UE9MJehiN9tHwJvn+lFrRPAKsDqnsJq1zxiN+VaEBLVwwk0W74dBeGnS2VWgejCWgJQA1Dv",
-	"KVDb5xW7yctDXrGnvnH0haWtY30Lxe4lNauAuVotgHGA8T2F8W65w26KdSB32E7lDtu4ldo6B1mgTpDV",
-	"KHY/YVmZrWjTB9YCrGVPWUuXlGU3eg1IWbYdKcs2wS94ssXvB/OheZKMaYaYRjUrgHOA8z2F8w4pym60",
-	"CmCP3wcH8zDey5oGHvUGNB0IAC0A7Z4CbYeEZDdaBfAt2RUwFfF+WfX4qNCaDgugFaB1b6G1S1qym2Id",
-	"SEu2I2nJnhDY5VEZBNvb4TrrDBAbEHsfEFunwxfIEeS+PhnZR63siSy6wQRhem+QIAwShD3XBGE6hSqi",
-	"DRgXKutrvVh1xbiQWV6HFKNoFyYfcCaYw2jh5ayRcILReIT9yIunJ/8VuYHGUrUWohkl4fIDc3GxEeIv",
-	"1HMlaUP5L8t4PRpaw24aAly5JReIL7Co+VwSD4qtFcdaaElbiHFpDdcQIwY5yMn4AFxBKnlCgIvRTAc2",
-	"F1PcBmxnssxQwBb32z3DoaoFNAw0DDRcpOGmnMbxebXOZaxobDtzGAPlgWrynFWTMtVLi28z55YW3sfm",
-	"3Huvi6Qw2UcpAQEGYBQEGA3KQhGTr4WFRRYc3spymaYBQw8ppn33zbgEcUES9hrP/N+f0OEvJ4f/Ojp8",
-	"8+Knw9uvfj9quG26tEsxlha/0jKwGXv8y+/+378/R0dHX3/3pz/88aevPn8+/K9Pnz/f/vrb//7n8fhF",
-	"/OUbJ/kv/vP//fftnxrHdhNa5Vsr7LsepFAuaYhLkBdq7z20KKF4uu3Hr/7DNETs3xPOfA/7ouVyzMrH",
-	"VrbRYeTmF9kLm1paR8Melqfx9Mgv1xzQH9D/adFfncMSB3Azj4BmDpA9czWUUCubNQJNRfLLysKdNJDe",
-	"3pBeswVJFupgRcqIZFstScAIwZr03K1JZiRoewErpZ2BX78qMuFu90LAkgEE9o8QQ3SPz3P9sZ0ip6UK",
-	"Q5Em9u876/09ZepEY34UPbnijAqCAGDAdmLAg2w4vZqwAAG9xmAoUBpGBQ6a0pP0hwO9V8AFwAXAhRgX",
-	"2q9+ZcGBr383dFeiDWEqkIiU1KEud12aTCDy/bj4eOSyxA4h19F014v4IiwiVH3SjFKeDAN0OczzkO92",
-	"loCcILogHhF9Kk5wfFhQrxsXeY3mnojGNADP/VoKC+Qsz2Sc1iUWX5jMdV8XEZZdYBkuquSLqNMAO9Mv",
-	"iHvFsWh/GR9BnSMa4nGJzFKfh0pnMRcsZoHp0OqV5pJRbbnobVH3vcF/4rrFf6LycmuR9Awlqvtm2Mk+",
-	"ykn75eJaws4SIyqWp0vs3A11IhImco+oceUnWPDii7r5t6lAXFxhTphr3jUs2Yc1Qo6uiYdZZLnJVltI",
-	"0QzTsMdSDfKCsNUQPewxvuqH57LuOpDuMRcPdZLeUTYrnKOcIOWnv7KZ8esESyaN3Y64oyqGlrCQ96NG",
-	"0gU40cMp852IcyXcVM87E4ieMi+gOG7TblB9T42li4Iv+c97d0CpRbXZeGr6MJETSlBrJrIyZJxxco/5",
-	"x0Bs/DVwyYTMOmYLA7Lb0oAiB8eMYyh6PGV+KDgivui4qB/QQwNljUdXFIk5415veeGEO0sisCMibpYJ",
-	"Pk7blflCI0mV2/adGF1xPMcc+w7uPfppwDFyqyqM/P1MyY6F9AQ1U6jUuDUBRLWGxUz7AkuHy5J4ZA2n",
-	"hMscBVeMEmc14JmWZY3H5gxTtDIO5gN6OBECewooKt//SXyXfRlQ8uCM0hly7k6ZPyeLoaZfP8EfEKER",
-	"xydO7eJ8QA+q0CSWFczLxHxSPLn5t4/cxdwswSOOKMWUhF67g7NeOG30tucih4IF7zhysBRDG1e5Xbo2",
-	"dBDRWC4LB+d1PyL1Em6a9fnN0dH3r968+frb19+/Pnrz5pWeBNr4bqGllj1lc7FOR6XNU96JSatjOYvb",
-	"gdiftDsBuWyMXDZytw3GbzB+74Hxm7P43LfHCchyA4cJrGNtVDaqfi7sJk/0p3Ykl2urFnqCw4hCRBGA",
-	"xdOChTyMJaxodGuVZey9WmX57XVqVSsAhAg+rc/Vp9UIAq0erSkfG9ahNYOLrv6sWUVwZwVGvCc02Oqw",
-	"IssN7K/S4gvxVCK95btjT4kfIJEAIu0nInHskvZkA5O41G5lGtB9tB4nhj9ZyuMdjN/f2gj95NgBXgJe",
-	"PiVeJmRdQMu2wPzk2A4clZ/0bBMvkBYEbQlobQ9orclkmdCZtcEyJYztNFcCqwNj5bM2VlZJv81QmZDM",
-	"wGZKjc12MTIA0wWq3yPKs461T0hwmwLtO4vJEGIPRA9EnxG9VXB9TvVbF1nfh/4hph6AAIAgB4K2y8mE",
-	"/CGUHkLpH/neBYLUIUgdgtQhSB2C1CFIHYLUIUgdgtQhSH13gtRtbxYgQh0i1CFCHSLUIUJ9FyPUB7gI",
-	"Bjsy2JF33o68IKHgKwu/cllwYNdy4qEFjgVS8tA9Vbtmv2wV1OToLblGWvw6+ZDboR3KItdob05r3HCz",
-	"BVD3Bq98jMJ4M7uH1BdmpTWjLU1xZKWZjQvL//Qu5HJoAI8Aj08Lj+oclhCy2b9VFurg4iorbLGXK1Aj",
-	"OLo+d0dXMxK0u7vKgoN7vGaY0VNQAL9XYMn7RIgChyJjVK3keK2X3nEFZldVls46CuAV4NXe4FW7v56i",
-	"g3Vd9mwke9nJRPYAyj5QKlBqMgQ3orjVHDpVBTeXaaPJQ/Z9D1fU3IW10nKyByHu02qjo6nDmX/+EHAc",
-	"hnW3TOulMkIzil2zZ6lft4zVDEadOk1PSI1clH4ui2Ha5o2yBR+lQlbi0Zx4yx6qH0wCm1yp7iPul4hE",
-	"ViRO9uJWt7pLTGl5EWYoXMZzXhqnJ4iHf1FGtrUTppSOXn7+QZ4ELrVzXCpFlTKXcjHFNlzqTJYbiks1",
-	"YmCJHrWyQHpAentDek23QSnZWd8GaUTSdBv0mPc/6RxAQYP7n+d6/1NH+21mnJR2Nhd5CcrhDiiHbQki",
-	"QVV8WlWxwHVBbwTmuffCa9JEu20zKba2ZbNRutS6eKIbCDmED5FIKsNbQECvW0CviqPr1NqoaCZF7NXM",
-	"lL1vp8uhnA3QICicz1bhNNB/m7OhpJqBXQ11RaCLe09WD8RlYL97QX6ttp6k2EYddvQuQFgGagVqNVBr",
-	"uPwbXr1AlNYLy0mREypdTDdFKNMf/4ZXFyQE8gA59vnKsQmpFUmz1eqUFNuix6+HfBGP3COBk4UyfY5m",
-	"lDjmr2bvJq1BvXplMCCFA1/fC/BoNIIlReyNYEnx7TWCJQIECA8gPIDwkNN/qxEsKTa0ESxFinYnx7Qk",
-	"MFxguHtBcK1mr6TYwA5O60jrFIXiJky9jTYh6D8uHIAwAfiyj/gi0OIFCkOy8K9Z+sx6Lcpco8VJqexQ",
-	"WGP/Sn0ykXVes08bAOEAiHfniFeghUa5bUa8a7QY2ILnMCoTjA7P0k22tafm2NdoAewaKH57KL7J8naN",
-	"FtZmN8kCt9PmBkQHBrdnbHArEnybqe0aLQa2s/USr0GkBga7R/T2A2eejTo8qZQGhRioF6j3qai3zU5+",
-	"jRYDG8n7KcTNsbjDubo8DS8HLQCwZb+wJQoxf6GUbqPufRNi/g6LTfqyxjuNfSGfi3xHxJXcZ/4Bq5d6",
-	"gFZAY36WGnNMnYpQ7xmNPPwWOXdRELbax/+hl96l3JFPmAJEEL9J4tASfVSGlqf8MIztDuPgAgkcilMW",
-	"+d0foqZkFv5MeyyKhzhB7qxPTeYvWJ96q34jrc2TEp/uBcdhjzaDLFe6ISN59vDm42UfkXWbk7Ck0x2p",
-	"pRxlmzhSmzJSoy9kbJEnxJzBJOL+x/ncnJ5GYko6nQCJGKpGx6N/f0KHv5wc/uvo8M1t/udPLw5v//T7",
-	"0djOdVxrO9sLQ9qTIt09tWiuwybIHSCjPyXvLzB8oxDQlpWzIAQMnJpTH0l3RbxUG+xzQJ97SJ9NV9oF",
-	"2rS+3C7RzXbecgMTBeUdlHcbgGgz6hdAYpeSfIIWD1o8aPGPqsVbi+JbqPaPB1QIQIQBEWa/9Ywsf7LU",
-	"EyJOR8ejpRBBePzy5YpF/DBN3Ez8UCDfwS8c5r1EAYkx7P8HAAD//w==",
+	"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",
+	"//8=",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

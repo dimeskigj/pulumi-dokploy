@@ -3665,6 +3665,305 @@
         ]
       }
     },
+    "/bitbucket.create": {
+      "post": {
+        "operationId": "bitbucket-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiToken": {
+                    "type": "string"
+                  },
+                  "appPassword": {
+                    "type": "string"
+                  },
+                  "authId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "bitbucketEmail": {
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "type": "string"
+                  },
+                  "bitbucketId": {
+                    "type": "string"
+                  },
+                  "bitbucketUsername": {
+                    "type": "string"
+                  },
+                  "bitbucketWorkspaceName": {
+                    "type": "string"
+                  },
+                  "gitProviderId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "authId",
+                  "name"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "bitbucket"
+        ]
+      }
+    },
+    "/bitbucket.one": {
+      "get": {
+        "operationId": "bitbucket-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "bitbucketId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BitbucketIntegrationRecord"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "bitbucket"
+        ]
+      }
+    },
+    "/bitbucket.update": {
+      "post": {
+        "operationId": "bitbucket-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiToken": {
+                    "type": "string"
+                  },
+                  "appPassword": {
+                    "type": "string"
+                  },
+                  "bitbucketEmail": {
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "type": "string"
+                  },
+                  "bitbucketId": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "bitbucketUsername": {
+                    "type": "string"
+                  },
+                  "bitbucketWorkspaceName": {
+                    "type": "string"
+                  },
+                  "gitProviderId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "organizationId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "bitbucketId",
+                  "gitProviderId",
+                  "name"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "bitbucket"
+        ]
+      }
+    },
     "/compose.create": {
       "post": {
         "operationId": "compose-create",
@@ -6303,6 +6602,237 @@
         ],
         "tags": [
           "gitProvider"
+        ]
+      }
+    },
+    "/gitea.create": {
+      "post": {
+        "operationId": "gitea-create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GiteaCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiteaCreateAcknowledgment"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitea"
+        ]
+      }
+    },
+    "/gitea.one": {
+      "get": {
+        "operationId": "gitea-one",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "giteaId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiteaIntegrationRecord"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.NOT_FOUND"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitea"
+        ]
+      }
+    },
+    "/gitea.update": {
+      "post": {
+        "operationId": "gitea-update",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GiteaUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.BAD_REQUEST"
+                }
+              }
+            },
+            "description": "Invalid input data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.UNAUTHORIZED"
+                }
+              }
+            },
+            "description": "Authorization not provided"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.FORBIDDEN"
+                }
+              }
+            },
+            "description": "Insufficient access"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error.INTERNAL_SERVER_ERROR"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "tags": [
+          "gitea"
         ]
       }
     },
@@ -20701,6 +21231,119 @@
         },
         "type": "object"
       },
+      "BitbucketIntegrationRecord": {
+        "additionalProperties": true,
+        "properties": {
+          "apiToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "appPassword": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bitbucketEmail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bitbucketId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "bitbucketUsername": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bitbucketWorkspaceName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gitProvider": {
+            "$ref": "#/components/schemas/BitbucketProviderIdentity"
+          },
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "bitbucketId",
+          "gitProviderId",
+          "gitProvider"
+        ],
+        "type": "object"
+      },
+      "BitbucketProviderIdentity": {
+        "additionalProperties": true,
+        "properties": {
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "organizationId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "providerType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "userId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "gitProviderId",
+          "name",
+          "providerType",
+          "organizationId",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "BitbucketProviderSummary": {
+        "additionalProperties": true,
+        "properties": {
+          "bitbucketId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "bitbucketUsername": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isConfigured": {
+            "type": "boolean"
+          },
+          "isDeprecated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bitbucketId",
+          "bitbucketUsername",
+          "isConfigured",
+          "isDeprecated"
+        ],
+        "type": "object"
+      },
       "Compose": {
         "additionalProperties": true,
         "properties": {
@@ -21122,6 +21765,16 @@
       "GitProviderListEntry": {
         "additionalProperties": true,
         "properties": {
+          "bitbucket": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BitbucketProviderSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "gitProviderId": {
             "minLength": 1,
             "type": "string"
@@ -21152,6 +21805,209 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "GiteaCreateAcknowledgment": {
+        "additionalProperties": true,
+        "properties": {
+          "clientId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "giteaId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "giteaUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "giteaId",
+          "clientId",
+          "giteaUrl"
+        ],
+        "type": "object"
+      },
+      "GiteaCreateRequest": {
+        "additionalProperties": true,
+        "properties": {
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "giteaInternalUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "giteaUrl": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "redirectUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "giteaUrl",
+          "name"
+        ],
+        "type": "object"
+      },
+      "GiteaIntegrationRecord": {
+        "additionalProperties": true,
+        "properties": {
+          "clientId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clientSecret": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gitProvider": {
+            "$ref": "#/components/schemas/GiteaProviderIdentity"
+          },
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "giteaId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "giteaInternalUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "giteaUrl": {
+            "type": "string"
+          },
+          "organizationName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "redirectUri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "giteaId",
+          "gitProviderId",
+          "giteaUrl",
+          "gitProvider"
+        ],
+        "type": "object"
+      },
+      "GiteaProviderIdentity": {
+        "additionalProperties": true,
+        "properties": {
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "organizationId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "providerType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "userId": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "gitProviderId",
+          "name",
+          "providerType",
+          "organizationId",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "GiteaUpdateRequest": {
+        "additionalProperties": true,
+        "properties": {
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
+          "gitProviderId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "giteaId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "giteaInternalUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "giteaUrl": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "redirectUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "giteaId",
+          "gitProviderId",
+          "giteaUrl",
+          "name"
         ],
         "type": "object"
       },
