@@ -13,3 +13,7 @@ Verification passed: focused Bitbucket provider tests, `make lint`, `make test_p
 ## Shared4b fix round 1 pointer
 
 Java input-secret propagation and Node.js explicit-empty preservation were addressed in fix commit `2f5826e` (`fix: preserve integration secret and empty inputs`), based on `192df10b45a0216c68d7b80d634ee6d99a69d583`. This follow-up changes canonical generation normalization and runtime contracts only; it does not modify Bitbucket provider code. The full fix details, exact command outcomes, and post-commit drift-check results are appended to the primary Gitea report at `.superpowers/sdd/2026-10-13-gitea-integration/task-4-report.md`.
+
+## Shared4b fix round 2 pointer
+
+The runner portability regression was fixed in `2280c71` (`fix: honor caller temp dirs in sdk tests`), based on `f43890c0e87e1d9bcc071523d2e5e00496b34e31`. Both SDK contract temporary directories now honor caller/platform defaults; the offline runner tests exercise actual creation/cleanup under a custom `TMPDIR`. Full script discovery and all five SDK contracts/runtime regressions passed. Exact commands and results are appended to the primary Gitea report at `.superpowers/sdd/2026-10-13-gitea-integration/task-4-report.md`.
