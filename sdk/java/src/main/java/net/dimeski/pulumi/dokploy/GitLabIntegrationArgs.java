@@ -314,6 +314,8 @@ public final class GitLabIntegrationArgs extends com.pulumi.resources.ResourceAr
             if ($.redirectUri == null) {
                 throw new MissingRequiredPropertyException("GitLabIntegrationArgs", "redirectUri");
             }
+            $.applicationSecret = Codegen.stringProp("applicationSecret").secret().arg($.applicationSecret).getNullable();
+            $.gitlabInternalUrl = Codegen.stringProp("gitlabInternalUrl").secret().arg($.gitlabInternalUrl).getNullable();
             return $;
         }
     }

@@ -103,8 +103,8 @@ export class GitLabIntegration extends pulumi.CustomResource {
                 throw new Error("Missing required property 'redirectUri'");
             }
             resourceInputs["applicationId"] = args?.applicationId;
-            resourceInputs["applicationSecret"] = args?.applicationSecret ? pulumi.secret(args.applicationSecret) : undefined;
-            resourceInputs["gitlabInternalUrl"] = args?.gitlabInternalUrl ? pulumi.secret(args.gitlabInternalUrl) : undefined;
+            resourceInputs["applicationSecret"] = args?.applicationSecret !== undefined ? pulumi.secret(args.applicationSecret) : undefined;
+            resourceInputs["gitlabInternalUrl"] = args?.gitlabInternalUrl !== undefined ? pulumi.secret(args.gitlabInternalUrl) : undefined;
             resourceInputs["gitlabUrl"] = (args?.gitlabUrl) ?? "https://gitlab.com";
             resourceInputs["groupName"] = (args?.groupName) ?? "";
             resourceInputs["name"] = args?.name;
