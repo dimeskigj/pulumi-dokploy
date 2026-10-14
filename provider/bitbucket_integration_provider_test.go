@@ -95,6 +95,40 @@ func TestBitbucketIntegrationPreviewIdentity(t *testing.T) {
 	require.False(t, updated.Properties.Get("bitbucketUsername").Secret())
 }
 
+func TestBitbucketRegisteredCheckAndPreviewPreserveComputedModeIdentity(t *testing.T) {
+	server, err := integration.NewServer(t.Context(), Name, semver.Version{}, integration.WithProvider(Provider()))
+	require.NoError(t, err)
+	for _, tc := range []struct {
+		name, identity, credential, credentialValue string
+	}{
+		{"API token", "bitbucketEmail", "apiToken", "api-secret"},
+		{"app password", "bitbucketUsername", "appPassword", "legacy-secret"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			inputs := property.NewMap(map[string]property.Value{
+				"name": property.New("preview"), tc.identity: property.New(property.Computed),
+				tc.credential: property.New(tc.credentialValue).WithSecret(true),
+			})
+			checked, err := server.Check(p.CheckRequest{Urn: lifecycleURN("BitbucketIntegration", "computed-identity"), Inputs: inputs})
+			require.NoError(t, err)
+			require.Empty(t, checked.Failures)
+			require.True(t, checked.Inputs.Get(tc.identity).IsComputed(), tc.identity)
+			require.True(t, checked.Inputs.Get(tc.credential).Secret(), tc.credential)
+
+			preview, err := server.Create(p.CreateRequest{
+				Urn: lifecycleURN("BitbucketIntegration", "computed-identity"), Properties: checked.Inputs, DryRun: true,
+			})
+			require.NoError(t, err)
+			require.True(t, preview.Properties.Get(tc.identity).IsComputed(), tc.identity)
+			require.True(t, preview.Properties.Get(tc.credential).Secret(), tc.credential)
+			for _, id := range []string{"bitbucketId", "gitProviderId", "organizationId"} {
+				require.True(t, preview.Properties.Get(id).IsComputed(), id)
+				require.False(t, preview.Properties.Get(id).Secret(), id)
+			}
+		})
+	}
+}
+
 func TestBitbucketIntegrationInferPartialState(t *testing.T) {
 	for _, cause := range []error{context.Canceled, context.DeadlineExceeded} {
 		t.Run("create/"+cause.Error(), func(t *testing.T) {

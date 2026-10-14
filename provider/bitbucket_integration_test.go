@@ -62,6 +62,64 @@ func TestBitbucketCheckKnownModeSurvivesOtherComputedCredential(t *testing.T) {
 	require.Equal(t, "bitbucketEmail", resp.Failures[0].Property)
 }
 
+func TestBitbucketCheckAcceptsComputedSelectedModeIdentity(t *testing.T) {
+	computed := property.New(property.Computed)
+	for _, tc := range []struct {
+		name, identity, credential string
+	}{
+		{"API token", "bitbucketEmail", "apiToken"},
+		{"app password", "bitbucketUsername", "appPassword"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			values := map[string]property.Value{"name": property.New("x"), tc.identity: computed}
+			if tc.credential == "apiToken" {
+				values[tc.credential] = property.New("token").WithSecret(true)
+			} else {
+				values[tc.credential] = property.New("password").WithSecret(true)
+			}
+			checked, err := (BitbucketIntegration{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(values)})
+			require.NoError(t, err)
+			require.Empty(t, checked.Failures)
+		})
+	}
+}
+
+func TestBitbucketCheckKeepsKnownModeErrorsWithComputedIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		values map[string]property.Value
+		field  string
+	}{
+		{
+			name: "known invalid email", field: "bitbucketEmail",
+			values: map[string]property.Value{"name": property.New("x"), "apiToken": property.New("token").WithSecret(true), "bitbucketEmail": property.New("bad"), "bitbucketUsername": property.New(property.Computed)},
+		},
+		{
+			name: "known empty username", field: "bitbucketUsername",
+			values: map[string]property.Value{"name": property.New("x"), "appPassword": property.New("password").WithSecret(true), "bitbucketUsername": property.New("")},
+		},
+		{
+			name: "known missing username", field: "bitbucketUsername",
+			values: map[string]property.Value{"name": property.New("x"), "appPassword": property.New("password").WithSecret(true)},
+		},
+		{
+			name: "known credential conflict", field: "apiToken",
+			values: map[string]property.Value{"name": property.New("x"), "apiToken": property.New("token").WithSecret(true), "appPassword": property.New("password").WithSecret(true), "bitbucketEmail": property.New("user@example.invalid")},
+		},
+		{
+			name: "secret-wrapped computed mode preserves known invalid email", field: "bitbucketEmail",
+			values: map[string]property.Value{"name": property.New("x"), "apiToken": property.New(property.Computed).WithSecret(true), "bitbucketEmail": property.New("bad")},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			checked, err := (BitbucketIntegration{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(tc.values)})
+			require.NoError(t, err)
+			require.NotEmpty(t, checked.Failures)
+			require.Contains(t, []string{checked.Failures[0].Property}, tc.field)
+		})
+	}
+}
+
 func TestBitbucketDiffOptionalPreservation(t *testing.T) {
 	old := BitbucketIntegrationState{BitbucketIntegrationArgs: BitbucketIntegrationArgs{Name: "n", APIToken: ptr("t"), BitbucketEmail: ptr("a@example.com"), BitbucketUsername: ptr("inactive"), BitbucketWorkspaceName: ptr("w")}}
 	got, err := (BitbucketIntegration{}).Diff(context.Background(), infer.DiffRequest[BitbucketIntegrationArgs, BitbucketIntegrationState]{Inputs: BitbucketIntegrationArgs{Name: "n", APIToken: ptr("t"), BitbucketEmail: ptr("a@example.com")}, State: old})

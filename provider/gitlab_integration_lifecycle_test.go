@@ -11,7 +11,9 @@ import (
 	"testing"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
@@ -124,6 +126,83 @@ func TestGitLabIntegrationUpdatePartialState(t *testing.T) {
 	require.Equal(t, "prior-secret", result.Output.ApplicationSecret)
 	require.Equal(t, 2, calls)
 	require.NotContains(t, err.Error(), "access-token-sentinel")
+}
+
+func TestGitLabUpdateCancellationAfterMutationRetainsLastVerifiedState(t *testing.T) {
+	for _, cause := range []error{context.Canceled, context.DeadlineExceeded} {
+		for _, registered := range []bool{false, true} {
+			name := "direct"
+			if registered {
+				name = "infer resource boundary"
+			}
+			t.Run(cause.Error()+"/"+name, func(t *testing.T) {
+				ctx := newLifecycleCancelContext()
+				var paths []string
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					paths = append(paths, r.URL.Path)
+					w.Header().Set("Content-Type", "application/json")
+					switch r.URL.Path {
+					case "/api/organization.active":
+						fmt.Fprint(w, `{"id":"org"}`)
+					case "/api/gitlab.one":
+						fmt.Fprint(w, gitLabRecord)
+					case "/api/gitlab.update":
+						fmt.Fprint(w, `{}`)
+					default:
+						t.Errorf("unexpected request after cancellation: %s", r.URL.Path)
+					}
+				}))
+				defer server.Close()
+				transport := lifecycleRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+					response, err := http.DefaultTransport.RoundTrip(req)
+					if err == nil && req.URL.Path == "/api/gitlab.update" {
+						ctx.cancel(cause)
+					}
+					return response, err
+				})
+				api, err := client.New(server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+				require.NoError(t, err)
+				resource := GitLabIntegration{client: fixedClient(api)}
+				old := gitLabPrior()
+				inputs := old.GitLabIntegrationArgs
+				inputs.Name = "requested-name"
+				if registered {
+					inferResource := infer.Resource(&resource)
+					oldInputs := property.NewMap(map[string]property.Value{
+						"name": property.New("old"), "applicationId": property.New("app"),
+						"applicationSecret": property.New("prior-secret").WithSecret(true),
+						"redirectUri":       property.New("https://callback.example"), "gitlabUrl": property.New("https://gitlab.example"),
+						"groupName": property.New(""),
+					})
+					state := oldInputs.Set("gitlabId", property.New("relation")).Set("gitProviderId", property.New("parent")).Set("organizationId", property.New("org")).Set("isConfigured", property.New(false))
+					newInputs := oldInputs.Set("name", property.New("requested-name"))
+					response, callErr := inferResource.Update(ctx, p.UpdateRequest{
+						ID: "relation", Urn: lifecycleURN("GitLabIntegration", "canceled-update"),
+						State: state, OldInputs: oldInputs, Inputs: newInputs,
+					})
+					err = callErr
+					require.NotNil(t, response.PartialState)
+					for key, value := range map[string]string{"name": "old", "gitlabId": "relation", "gitProviderId": "parent", "organizationId": "org"} {
+						require.Equal(t, value, response.Properties.Get(key).AsString(), key)
+					}
+					require.True(t, response.Properties.Get("applicationSecret").Secret())
+					require.False(t, response.Properties.Get("gitlabId").Secret())
+				} else {
+					response, callErr := resource.Update(ctx, infer.UpdateRequest[GitLabIntegrationArgs, GitLabIntegrationState]{ID: "relation", State: old, Inputs: inputs})
+					err = callErr
+					require.Equal(t, old.Name, response.Output.Name)
+					require.Equal(t, old.GitLabID, response.Output.GitLabID)
+					require.Equal(t, old.GitProviderID, response.Output.GitProviderID)
+					require.Equal(t, old.OrganizationID, response.Output.OrganizationID)
+				}
+				require.ErrorIs(t, err, cause)
+				var partial infer.ResourceInitFailedError
+				require.ErrorAs(t, err, &partial)
+				require.Equal(t, []string{"/api/organization.active", "/api/gitlab.one", "/api/gitlab.update"}, paths,
+					"cancellation must stop readback and prevent retry")
+			})
+		}
+	}
 }
 
 func TestGitLabIntegrationDeleteVerified(t *testing.T) {

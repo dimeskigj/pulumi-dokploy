@@ -112,6 +112,9 @@ func (r GitLabIntegration) Update(ctx context.Context, req infer.UpdateRequest[G
 		mutationErr = sanitizeGitLabIntegrationError(ctx.Err())
 	}
 	if mutationErr != nil {
+		if errors.Is(mutationErr, context.Canceled) || errors.Is(mutationErr, context.DeadlineExceeded) {
+			return infer.UpdateResponse[GitLabIntegrationState]{Output: state}, errors.Join(initFailed(mutationErr), mutationErr)
+		}
 		return infer.UpdateResponse[GitLabIntegrationState]{Output: state}, initFailed(mutationErr)
 	}
 	return infer.UpdateResponse[GitLabIntegrationState]{Output: state}, nil

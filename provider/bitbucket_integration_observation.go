@@ -28,17 +28,24 @@ func sanitizeBitbucketIntegrationError(err error) error {
 	if err == nil {
 		return nil
 	}
-	if errors.Is(err, context.Canceled) {
-		return context.Canceled
-	}
-	if errors.Is(err, context.DeadlineExceeded) {
-		return context.DeadlineExceeded
-	}
+	var safe []error
 	var apiErr *client.APIError
 	if errors.As(err, &apiErr) {
-		return fmt.Errorf("bitbucket integration HTTP %d", apiErr.StatusCode)
+		safe = append(safe, fmt.Errorf("bitbucket integration HTTP %d", apiErr.StatusCode))
 	}
-	return errors.New("bitbucket integration request failed")
+	if errors.Is(err, context.Canceled) {
+		safe = append(safe, context.Canceled)
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		safe = append(safe, context.DeadlineExceeded)
+	}
+	if len(safe) == 0 {
+		return errors.New("bitbucket integration request failed")
+	}
+	if len(safe) == 1 {
+		return safe[0]
+	}
+	return errors.Join(safe...)
 }
 
 func bitbucketMalformed() error {
