@@ -5,6 +5,16 @@ config:
   appHost:
     type: string
     default: app.example.invalid
+  bitbucketApiToken:
+    type: string
+    default: replace-with-bitbucket-api-token
+    secret: true
+  bitbucketEmail:
+    type: string
+    default: example@example.invalid
+  bitbucketWorkspaceName:
+    type: string
+    default: example-workspace
   composeHost:
     type: string
     default: compose.example.invalid
@@ -31,6 +41,20 @@ config:
   gitBranch:
     type: string
     default: main
+  giteaClientId:
+    type: string
+    default: replace-with-gitea-oauth-client-id
+  giteaClientSecret:
+    type: string
+    default: replace-with-gitea-oauth-client-secret
+    secret: true
+  giteaInternalUrl:
+    type: string
+    default: https://gitea.internal.example.invalid
+    secret: true
+  giteaRedirectUri:
+    type: string
+    default: https://dokploy.example.invalid/api/auth/gitea/callback
   gitlabApplicationId:
     type: string
     default: replace-with-gitlab-oauth-application-id

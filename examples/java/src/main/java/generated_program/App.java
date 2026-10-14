@@ -5,6 +5,10 @@ import com.pulumi.Pulumi;
 import com.pulumi.core.Output;
 import net.dimeski.pulumi.dokploy.GitLabIntegration;
 import net.dimeski.pulumi.dokploy.GitLabIntegrationArgs;
+import net.dimeski.pulumi.dokploy.GiteaIntegration;
+import net.dimeski.pulumi.dokploy.GiteaIntegrationArgs;
+import net.dimeski.pulumi.dokploy.BitbucketIntegration;
+import net.dimeski.pulumi.dokploy.BitbucketIntegrationArgs;
 import net.dimeski.pulumi.dokploy.Project;
 import net.dimeski.pulumi.dokploy.ProjectArgs;
 import net.dimeski.pulumi.dokploy.Environment;
@@ -81,6 +85,13 @@ public class App {
         final var gitBranch = config.get("gitBranch").orElse("main");
         final var gitlabApplicationId = config.get("gitlabApplicationId").orElse("replace-with-gitlab-oauth-application-id");
         final var gitlabApplicationSecret = config.getSecret("gitlabApplicationSecret").applyValue(v -> v.orElse(""));
+        final var giteaClientId = config.get("giteaClientId").orElse("replace-with-gitea-oauth-client-id");
+        final var giteaClientSecret = config.getSecret("giteaClientSecret").applyValue(v -> v.orElse("replace-with-gitea-oauth-client-secret"));
+        final var giteaInternalUrl = config.getSecret("giteaInternalUrl").applyValue(v -> v.orElse("https://gitea.internal.example.invalid"));
+        final var giteaRedirectUri = config.get("giteaRedirectUri").orElse("https://dokploy.example.invalid/api/auth/gitea/callback");
+        final var bitbucketApiToken = config.getSecret("bitbucketApiToken").applyValue(v -> v.orElse("replace-with-bitbucket-api-token"));
+        final var bitbucketEmail = config.get("bitbucketEmail").orElse("example@example.invalid");
+        final var bitbucketWorkspaceName = config.get("bitbucketWorkspaceName").orElse("example-workspace");
         final var gitlabRedirectUri = config.get("gitlabRedirectUri").orElse("https://dokploy.example.invalid/api/providers/gitlab/callback");
         final var sshPrivateKey = config.getSecret("sshPrivateKey").applyValue(v -> v.orElse(""));
         final var fileMountContent = config.getSecret("fileMountContent").applyValue(v -> v.orElse(""));
@@ -98,6 +109,23 @@ public class App {
             .applicationSecret(gitlabApplicationSecret.asSecret())
             .redirectUri(gitlabRedirectUri)
             .gitlabUrl("https://gitlab.com")
+            .build());
+
+        var managedGiteaIntegration = new GiteaIntegration("managedGiteaIntegration", GiteaIntegrationArgs.builder()
+            .name("example-gitea-integration")
+            .giteaUrl("https://gitea.example.invalid")
+            .clientId(giteaClientId)
+            .clientSecret(giteaClientSecret.asSecret())
+            .redirectUri(giteaRedirectUri)
+            .giteaInternalUrl(giteaInternalUrl.asSecret())
+            .organizationName("example-team")
+            .build());
+
+        var managedBitbucketIntegration = new BitbucketIntegration("managedBitbucketIntegration", BitbucketIntegrationArgs.builder()
+            .name("example-bitbucket-integration")
+            .apiToken(bitbucketApiToken)
+            .bitbucketEmail(bitbucketEmail)
+            .bitbucketWorkspaceName(bitbucketWorkspaceName)
             .build());
 
         var projectResource = new Project("projectResource", ProjectArgs.builder()
@@ -340,5 +368,7 @@ services:
         ctx.export("gitBranch", gitBranch);
         ctx.export("remoteServerId", remoteServer.serverId());
         ctx.export("managedGitlabIntegrationId", managedGitlabIntegration.gitlabId());
+        ctx.export("managedGiteaIntegrationId", managedGiteaIntegration.giteaId());
+        ctx.export("managedBitbucketIntegrationId", managedBitbucketIntegration.bitbucketId());
     }
 }

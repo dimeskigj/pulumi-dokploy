@@ -240,9 +240,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/servers/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/", "/guides/github-integrations/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/servers/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/", "/guides/github-integrations/", "/guides/gitea-integrations/", "/guides/bitbucket-integrations/",
     "/examples/", "/examples/complete/",
-    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/git-lab-integration/", "/reference/github-integration/", "/reference/configuration/", "/reference/types/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/git-lab-integration/", "/reference/github-integration/", "/reference/gitea-integration/", "/reference/bitbucket-integration/", "/reference/configuration/", "/reference/types/",
     "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/", "/guides/gitlab-integrations/",
     "/examples/", "/examples/complete/",
     "/contributing/",
@@ -254,7 +254,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 62);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 66);
   assert.equal(curatedFiles.length, 20);
 });
 
@@ -622,4 +622,24 @@ test("GitLabIntegration reference and guide are published", async () => {
   assert.equal(resource.inputProperties.gitlabUrl.default, "https://gitlab.com");
   const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
   assert.match(yaml, /integrationId: \$\{managedGitlabIntegration\.gitlabId\}/g);
+});
+
+test("Gitea and Bitbucket references, guides, and nav match the registered contracts", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  const model = await import("../scripts/reference-model.mjs");
+  const schema = JSON.parse(await readFile(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url), "utf8"));
+  const cases = [
+    { name: "GiteaIntegration", slug: "gitea-integration", guide: "gitea-integrations", fields: ["clientId", "clientSecret", "giteaInternalUrl", "giteaUrl", "name", "organizationName", "redirectUri"], secret: ["clientSecret", "giteaInternalUrl"] },
+    { name: "BitbucketIntegration", slug: "bitbucket-integration", guide: "bitbucket-integrations", fields: ["apiToken", "appPassword", "bitbucketEmail", "bitbucketUsername", "bitbucketWorkspaceName", "name"], secret: ["apiToken", "appPassword"] },
+  ];
+  for (const item of cases) {
+    assert.match(config, new RegExp(`label: "${item.name.replace("Integration", " integrations")}", link: "/guides/${item.guide}/"`));
+    assert.match(config, new RegExp(`label: "${item.name}", link: "/reference/${item.slug}/"`));
+    assert.equal(model.slugFromToken(`dokploy:index:${item.name}`), item.slug);
+    const reference = await readFile(new URL(`../src/content/docs/reference/${item.slug}.mdx`, import.meta.url), "utf8");
+    assert.match(reference, new RegExp(`title: "${item.name}"`));
+    const resource = schema.resources[`dokploy:index:${item.name}`];
+    assert.deepEqual(Object.keys(resource.inputProperties).sort(), [...item.fields].sort());
+    for (const field of item.secret) assert.equal(resource.inputProperties[field].secret, true);
+  }
 });

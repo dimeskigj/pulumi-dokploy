@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 const EXPECTED_RESOURCES = new Set([
   "Application", "Compose", "Domain", "Environment", "Postgres", "MySQL", "MariaDB", "MongoDB", "Project", "Redis",
   "Destination", "Backup", "VolumeBackup", "SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "Schedule", "Port", "Notification", "Server",
-  "GitLabIntegration", "GitHubIntegration",
+  "GitLabIntegration", "GitHubIntegration", "GiteaIntegration", "BitbucketIntegration",
 ]);
 const SOURCE_PATH = Symbol("schema source path");
 
@@ -32,6 +32,7 @@ const SLUG_OVERRIDES = {
   getMariaDB: "get-mariadb", getMongoDB: "get-mongodb", getRedis: "get-redis",
   getServer: "get-server", getRegistry: "get-registry", getSSHKey: "get-ssh-key",
   GitLabIntegration: "git-lab-integration", GitHubIntegration: "github-integration",
+  GiteaIntegration: "gitea-integration", BitbucketIntegration: "bitbucket-integration",
 };
 
 export function slugFromToken(token) {
