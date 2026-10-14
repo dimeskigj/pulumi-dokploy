@@ -14,6 +14,219 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type lifecycleCancelContext struct {
+	context.Context
+	done chan struct{}
+	err  error
+}
+
+func newLifecycleCancelContext() *lifecycleCancelContext {
+	return &lifecycleCancelContext{Context: context.Background(), done: make(chan struct{})}
+}
+func (c *lifecycleCancelContext) Done() <-chan struct{} { return c.done }
+func (c *lifecycleCancelContext) Err() error            { return c.err }
+func (c *lifecycleCancelContext) cancel(err error)      { c.err = err; close(c.done) }
+
+type lifecycleRoundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f lifecycleRoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func lifecycleState() GitHubIntegrationState {
+	return GitHubIntegrationState{GitHubIntegrationArgs: GitHubIntegrationArgs{Name: "old", GitHubAppName: "app"}, GitHubID: "relation", GitProviderID: "parent", OrganizationID: "org"}
+}
+
+func TestGitHubIntegrationUpdateCancellationStopsReadback(t *testing.T) {
+	for _, cause := range []error{context.Canceled, context.DeadlineExceeded} {
+		t.Run(cause.Error(), func(t *testing.T) {
+			ctx := newLifecycleCancelContext()
+			var paths []string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				paths = append(paths, r.URL.Path)
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/organization.active":
+					fmt.Fprint(w, `{"id":"org"}`)
+				case "/api/github.one":
+					fmt.Fprint(w, githubRecord)
+				case "/api/github.update":
+					fmt.Fprint(w, `{}`)
+				}
+			}))
+			defer server.Close()
+			transport := lifecycleRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+				resp, err := http.DefaultTransport.RoundTrip(req)
+				if err == nil && req.URL.Path == "/api/github.update" {
+					ctx.cancel(cause)
+				}
+				return resp, err
+			})
+			api, err := client.New(server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+			require.NoError(t, err)
+			state := lifecycleState()
+			in := state.GitHubIntegrationArgs
+			in.Name = "desired"
+			in.GitHubAppName = "desired-app"
+			out, err := (GitHubIntegration{client: func(context.Context) *client.Client { return api }}).Update(ctx, infer.UpdateRequest[GitHubIntegrationArgs, GitHubIntegrationState]{ID: "relation", State: state, Inputs: in})
+			require.ErrorIs(t, err, cause)
+			require.Equal(t, state, out.Output)
+			require.Equal(t, []string{"/api/organization.active", "/api/github.one", "/api/github.update"}, paths)
+		})
+	}
+}
+
+func TestGitHubIntegrationUpdateCancellationDuringReadback(t *testing.T) {
+	for _, cause := range []error{context.Canceled, context.DeadlineExceeded} {
+		t.Run(cause.Error(), func(t *testing.T) {
+			ctx := newLifecycleCancelContext()
+			reads := 0
+			var paths []string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				paths = append(paths, r.URL.Path)
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/organization.active":
+					fmt.Fprint(w, `{"id":"org"}`)
+				case "/api/github.one":
+					reads++
+					record := githubRecord
+					if reads > 1 {
+						record = strings.Replace(record, `"name":"old"`, `"name":"desired"`, 1)
+						record = strings.Replace(record, `"githubAppName":"app"`, `"githubAppName":"desired-app"`, 1)
+					}
+					fmt.Fprint(w, record)
+				case "/api/github.update":
+					fmt.Fprint(w, `{}`)
+				}
+			}))
+			defer server.Close()
+			transport := lifecycleRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+				resp, err := http.DefaultTransport.RoundTrip(req)
+				if err == nil && req.URL.Path == "/api/github.one" && reads == 2 {
+					ctx.cancel(cause)
+				}
+				return resp, err
+			})
+			api, err := client.New(server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+			require.NoError(t, err)
+			state := lifecycleState()
+			in := state.GitHubIntegrationArgs
+			in.Name = "desired"
+			in.GitHubAppName = "desired-app"
+			out, err := (GitHubIntegration{client: func(context.Context) *client.Client { return api }}).Update(ctx, infer.UpdateRequest[GitHubIntegrationArgs, GitHubIntegrationState]{ID: "relation", State: state, Inputs: in})
+			require.ErrorIs(t, err, cause)
+			require.Equal(t, "desired", out.Output.Name)
+			require.Equal(t, "desired-app", out.Output.GitHubAppName)
+			require.Equal(t, []string{"/api/organization.active", "/api/github.one", "/api/github.update", "/api/github.one"}, paths)
+		})
+	}
+}
+
+func TestGitHubIntegrationDeleteCancellationStopsVerification(t *testing.T) {
+	ctx := newLifecycleCancelContext()
+	var paths []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/organization.active":
+			fmt.Fprint(w, `{"id":"org"}`)
+		case "/api/github.one":
+			fmt.Fprint(w, githubRecord)
+		case "/api/gitProvider.remove":
+			fmt.Fprint(w, `{}`)
+		}
+	}))
+	defer server.Close()
+	transport := lifecycleRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		if err == nil && req.URL.Path == "/api/gitProvider.remove" {
+			ctx.cancel(context.DeadlineExceeded)
+		}
+		return resp, err
+	})
+	api, err := client.New(server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+	require.NoError(t, err)
+	_, err = (GitHubIntegration{client: func(context.Context) *client.Client { return api }}).Delete(ctx, infer.DeleteRequest[GitHubIntegrationState]{ID: "relation", State: lifecycleState()})
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+	require.Equal(t, []string{"/api/organization.active", "/api/github.one", "/api/gitProvider.remove"}, paths)
+}
+
+func TestGitHubIntegrationUpdateRejectsChangedReadbackIdentity(t *testing.T) {
+	for _, tc := range []struct{ name, field, from, to string }{{"relation", "githubId", "relation", "other"}, {"parent", "gitProviderId", "parent", "other"}, {"organization", "organizationId", "org", "other"}} {
+		t.Run(tc.name, func(t *testing.T) {
+			reads := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/organization.active":
+					fmt.Fprint(w, `{"id":"org"}`)
+				case "/api/github.one":
+					reads++
+					record := githubRecord
+					if reads > 1 {
+						record = strings.Replace(record, `"name":"old"`, `"name":"desired"`, 1)
+						record = strings.Replace(record, `"githubAppName":"app"`, `"githubAppName":"desired-app"`, 1)
+						switch tc.field {
+						case "githubId":
+							record = strings.Replace(record, `"githubId":"`+tc.from+`"`, `"githubId":"`+tc.to+`"`, 1)
+						case "gitProviderId":
+							record = strings.Replace(record, `"gitProviderId":"parent"`, `"gitProviderId":"other"`, 2)
+						case "organizationId":
+							record = strings.Replace(record, `"organizationId":"org"`, `"organizationId":"other"`, 1)
+						}
+					}
+					fmt.Fprint(w, record)
+				case "/api/github.update":
+					fmt.Fprint(w, `{}`)
+				}
+			}))
+			defer server.Close()
+			api, e := client.New(server.URL, "fixture", client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+			require.NoError(t, e)
+			state := lifecycleState()
+			in := state.GitHubIntegrationArgs
+			in.Name = "desired"
+			in.GitHubAppName = "desired-app"
+			out, e := (GitHubIntegration{client: func(context.Context) *client.Client { return api }}).Update(t.Context(), infer.UpdateRequest[GitHubIntegrationArgs, GitHubIntegrationState]{ID: "relation", State: state, Inputs: in})
+			require.Error(t, e)
+			require.Equal(t, state, out.Output)
+			require.Equal(t, 2, reads)
+		})
+	}
+}
+
+func TestGitHubIntegrationUpdateAcknowledgedReadbackFailureKeepsPriorState(t *testing.T) {
+	reads := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/organization.active":
+			fmt.Fprint(w, `{"id":"org"}`)
+		case "/api/github.one":
+			reads++
+			if reads == 1 {
+				fmt.Fprint(w, githubRecord)
+			} else {
+				w.WriteHeader(http.StatusForbidden)
+				fmt.Fprint(w, `{"message":"credential-sentinel"}`)
+			}
+		case "/api/github.update":
+			fmt.Fprint(w, `{}`)
+		}
+	}))
+	defer server.Close()
+	api, e := client.New(server.URL, "fixture", client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+	require.NoError(t, e)
+	state := lifecycleState()
+	in := state.GitHubIntegrationArgs
+	in.Name = "desired"
+	out, e := (GitHubIntegration{client: func(context.Context) *client.Client { return api }}).Update(t.Context(), infer.UpdateRequest[GitHubIntegrationArgs, GitHubIntegrationState]{ID: "relation", State: state, Inputs: in})
+	require.Error(t, e)
+	require.NotContains(t, e.Error(), "credential-sentinel")
+	require.Equal(t, state, out.Output)
+	require.Equal(t, 2, reads)
+}
+
 func TestGitHubIntegrationReadAndImport(t *testing.T) {
 	c := githubFixture(t, githubRecord, 200)
 	read, err := (GitHubIntegration{client: func(context.Context) *client.Client { return c }}).Read(t.Context(), infer.ReadRequest[GitHubIntegrationArgs, GitHubIntegrationState]{ID: "relation"})
