@@ -145,3 +145,9 @@ server.create
 server.one
 server.remove
 server.update
+gitea.create
+gitea.one
+gitea.update
+bitbucket.create
+bitbucket.one
+bitbucket.update

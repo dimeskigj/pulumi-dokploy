@@ -537,7 +537,7 @@ func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
 		require.True(t, ok, "missing path %s", operation.path)
 		require.NotNil(t, path.Methods[operation.method], "missing %s operation at %s", operation.method, operation.path)
 	}
-	require.Len(t, d.Paths, 147, "the 139 baseline operations, six GitLab operations, and two GitHub operations are the complete inventory")
+	require.Len(t, d.Paths, 153, "the current inventory includes both three-operation provider APIs")
 	require.Equal(t, "#/components/schemas/GitLabIntegrationRecord", responseSchema(t, d, "/gitlab.one", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/GitProviderList", responseSchema(t, d, "/gitProvider.getAll", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/AuthenticatedGitProviderMember", responseSchema(t, d, "/user.get", httpMethodGet, "200").Ref)
@@ -581,7 +581,7 @@ func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
 
 func TestGitHubIntegrationOpenAPIContract(t *testing.T) {
 	d := normalizeRealContract(t)
-	baseCount := 145 // Captured from the task's base operations inventory (including all six GitLab selections).
+	baseCount := 151 // Captured inventory includes common, GitLab, and both provider API selections.
 	for _, operation := range []struct{ path, method string }{
 		{"/github.one", httpMethodGet}, {"/github.update", httpMethodPost},
 		{"/organization.active", httpMethodGet}, {"/gitProvider.remove", httpMethodPost},
@@ -733,4 +733,65 @@ func responseSchemaType(t *testing.T, d *Document, path, method, status string) 
 	}
 	require.NoError(t, json.Unmarshal(b, &decoded))
 	return decoded.Content["application/json"].Schema.Type
+}
+
+func TestGiteaIntegrationOpenAPIContract(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, op := range []struct{ path, method string }{{"/gitea.create", httpMethodPost}, {"/gitea.one", httpMethodGet}, {"/gitea.update", httpMethodPost}, {"/gitProvider.getAll", httpMethodGet}, {"/gitProvider.remove", httpMethodPost}, {"/user.get", httpMethodGet}, {"/organization.active", httpMethodGet}, {"/gitlab.create", httpMethodPost}, {"/gitlab.one", httpMethodGet}, {"/gitlab.update", httpMethodPost}, {"/github.one", httpMethodGet}, {"/github.update", httpMethodPost}} {
+		item, ok := d.Paths[op.path]
+		require.True(t, ok, "missing %s", op.path)
+		require.NotNil(t, item.Methods[op.method])
+	}
+	require.Len(t, d.Paths, 153)
+	require.Equal(t, "#/components/schemas/GiteaCreateAcknowledgment", responseSchema(t, d, "/gitea.create", httpMethodPost, "200").Ref)
+	require.Equal(t, "#/components/schemas/GiteaIntegrationRecord", responseSchema(t, d, "/gitea.one", httpMethodGet, "200").Ref)
+	ack := componentSchema(t, d, "GiteaCreateAcknowledgment")
+	require.ElementsMatch(t, []any{"giteaId", "clientId", "giteaUrl"}, ack["required"])
+	record := componentSchema(t, d, "GiteaIntegrationRecord")
+	require.ElementsMatch(t, []any{"giteaId", "gitProviderId", "giteaUrl", "gitProvider"}, record["required"])
+	for _, field := range []string{"clientId", "clientSecret", "redirectUri", "giteaInternalUrl", "organizationName"} {
+		require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, record, field))
+	}
+	identity := componentSchema(t, d, "GiteaProviderIdentity")
+	require.ElementsMatch(t, []any{"gitProviderId", "name", "providerType", "organizationId", "userId"}, identity["required"])
+	for _, name := range []string{"gitea.create", "gitea.update"} {
+		properties := operationRequestSchema(t, d, name)["properties"].(map[string]any)
+		for _, forbidden := range []string{"accessToken", "refreshToken", "expiresAt", "scopes", "lastAuthenticatedAt", "giteaUsername"} {
+			require.NotContains(t, properties, forbidden)
+		}
+	}
+	for _, path := range []string{"/gitea.giteaProviders", "/gitea.getGiteaRepositories", "/gitea.callback", "/gitea.testConnection", "/bitbucket.testConnection"} {
+		require.NotContains(t, d.Paths, path)
+	}
+}
+
+func TestBitbucketIntegrationOpenAPIContract(t *testing.T) {
+	d := normalizeRealContract(t)
+	for _, op := range []struct{ path, method string }{{"/bitbucket.create", httpMethodPost}, {"/bitbucket.one", httpMethodGet}, {"/bitbucket.update", httpMethodPost}, {"/gitProvider.getAll", httpMethodGet}, {"/gitProvider.remove", httpMethodPost}, {"/user.get", httpMethodGet}, {"/organization.active", httpMethodGet}, {"/gitlab.create", httpMethodPost}, {"/gitlab.one", httpMethodGet}, {"/gitlab.update", httpMethodPost}, {"/github.one", httpMethodGet}, {"/github.update", httpMethodPost}} {
+		item, ok := d.Paths[op.path]
+		require.True(t, ok, "missing %s", op.path)
+		require.NotNil(t, item.Methods[op.method])
+	}
+	require.Len(t, d.Paths, 153)
+	require.Equal(t, "#/components/schemas/BitbucketIntegrationRecord", responseSchema(t, d, "/bitbucket.one", httpMethodGet, "200").Ref)
+	record := componentSchema(t, d, "BitbucketIntegrationRecord")
+	require.ElementsMatch(t, []any{"bitbucketId", "gitProviderId", "gitProvider"}, record["required"])
+	for _, field := range []string{"bitbucketUsername", "bitbucketEmail", "bitbucketWorkspaceName", "apiToken", "appPassword"} {
+		require.Equal(t, []any{"string", "null"}, schemaPropertyTypes(t, record, field))
+	}
+	entry := componentSchema(t, d, "GitProviderListEntry")
+	require.Contains(t, entry["properties"], "gitlab")
+	require.Contains(t, entry["properties"], "bitbucket")
+	require.Equal(t, true, entry["additionalProperties"])
+	summary := componentSchema(t, d, "BitbucketProviderSummary")
+	require.ElementsMatch(t, []any{"bitbucketId", "bitbucketUsername", "isConfigured", "isDeprecated"}, summary["required"])
+	for _, name := range []string{"bitbucket.create", "bitbucket.update"} {
+		properties := operationRequestSchema(t, d, name)["properties"].(map[string]any)
+		for _, field := range []string{"bitbucketUsername", "bitbucketEmail", "appPassword", "apiToken", "bitbucketWorkspaceName"} {
+			require.Equal(t, "string", properties[field].(map[string]any)["type"], "%s must be non-nullable", field)
+		}
+	}
+	for _, path := range []string{"/bitbucket.testConnection", "/bitbucket.getBitbucketRepositories", "/bitbucket.callback"} {
+		require.NotContains(t, d.Paths, path)
+	}
 }
