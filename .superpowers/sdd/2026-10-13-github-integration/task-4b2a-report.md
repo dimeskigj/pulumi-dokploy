@@ -32,3 +32,16 @@ Commands were run as actual local executions through `/tmp/opencode/gitlab-integ
 - `git diff --check` — PASS.
 
 Self-review: runner has no fixed launcher or fixed temp location; `TemporaryDirectory` uses Python's TMPDIR-aware standard library and cleans its environment on success/failure; every child receives filtered Dokploy variables and forced-off acceptance. `make test_examples` now runs contracts after local Java publication. Java standalone execution depends on the local SDK installation step. No remote publication, environment-file access, deployments, or live calls. No generated files are part of the change.
+
+## Fixround 2 (generator preservation regression)
+
+Added `GeneratorPortabilityTests.test_sdk_contract_fixtures_survive_real_example_replacement`, which invokes the actual `scripts/gen-examples.sh` in a temporary fake project. It seeds nested unique-content fixtures for all five languages and stale outputs in every canonical language directory, stubs conversion/tool commands, verifies each fixture remains byte-identical and present after the generator runs, and verifies each stale canonical output was replaced with expected generated markers. It does not invoke production codegen, actual SDK generation, network publication, or deployment.
+
+Verification via `/tmp/opencode/gitlab-integration-tools-fwQ0lcJ2/bin/safe-run`:
+
+- RED was not applicable: this is strictly added test coverage for the existing intended generator behavior; the new test passed on first run, confirming the generator preserves the outside-path fixtures.
+- `SAFE python3 -m unittest scripts.test_gen_examples.GeneratorPortabilityTests.test_sdk_contract_fixtures_survive_real_example_replacement` — PASS, 1 test.
+- `SAFE python3 -m unittest -v scripts.test_gen_examples scripts.test_sdk_contract_runner` — PASS, 12 tests (all generator portability and runner unit tests). Named output: `/tmp/opencode/task4b2a-fixround2-unit.log`.
+- `git diff --check` — PASS.
+
+Self-review: only this behavioral test and report changed in fixround 2; no generator production implementation or prior runner fixes changed. Existing fake tooling writes only under a temporary harness root and keeps generator's real removal/conversion loop under test. No `.env`, live calls, or additional generated suite was used.

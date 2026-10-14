@@ -89,6 +89,68 @@ class GeneratorPortabilityTests(unittest.TestCase):
         self.assertEqual(result.returncode, 72, result.stderr)
         self.assertIn(str(self.root / "ordinary-tmp"), observed.read_text())
 
+    def test_sdk_contract_fixtures_survive_real_example_replacement(self):
+        repo = self.root / "generation-repo"
+        (repo / "examples/yaml").mkdir(parents=True)
+        (repo / "examples/yaml/README.md").write_text("canonical yaml README\n")
+        contracts = repo / "examples/sdk-contracts"
+        expected = {}
+        for language in ("go", "nodejs", "python", "dotnet", "java"):
+            marker = contracts / language / "nested" / "fixture.txt"
+            marker.parent.mkdir(parents=True)
+            marker.write_text(f"maintained-{language}-fixture\n")
+            expected[marker.relative_to(repo)] = marker.read_bytes()
+        for language, output in {
+            "typescript": "nodejs", "python": "python", "go": "go", "csharp": "dotnet", "java": "java"
+        }.items():
+            canonical = repo / "examples" / output
+            canonical.mkdir(parents=True)
+            (canonical / ".generated-contract-test").write_text(f"stale-{language}\n")
+
+        self.command("make", "exit 0\n")
+        self.command("npm", "exit 0\n")
+        self.command("go", "exit 0\n")
+        self.command("python3", "exit 0\n")
+        self.command("mise", '''
+if [ "$*" = "exec pulumi@3.259.0 -- pulumi plugin ls" ]; then
+  echo "yaml converter 1.38.7"
+fi
+if echo "$*" | grep -q " pulumi convert "; then
+  language=
+  output=
+  previous=
+  for argument in "$@"; do
+    if [ "$previous" = language ]; then language=$argument; fi
+    if [ "$previous" = output ]; then output=$argument; fi
+    case "$argument" in --language) previous=language ;; --out) previous=output ;; *) previous= ;; esac
+  done
+  case "$language" in typescript) directory=nodejs ;; csharp) directory=dotnet ;; *) directory=$language ;; esac
+  mkdir -p "examples/$directory"
+  printf 'generated-%s\\n' "$language" > "examples/$directory/.generated-contract-test"
+fi
+''')
+
+        result = subprocess.run(
+            [str(SCRIPT), "make", str(repo), "project", "pack", "1.2.3"],
+            env=self.env,
+            text=True,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for relative_path, contents in expected.items():
+            self.assertTrue((repo / relative_path).is_file(), relative_path)
+            self.assertEqual((repo / relative_path).read_bytes(), contents, relative_path)
+        expected_outputs = {
+            "typescript": "nodejs",
+            "python": "python",
+            "go": "go",
+            "csharp": "dotnet",
+            "java": "java",
+        }
+        for language, directory in expected_outputs.items():
+            generated = repo / "examples" / directory / ".generated-contract-test"
+            self.assertEqual(generated.read_text(), f"generated-{language}\n")
+
 
 if __name__ == "__main__":
     unittest.main()
