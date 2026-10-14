@@ -131,9 +131,6 @@ func (r GiteaIntegration) Update(ctx context.Context, req infer.UpdateRequest[Gi
 	if err != nil {
 		return infer.UpdateResponse[GiteaIntegrationState]{}, sanitizeGiteaIntegrationError(err)
 	}
-	if !before.ConfigurationComplete {
-		return infer.UpdateResponse[GiteaIntegrationState]{Output: before.State}, initFailed(errors.New("Gitea integration configuration is incomplete; supply required settings"))
-	}
 	internal := nullable.NewNullNullable[string]()
 	if req.Inputs.GiteaInternalURL != nil {
 		internal = nullable.NewNullableWithValue(*req.Inputs.GiteaInternalURL)
