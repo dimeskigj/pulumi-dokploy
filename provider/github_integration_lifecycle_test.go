@@ -10,7 +10,9 @@ import (
 	"testing"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
@@ -71,6 +73,81 @@ func TestGitHubIntegrationUpdateCancellationStopsReadback(t *testing.T) {
 			require.Equal(t, state, out.Output)
 			require.Equal(t, []string{"/api/organization.active", "/api/github.one", "/api/github.update"}, paths)
 		})
+	}
+}
+
+func TestGitHubIntegrationInferUpdateCancellationReturnsPartialState(t *testing.T) {
+	ctx := newLifecycleCancelContext()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/organization.active":
+			fmt.Fprint(w, `{"id":"org"}`)
+		case "/api/github.one":
+			fmt.Fprint(w, githubRecord)
+		case "/api/github.update":
+			fmt.Fprint(w, `{}`)
+		}
+	}))
+	defer server.Close()
+	transport := lifecycleRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		if err == nil && req.URL.Path == "/api/github.update" {
+			ctx.cancel(context.Canceled)
+		}
+		return resp, err
+	})
+	api, err := client.New(server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+	require.NoError(t, err)
+	resource := infer.Resource(&GitHubIntegration{client: func(context.Context) *client.Client { return api }})
+	state := property.NewMap(map[string]property.Value{"name": property.New("old"), "githubAppName": property.New("app"), "githubId": property.New("relation"), "gitProviderId": property.New("parent"), "organizationId": property.New("org")})
+	inputs := property.NewMap(map[string]property.Value{"name": property.New("desired"), "githubAppName": property.New("desired-app")})
+	resp, err := resource.Update(ctx, p.UpdateRequest{ID: "relation", Urn: lifecycleURN("GitHubIntegration", "infer-partial-state"), State: state, OldInputs: property.NewMap(map[string]property.Value{"name": property.New("old"), "githubAppName": property.New("app")}), Inputs: inputs})
+	require.ErrorIs(t, err, context.Canceled)
+	require.NotNil(t, resp.PartialState)
+	for key, value := range map[string]string{"name": "old", "githubAppName": "app", "githubId": "relation", "gitProviderId": "parent", "organizationId": "org"} {
+		require.Equal(t, value, resp.Properties.Get(key).AsString(), key)
+	}
+}
+
+func TestGitHubIntegrationInferUpdateReadbackCancellationReturnsActualPartialState(t *testing.T) {
+	ctx := newLifecycleCancelContext()
+	reads := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/organization.active":
+			fmt.Fprint(w, `{"id":"org"}`)
+		case "/api/github.one":
+			reads++
+			record := githubRecord
+			if reads > 1 {
+				record = strings.Replace(record, `"name":"old"`, `"name":"observed"`, 1)
+				record = strings.Replace(record, `"githubAppName":"app"`, `"githubAppName":"observed-app"`, 1)
+			}
+			fmt.Fprint(w, record)
+		case "/api/github.update":
+			fmt.Fprint(w, `{}`)
+		}
+	}))
+	defer server.Close()
+	transport := lifecycleRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		if err == nil && req.URL.Path == "/api/github.one" && reads == 2 {
+			ctx.cancel(context.DeadlineExceeded)
+		}
+		return resp, err
+	})
+	api, err := client.New(server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+	require.NoError(t, err)
+	resource := infer.Resource(&GitHubIntegration{client: func(context.Context) *client.Client { return api }})
+	state := property.NewMap(map[string]property.Value{"name": property.New("old"), "githubAppName": property.New("app"), "githubId": property.New("relation"), "gitProviderId": property.New("parent"), "organizationId": property.New("org")})
+	inputs := property.NewMap(map[string]property.Value{"name": property.New("desired"), "githubAppName": property.New("desired-app")})
+	resp, err := resource.Update(ctx, p.UpdateRequest{ID: "relation", Urn: lifecycleURN("GitHubIntegration", "infer-readback-partial-state"), State: state, OldInputs: property.NewMap(map[string]property.Value{"name": property.New("old"), "githubAppName": property.New("app")}), Inputs: inputs})
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+	require.NotNil(t, resp.PartialState)
+	for key, value := range map[string]string{"name": "observed", "githubAppName": "observed-app", "githubId": "relation", "gitProviderId": "parent", "organizationId": "org"} {
+		require.Equal(t, value, resp.Properties.Get(key).AsString(), key)
 	}
 }
 
