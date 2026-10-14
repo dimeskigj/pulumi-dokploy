@@ -141,17 +141,17 @@ func main() {
 			ClientId:         pulumi.String(giteaClientId),
 			ClientSecret:     pulumi.ToSecret(giteaClientSecret).(pulumi.StringOutput),
 			RedirectUri:      pulumi.String(giteaRedirectUri),
-			GiteaInternalUrl: pulumi.ToSecret(giteaInternalUrl).(pulumi.StringOutput),
-			OrganizationName: pulumi.String("example-team"),
+			GiteaInternalUrl: pulumi.ToSecret(pulumi.StringPtr(giteaInternalUrl)).(pulumi.StringPtrOutput),
+			OrganizationName: pulumi.StringPtr("example-team"),
 		})
 		if err != nil {
 			return err
 		}
 		managedBitbucketIntegration, err := dokploy.NewBitbucketIntegration(ctx, "managedBitbucketIntegration", &dokploy.BitbucketIntegrationArgs{
 			Name:                   pulumi.String("example-bitbucket-integration"),
-			ApiToken:               bitbucketApiToken,
-			BitbucketEmail:         pulumi.String(bitbucketEmail),
-			BitbucketWorkspaceName: pulumi.String(bitbucketWorkspaceName),
+			ApiToken:               pulumi.StringPtr(bitbucketApiToken),
+			BitbucketEmail:         pulumi.StringPtr(bitbucketEmail),
+			BitbucketWorkspaceName: pulumi.StringPtr(bitbucketWorkspaceName),
 		})
 		if err != nil {
 			return err
