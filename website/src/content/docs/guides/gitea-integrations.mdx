@@ -1,0 +1,87 @@
+---
+title: Gitea integrations
+description: Manage Dokploy's configuration for an existing Gitea OAuth integration.
+---
+
+`GiteaIntegration` manages the Dokploy configuration for an existing Gitea
+integration. It does not create an OAuth application, authorize it, manage
+OAuth tokens, validate connectivity, or report readiness. In particular, it
+does not validate connectivity. Configure the OAuth
+application in Gitea and complete authorization in Dokploy outside Pulumi
+before managing the integration. The Dokploy API user must be allowed to manage
+Git-provider integrations.
+
+## Configure the integration
+
+Create the OAuth application in Gitea and record its client ID and secret. Set
+its callback URL to the callback required by Dokploy, then complete the
+authorization flow in Dokploy. Pulumi only manages the resulting Dokploy
+settings; it does not perform either setup or authorization step.
+
+The resource has seven inputs: `name`, `giteaUrl`, `clientId`, `clientSecret`,
+`redirectUri`, `giteaInternalUrl`, and `organizationName`. The first five are
+required. `giteaInternalUrl` is an optional internal base URL and
+`organizationName` is optional. The client secret and internal URL are secret
+values. Configure them as Pulumi secrets rather than plaintext stack settings:
+
+```sh
+pulumi config set --secret giteaClientSecret '<GITEA_OAUTH_CLIENT_SECRET>'
+pulumi config set --secret giteaInternalUrl 'https://gitea.internal.example.invalid'
+```
+
+These are reserved example values, not working credentials or a recommendation
+to expose a real internal address. Use your own protected secret configuration.
+URLs must be absolute HTTP(S) URLs. Base URLs may include a path, but must not
+include user information, a query, or a fragment; callback URLs also reject
+user information. Supplied URLs are not rewritten.
+
+```ts
+const integration = new dokploy.GiteaIntegration("gitea", {
+  name: "production-gitea",
+  giteaUrl: "https://gitea.example.invalid",
+  clientId: "<GITEA_OAUTH_CLIENT_ID>",
+  clientSecret: config.requireSecret("giteaClientSecret"),
+  redirectUri: "https://dokploy.example.invalid/api/auth/gitea/callback",
+  giteaInternalUrl: config.getSecret("giteaInternalUrl"),
+  organizationName: "example-team",
+});
+```
+
+This configuration example describes a previously configured and authorized
+integration; it is not an authorization or connectivity check.
+
+## Import and updates
+
+Import uses the Dokploy Gitea relation ID (`giteaId`), not the parent
+`gitProviderId` or an upstream Gitea ID:
+
+```sh
+pulumi import dokploy:index:GiteaIntegration integration <gitea-relation-id>
+```
+
+The import ID identifies the relation, not its parent. An imported record may
+have incomplete OAuth settings. Supply the full desired required OAuth settings,
+including a concrete nonempty `clientSecret`, before updating such a record.
+When refresh omits the upstream secret, Pulumi preserves the previously known
+secret; that omission is not evidence that a secret was rotated or accepted.
+
+Updates modify the Dokploy integration in place. Setting `organizationName` to
+an empty string clears that optional setting. Omitting `giteaInternalUrl` clears
+the internal URL override by sending an explicit null. Provide the full desired
+OAuth settings when repairing incomplete imported configuration; do not rely on
+an unread or omitted secret.
+
+Creation uses the Dokploy API's acknowledged positive `giteaId` and reads back
+that relation. It does not adopt an integration by name, list-match a candidate,
+retry an uncertain create, or automatically clean up uncertain state. If
+readback fails after creation was acknowledged, reported partial state includes
+only the acknowledged or verified fields; it does not claim an unread parent or
+organization identity.
+
+## Destroy behavior
+
+Destroy removes the Dokploy Git-provider parent and cascades to its Gitea
+relation. It does not delete the external Gitea OAuth application, revoke
+external grants, or delete workloads. Review unmanaged workloads that refer to
+the integration before destroying it; they are not managed dependencies and
+may stop working after the Dokploy record is removed.
