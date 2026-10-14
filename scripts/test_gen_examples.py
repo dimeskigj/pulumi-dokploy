@@ -11,7 +11,7 @@ SCRIPT = Path(__file__).with_name("gen-examples.sh").resolve()
 
 class GeneratorPortabilityTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(dir="/tmp/opencode")
+        self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         self.repo = self.root / "repo"
         self.repo.mkdir()
@@ -23,7 +23,7 @@ class GeneratorPortabilityTests(unittest.TestCase):
         (self.output / "preserve.txt").write_text("existing")
         (self.repo / "examples/go").mkdir()
         (self.repo / "examples/go/lookup_test.go").write_text("fixture")
-        self.mise = self.command("mise", 'printf "%s\\n" "$*" >> "$CALL_LOG"\nif [ "$*" = "exec pulumi@3.259.0 -- pulumi plugin ls" ]; then echo "yaml converter 1.38.7"; fi\ncase "$*" in *" pulumi convert "*) mkdir -p examples/nodejs examples/python examples/go examples/dotnet examples/java;; esac\n')
+        self.mise = self.command("mise", 'printf "CALL %s\\nPULUMI_HOME=%s\\n" "$*" "${PULUMI_HOME-}" >> "$CALL_LOG"\nif [ "$*" = "exec pulumi@3.259.0 -- pulumi plugin ls" ]; then echo "yaml converter 1.38.7"; fi\ncase "$*" in *" pulumi convert "*) mkdir -p examples/nodejs examples/python examples/go examples/dotnet examples/java;; esac\n')
         self.command("make", 'exit 72\n')
         self.command("go", 'exit 0\n')
         self.env = os.environ.copy()
@@ -44,6 +44,30 @@ class GeneratorPortabilityTests(unittest.TestCase):
         actual = self.env.copy()
         actual.update(env)
         return subprocess.run([str(SCRIPT), "make", str(self.repo), "project", "pack", "1.2.3"], env=actual, text=True, capture_output=True)
+
+    def test_setUp_honors_caller_tmpdir_and_cleans_up(self):
+        caller_tmp = self.root / "caller-tmp"
+        caller_tmp.mkdir()
+        previous_env = os.environ.get("TMPDIR")
+        previous_cache = tempfile.tempdir
+        os.environ["TMPDIR"] = str(caller_tmp)
+        tempfile.tempdir = None
+        probe = type(self)("test_invalid_explicit_converter_fails_before_existing_outputs_are_deleted")
+        try:
+            probe.setUp()
+            created = Path(probe.temp.name)
+            self.assertEqual(created.parent.resolve(), caller_tmp.resolve())
+            self.assertTrue(created.is_dir())
+        finally:
+            created = Path(probe.temp.name) if hasattr(probe, "temp") else None
+            if hasattr(probe, "temp"):
+                probe.tearDown()
+            if previous_env is None:
+                os.environ.pop("TMPDIR", None)
+            else:
+                os.environ["TMPDIR"] = previous_env
+            tempfile.tempdir = previous_cache
+        self.assertFalse(created.exists(), "TemporaryDirectory cleanup must remove the actual directory")
 
     def test_invalid_explicit_converter_fails_before_existing_outputs_are_deleted(self):
         result = self.run_generator(PULUMI_YAML_CONVERTER_BINARY=str(self.root / "missing"))
@@ -71,6 +95,42 @@ class GeneratorPortabilityTests(unittest.TestCase):
         self.assertEqual(result.returncode, 72, result.stderr)
         self.assertIn(f"--file {converter} --exact --reinstall", self.log.read_text())
         self.assertEqual(sorted(str(p.relative_to(home)) for p in home.rglob("*") if p.is_file()), [".pulumi/plugins/converter-yaml-v1.38.7/pulumi-converter-yaml"])
+
+    def test_explicit_pulumi_home_cache_wins_over_home_and_is_preserved(self):
+        home = self.root / "home-cache"
+        home_converter = home / ".pulumi/plugins/converter-yaml-v1.38.7/pulumi-converter-yaml"
+        home_converter.parent.mkdir(parents=True)
+        home_converter.write_text("home-cache")
+        home_converter.chmod(0o755)
+        pulumi_home = self.root / "explicit-pulumi-home"
+        converter = pulumi_home / "plugins/converter-yaml-v1.38.7/pulumi-converter-yaml"
+        converter.parent.mkdir(parents=True)
+        converter.write_text("explicit-pulumi-home-cache")
+        converter.chmod(0o755)
+        caller_tmp = self.root / "caller-temp-root"
+        caller_tmp.mkdir()
+
+        result = self.run_generator(HOME=str(home), PULUMI_HOME=str(pulumi_home), TMPDIR=str(caller_tmp))
+
+        self.assertEqual(result.returncode, 72, result.stderr)
+        calls = self.log.read_text()
+        self.assertIn(f"--file {converter} --exact --reinstall", calls)
+        self.assertNotIn(f"--file {home_converter} --exact --reinstall", calls)
+        self.assertEqual(converter.read_text(), "explicit-pulumi-home-cache")
+        self.assertEqual(home_converter.read_text(), "home-cache")
+        self.assertEqual(sorted(str(path.relative_to(pulumi_home)) for path in pulumi_home.rglob("*") if path.is_file()),
+                         ["plugins/converter-yaml-v1.38.7/pulumi-converter-yaml"])
+
+        isolated_homes = {
+            line.partition("=")[2]
+            for line in calls.splitlines()
+            if line.startswith("PULUMI_HOME=") and line.partition("=")[2]
+        }
+        self.assertEqual(len(isolated_homes), 1, calls)
+        isolated_home = Path(next(iter(isolated_homes)))
+        self.assertEqual(isolated_home.parent.resolve(), caller_tmp.resolve())
+        self.assertNotEqual(isolated_home, pulumi_home)
+        self.assertFalse(isolated_home.exists(), "generator must clean its isolated output PULUMI_HOME")
 
     def test_absent_cache_uses_pinned_public_install_fallback(self):
         result = self.run_generator()

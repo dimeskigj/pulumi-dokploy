@@ -19,7 +19,11 @@ func gitLabCreateFailure(err error) error {
 }
 
 func gitLabCreatePartial(observed gitLabObservation, err error) (infer.CreateResponse[GitLabIntegrationState], error) {
-	return infer.CreateResponse[GitLabIntegrationState]{ID: observed.State.GitLabID, Output: observed.State}, initFailed(gitLabCreateFailure(err))
+	safe := gitLabCreateFailure(err)
+	if errors.Is(safe, context.Canceled) || errors.Is(safe, context.DeadlineExceeded) {
+		return infer.CreateResponse[GitLabIntegrationState]{ID: observed.State.GitLabID, Output: observed.State}, errors.Join(initFailed(safe), safe)
+	}
+	return infer.CreateResponse[GitLabIntegrationState]{ID: observed.State.GitLabID, Output: observed.State}, initFailed(safe)
 }
 
 func gitLabCreateSettingsMatch(observed gitLabObservation, args GitLabIntegrationArgs, name string) bool {
