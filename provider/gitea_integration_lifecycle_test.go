@@ -122,3 +122,54 @@ func TestGiteaIntegrationUpdateVerifiedAndDeleteVerified(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, map[string]any{"gitProviderId": "parent"}, remove)
 }
+
+func TestGiteaIntegrationUpdateRepairsIncompleteImport(t *testing.T) {
+	reads := 0
+	mutations := 0
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/organization.active":
+			fmt.Fprint(w, `{"id":"org"}`)
+		case "/api/gitea.one":
+			reads++
+			secret := `,"clientSecret":"rotated-secret"`
+			if reads == 1 {
+				secret = ""
+			}
+			fmt.Fprintf(w, `{"giteaId":"42","gitProviderId":"parent","giteaUrl":"https://gitea.example","clientId":"client","redirectUri":"https://dokploy.example/callback","giteaInternalUrl":null,"organizationName":"","gitProvider":{"gitProviderId":"parent","name":"display","providerType":"gitea","organizationId":"org","userId":"owner"}%s}`, secret)
+		case "/api/gitea.update":
+			mutations++
+			var payload map[string]any
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&payload))
+			require.Equal(t, "rotated-secret", payload["clientSecret"])
+			fmt.Fprint(w, `not-json`)
+		default:
+			t.Errorf("unexpected %s", r.URL.Path)
+		}
+	}))
+	defer s.Close()
+	c, err := client.New(s.URL, "fixture", client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+	require.NoError(t, err)
+	prior := GiteaIntegrationState{GiteaIntegrationArgs: GiteaIntegrationArgs{Name: "display", GiteaURL: "https://gitea.example", ClientID: "client", RedirectURI: "https://dokploy.example/callback"}, GiteaID: "42", GitProviderID: "parent", OrganizationID: "org"}
+	desired := prior.GiteaIntegrationArgs
+	desired.ClientSecret = "rotated-secret"
+	out, err := (GiteaIntegration{client: func(context.Context) *client.Client { return c }}).Update(t.Context(), infer.UpdateRequest[GiteaIntegrationArgs, GiteaIntegrationState]{ID: "42", State: prior, Inputs: desired})
+	require.NoError(t, err)
+	require.Equal(t, "rotated-secret", out.Output.ClientSecret)
+	require.Equal(t, 1, mutations)
+	require.Equal(t, 2, reads)
+}
+
+func TestGiteaIntegrationUpdateRejectsIncompleteDesiredInputsBeforeMutation(t *testing.T) {
+	requests := 0
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { requests++ }))
+	defer s.Close()
+	c, err := client.New(s.URL, "fixture", client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+	require.NoError(t, err)
+	desired := giteaArgs()
+	desired.ClientSecret = ""
+	_, err = (GiteaIntegration{client: func(context.Context) *client.Client { return c }}).Update(t.Context(), infer.UpdateRequest[GiteaIntegrationArgs, GiteaIntegrationState]{ID: "42", Inputs: desired})
+	require.Error(t, err)
+	require.Zero(t, requests)
+}
