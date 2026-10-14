@@ -102,8 +102,8 @@ export class GiteaIntegration extends pulumi.CustomResource {
                 throw new Error("Missing required property 'redirectUri'");
             }
             resourceInputs["clientId"] = args?.clientId;
-            resourceInputs["clientSecret"] = args?.clientSecret ? pulumi.secret(args.clientSecret) : undefined;
-            resourceInputs["giteaInternalUrl"] = args?.giteaInternalUrl ? pulumi.secret(args.giteaInternalUrl) : undefined;
+            resourceInputs["clientSecret"] = args?.clientSecret !== undefined ? pulumi.secret(args.clientSecret) : undefined;
+            resourceInputs["giteaInternalUrl"] = args?.giteaInternalUrl !== undefined ? pulumi.secret(args.giteaInternalUrl) : undefined;
             resourceInputs["giteaUrl"] = args?.giteaUrl;
             resourceInputs["name"] = args?.name;
             resourceInputs["organizationName"] = (args?.organizationName) ?? "";
