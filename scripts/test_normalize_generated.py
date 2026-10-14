@@ -97,6 +97,19 @@ class NormalizeGeneratedTests(unittest.TestCase):
                 "    }\n"
                 "}\n"
             )
+            (java / "GitLabIntegrationArgs.java").write_text(
+                "import com.pulumi.core.Output;\n"
+                "import com.pulumi.core.annotations.Import;\n"
+                "import javax.annotation.Nullable;\n"
+                "public class GitLabIntegrationArgs {\n"
+                "    private Output<String> applicationSecret;\n"
+                "    private @Nullable Output<String> gitlabInternalUrl;\n"
+                "    private Output<String> applicationId;\n"
+                "    public GitLabIntegrationArgs build() {\n"
+                "        return $;\n"
+                "    }\n"
+                "}\n"
+            )
             node = root / "nodejs"
             node.mkdir()
             (node / "giteaIntegration.ts").write_text(
@@ -106,6 +119,10 @@ class NormalizeGeneratedTests(unittest.TestCase):
             (node / "bitbucketIntegration.ts").write_text(
                 'resourceInputs["apiToken"] = args?.apiToken ? pulumi.secret(args.apiToken) : undefined;\n'
                 'resourceInputs["appPassword"] = args?.appPassword ? pulumi.secret(args.appPassword) : undefined;\n'
+            )
+            (node / "gitLabIntegration.ts").write_text(
+                'resourceInputs["applicationSecret"] = args?.applicationSecret ? pulumi.secret(args.applicationSecret) : undefined;\n'
+                'resourceInputs["gitlabInternalUrl"] = args?.gitlabInternalUrl ? pulumi.secret(args.gitlabInternalUrl) : undefined;\n'
             )
             schema = {
                 "resources": {
@@ -123,6 +140,13 @@ class NormalizeGeneratedTests(unittest.TestCase):
                             "name": {"type": "string"},
                         }
                     },
+                    "dokploy:index:GitLabIntegration": {
+                        "inputProperties": {
+                            "applicationSecret": {"type": "string", "secret": True},
+                            "gitlabInternalUrl": {"type": "string", "secret": True},
+                            "applicationId": {"type": "string"},
+                        }
+                    },
                 }
             }
             schema_path = root / "schema.json"
@@ -132,16 +156,24 @@ class NormalizeGeneratedTests(unittest.TestCase):
 
             gitea = (java / "GiteaIntegrationArgs.java").read_text()
             bitbucket = (java / "BitbucketIntegrationArgs.java").read_text()
+            gitlab = (java / "GitLabIntegrationArgs.java").read_text()
             self.assertIn('Codegen.stringProp("clientSecret").secret().arg($.clientSecret).getNullable()', gitea)
             self.assertIn('Codegen.stringProp("giteaInternalUrl").secret().arg($.giteaInternalUrl).getNullable()', gitea)
             self.assertIn('Codegen.stringProp("apiToken").secret().arg($.apiToken).getNullable()', bitbucket)
             self.assertIn('Codegen.stringProp("appPassword").secret().arg($.appPassword).getNullable()', bitbucket)
+            self.assertIn('Codegen.stringProp("applicationSecret").secret().arg($.applicationSecret).getNullable()', gitlab)
+            self.assertIn('Codegen.stringProp("gitlabInternalUrl").secret().arg($.gitlabInternalUrl).getNullable()', gitlab)
             self.assertNotIn('Codegen.stringProp("clientId").secret()', gitea)
             self.assertNotIn('Codegen.stringProp("name").secret()', bitbucket)
+            self.assertNotIn('Codegen.stringProp("applicationId").secret()', gitlab)
             self.assertLess(gitea.index("import com.pulumi.core.annotations.Import;"),
                             gitea.index("import com.pulumi.core.internal.Codegen;"))
             self.assertIn('args?.giteaInternalUrl !== undefined ? pulumi.secret(args.giteaInternalUrl)',
                           (node / "giteaIntegration.ts").read_text())
+            self.assertIn('args?.applicationSecret !== undefined ? pulumi.secret(args.applicationSecret)',
+                          (node / "gitLabIntegration.ts").read_text())
+            self.assertIn('args?.gitlabInternalUrl !== undefined ? pulumi.secret(args.gitlabInternalUrl)',
+                          (node / "gitLabIntegration.ts").read_text())
             generated_targets = list(java.glob("*.java")) + list(node.glob("*.ts"))
             first = {path: path.read_bytes() for path in generated_targets}
             module.normalize_secret_integration_inputs(schema_path, root)

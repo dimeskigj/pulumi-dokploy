@@ -37,7 +37,7 @@ def normalize_secret_integration_inputs(schema_path: Path, sdk_root: Path) -> No
     if not isinstance(resources, dict):
         raise ValueError("schema resources must be an object")
 
-    for resource_name in ("GiteaIntegration", "BitbucketIntegration"):
+    for resource_name in ("GiteaIntegration", "BitbucketIntegration", "GitLabIntegration"):
         token = f"dokploy:index:{resource_name}"
         resource = resources.get(token)
         if not isinstance(resource, dict):
