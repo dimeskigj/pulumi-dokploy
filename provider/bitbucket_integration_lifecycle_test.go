@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
@@ -162,6 +163,70 @@ func TestBitbucketUpdatePartialState(t *testing.T) {
 				require.Nil(t, got.Output.AppPassword)
 				require.Equal(t, "old-workspace", *got.Output.BitbucketWorkspaceName)
 			}
+		})
+	}
+}
+
+func TestBitbucketUpdateRejectsPostMutationIdentityDrift(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		drift func(string) string
+	}{
+		{
+			name: "relation ID",
+			drift: func(record string) string {
+				return strings.Replace(record, `"bitbucketId":"relation"`, `"bitbucketId":"unverified-relation"`, 1)
+			},
+		},
+		{
+			name: "parent ID with matching nested parent",
+			drift: func(record string) string {
+				record = strings.Replace(record, `"gitProviderId":"parent"`, `"gitProviderId":"unverified-parent"`, 1)
+				return strings.Replace(record, `"gitProviderId":"parent"`, `"gitProviderId":"unverified-parent"`, 1)
+			},
+		},
+		{
+			name: "organization ID",
+			drift: func(record string) string {
+				return strings.Replace(record, `"organizationId":"org"`, `"organizationId":"unverified-organization"`, 1)
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			reads, mutations := 0, 0
+			var paths []string
+			api := bitbucketLifecycleClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				paths = append(paths, r.URL.Path)
+				w.Header().Set("Content-Type", "application/json")
+				switch r.URL.Path {
+				case "/api/organization.active":
+					fmt.Fprint(w, `{"id":"org"}`)
+				case "/api/bitbucket.one":
+					reads++
+					if reads == 1 {
+						fmt.Fprint(w, bitbucketRecord)
+					} else {
+						fmt.Fprint(w, tc.drift(bitbucketRecord))
+					}
+				case "/api/bitbucket.update":
+					mutations++
+					fmt.Fprint(w, `{}`)
+				default:
+					http.NotFound(w, r)
+				}
+			}))
+			got, err := (BitbucketIntegration{client: func(context.Context) *client.Client { return api }}).Update(t.Context(), infer.UpdateRequest[BitbucketIntegrationArgs, BitbucketIntegrationState]{ID: "relation", State: bitbucketLifecycleState(), Inputs: bitbucketUpdateInputs()})
+			require.Error(t, err)
+			var initFailed infer.ResourceInitFailedError
+			require.ErrorAs(t, err, &initFailed)
+			require.Equal(t, bitbucketLifecycleObservedState(), got.Output, "identity drift must return only the last verified state")
+			for _, unverified := range []string{"unverified-relation", "unverified-parent", "unverified-organization"} {
+				require.NotContains(t, err.Error(), unverified)
+			}
+			require.NotContains(t, err.Error(), "api-secret")
+			require.NotContains(t, err.Error(), "app-secret")
+			require.Equal(t, 1, mutations, "identity mismatch must not retry the mutation")
+			require.Equal(t, []string{"/api/organization.active", "/api/bitbucket.one", "/api/bitbucket.update", "/api/bitbucket.one"}, paths)
 		})
 	}
 }
