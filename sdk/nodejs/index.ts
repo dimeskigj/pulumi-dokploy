@@ -15,6 +15,11 @@ export type Backup = import("./backup").Backup;
 export const Backup: typeof import("./backup").Backup = null as any;
 utilities.lazyLoad(exports, ["Backup"], () => require("./backup"));
 
+export { BitbucketIntegrationArgs } from "./bitbucketIntegration";
+export type BitbucketIntegration = import("./bitbucketIntegration").BitbucketIntegration;
+export const BitbucketIntegration: typeof import("./bitbucketIntegration").BitbucketIntegration = null as any;
+utilities.lazyLoad(exports, ["BitbucketIntegration"], () => require("./bitbucketIntegration"));
+
 export { ComposeArgs } from "./compose";
 export type Compose = import("./compose").Compose;
 export const Compose: typeof import("./compose").Compose = null as any;
@@ -104,6 +109,11 @@ export { GitLabIntegrationArgs } from "./gitLabIntegration";
 export type GitLabIntegration = import("./gitLabIntegration").GitLabIntegration;
 export const GitLabIntegration: typeof import("./gitLabIntegration").GitLabIntegration = null as any;
 utilities.lazyLoad(exports, ["GitLabIntegration"], () => require("./gitLabIntegration"));
+
+export { GiteaIntegrationArgs } from "./giteaIntegration";
+export type GiteaIntegration = import("./giteaIntegration").GiteaIntegration;
+export const GiteaIntegration: typeof import("./giteaIntegration").GiteaIntegration = null as any;
+utilities.lazyLoad(exports, ["GiteaIntegration"], () => require("./giteaIntegration"));
 
 export { MariaDBArgs } from "./mariaDB";
 export type MariaDB = import("./mariaDB").MariaDB;
@@ -211,6 +221,8 @@ const _module = {
                 return new Application(name, <any>undefined, { urn })
             case "dokploy:index:Backup":
                 return new Backup(name, <any>undefined, { urn })
+            case "dokploy:index:BitbucketIntegration":
+                return new BitbucketIntegration(name, <any>undefined, { urn })
             case "dokploy:index:Compose":
                 return new Compose(name, <any>undefined, { urn })
             case "dokploy:index:Destination":
@@ -223,6 +235,8 @@ const _module = {
                 return new GitHubIntegration(name, <any>undefined, { urn })
             case "dokploy:index:GitLabIntegration":
                 return new GitLabIntegration(name, <any>undefined, { urn })
+            case "dokploy:index:GiteaIntegration":
+                return new GiteaIntegration(name, <any>undefined, { urn })
             case "dokploy:index:MariaDB":
                 return new MariaDB(name, <any>undefined, { urn })
             case "dokploy:index:MongoDB":

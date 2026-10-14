@@ -119,10 +119,10 @@ func (r BitbucketIntegration) Update(ctx context.Context, req infer.UpdateReques
 		if readErr == nil && after.OwnerUserID == before.OwnerUserID {
 			state = bitbucketIntegrationMutationState(after, req.Inputs)
 			if mutationErr == nil && !bitbucketIntegrationSettingsMatch(after, req.Inputs, req.Inputs.Name) {
-				mutationErr = errors.New("Bitbucket integration update could not be confirmed")
+				mutationErr = errors.New("bitbucket integration update could not be confirmed")
 			}
 		} else if mutationErr == nil {
-			mutationErr = errors.New("Bitbucket integration update could not be confirmed")
+			mutationErr = errors.New("bitbucket integration update could not be confirmed")
 		}
 	} else {
 		mutationErr = ctx.Err()

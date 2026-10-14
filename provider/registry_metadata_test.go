@@ -639,8 +639,8 @@ func TestRegistryMetadata(t *testing.T) {
 	for token, resource := range spec.Resources {
 		require.NotEmpty(t, resource.Description, token)
 	}
-	require.Len(t, spec.Resources, 25)
-	for _, token := range []string{"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount", "dokploy:index:GitLabIntegration", "dokploy:index:GitHubIntegration", "dokploy:index:GiteaIntegration"} {
+	require.Len(t, spec.Resources, 26)
+	for _, token := range []string{"dokploy:index:SSHKey", "dokploy:index:Registry", "dokploy:index:Tag", "dokploy:index:ProjectTag", "dokploy:index:Mount", "dokploy:index:GitLabIntegration", "dokploy:index:GitHubIntegration", "dokploy:index:GiteaIntegration", "dokploy:index:BitbucketIntegration"} {
 		require.Contains(t, spec.Resources, token)
 	}
 

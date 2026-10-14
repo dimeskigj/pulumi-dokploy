@@ -72,3 +72,70 @@ func TestBitbucketDiffOptionalPreservation(t *testing.T) {
 	require.True(t, got.HasChanges)
 	require.Equal(t, p.Update, got.DetailedDiff["appPassword"].Kind)
 }
+
+func TestBitbucketDiffCoversEveryInputAndIndependentOptionalOmissions(t *testing.T) {
+	old := BitbucketIntegrationState{BitbucketIntegrationArgs: BitbucketIntegrationArgs{
+		Name: "old", APIToken: ptr("api-old"), AppPassword: ptr("app-old"),
+		BitbucketEmail: ptr("old@example.invalid"), BitbucketUsername: ptr("old-user"), BitbucketWorkspaceName: ptr("old-workspace"),
+	}}
+	changed := BitbucketIntegrationArgs{
+		Name: "new", APIToken: ptr("api-new"), AppPassword: ptr("app-new"),
+		BitbucketEmail: ptr("new@example.invalid"), BitbucketUsername: ptr("new-user"), BitbucketWorkspaceName: ptr("new-workspace"),
+	}
+	got, err := (BitbucketIntegration{}).Diff(context.Background(), infer.DiffRequest[BitbucketIntegrationArgs, BitbucketIntegrationState]{Inputs: changed, State: old})
+	require.NoError(t, err)
+	require.True(t, got.HasChanges)
+	for _, key := range []string{"name", "apiToken", "appPassword", "bitbucketEmail", "bitbucketUsername", "bitbucketWorkspaceName"} {
+		require.Equal(t, p.Update, got.DetailedDiff[key].Kind, key)
+	}
+	for _, tc := range []struct {
+		key    string
+		change func(*BitbucketIntegrationArgs)
+	}{
+		{"name", func(a *BitbucketIntegrationArgs) { a.Name = "new" }},
+		{"apiToken", func(a *BitbucketIntegrationArgs) { a.APIToken = ptr("api-new") }},
+		{"appPassword", func(a *BitbucketIntegrationArgs) { a.AppPassword = ptr("app-new") }},
+		{"bitbucketEmail", func(a *BitbucketIntegrationArgs) { a.BitbucketEmail = ptr("new@example.invalid") }},
+		{"bitbucketUsername", func(a *BitbucketIntegrationArgs) { a.BitbucketUsername = ptr("new-user") }},
+		{"bitbucketWorkspaceName", func(a *BitbucketIntegrationArgs) { a.BitbucketWorkspaceName = ptr("new-workspace") }},
+	} {
+		t.Run("single-change/"+tc.key, func(t *testing.T) {
+			inputs := old.BitbucketIntegrationArgs
+			tc.change(&inputs)
+			diff, err := (BitbucketIntegration{}).Diff(context.Background(), infer.DiffRequest[BitbucketIntegrationArgs, BitbucketIntegrationState]{Inputs: inputs, State: old})
+			require.NoError(t, err)
+			require.True(t, diff.HasChanges)
+			require.Equal(t, map[string]p.PropertyDiff{tc.key: {Kind: p.Update}}, diff.DetailedDiff)
+		})
+	}
+
+	for _, key := range []string{"bitbucketEmail", "bitbucketUsername", "bitbucketWorkspaceName"} {
+		t.Run("omitted/"+key, func(t *testing.T) {
+			inputs := BitbucketIntegrationArgs{Name: "old", APIToken: ptr("api-old"), AppPassword: ptr("app-old"), BitbucketEmail: ptr("old@example.invalid"), BitbucketUsername: ptr("old-user"), BitbucketWorkspaceName: ptr("old-workspace")}
+			switch key {
+			case "bitbucketEmail":
+				inputs.BitbucketEmail = nil
+			case "bitbucketUsername":
+				inputs.BitbucketUsername = nil
+			case "bitbucketWorkspaceName":
+				inputs.BitbucketWorkspaceName = nil
+			}
+			diff, err := (BitbucketIntegration{}).Diff(context.Background(), infer.DiffRequest[BitbucketIntegrationArgs, BitbucketIntegrationState]{Inputs: inputs, State: old})
+			require.NoError(t, err)
+			require.False(t, diff.HasChanges, "omitting this inactive optional value preserves it")
+			require.Empty(t, diff.DetailedDiff)
+		})
+	}
+
+	t.Run("credential mode switch", func(t *testing.T) {
+		inputs := BitbucketIntegrationArgs{Name: "old", AppPassword: ptr("app-new"), BitbucketUsername: ptr("new-user")}
+		diff, err := (BitbucketIntegration{}).Diff(context.Background(), infer.DiffRequest[BitbucketIntegrationArgs, BitbucketIntegrationState]{Inputs: inputs, State: old})
+		require.NoError(t, err)
+		require.True(t, diff.HasChanges)
+		require.Equal(t, p.Update, diff.DetailedDiff["apiToken"].Kind)
+		require.Equal(t, p.Update, diff.DetailedDiff["appPassword"].Kind)
+		require.Equal(t, p.Update, diff.DetailedDiff["bitbucketUsername"].Kind)
+		require.NotContains(t, diff.DetailedDiff, "bitbucketEmail", "omitted email is not a clear")
+		require.NotContains(t, diff.DetailedDiff, "bitbucketWorkspaceName", "omitted workspace is not a clear")
+	})
+}

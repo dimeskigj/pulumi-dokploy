@@ -25,6 +25,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &Application{}
 	case "dokploy:index:Backup":
 		r = &Backup{}
+	case "dokploy:index:BitbucketIntegration":
+		r = &BitbucketIntegration{}
 	case "dokploy:index:Compose":
 		r = &Compose{}
 	case "dokploy:index:Destination":
@@ -37,6 +39,8 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 		r = &GitHubIntegration{}
 	case "dokploy:index:GitLabIntegration":
 		r = &GitLabIntegration{}
+	case "dokploy:index:GiteaIntegration":
+		r = &GiteaIntegration{}
 	case "dokploy:index:MariaDB":
 		r = &MariaDB{}
 	case "dokploy:index:MongoDB":
