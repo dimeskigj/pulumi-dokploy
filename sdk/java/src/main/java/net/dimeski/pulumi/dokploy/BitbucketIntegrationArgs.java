@@ -5,6 +5,7 @@ package net.dimeski.pulumi.dokploy;
 
 import com.pulumi.core.Output;
 import com.pulumi.core.annotations.Import;
+import com.pulumi.core.internal.Codegen;
 import com.pulumi.exceptions.MissingRequiredPropertyException;
 import java.lang.String;
 import java.util.Objects;
@@ -265,6 +266,8 @@ public final class BitbucketIntegrationArgs extends com.pulumi.resources.Resourc
             if ($.name == null) {
                 throw new MissingRequiredPropertyException("BitbucketIntegrationArgs", "name");
             }
+            $.apiToken = Codegen.stringProp("apiToken").secret().arg($.apiToken).getNullable();
+            $.appPassword = Codegen.stringProp("appPassword").secret().arg($.appPassword).getNullable();
             return $;
         }
     }
