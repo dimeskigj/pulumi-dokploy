@@ -9,30 +9,31 @@ import (
 )
 
 var (
-	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]                     = Project{}
-	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState]             = Environment{}
-	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState]             = Application{}
-	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]                   = Postgres{}
-	_ infer.ExplicitDependencies[RedisArgs, RedisState]                         = Redis{}
-	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]                       = SSHKey{}
-	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]                   = Registry{}
-	_ infer.ExplicitDependencies[TagArgs, TagState]                             = Tag{}
-	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]               = ProjectTag{}
-	_ infer.ExplicitDependencies[MountArgs, MountState]                         = Mount{}
-	_ infer.ExplicitDependencies[ServerArgs, ServerState]                       = Server{}
-	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]                     = Project{}
-	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState]             = Environment{}
-	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState]             = Application{}
-	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]                   = Postgres{}
-	_ infer.ExplicitDependencies[RedisArgs, RedisState]                         = Redis{}
-	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]                       = SSHKey{}
-	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]                   = Registry{}
-	_ infer.ExplicitDependencies[TagArgs, TagState]                             = Tag{}
-	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]               = ProjectTag{}
-	_ infer.ExplicitDependencies[MountArgs, MountState]                         = Mount{}
-	_ infer.ExplicitDependencies[GitLabIntegrationArgs, GitLabIntegrationState] = GitLabIntegration{}
-	_ infer.ExplicitDependencies[GitHubIntegrationArgs, GitHubIntegrationState] = GitHubIntegration{}
-	_ infer.ExplicitDependencies[GiteaIntegrationArgs, GiteaIntegrationState]   = GiteaIntegration{}
+	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]                           = Project{}
+	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState]                   = Environment{}
+	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState]                   = Application{}
+	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]                         = Postgres{}
+	_ infer.ExplicitDependencies[RedisArgs, RedisState]                               = Redis{}
+	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]                             = SSHKey{}
+	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]                         = Registry{}
+	_ infer.ExplicitDependencies[TagArgs, TagState]                                   = Tag{}
+	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]                     = ProjectTag{}
+	_ infer.ExplicitDependencies[MountArgs, MountState]                               = Mount{}
+	_ infer.ExplicitDependencies[ServerArgs, ServerState]                             = Server{}
+	_ infer.ExplicitDependencies[ProjectArgs, ProjectState]                           = Project{}
+	_ infer.ExplicitDependencies[EnvironmentArgs, EnvironmentState]                   = Environment{}
+	_ infer.ExplicitDependencies[ApplicationArgs, ApplicationState]                   = Application{}
+	_ infer.ExplicitDependencies[PostgresArgs, PostgresState]                         = Postgres{}
+	_ infer.ExplicitDependencies[RedisArgs, RedisState]                               = Redis{}
+	_ infer.ExplicitDependencies[SSHKeyArgs, SSHKeyState]                             = SSHKey{}
+	_ infer.ExplicitDependencies[RegistryArgs, RegistryState]                         = Registry{}
+	_ infer.ExplicitDependencies[TagArgs, TagState]                                   = Tag{}
+	_ infer.ExplicitDependencies[ProjectTagArgs, ProjectTagState]                     = ProjectTag{}
+	_ infer.ExplicitDependencies[MountArgs, MountState]                               = Mount{}
+	_ infer.ExplicitDependencies[GitLabIntegrationArgs, GitLabIntegrationState]       = GitLabIntegration{}
+	_ infer.ExplicitDependencies[GitHubIntegrationArgs, GitHubIntegrationState]       = GitHubIntegration{}
+	_ infer.ExplicitDependencies[GiteaIntegrationArgs, GiteaIntegrationState]         = GiteaIntegration{}
+	_ infer.ExplicitDependencies[BitbucketIntegrationArgs, BitbucketIntegrationState] = BitbucketIntegration{}
 )
 
 func TestProviderSchema(t *testing.T) {
@@ -63,7 +64,8 @@ func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {
 	require.Contains(t, tokens, "dokploy:index:SSHKey")
 	require.Contains(t, tokens, "dokploy:index:GitHubIntegration")
 	require.Contains(t, tokens, "dokploy:index:GiteaIntegration")
-	require.Len(t, tokens, 25)
+	require.Contains(t, tokens, "dokploy:index:BitbucketIntegration")
+	require.Len(t, tokens, 26)
 	require.Len(t, spec.Functions, 12)
 }
 
