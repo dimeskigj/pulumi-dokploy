@@ -33,6 +33,10 @@ Owned files in the Task 4b1 commit:
 - `SAFE go test ./examples -tags=yaml -run 'TestCanonicalYAML' -count=1` — passed.
 - `SAFE make docs_generate` — passed; generated outputs from repository source.
 - `git diff --check` — passed before commit.
+- `SAFE make docs_check` after commit `a8b2d3b` — passed: generated-output
+  drift check, Astro diagnostics (0 errors/warnings/hints), website source tests
+  (70/70), site build (63 pages), and built-site tests (5/5). Full command log:
+  `/tmp/opencode/task-4b1-docs-check.log`.
 - The first source-test run found two expected inventory misses after the
   additive GitHub resource/sidebar routes (resource count 23→24, and missing
   canonical GitHub routes). Fixed only those assertions; the subsequent full
@@ -43,14 +47,16 @@ Owned files in the Task 4b1 commit:
 
 ## Commit(s)
 
-- `<pending>` — Task 4b1 docs/source/generated outputs.
-- `<pending>` — concrete website inventory assertion fixes, if separated.
+- `ee82fb3 docs: publish GitHub integration import guidance` — docs/source,
+  generated pages, source inventory fixes, and report.
+- `a8b2d3b test(docs): assert GitHub routes in built site` — explicit built
+  GitHub guide/reference route coverage, report update.
 
 ## Post-commit docs verification
 
-`SAFE make docs_check` was run after the docs commit. Its exact final outcome,
-log path, and any focused follow-up commit are to be recorded here before
-reporting completion.
+`SAFE make docs_check` passed on committed output after `a8b2d3b`, including the
+GitHub built-route test. An earlier run immediately after `ee82fb3` also passed
+before that additional route assertion was added.
 
 ## Self-review / remaining concerns
 

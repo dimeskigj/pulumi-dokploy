@@ -89,3 +89,9 @@ test("built site publishes both GitLab integration routes", async () => {
     assert.ok(await exists(path.join(DIST, route, "index.html")), `built route ${route} must exist`);
   }
 });
+
+test("built site publishes GitHub integration guide and reference routes", async () => {
+  for (const route of ["guides/github-integrations", "reference/github-integration"]) {
+    assert.ok(await exists(path.join(DIST, route, "index.html")), `built route ${route} must exist`);
+  }
+});
