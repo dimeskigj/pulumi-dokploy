@@ -1,0 +1,98 @@
+---
+title: Bitbucket integrations
+description: Manage Dokploy's configuration for a Bitbucket integration.
+---
+
+`BitbucketIntegration` manages the Dokploy configuration for a Bitbucket
+integration. Obtain the selected Bitbucket credential outside Pulumi, then use
+Pulumi to create or manage the Dokploy configuration. It does not automate OAuth,
+or manage session state. It does not validate connectivity or report readiness.
+No separate manual Dokploy integration setup or authorization step is required.
+This resource does not guarantee that either credential mode is accepted by a
+live Bitbucket service.
+
+## Setup sequence
+
+1. Obtain the API token or app password in Bitbucket outside Pulumi. For API-token
+   mode, use the account email; for app-password mode, use the Bitbucket username.
+   Legacy app-password support exists in Dokploy's configuration model, but
+   current Bitbucket acceptance is not guaranteed.
+2. Then use Pulumi to create or manage the Dokploy Bitbucket configuration with
+   the selected credential and its mode-specific identity. No separate manual
+   Dokploy integration or authorization step is required.
+
+## Choose a credential mode
+
+The resource has six inputs: `name`, `apiToken`, `appPassword`,
+`bitbucketEmail`, `bitbucketUsername`, and `bitbucketWorkspaceName`. `name` is
+the only statically required input. On apply, provide exactly one nonempty
+credential and the identity required for that mode:
+
+| Mode | Credential | Required identity |
+| --- | --- | --- |
+| API token | `apiToken` | A valid `bitbucketEmail` |
+| App password | `appPassword` | A nonempty `bitbucketUsername` |
+
+Both credentials are secret values. Do not put credentials directly in source
+or ordinary Pulumi configuration. Set the selected credential using secret
+configuration:
+
+```sh
+pulumi config set --secret bitbucketApiToken '<BITBUCKET_API_TOKEN>'
+```
+
+The canonical example below uses API-token mode only; it does not set an app
+password. `<BITBUCKET_API_TOKEN>` and the other example values are reserved
+placeholders, not credentials.
+
+```ts
+const integration = new dokploy.BitbucketIntegration("bitbucket", {
+  name: "production-bitbucket",
+  apiToken: config.requireSecret("bitbucketApiToken"),
+  bitbucketEmail: "<BITBUCKET_ACCOUNT_EMAIL>",
+  bitbucketWorkspaceName: "example-workspace",
+});
+```
+
+App-password mode is a separate alternative: configure the secret
+`appPassword` instead of `apiToken`, and supply a nonempty
+`bitbucketUsername` instead of relying on the API-token email requirement. Do
+not set both credentials. Legacy app-password support exists in Dokploy's
+configuration model, but current Bitbucket acceptance is not guaranteed; this
+guide makes no compatibility or connectivity claim. Any supplied email must be
+valid even when app-password mode is selected.
+
+## Import, updates, and workspace behavior
+
+Import uses the Dokploy Bitbucket relation ID (`bitbucketId`), not the parent
+Git-provider ID:
+
+```sh
+pulumi import dokploy:index:BitbucketIntegration integration <bitbucket-relation-id>
+```
+
+Imported records can be incomplete or have legacy credential state. Before an
+update, select exactly one mode, provide its required identity, and supply the
+active nonempty secret. Pulumi preserves a previously known secret when refresh
+omits it, but omission does not prove rotation or a credential clear.
+
+Omitting an inactive email, username, or workspace preserves the upstream
+value; an omitted inactive identity is not a request to clear it. Supplying an
+empty `bitbucketWorkspaceName` explicitly clears the workspace. Email has no
+null or empty-string clear operation. To switch credential modes, the unused
+credential is sent as an empty string and the provider verifies the clear from
+the observed result. An omitted credential response is not proof of a clear or
+of a newly accepted secret.
+
+Creation has no response body. The provider uses a temporary marker and a
+bounded, identity-verified discovery process; it does not adopt by name alone,
+retry the create mutation, or delete uncertain state. Verified partial state is
+reported when identity is established but later verification fails; without a
+verified identity it does not guess which resource to adopt or remove.
+
+## Destroy behavior
+
+Destroy removes the Dokploy Git-provider parent, which cascades to the Bitbucket
+relation. It does not revoke upstream credentials or delete the Bitbucket account
+or workspace. It does not delete workloads. Unmanaged workloads may still reference the
+integration and are not automatically updated or deleted when it is destroyed.

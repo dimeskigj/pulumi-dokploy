@@ -28,6 +28,36 @@ if gitlab_repository is None:
 git_branch = config.get("gitBranch")
 if git_branch is None:
     git_branch = "main"
+gitlab_application_id = config.get("gitlabApplicationId")
+if gitlab_application_id is None:
+    gitlab_application_id = "replace-with-gitlab-oauth-application-id"
+gitlab_application_secret = config.get_secret("gitlabApplicationSecret")
+if gitlab_application_secret is None:
+    gitlab_application_secret = ""
+gitea_client_id = config.get("giteaClientId")
+if gitea_client_id is None:
+    gitea_client_id = "replace-with-gitea-oauth-client-id"
+gitea_client_secret = config.get_secret("giteaClientSecret")
+if gitea_client_secret is None:
+    gitea_client_secret = "replace-with-gitea-oauth-client-secret"
+gitea_internal_url = config.get_secret("giteaInternalUrl")
+if gitea_internal_url is None:
+    gitea_internal_url = "https://gitea.internal.example.invalid"
+gitea_redirect_uri = config.get("giteaRedirectUri")
+if gitea_redirect_uri is None:
+    gitea_redirect_uri = "https://dokploy.example.invalid/api/auth/gitea/callback"
+bitbucket_api_token = config.get_secret("bitbucketApiToken")
+if bitbucket_api_token is None:
+    bitbucket_api_token = "replace-with-bitbucket-api-token"
+bitbucket_email = config.get("bitbucketEmail")
+if bitbucket_email is None:
+    bitbucket_email = "example@example.invalid"
+bitbucket_workspace_name = config.get("bitbucketWorkspaceName")
+if bitbucket_workspace_name is None:
+    bitbucket_workspace_name = "example-workspace"
+gitlab_redirect_uri = config.get("gitlabRedirectUri")
+if gitlab_redirect_uri is None:
+    gitlab_redirect_uri = "https://dokploy.example.invalid/api/providers/gitlab/callback"
 ssh_private_key = config.get_secret("sshPrivateKey")
 if ssh_private_key is None:
     ssh_private_key = ""
@@ -58,6 +88,25 @@ if destination_access_key is None:
 destination_secret_access_key = config.get_secret("destinationSecretAccessKey")
 if destination_secret_access_key is None:
     destination_secret_access_key = "replace-with-a-destination-secret-access-key"
+managed_gitlab_integration = dokploy.GitLabIntegration("managedGitlabIntegration",
+    name="example-gitlab-integration",
+    application_id=gitlab_application_id,
+    application_secret=pulumi.Output.secret(gitlab_application_secret),
+    redirect_uri=gitlab_redirect_uri,
+    gitlab_url="https://gitlab.com")
+managed_gitea_integration = dokploy.GiteaIntegration("managedGiteaIntegration",
+    name="example-gitea-integration",
+    gitea_url="https://gitea.example.invalid",
+    client_id=gitea_client_id,
+    client_secret=pulumi.Output.secret(gitea_client_secret),
+    redirect_uri=gitea_redirect_uri,
+    gitea_internal_url=pulumi.Output.secret(gitea_internal_url),
+    organization_name="example-team")
+managed_bitbucket_integration = dokploy.BitbucketIntegration("managedBitbucketIntegration",
+    name="example-bitbucket-integration",
+    api_token=bitbucket_api_token,
+    bitbucket_email=bitbucket_email,
+    bitbucket_workspace_name=bitbucket_workspace_name)
 project_resource = dokploy.Project("project",
     name="dokploy-mvp",
     description="Canonical Dokploy provider example")
@@ -244,3 +293,6 @@ pulumi.export("gitlabNamespace", gitlab_namespace)
 pulumi.export("gitlabRepository", gitlab_repository)
 pulumi.export("gitBranch", git_branch)
 pulumi.export("remoteServerId", remote_server.server_id)
+pulumi.export("managedGitlabIntegrationId", managed_gitlab_integration.gitlab_id)
+pulumi.export("managedGiteaIntegrationId", managed_gitea_integration.gitea_id)
+pulumi.export("managedBitbucketIntegrationId", managed_bitbucket_integration.bitbucket_id)

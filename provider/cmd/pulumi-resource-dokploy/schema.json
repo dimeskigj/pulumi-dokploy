@@ -1,7 +1,7 @@
 {
   "name": "dokploy",
   "displayName": "Dokploy",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, tags, project-tag associations, mounts, schedules, notifications, servers, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, GitLab, GitHub, Gitea, and Bitbucket integrations, tags, project-tag associations, mounts, schedules, notifications, servers, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
   "keywords": [
     "category/infrastructure",
     "kind/native",
@@ -1034,6 +1034,86 @@
         "database"
       ]
     },
+    "dokploy:index:BitbucketIntegration": {
+      "description": "Manages a Dokploy Bitbucket integration using an API token or legacy app password.",
+      "properties": {
+        "apiToken": {
+          "type": "string",
+          "description": "A secret Bitbucket API token; select exactly one credential mode.",
+          "secret": true
+        },
+        "appPassword": {
+          "type": "string",
+          "description": "A secret Bitbucket app password; select exactly one credential mode.",
+          "secret": true
+        },
+        "bitbucketEmail": {
+          "type": "string",
+          "description": "The email required for API-token mode."
+        },
+        "bitbucketId": {
+          "type": "string",
+          "description": "The stable Bitbucket relation ID used as the Pulumi resource identity."
+        },
+        "bitbucketUsername": {
+          "type": "string",
+          "description": "The username required for app-password mode."
+        },
+        "bitbucketWorkspaceName": {
+          "type": "string",
+          "description": "An optional Bitbucket workspace; omission preserves the existing value."
+        },
+        "gitProviderId": {
+          "type": "string",
+          "description": "The associated Dokploy Git-provider ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "The Dokploy integration display name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "The owning Dokploy organization ID."
+        }
+      },
+      "required": [
+        "name",
+        "bitbucketId",
+        "gitProviderId",
+        "organizationId"
+      ],
+      "inputProperties": {
+        "apiToken": {
+          "type": "string",
+          "description": "A secret Bitbucket API token; select exactly one credential mode.",
+          "secret": true
+        },
+        "appPassword": {
+          "type": "string",
+          "description": "A secret Bitbucket app password; select exactly one credential mode.",
+          "secret": true
+        },
+        "bitbucketEmail": {
+          "type": "string",
+          "description": "The email required for API-token mode."
+        },
+        "bitbucketUsername": {
+          "type": "string",
+          "description": "The username required for app-password mode."
+        },
+        "bitbucketWorkspaceName": {
+          "type": "string",
+          "description": "An optional Bitbucket workspace; omission preserves the existing value."
+        },
+        "name": {
+          "type": "string",
+          "description": "The Dokploy integration display name."
+        }
+      },
+      "requiredInputs": [
+        "name"
+      ]
+    },
     "dokploy:index:Compose": {
       "description": "A Dokploy Compose stack.",
       "properties": {
@@ -1437,6 +1517,256 @@
       "requiredInputs": [
         "projectId",
         "name"
+      ]
+    },
+    "dokploy:index:GitHubIntegration": {
+      "description": "Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "description": "The stable Dokploy Git-provider parent ID."
+        },
+        "githubAppName": {
+          "type": "string",
+          "description": "The GitHub App name stored by Dokploy; this does not configure the GitHub-side App."
+        },
+        "githubId": {
+          "type": "string",
+          "description": "The stable Dokploy GitHub relation ID used as the Pulumi resource identity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The required Dokploy integration display name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "The owning Dokploy organization ID."
+        }
+      },
+      "required": [
+        "name",
+        "githubAppName",
+        "githubId",
+        "gitProviderId",
+        "organizationId"
+      ],
+      "inputProperties": {
+        "githubAppName": {
+          "type": "string",
+          "description": "The GitHub App name stored by Dokploy; this does not configure the GitHub-side App."
+        },
+        "name": {
+          "type": "string",
+          "description": "The required Dokploy integration display name."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "githubAppName"
+      ]
+    },
+    "dokploy:index:GitLabIntegration": {
+      "description": "A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The GitLab OAuth application ID."
+        },
+        "applicationSecret": {
+          "type": "string",
+          "description": "The GitLab OAuth application secret.",
+          "secret": true
+        },
+        "gitProviderId": {
+          "type": "string",
+          "description": "The Dokploy Git provider ID associated with this integration."
+        },
+        "gitlabId": {
+          "type": "string",
+          "description": "The stable GitLab integration ID used as the Pulumi resource identity."
+        },
+        "gitlabInternalUrl": {
+          "type": "string",
+          "description": "An optional internal GitLab URL override, which may include basic-auth credentials.",
+          "secret": true
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "description": "The public GitLab base URL; defaults to https://gitlab.com.",
+          "default": "https://gitlab.com"
+        },
+        "groupName": {
+          "type": "string",
+          "description": "The optional GitLab group name; defaults to an empty string.",
+          "default": ""
+        },
+        "isConfigured": {
+          "type": "boolean",
+          "description": "Whether access and refresh tokens are present; this does not indicate connectivity or authorization validity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The integration name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "The Dokploy organization ID associated with this integration."
+        },
+        "redirectUri": {
+          "type": "string",
+          "description": "The OAuth callback URI configured for the application."
+        }
+      },
+      "required": [
+        "name",
+        "applicationId",
+        "applicationSecret",
+        "redirectUri",
+        "gitlabUrl",
+        "groupName",
+        "gitlabId",
+        "gitProviderId",
+        "organizationId",
+        "isConfigured"
+      ],
+      "inputProperties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The GitLab OAuth application ID."
+        },
+        "applicationSecret": {
+          "type": "string",
+          "description": "The GitLab OAuth application secret.",
+          "secret": true
+        },
+        "gitlabInternalUrl": {
+          "type": "string",
+          "description": "An optional internal GitLab URL override, which may include basic-auth credentials.",
+          "secret": true
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "description": "The public GitLab base URL; defaults to https://gitlab.com.",
+          "default": "https://gitlab.com"
+        },
+        "groupName": {
+          "type": "string",
+          "description": "The optional GitLab group name; defaults to an empty string.",
+          "default": ""
+        },
+        "name": {
+          "type": "string",
+          "description": "The integration name."
+        },
+        "redirectUri": {
+          "type": "string",
+          "description": "The OAuth callback URI configured for the application."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "applicationId",
+        "applicationSecret",
+        "redirectUri"
+      ]
+    },
+    "dokploy:index:GiteaIntegration": {
+      "description": "A Dokploy Gitea OAuth integration configured manually by the operator.",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "The Gitea OAuth client ID."
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "The secret Gitea OAuth client secret.",
+          "secret": true
+        },
+        "gitProviderId": {
+          "type": "string",
+          "description": "The Dokploy Git provider ID associated with this integration."
+        },
+        "giteaId": {
+          "type": "string",
+          "description": "The stable Gitea integration ID used as the Pulumi resource identity."
+        },
+        "giteaInternalUrl": {
+          "type": "string",
+          "description": "An optional internal Gitea base URL override.",
+          "secret": true
+        },
+        "giteaUrl": {
+          "type": "string",
+          "description": "The absolute HTTP(S) Gitea base URL; paths are allowed."
+        },
+        "name": {
+          "type": "string",
+          "description": "The integration name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "The Dokploy organization ID associated with this integration."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "The optional Gitea organization name; defaults to an empty string.",
+          "default": ""
+        },
+        "redirectUri": {
+          "type": "string",
+          "description": "The absolute HTTP(S) OAuth callback URI."
+        }
+      },
+      "required": [
+        "name",
+        "giteaUrl",
+        "clientId",
+        "clientSecret",
+        "redirectUri",
+        "organizationName",
+        "giteaId",
+        "gitProviderId",
+        "organizationId"
+      ],
+      "inputProperties": {
+        "clientId": {
+          "type": "string",
+          "description": "The Gitea OAuth client ID."
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "The secret Gitea OAuth client secret.",
+          "secret": true
+        },
+        "giteaInternalUrl": {
+          "type": "string",
+          "description": "An optional internal Gitea base URL override.",
+          "secret": true
+        },
+        "giteaUrl": {
+          "type": "string",
+          "description": "The absolute HTTP(S) Gitea base URL; paths are allowed."
+        },
+        "name": {
+          "type": "string",
+          "description": "The integration name."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "The optional Gitea organization name; defaults to an empty string.",
+          "default": ""
+        },
+        "redirectUri": {
+          "type": "string",
+          "description": "The absolute HTTP(S) OAuth callback URI."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "giteaUrl",
+        "clientId",
+        "clientSecret",
+        "redirectUri"
       ]
     },
     "dokploy:index:MariaDB": {

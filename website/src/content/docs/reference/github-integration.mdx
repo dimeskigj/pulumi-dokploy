@@ -1,0 +1,19 @@
+---
+title: "GitHubIntegration"
+description: "Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only."
+---
+
+import PropertyTable from "../../../components/PropertyTable.astro";
+
+> Generated from `schema.json`. Add lifecycle guidance to curated guides, not this file.
+
+
+Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
+
+## Inputs
+
+<PropertyTable properties={[{"name":"githubAppName","type":"string","typeHref":null,"description":"The GitHub App name stored by Dokploy; this does not configure the GitHub-side App.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The required Dokploy integration display name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />
+
+## Outputs
+
+<PropertyTable properties={[{"name":"gitProviderId","type":"string","typeHref":null,"description":"The stable Dokploy Git-provider parent ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"githubAppName","type":"string","typeHref":null,"description":"The GitHub App name stored by Dokploy; this does not configure the GitHub-side App.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"githubId","type":"string","typeHref":null,"description":"The stable Dokploy GitHub relation ID used as the Pulumi resource identity.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"name","type":"string","typeHref":null,"description":"The required Dokploy integration display name.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]},{"name":"organizationId","type":"string","typeHref":null,"description":"The owning Dokploy organization ID.","required":true,"secret":false,"replaceOnChanges":false,"defaultValue":null,"environment":[]}]} />

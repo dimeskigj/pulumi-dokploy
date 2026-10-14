@@ -17,6 +17,7 @@ const required = [
   "concepts/lifecycle-and-state.mdx",
   "concepts/secrets.mdx",
   "guides/applications.mdx",
+  "guides/gitlab-integrations.mdx",
   "guides/compose.mdx",
   "guides/databases.mdx",
   "guides/domains.mdx",
@@ -239,9 +240,11 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/servers/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/servers/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/", "/guides/github-integrations/", "/guides/gitea-integrations/", "/guides/bitbucket-integrations/",
     "/examples/", "/examples/complete/",
-    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/configuration/", "/reference/types/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/git-lab-integration/", "/reference/github-integration/", "/reference/gitea-integration/", "/reference/bitbucket-integration/", "/reference/configuration/", "/reference/types/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/", "/guides/gitlab-integrations/",
+    "/examples/", "/examples/complete/",
     "/contributing/",
     "/reference/schedule/",
     ...lookupRoutes.map((slug) => `/reference/${slug}/`),
@@ -251,8 +254,8 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 58);
-  assert.equal(curatedFiles.length, 19);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 66);
+  assert.equal(curatedFiles.length, 20);
 });
 
 test("Notification guide covers channels and safe recovery", async () => {
@@ -293,7 +296,7 @@ test("Notification guide covers channels and safe recovery", async () => {
   const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
   assert.match(config, /label: "Schedules"[^\n]*\n\s*\{ label: "Notifications", link: "\/guides\/notifications\/"/);
   assert.match(config, /label: "Schedule"[^\n]*\n\s*\{ label: "Notification", link: "\/reference\/notification\/"/);
-});
+ });
 
 test("provider guides enforce exact schema discriminators and lifecycle statements", async () => {
   const applications = await readFile(new URL("../src/content/docs/guides/applications.mdx", import.meta.url), "utf8");
@@ -495,4 +498,77 @@ test("lifecycle and troubleshooting docs scope deployment polling to workloads",
   assert.match(troubleshooting, /Server.{0,20}do not poll|Server.{0,30}no deployment.*poll/i);
   assert.match(troubleshooting, /\.\.\/servers\//);
   assert.doesNotMatch(troubleshooting, /Create and update operations poll Dokploy deployment status/);
+});
+
+test("GitLab authorization remains separate from workload deployment", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/gitlab-integrations.mdx", import.meta.url), "utf8");
+  assert.match(guide, /authorize.*GitLab|GitLab.*authorize/i);
+  assert.match(guide, /\]\(\.\.\/applications\/\)/);
+  assert.match(guide, /\]\(\.\.\/compose\/\)/);
+  assert.match(guide, /`user`/);
+  assert.match(guide, /`gitProviders`/);
+  assert.match(guide, /reauthoriz/i);
+  assert.match(guide, /isConfigured[\s\S]*reachable/i);
+  assert.match(guide, /stage two|second stage|after.*authoriz/i);
+  assert.doesNotMatch(guide, /accessToken|refreshToken/);
+});
+
+test("GitLab import and recovery guidance is safe", async () => {
+  const guide = await readFile(new URL("../src/content/docs/guides/gitlab-integrations.mdx", import.meta.url), "utf8");
+  assert.match(guide, /pulumi import dokploy:index:GitLabIntegration integration <gitlab-id>/);
+  assert.match(guide, /relation ID.*not.*(application|parent)/i);
+  assert.match(guide, /credentials resupplied/i);
+  assert.match(guide, /Import does not change\s+existing sharing/i);
+  assert.match(guide, /Deleting a managed integration[\s\S]*unmanaged workload references/i);
+  assert.match(guide, /Inspect Dokploy[\s\S]*retrying/i);
+});
+
+test("GitLab lifecycle, source alternatives, and troubleshooting explain recovery boundaries", async () => {
+  const sources = await readFile(new URL("../src/content/docs/concepts/sources.mdx", import.meta.url), "utf8");
+  assert.match(sources, /external.*relation ID/i);
+  assert.match(sources, /authorize[\s\S]*second stage/i);
+  const lifecycle = await readFile(new URL("../src/content/docs/concepts/lifecycle-and-state.mdx", import.meta.url), "utf8");
+  assert.match(lifecycle, /GitLabIntegration/);
+  assert.match(lifecycle, /never OAuth access or refresh tokens/i);
+  const troubleshooting = await readFile(new URL("../src/content/docs/guides/troubleshooting.mdx", import.meta.url), "utf8");
+  assert.match(troubleshooting, /GitLabIntegration/);
+  assert.match(troubleshooting, /isConfigured[\s\S]*validity/i);
+  assert.match(troubleshooting, /Inspect Dokploy[\s\S]*retry/i);
+});
+
+test("GitLabIntegration reference and guide are published", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  assert.match(config, /label: "GitLab integrations", link: "\/guides\/gitlab-integrations\/"/);
+  assert.match(config, /label: "GitLabIntegration", link: "\/reference\/git-lab-integration\/"/);
+  const reference = await readFile(new URL("../src/content/docs/reference/git-lab-integration.mdx", import.meta.url), "utf8");
+  assert.match(reference, /title: "GitLabIntegration"/);
+  const model = await import("../scripts/reference-model.mjs");
+  assert.equal(model.slugFromToken("dokploy:index:GitLabIntegration"), "git-lab-integration");
+  const schema = JSON.parse(await readFile(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url), "utf8"));
+  const resource = schema.resources["dokploy:index:GitLabIntegration"];
+  assert.ok(resource, "GitLabIntegration must be in provider schema");
+  assert.equal(resource.inputProperties.applicationSecret.secret, true);
+  assert.equal(resource.inputProperties.gitlabUrl.default, "https://gitlab.com");
+  const yaml = await readFile(new URL("../../examples/yaml/Pulumi.yaml", import.meta.url), "utf8");
+  assert.match(yaml, /integrationId: \$\{managedGitlabIntegration\.gitlabId\}/g);
+});
+
+test("Gitea and Bitbucket references, guides, and nav match the registered contracts", async () => {
+  const config = await readFile(new URL("../astro.config.mjs", import.meta.url), "utf8");
+  const model = await import("../scripts/reference-model.mjs");
+  const schema = JSON.parse(await readFile(new URL("../../provider/cmd/pulumi-resource-dokploy/schema.json", import.meta.url), "utf8"));
+  const cases = [
+    { name: "GiteaIntegration", slug: "gitea-integration", guide: "gitea-integrations", fields: ["clientId", "clientSecret", "giteaInternalUrl", "giteaUrl", "name", "organizationName", "redirectUri"], secret: ["clientSecret", "giteaInternalUrl"] },
+    { name: "BitbucketIntegration", slug: "bitbucket-integration", guide: "bitbucket-integrations", fields: ["apiToken", "appPassword", "bitbucketEmail", "bitbucketUsername", "bitbucketWorkspaceName", "name"], secret: ["apiToken", "appPassword"] },
+  ];
+  for (const item of cases) {
+    assert.match(config, new RegExp(`label: "${item.name.replace("Integration", " integrations")}", link: "/guides/${item.guide}/"`));
+    assert.match(config, new RegExp(`label: "${item.name}", link: "/reference/${item.slug}/"`));
+    assert.equal(model.slugFromToken(`dokploy:index:${item.name}`), item.slug);
+    const reference = await readFile(new URL(`../src/content/docs/reference/${item.slug}.mdx`, import.meta.url), "utf8");
+    assert.match(reference, new RegExp(`title: "${item.name}"`));
+    const resource = schema.resources[`dokploy:index:${item.name}`];
+    assert.deepEqual(Object.keys(resource.inputProperties).sort(), [...item.fields].sort());
+    for (const field of item.secret) assert.equal(resource.inputProperties[field].secret, true);
+  }
 });

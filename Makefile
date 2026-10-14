@@ -34,6 +34,7 @@ codegen: provider
 	rm -rf sdk/nodejs sdk/python sdk/go sdk/dotnet sdk/java
 	mise exec pulumi@3.259.0 -- pulumi package gen-sdk provider/cmd/$(PROVIDER)/schema.json --language all -o sdk
 	python3 scripts/normalize-java-invokes.py provider/cmd/$(PROVIDER)/schema.json sdk/java
+	python3 scripts/normalize-generated.py integration-inputs provider/cmd/$(PROVIDER)/schema.json sdk
 	python3 scripts/remove-dotnet-package-icon.py sdk/dotnet/Dimeskigj.Pulumi.Dokploy.csproj
 	rm -f sdk/dotnet/logo.png
 	printf '%s' '$(VERSION_GENERIC)' > sdk/dotnet/version.txt
@@ -95,7 +96,6 @@ install_plugin: provider
 
 gen_examples: codegen
 	scripts/gen-examples.sh "$(MAKE)" "$(CURDIR)" "$(PROJECT)" "$(PACK)" "$(VERSION_GENERIC)"
-
 test_examples: install_plugin
 	mise exec -- go test ./examples -tags=all -count=1
 	cd examples/go && go test . -count=1
@@ -104,7 +104,12 @@ test_examples: install_plugin
 	cd examples/nodejs && npm install --package-lock=false --ignore-scripts --no-audit --no-fund && npx tsc --noEmit
 	cd examples/dotnet && dotnet build --nologo
 	cd sdk/java && $(JAVA11_EXEC) gradle publishToMavenLocal --no-daemon
+	$(MAKE) test_sdk_contracts
 	cd examples/java && $(JAVA17_MAVEN_EXEC) mvn $(MAVEN_TLS_OPTS) package -DskipTests
+
+.PHONY: test_sdk_contracts
+test_sdk_contracts: install_java_sdk build_nodejs
+	python3 scripts/test_sdk_contracts.py
 
 .PHONY: test_acceptance_runner
 test_acceptance_runner:

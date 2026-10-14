@@ -12,6 +12,16 @@ const gitlabOwnerConfig = config.get("gitlabOwner") || "example";
 const gitlabNamespaceConfig = config.get("gitlabNamespace") || "platform";
 const gitlabRepositoryConfig = config.get("gitlabRepository") || "application";
 const gitBranchConfig = config.get("gitBranch") || "main";
+const gitlabApplicationId = config.get("gitlabApplicationId") || "replace-with-gitlab-oauth-application-id";
+const gitlabApplicationSecret = config.getSecret("gitlabApplicationSecret") || pulumi.secret("");
+const giteaClientId = config.get("giteaClientId") || "replace-with-gitea-oauth-client-id";
+const giteaClientSecret = config.getSecret("giteaClientSecret") || pulumi.secret("replace-with-gitea-oauth-client-secret");
+const giteaInternalUrl = config.getSecret("giteaInternalUrl") || pulumi.secret("https://gitea.internal.example.invalid");
+const giteaRedirectUri = config.get("giteaRedirectUri") || "https://dokploy.example.invalid/api/auth/gitea/callback";
+const bitbucketApiToken = config.getSecret("bitbucketApiToken") || pulumi.secret("replace-with-bitbucket-api-token");
+const bitbucketEmail = config.get("bitbucketEmail") || "example@example.invalid";
+const bitbucketWorkspaceName = config.get("bitbucketWorkspaceName") || "example-workspace";
+const gitlabRedirectUri = config.get("gitlabRedirectUri") || "https://dokploy.example.invalid/api/providers/gitlab/callback";
 const sshPrivateKey = config.getSecret("sshPrivateKey") || pulumi.secret("");
 const fileMountContent = config.getSecret("fileMountContent") || pulumi.secret("");
 const registryPassword = config.getSecret("registryPassword") || pulumi.secret("");
@@ -22,6 +32,28 @@ const mongodbPassword = config.getSecret("mongodbPassword") || pulumi.secret("re
 const redisPassword = config.getSecret("redisPassword") || pulumi.secret("replace-with-a-redis-password");
 const destinationAccessKey = config.get("destinationAccessKey") || "replace-with-a-destination-access-key";
 const destinationSecretAccessKey = config.getSecret("destinationSecretAccessKey") || pulumi.secret("replace-with-a-destination-secret-access-key");
+const managedGitlabIntegration = new dokploy.GitLabIntegration("managedGitlabIntegration", {
+    name: "example-gitlab-integration",
+    applicationId: gitlabApplicationId,
+    applicationSecret: pulumi.secret(gitlabApplicationSecret),
+    redirectUri: gitlabRedirectUri,
+    gitlabUrl: "https://gitlab.com",
+});
+const managedGiteaIntegration = new dokploy.GiteaIntegration("managedGiteaIntegration", {
+    name: "example-gitea-integration",
+    giteaUrl: "https://gitea.example.invalid",
+    clientId: giteaClientId,
+    clientSecret: pulumi.secret(giteaClientSecret),
+    redirectUri: giteaRedirectUri,
+    giteaInternalUrl: pulumi.secret(giteaInternalUrl),
+    organizationName: "example-team",
+});
+const managedBitbucketIntegration = new dokploy.BitbucketIntegration("managedBitbucketIntegration", {
+    name: "example-bitbucket-integration",
+    apiToken: bitbucketApiToken,
+    bitbucketEmail: bitbucketEmail,
+    bitbucketWorkspaceName: bitbucketWorkspaceName,
+});
 const projectResource = new dokploy.Project("project", {
     name: "dokploy-mvp",
     description: "Canonical Dokploy provider example",
@@ -234,3 +266,6 @@ export const gitlabNamespace = gitlabNamespaceConfig;
 export const gitlabRepository = gitlabRepositoryConfig;
 export const gitBranch = gitBranchConfig;
 export const remoteServerId = remoteServer.serverId;
+export const managedGitlabIntegrationId = managedGitlabIntegration.gitlabId;
+export const managedGiteaIntegrationId = managedGiteaIntegration.giteaId;
+export const managedBitbucketIntegrationId = managedBitbucketIntegration.bitbucketId;

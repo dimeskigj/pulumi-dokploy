@@ -72,7 +72,7 @@ func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.C
 	if inputs.EnvironmentID == "" && !req.NewInputs.Get("environmentId").HasComputed() {
 		failures = append(failures, p.CheckFailure{Property: "environmentId", Reason: "environmentId must not be empty"})
 	}
-	if err := inputs.Source.validate(); err != nil {
+	if err := inputs.Source.validateWithGitLabReferenceComputed(gitLabIntegrationIDIsComputed(req.NewInputs)); err != nil {
 		failures = append(failures, p.CheckFailure{Property: "source", Reason: err.Error()})
 	}
 	return infer.CheckResponse[ApplicationArgs]{Inputs: inputs, Failures: failures}, nil

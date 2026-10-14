@@ -21,6 +21,7 @@
     "files": [
         "application.ts",
         "backup.ts",
+        "bitbucketIntegration.ts",
         "compose.ts",
         "config/index.ts",
         "config/vars.ts",
@@ -39,6 +40,9 @@
         "getRegistry.ts",
         "getSSHKey.ts",
         "getServer.ts",
+        "gitHubIntegration.ts",
+        "gitLabIntegration.ts",
+        "giteaIntegration.ts",
         "index.ts",
         "mariaDB.ts",
         "mongoDB.ts",

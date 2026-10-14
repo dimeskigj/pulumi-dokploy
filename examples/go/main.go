@@ -45,6 +45,46 @@ func main() {
 		if param := cfg.Get("gitBranch"); param != "" {
 			gitBranch = param
 		}
+		gitlabApplicationId := "replace-with-gitlab-oauth-application-id"
+		if param := cfg.Get("gitlabApplicationId"); param != "" {
+			gitlabApplicationId = param
+		}
+		gitlabApplicationSecret := ""
+		if param := cfg.Get("gitlabApplicationSecret"); param != "" {
+			gitlabApplicationSecret = param
+		}
+		giteaClientId := "replace-with-gitea-oauth-client-id"
+		if param := cfg.Get("giteaClientId"); param != "" {
+			giteaClientId = param
+		}
+		giteaClientSecret := "replace-with-gitea-oauth-client-secret"
+		if param := cfg.Get("giteaClientSecret"); param != "" {
+			giteaClientSecret = param
+		}
+		giteaInternalUrl := "https://gitea.internal.example.invalid"
+		if param := cfg.Get("giteaInternalUrl"); param != "" {
+			giteaInternalUrl = param
+		}
+		giteaRedirectUri := "https://dokploy.example.invalid/api/auth/gitea/callback"
+		if param := cfg.Get("giteaRedirectUri"); param != "" {
+			giteaRedirectUri = param
+		}
+		bitbucketApiToken := "replace-with-bitbucket-api-token"
+		if param := cfg.Get("bitbucketApiToken"); param != "" {
+			bitbucketApiToken = param
+		}
+		bitbucketEmail := "example@example.invalid"
+		if param := cfg.Get("bitbucketEmail"); param != "" {
+			bitbucketEmail = param
+		}
+		bitbucketWorkspaceName := "example-workspace"
+		if param := cfg.Get("bitbucketWorkspaceName"); param != "" {
+			bitbucketWorkspaceName = param
+		}
+		gitlabRedirectUri := "https://dokploy.example.invalid/api/providers/gitlab/callback"
+		if param := cfg.Get("gitlabRedirectUri"); param != "" {
+			gitlabRedirectUri = param
+		}
 		sshPrivateKey := ""
 		if param := cfg.Get("sshPrivateKey"); param != "" {
 			sshPrivateKey = param
@@ -84,6 +124,37 @@ func main() {
 		destinationSecretAccessKey := "replace-with-a-destination-secret-access-key"
 		if param := cfg.Get("destinationSecretAccessKey"); param != "" {
 			destinationSecretAccessKey = param
+		}
+		managedGitlabIntegration, err := dokploy.NewGitLabIntegration(ctx, "managedGitlabIntegration", &dokploy.GitLabIntegrationArgs{
+			Name:              pulumi.String("example-gitlab-integration"),
+			ApplicationId:     pulumi.String(gitlabApplicationId),
+			ApplicationSecret: pulumi.ToSecret(gitlabApplicationSecret).(pulumi.StringOutput),
+			RedirectUri:       pulumi.String(gitlabRedirectUri),
+			GitlabUrl:         pulumi.String("https://gitlab.com"),
+		})
+		if err != nil {
+			return err
+		}
+		managedGiteaIntegration, err := dokploy.NewGiteaIntegration(ctx, "managedGiteaIntegration", &dokploy.GiteaIntegrationArgs{
+			Name:             pulumi.String("example-gitea-integration"),
+			GiteaUrl:         pulumi.String("https://gitea.example.invalid"),
+			ClientId:         pulumi.String(giteaClientId),
+			ClientSecret:     pulumi.ToSecret(giteaClientSecret).(pulumi.StringOutput),
+			RedirectUri:      pulumi.String(giteaRedirectUri),
+			GiteaInternalUrl: pulumi.ToSecret(pulumi.StringPtr(giteaInternalUrl)).(pulumi.StringPtrOutput),
+			OrganizationName: pulumi.StringPtr("example-team"),
+		})
+		if err != nil {
+			return err
+		}
+		managedBitbucketIntegration, err := dokploy.NewBitbucketIntegration(ctx, "managedBitbucketIntegration", &dokploy.BitbucketIntegrationArgs{
+			Name:                   pulumi.String("example-bitbucket-integration"),
+			ApiToken:               pulumi.StringPtr(bitbucketApiToken),
+			BitbucketEmail:         pulumi.StringPtr(bitbucketEmail),
+			BitbucketWorkspaceName: pulumi.StringPtr(bitbucketWorkspaceName),
+		})
+		if err != nil {
+			return err
 		}
 		projectResource, err := dokploy.NewProject(ctx, "project", &dokploy.ProjectArgs{
 			Name:        pulumi.String("dokploy-mvp"),
@@ -375,6 +446,9 @@ func main() {
 		ctx.Export("gitlabRepository", pulumi.String(gitlabRepository))
 		ctx.Export("gitBranch", pulumi.String(gitBranch))
 		ctx.Export("remoteServerId", remoteServer.ServerId)
+		ctx.Export("managedGitlabIntegrationId", managedGitlabIntegration.GitlabId)
+		ctx.Export("managedGiteaIntegrationId", managedGiteaIntegration.GiteaId)
+		ctx.Export("managedBitbucketIntegrationId", managedBitbucketIntegration.BitbucketId)
 		return nil
 	})
 }

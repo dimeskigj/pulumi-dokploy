@@ -138,64 +138,2365 @@
     "notification.remove": "",
     "server.create": "ServerMutationResult",
     "server.update": "ServerMutationResult",
-    "server.remove": ""
+    "server.remove": "",
+    "gitProvider.getAll": "GitProviderList",
+    "gitProvider.remove": "",
+    "github.one": "GitHubIntegrationRecord",
+    "github.update": "",
+    "gitlab.create": "",
+    "gitlab.one": "GitLabIntegrationRecord",
+    "gitlab.update": "",
+    "user.get": "AuthenticatedGitProviderMember",
+    "gitea.create": "GiteaCreateAcknowledgment",
+    "gitea.one": "GiteaIntegrationRecord",
+    "gitea.update": "",
+    "bitbucket.create": "",
+    "bitbucket.one": "BitbucketIntegrationRecord",
+    "bitbucket.update": ""
   },
   "requests": {
     "registry.update": "RegistryUpdateRequest",
     "server.create": "ServerCreateRequest",
-    "server.update": "ServerUpdateRequest"
+    "server.update": "ServerUpdateRequest",
+    "gitlab.create": "GitLabCreateRequest",
+    "gitlab.update": "GitLabUpdateRequest",
+    "gitea.create": "GiteaCreateRequest",
+    "gitea.update": "GiteaUpdateRequest"
   },
   "requestSchemaAdditions": {
-    "notification.createGotify": {"properties":{"serverThreshold":{"type":"boolean"}},"required":["serverThreshold"]},
-    "notification.createNtfy": {"properties":{"serverThreshold":{"type":"boolean"}},"required":["serverThreshold"]},
-    "notification.updateGotify": {"properties":{"serverThreshold":{"type":"boolean"}}},
-    "notification.updateNtfy": {"properties":{"serverThreshold":{"type":"boolean"}}}
+    "notification.createGotify": {
+      "properties": {
+        "serverThreshold": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "serverThreshold"
+      ]
+    },
+    "notification.createNtfy": {
+      "properties": {
+        "serverThreshold": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "serverThreshold"
+      ]
+    },
+    "notification.updateGotify": {
+      "properties": {
+        "serverThreshold": {
+          "type": "boolean"
+        }
+      }
+    },
+    "notification.updateNtfy": {
+      "properties": {
+        "serverThreshold": {
+          "type": "boolean"
+        }
+      }
+    }
   },
   "requestIntegerProperties": {
-    "notification.createGotify": ["priority"],
-    "notification.updateGotify": ["priority"]
+    "notification.createGotify": [
+      "priority"
+    ],
+    "notification.updateGotify": [
+      "priority"
+    ]
   },
   "schemas": {
-    "CreateProjectResult": {"type":"object","required":["project","environment"],"properties":{"project":{"$ref":"#/components/schemas/Project"},"environment":{"$ref":"#/components/schemas/Environment"}},"additionalProperties":true},
-    "Project": {"type":"object","properties":{"projectId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"defaultEnvironmentId":{"type":"string"},"projectTags":{"type":"array","items":{"type":"object","required":["tagId"],"properties":{"tagId":{"type":"string"}},"additionalProperties":true}}},"additionalProperties":true},
-    "Environment": {"type":"object","properties":{"environmentId":{"type":"string"},"projectId":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"isDefault":{"type":"boolean"}},"additionalProperties":true},
-    "Application": {"type":"object","properties":{"applicationId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"registryId":{"type":["string","null"]},"buildRegistryId":{"type":["string","null"]},"applicationStatus":{"type":"string"},"env":{"type":"string"},"buildArgs":{"type":"string"},"buildSecrets":{"type":"string"},"createEnvFile":{"type":"boolean"}},"additionalProperties":true},
-    "Compose": {"type":"object","properties":{"composeId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"composeType":{"type":"string"},"env":{"type":"string"},"createEnvFile":{"type":"boolean"}},"additionalProperties":true},
-    "Postgres": {"type":"object","properties":{"postgresId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseName":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"},"dockerImage":{"type":["string","null"]}},"additionalProperties":true},
-    "MySQL": {"type":"object","properties":{"mysqlId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseName":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"},"dockerImage":{"type":["string","null"]}},"additionalProperties":true},
-    "MariaDB": {"type":"object","properties":{"mariadbId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseName":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"},"dockerImage":{"type":["string","null"]}},"additionalProperties":true},
-    "MongoDB": {"type":"object","properties":{"mongoId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"databaseUser":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"},"replicaSets":{"type":"boolean"},"dockerImage":{"type":["string","null"]}},"additionalProperties":true},
-    "Redis": {"type":"object","properties":{"redisId":{"type":"string"},"name":{"type":"string"},"appName":{"type":"string"},"description":{"type":"string"},"environmentId":{"type":"string"},"serverId":{"type":"string"},"image":{"type":"string"},"env":{"type":"string"},"externalPort":{"type":"integer"},"dockerImage":{"type":["string","null"]}},"additionalProperties":true},
-    "Domain": {"type":"object","properties":{"domainId":{"type":"string"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"serviceName":{"type":"string"},"host":{"type":"string"},"path":{"type":"string"},"internalPath":{"type":"string"},"port":{"type":"integer"},"https":{"type":"boolean"},"certificateType":{"type":"string"},"customCertResolver":{"type":"string"},"stripPath":{"type":"boolean"},"enabled":{"type":"boolean"}},"additionalProperties":true},
-    "Destination": {"type":"object","properties":{"destinationId":{"type":"string"},"name":{"type":"string"},"provider":{"type":"string"},"accessKey":{"type":"string"},"secretAccessKey":{"type":"string"},"bucket":{"type":"string"},"region":{"type":"string"},"endpoint":{"type":"string"},"additionalFlags":{"type":"array","items":{"type":"string"}},"serverId":{"type":"string"}},"additionalProperties":true},
-    "Backup": {"type":"object","properties":{"backupId":{"type":"string"},"schedule":{"type":"string"},"enabled":{"type":"boolean"},"prefix":{"type":"string"},"destinationId":{"type":"string"},"database":{"type":"string"},"keepLatestCount":{"type":"integer"},"databaseType":{"type":"string"},"postgresId":{"type":"string"},"mariadbId":{"type":"string"},"mysqlId":{"type":"string"},"mongoId":{"type":"string"}},"additionalProperties":true},
-    "VolumeBackup": {"type":"object","properties":{"volumeBackupId":{"type":"string"},"name":{"type":"string"},"volumeName":{"type":"string"},"prefix":{"type":"string"},"serviceType":{"type":"string"},"appName":{"type":"string"},"serviceName":{"type":"string"},"turnOff":{"type":"boolean"},"cronExpression":{"type":"string"},"keepLatestCount":{"type":"integer"},"enabled":{"type":"boolean"},"applicationId":{"type":"string"},"composeId":{"type":"string"},"destinationId":{"type":"string"}},"additionalProperties":true},
-    "Organization": {"type":"object","properties":{"id":{"type":"string"},"organizationId":{"type":"string"}},"additionalProperties":true},
-    "SSHKeyList": {"type":"array","items":{"$ref":"#/components/schemas/SSHKey"}},
-    "SSHKey": {"type":"object","properties":{"sshKeyId":{"type":"string"},"name":{"type":"string"},"description":{"type":["string","null"]},"privateKey":{"type":"string"},"publicKey":{"type":"string"},"organizationId":{"type":"string"}},"required":["sshKeyId"],"additionalProperties":true},
-    "Registry": {"type":"object","properties":{"registryId":{"type":"string"},"registryName":{"type":"string"},"username":{"type":"string"},"password":{"type":"string"},"registryUrl":{"type":"string"},"registryType":{"type":"string"},"imagePrefix":{"type":["string","null"]},"serverId":{"type":["string","null"]}},"required":["registryId"],"additionalProperties":true},
-    "RegistryUpdateRequest": {"type":"object","properties":{"registryId":{"type":"string"},"registryName":{"type":"string"},"imagePrefix":{"type":["string","null"]},"username":{"type":"string"},"password":{"type":"string"},"registryUrl":{"type":"string"},"createdAt":{"type":"string"},"registryType":{"type":"string"},"organizationId":{"type":"string"},"serverId":{"type":["string","null"]}},"required":["registryId"],"additionalProperties":true},
-    "Tag": {"type":"object","properties":{"tagId":{"type":"string"},"name":{"type":"string"},"color":{"type":["string","null"]}},"required":["tagId"],"additionalProperties":true},
-    "Mount": {"type":"object","properties":{"mountId":{"type":"string"},"type":{"type":"string"},"hostPath":{"type":["string","null"]},"volumeName":{"type":["string","null"]},"filePath":{"type":["string","null"]},"content":{"type":["string","null"]},"mountPath":{"type":"string"},"serviceType":{"type":"string"},"applicationId":{"type":["string","null"]},"composeId":{"type":["string","null"]},"postgresId":{"type":["string","null"]},"mysqlId":{"type":["string","null"]},"mariadbId":{"type":["string","null"]},"redisId":{"type":["string","null"]}},"required":["mountId"],"additionalProperties":true},
-    "Schedule": {"type":"object","properties":{"scheduleId":{"type":"string"},"name":{"type":"string"},"description":{"type":["string","null"]},"cronExpression":{"type":"string"},"appName":{"type":"string"},"serviceName":{"type":["string","null"]},"shellType":{"type":"string","enum":["bash","sh"]},"scheduleType":{"type":"string","enum":["application","compose","server","dokploy-server"]},"command":{"type":"string"},"script":{"type":["string","null"]},"applicationId":{"type":["string","null"]},"composeId":{"type":["string","null"]},"serverId":{"type":["string","null"]},"organizationId":{"type":["string","null"]},"enabled":{"type":"boolean"},"timezone":{"type":["string","null"]}},"required":["scheduleId"],"additionalProperties":true},
-    "ServerMutationResult": {"type":"object","properties":{"serverId":{"type":"string"}},"required":["serverId"],"additionalProperties":false},
-    "Server": {"type":"object","properties":{"serverId":{"type":"string"},"name":{"type":"string"},"description":{"type":["string","null"]},"ipAddress":{"type":"string"},"port":{"type":"integer"},"username":{"type":"string"},"sshKeyId":{"type":["string","null"]},"serverType":{"type":"string"},"enableDockerCleanup":{"type":"boolean"},"organizationId":{"type":"string"},"serverStatus":{"type":"string"}},"required":["serverId"],"additionalProperties":false},
-    "ServerCreateRequest": {"type":"object","properties":{"name":{"type":"string"},"description":{"type":["string","null"]},"ipAddress":{"type":"string"},"port":{"type":"integer"},"username":{"type":"string"},"sshKeyId":{"type":["string","null"]},"serverType":{"type":"string","enum":["deploy","build"]},"enableDockerCleanup":{"default":true,"type":"boolean"}},"required":["name","description","ipAddress","port","username","sshKeyId","serverType"]},
-    "ServerUpdateRequest": {"type":"object","properties":{"name":{"type":"string"},"description":{"type":["string","null"]},"serverId":{"type":"string"},"ipAddress":{"type":"string"},"port":{"type":"integer"},"username":{"type":"string"},"sshKeyId":{"type":["string","null"]},"serverType":{"type":"string","enum":["deploy","build"]},"enableDockerCleanup":{"default":true,"type":"boolean"},"command":{"type":"string"}},"required":["name","description","serverId","ipAddress","port","username","sshKeyId","serverType"]},
-    "Port": {"type":"object","properties":{"portId":{"type":"string"},"applicationId":{"type":"string"},"publishedPort":{"type":"integer"},"targetPort":{"type":"integer"},"protocol":{"type":"string"},"publishMode":{"type":"string"}},"required":["portId"],"additionalProperties":true},
-    "NotificationList": {"type":"array","items":{"$ref":"#/components/schemas/Notification"}},
-    "NotificationSlack": {"type":"object","properties":{"slackId":{"type":"string"},"webhookUrl":{"type":["string","null"]},"channel":{"type":["string","null"]}},"required":["slackId"],"additionalProperties":false},
-    "NotificationTelegram": {"type":"object","properties":{"telegramId":{"type":"string"},"botToken":{"type":["string","null"]},"chatId":{"type":["string","null"]},"messageThreadId":{"type":["string","null"]}},"required":["telegramId"],"additionalProperties":false},
-    "NotificationDiscord": {"type":"object","properties":{"discordId":{"type":"string"},"webhookUrl":{"type":["string","null"]},"decoration":{"type":["boolean","null"]}},"required":["discordId"],"additionalProperties":false},
-    "NotificationEmail": {"type":"object","properties":{"emailId":{"type":"string"},"smtpServer":{"type":["string","null"]},"smtpPort":{"type":["integer","null"]},"username":{"type":["string","null"]},"password":{"type":["string","null"]},"fromAddress":{"type":["string","null"]},"toAddresses":{"type":["array","null"],"items":{"type":"string"}}},"required":["emailId"],"additionalProperties":false},
-    "NotificationResend": {"type":"object","properties":{"resendId":{"type":"string"},"apiKey":{"type":["string","null"]},"fromAddress":{"type":["string","null"]},"toAddresses":{"type":["array","null"],"items":{"type":"string"}}},"required":["resendId"],"additionalProperties":false},
-    "NotificationGotify": {"type":"object","properties":{"gotifyId":{"type":"string"},"serverUrl":{"type":["string","null"]},"appToken":{"type":["string","null"]},"priority":{"type":["integer","null"]},"decoration":{"type":["boolean","null"]}},"required":["gotifyId"],"additionalProperties":false},
-    "NotificationNtfy": {"type":"object","properties":{"ntfyId":{"type":"string"},"serverUrl":{"type":["string","null"]},"topic":{"type":["string","null"]},"accessToken":{"type":["string","null"]},"priority":{"type":["integer","null"]}},"required":["ntfyId"],"additionalProperties":false},
-    "NotificationMattermost": {"type":"object","properties":{"mattermostId":{"type":"string"},"webhookUrl":{"type":["string","null"]},"channel":{"type":["string","null"]},"username":{"type":["string","null"]}},"required":["mattermostId"],"additionalProperties":false},
-    "NotificationCustom": {"type":"object","properties":{"customId":{"type":"string"},"endpoint":{"type":["string","null"]},"headers":{"type":["object","null"],"additionalProperties":{"type":"string"}}},"required":["customId"],"additionalProperties":false},
-    "NotificationLark": {"type":"object","properties":{"larkId":{"type":"string"},"webhookUrl":{"type":["string","null"]}},"required":["larkId"],"additionalProperties":false},
-    "NotificationTeams": {"type":"object","properties":{"teamsId":{"type":"string"},"webhookUrl":{"type":["string","null"]}},"required":["teamsId"],"additionalProperties":false},
-    "NotificationPushover": {"type":"object","properties":{"pushoverId":{"type":"string"},"userKey":{"type":["string","null"]},"apiToken":{"type":["string","null"]},"priority":{"type":["integer","null"]},"retry":{"type":["integer","null"]},"expire":{"type":["integer","null"]}},"required":["pushoverId"],"additionalProperties":false},
-    "Notification": {"type":"object","properties":{"notificationId":{"type":"string"},"name":{"type":"string"},"organizationId":{"type":"string"},"appDeploy":{"type":"boolean"},"appBuildError":{"type":"boolean"},"databaseBackup":{"type":"boolean"},"volumeBackup":{"type":"boolean"},"dokployBackup":{"type":"boolean"},"dokployRestart":{"type":"boolean"},"dockerCleanup":{"type":"boolean"},"serverThreshold":{"type":"boolean"},"slackId":{"type":["string","null"]},"telegramId":{"type":["string","null"]},"discordId":{"type":["string","null"]},"emailId":{"type":["string","null"]},"resendId":{"type":["string","null"]},"gotifyId":{"type":["string","null"]},"ntfyId":{"type":["string","null"]},"mattermostId":{"type":["string","null"]},"customId":{"type":["string","null"]},"larkId":{"type":["string","null"]},"teamsId":{"type":["string","null"]},"pushoverId":{"type":["string","null"]},"slack":{"oneOf":[{"$ref":"#/components/schemas/NotificationSlack"},{"type":"null"}]},"telegram":{"oneOf":[{"$ref":"#/components/schemas/NotificationTelegram"},{"type":"null"}]},"discord":{"oneOf":[{"$ref":"#/components/schemas/NotificationDiscord"},{"type":"null"}]},"email":{"oneOf":[{"$ref":"#/components/schemas/NotificationEmail"},{"type":"null"}]},"resend":{"oneOf":[{"$ref":"#/components/schemas/NotificationResend"},{"type":"null"}]},"gotify":{"oneOf":[{"$ref":"#/components/schemas/NotificationGotify"},{"type":"null"}]},"ntfy":{"oneOf":[{"$ref":"#/components/schemas/NotificationNtfy"},{"type":"null"}]},"mattermost":{"oneOf":[{"$ref":"#/components/schemas/NotificationMattermost"},{"type":"null"}]},"custom":{"oneOf":[{"$ref":"#/components/schemas/NotificationCustom"},{"type":"null"}]},"lark":{"oneOf":[{"$ref":"#/components/schemas/NotificationLark"},{"type":"null"}]},"teams":{"oneOf":[{"$ref":"#/components/schemas/NotificationTeams"},{"type":"null"}]},"pushover":{"oneOf":[{"$ref":"#/components/schemas/NotificationPushover"},{"type":"null"}]}},"required":["notificationId","organizationId"],"additionalProperties":false}
+    "CreateProjectResult": {
+      "type": "object",
+      "required": [
+        "project",
+        "environment"
+      ],
+      "properties": {
+        "project": {
+          "$ref": "#/components/schemas/Project"
+        },
+        "environment": {
+          "$ref": "#/components/schemas/Environment"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Project": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "defaultEnvironmentId": {
+          "type": "string"
+        },
+        "projectTags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "tagId"
+            ],
+            "properties": {
+              "tagId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "Environment": {
+      "type": "object",
+      "properties": {
+        "environmentId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isDefault": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Application": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "registryId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "buildRegistryId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "applicationStatus": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "buildArgs": {
+          "type": "string"
+        },
+        "buildSecrets": {
+          "type": "string"
+        },
+        "createEnvFile": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Compose": {
+      "type": "object",
+      "properties": {
+        "composeId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "composeType": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "createEnvFile": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Postgres": {
+      "type": "object",
+      "properties": {
+        "postgresId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "databaseName": {
+          "type": "string"
+        },
+        "databaseUser": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "externalPort": {
+          "type": "integer"
+        },
+        "dockerImage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "MySQL": {
+      "type": "object",
+      "properties": {
+        "mysqlId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "databaseName": {
+          "type": "string"
+        },
+        "databaseUser": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "externalPort": {
+          "type": "integer"
+        },
+        "dockerImage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "MariaDB": {
+      "type": "object",
+      "properties": {
+        "mariadbId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "databaseName": {
+          "type": "string"
+        },
+        "databaseUser": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "externalPort": {
+          "type": "integer"
+        },
+        "dockerImage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "MongoDB": {
+      "type": "object",
+      "properties": {
+        "mongoId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "databaseUser": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "externalPort": {
+          "type": "integer"
+        },
+        "replicaSets": {
+          "type": "boolean"
+        },
+        "dockerImage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "Redis": {
+      "type": "object",
+      "properties": {
+        "redisId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "environmentId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        },
+        "externalPort": {
+          "type": "integer"
+        },
+        "dockerImage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "Domain": {
+      "type": "object",
+      "properties": {
+        "domainId": {
+          "type": "string"
+        },
+        "applicationId": {
+          "type": "string"
+        },
+        "composeId": {
+          "type": "string"
+        },
+        "serviceName": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "internalPath": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "https": {
+          "type": "boolean"
+        },
+        "certificateType": {
+          "type": "string"
+        },
+        "customCertResolver": {
+          "type": "string"
+        },
+        "stripPath": {
+          "type": "boolean"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Destination": {
+      "type": "object",
+      "properties": {
+        "destinationId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "accessKey": {
+          "type": "string"
+        },
+        "secretAccessKey": {
+          "type": "string"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "endpoint": {
+          "type": "string"
+        },
+        "additionalFlags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "serverId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Backup": {
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "destinationId": {
+          "type": "string"
+        },
+        "database": {
+          "type": "string"
+        },
+        "keepLatestCount": {
+          "type": "integer"
+        },
+        "databaseType": {
+          "type": "string"
+        },
+        "postgresId": {
+          "type": "string"
+        },
+        "mariadbId": {
+          "type": "string"
+        },
+        "mysqlId": {
+          "type": "string"
+        },
+        "mongoId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "VolumeBackup": {
+      "type": "object",
+      "properties": {
+        "volumeBackupId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "volumeName": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "serviceType": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "serviceName": {
+          "type": "string"
+        },
+        "turnOff": {
+          "type": "boolean"
+        },
+        "cronExpression": {
+          "type": "string"
+        },
+        "keepLatestCount": {
+          "type": "integer"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "applicationId": {
+          "type": "string"
+        },
+        "composeId": {
+          "type": "string"
+        },
+        "destinationId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Organization": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "SSHKeyList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/SSHKey"
+      }
+    },
+    "SSHKey": {
+      "type": "object",
+      "properties": {
+        "sshKeyId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "privateKey": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sshKeyId"
+      ],
+      "additionalProperties": true
+    },
+    "Registry": {
+      "type": "object",
+      "properties": {
+        "registryId": {
+          "type": "string"
+        },
+        "registryName": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "registryUrl": {
+          "type": "string"
+        },
+        "registryType": {
+          "type": "string"
+        },
+        "imagePrefix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serverId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "registryId"
+      ],
+      "additionalProperties": true
+    },
+    "RegistryUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "registryId": {
+          "type": "string"
+        },
+        "registryName": {
+          "type": "string"
+        },
+        "imagePrefix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "registryUrl": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "registryType": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "serverId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "registryId"
+      ],
+      "additionalProperties": true
+    },
+    "Tag": {
+      "type": "object",
+      "properties": {
+        "tagId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "tagId"
+      ],
+      "additionalProperties": true
+    },
+    "Mount": {
+      "type": "object",
+      "properties": {
+        "mountId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "hostPath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "volumeName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "filePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "content": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mountPath": {
+          "type": "string"
+        },
+        "serviceType": {
+          "type": "string"
+        },
+        "applicationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "postgresId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mysqlId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mariadbId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "redisId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "mountId"
+      ],
+      "additionalProperties": true
+    },
+    "Schedule": {
+      "type": "object",
+      "properties": {
+        "scheduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cronExpression": {
+          "type": "string"
+        },
+        "appName": {
+          "type": "string"
+        },
+        "serviceName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shellType": {
+          "type": "string",
+          "enum": [
+            "bash",
+            "sh"
+          ]
+        },
+        "scheduleType": {
+          "type": "string",
+          "enum": [
+            "application",
+            "compose",
+            "server",
+            "dokploy-server"
+          ]
+        },
+        "command": {
+          "type": "string"
+        },
+        "script": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "applicationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serverId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "organizationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "timezone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "scheduleId"
+      ],
+      "additionalProperties": true
+    },
+    "ServerMutationResult": {
+      "type": "object",
+      "properties": {
+        "serverId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "serverId"
+      ],
+      "additionalProperties": false
+    },
+    "Server": {
+      "type": "object",
+      "properties": {
+        "serverId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ipAddress": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        },
+        "sshKeyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serverType": {
+          "type": "string"
+        },
+        "enableDockerCleanup": {
+          "type": "boolean"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "serverStatus": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "serverId"
+      ],
+      "additionalProperties": false
+    },
+    "ServerCreateRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ipAddress": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        },
+        "sshKeyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serverType": {
+          "type": "string",
+          "enum": [
+            "deploy",
+            "build"
+          ]
+        },
+        "enableDockerCleanup": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "ipAddress",
+        "port",
+        "username",
+        "sshKeyId",
+        "serverType"
+      ]
+    },
+    "ServerUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serverId": {
+          "type": "string"
+        },
+        "ipAddress": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        },
+        "sshKeyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serverType": {
+          "type": "string",
+          "enum": [
+            "deploy",
+            "build"
+          ]
+        },
+        "enableDockerCleanup": {
+          "default": true,
+          "type": "boolean"
+        },
+        "command": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "serverId",
+        "ipAddress",
+        "port",
+        "username",
+        "sshKeyId",
+        "serverType"
+      ]
+    },
+    "Port": {
+      "type": "object",
+      "properties": {
+        "portId": {
+          "type": "string"
+        },
+        "applicationId": {
+          "type": "string"
+        },
+        "publishedPort": {
+          "type": "integer"
+        },
+        "targetPort": {
+          "type": "integer"
+        },
+        "protocol": {
+          "type": "string"
+        },
+        "publishMode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "portId"
+      ],
+      "additionalProperties": true
+    },
+    "NotificationList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/Notification"
+      }
+    },
+    "NotificationSlack": {
+      "type": "object",
+      "properties": {
+        "slackId": {
+          "type": "string"
+        },
+        "webhookUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "channel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "slackId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationTelegram": {
+      "type": "object",
+      "properties": {
+        "telegramId": {
+          "type": "string"
+        },
+        "botToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chatId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "messageThreadId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "telegramId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationDiscord": {
+      "type": "object",
+      "properties": {
+        "discordId": {
+          "type": "string"
+        },
+        "webhookUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decoration": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "discordId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationEmail": {
+      "type": "object",
+      "properties": {
+        "emailId": {
+          "type": "string"
+        },
+        "smtpServer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "smtpPort": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "username": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "password": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fromAddress": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "toAddresses": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "emailId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationResend": {
+      "type": "object",
+      "properties": {
+        "resendId": {
+          "type": "string"
+        },
+        "apiKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fromAddress": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "toAddresses": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "resendId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationGotify": {
+      "type": "object",
+      "properties": {
+        "gotifyId": {
+          "type": "string"
+        },
+        "serverUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "appToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "priority": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "decoration": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "gotifyId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationNtfy": {
+      "type": "object",
+      "properties": {
+        "ntfyId": {
+          "type": "string"
+        },
+        "serverUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "topic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accessToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "priority": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "ntfyId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationMattermost": {
+      "type": "object",
+      "properties": {
+        "mattermostId": {
+          "type": "string"
+        },
+        "webhookUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "channel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "username": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "mattermostId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationCustom": {
+      "type": "object",
+      "properties": {
+        "customId": {
+          "type": "string"
+        },
+        "endpoint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "headers": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "customId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationLark": {
+      "type": "object",
+      "properties": {
+        "larkId": {
+          "type": "string"
+        },
+        "webhookUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "larkId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationTeams": {
+      "type": "object",
+      "properties": {
+        "teamsId": {
+          "type": "string"
+        },
+        "webhookUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "teamsId"
+      ],
+      "additionalProperties": false
+    },
+    "NotificationPushover": {
+      "type": "object",
+      "properties": {
+        "pushoverId": {
+          "type": "string"
+        },
+        "userKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "apiToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "priority": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "retry": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "expire": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "pushoverId"
+      ],
+      "additionalProperties": false
+    },
+    "Notification": {
+      "type": "object",
+      "properties": {
+        "notificationId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "appDeploy": {
+          "type": "boolean"
+        },
+        "appBuildError": {
+          "type": "boolean"
+        },
+        "databaseBackup": {
+          "type": "boolean"
+        },
+        "volumeBackup": {
+          "type": "boolean"
+        },
+        "dokployBackup": {
+          "type": "boolean"
+        },
+        "dokployRestart": {
+          "type": "boolean"
+        },
+        "dockerCleanup": {
+          "type": "boolean"
+        },
+        "serverThreshold": {
+          "type": "boolean"
+        },
+        "slackId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "telegramId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "discordId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emailId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resendId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gotifyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ntfyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mattermostId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "larkId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "teamsId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pushoverId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "slack": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationSlack"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "telegram": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationTelegram"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discord": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationDiscord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "email": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationEmail"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resend": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationResend"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gotify": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationGotify"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ntfy": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationNtfy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mattermost": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationMattermost"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "custom": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationCustom"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lark": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationLark"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "teams": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationTeams"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pushover": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/NotificationPushover"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "notificationId",
+        "organizationId"
+      ],
+      "additionalProperties": false
+    },
+    "GitLabProviderIdentity": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "gitProviderId"
+      ],
+      "additionalProperties": true
+    },
+    "GitLabProviderSummary": {
+      "type": "object",
+      "properties": {
+        "gitlabId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "applicationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isConfigured": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "gitlabId",
+        "gitlabUrl",
+        "isConfigured"
+      ],
+      "additionalProperties": true
+    },
+    "GitProviderListEntry": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitlab": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/GitLabProviderSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bitbucket": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/BitbucketProviderSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "gitProviderId"
+      ],
+      "additionalProperties": true
+    },
+    "GitProviderList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/GitProviderListEntry"
+      }
+    },
+    "GitLabIntegrationRecord": {
+      "type": "object",
+      "properties": {
+        "gitlabId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProvider": {
+          "$ref": "#/components/schemas/GitLabProviderIdentity"
+        },
+        "applicationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "secret": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "redirectUri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gitlabInternalUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "groupName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accessToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refreshToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "gitlabId",
+        "gitProviderId",
+        "gitlabUrl",
+        "gitProvider"
+      ],
+      "additionalProperties": true
+    },
+    "GitHubIntegrationRecord": {
+      "type": "object",
+      "properties": {
+        "githubId": { "type": "string", "minLength": 1 },
+        "gitProviderId": { "type": "string", "minLength": 1 },
+        "githubAppName": { "type": ["string", "null"] },
+        "gitProvider": { "$ref": "#/components/schemas/GitHubProviderIdentity" }
+      },
+      "required": ["githubId", "gitProviderId", "githubAppName", "gitProvider"],
+      "additionalProperties": true
+    },
+    "GitHubProviderIdentity": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "providerType": { "type": "string", "minLength": 1 },
+        "organizationId": { "type": "string", "minLength": 1 }
+      },
+      "required": ["gitProviderId", "name", "providerType", "organizationId"],
+      "additionalProperties": true
+    },
+    "GitProviderUserIdentity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": true
+    },
+    "AuthenticatedGitProviderMember": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "user": {
+          "$ref": "#/components/schemas/GitProviderUserIdentity"
+        }
+      },
+      "required": [
+        "userId",
+        "organizationId",
+        "user"
+      ],
+      "additionalProperties": true
+    },
+    "GitLabCreateRequest": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        },
+        "groupName": {
+          "type": "string"
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "authId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitlabInternalUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "authId",
+        "name",
+        "gitlabUrl"
+      ],
+      "additionalProperties": true
+    },
+    "GitLabUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        },
+        "groupName": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitlabId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitlabUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitlabInternalUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "gitlabId",
+        "gitlabUrl",
+        "gitProviderId"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaProviderIdentity": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "providerType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "gitProviderId",
+        "name",
+        "providerType",
+        "organizationId",
+        "userId"
+      ],
+      "additionalProperties": true
+    },
+    "BitbucketProviderIdentity": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "providerType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "gitProviderId",
+        "name",
+        "providerType",
+        "organizationId",
+        "userId"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaCreateAcknowledgment": {
+      "type": "object",
+      "properties": {
+        "giteaId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "giteaUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "giteaId",
+        "clientId",
+        "giteaUrl"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaIntegrationRecord": {
+      "type": "object",
+      "properties": {
+        "giteaId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "giteaUrl": {
+          "type": "string"
+        },
+        "gitProvider": {
+          "$ref": "#/components/schemas/GiteaProviderIdentity"
+        },
+        "clientId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "clientSecret": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "redirectUri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "giteaInternalUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "organizationName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "giteaId",
+        "gitProviderId",
+        "giteaUrl",
+        "gitProvider"
+      ],
+      "additionalProperties": true
+    },
+    "BitbucketProviderSummary": {
+      "type": "object",
+      "properties": {
+        "bitbucketId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bitbucketUsername": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isConfigured": {
+          "type": "boolean"
+        },
+        "isDeprecated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bitbucketId",
+        "bitbucketUsername",
+        "isConfigured",
+        "isDeprecated"
+      ],
+      "additionalProperties": true
+    },
+    "BitbucketIntegrationRecord": {
+      "type": "object",
+      "properties": {
+        "bitbucketId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProvider": {
+          "$ref": "#/components/schemas/BitbucketProviderIdentity"
+        },
+        "bitbucketUsername": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bitbucketEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bitbucketWorkspaceName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "apiToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "appPassword": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "bitbucketId",
+        "gitProviderId",
+        "gitProvider"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaCreateRequest": {
+      "type": "object",
+      "properties": {
+        "giteaUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "giteaInternalUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "organizationName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "giteaUrl",
+        "name"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "giteaId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "giteaUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "giteaInternalUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "organizationName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "giteaId",
+        "gitProviderId",
+        "giteaUrl",
+        "name"
+      ],
+      "additionalProperties": true
+    }
   }
 }

@@ -83,3 +83,27 @@ test("built component output preserves accessibility semantics", async () => {
     assert.ok(panelId.startsWith("tab-panel-"));
   }
 });
+
+test("built site publishes both GitLab integration routes", async () => {
+  for (const route of ["guides/gitlab-integrations", "reference/git-lab-integration"]) {
+    assert.ok(await exists(path.join(DIST, route, "index.html")), `built route ${route} must exist`);
+  }
+});
+
+test("built site publishes GitHub integration guide and reference routes", async () => {
+  for (const route of ["guides/github-integrations", "reference/github-integration"]) {
+    assert.ok(await exists(path.join(DIST, route, "index.html")), `built route ${route} must exist`);
+  }
+});
+
+test("built site publishes Gitea and Bitbucket integration guide and reference routes", async () => {
+  for (const route of ["guides/gitea-integrations", "reference/gitea-integration", "guides/bitbucket-integrations", "reference/bitbucket-integration"]) {
+    assert.ok(await exists(path.join(DIST, route, "index.html")), `built route ${route} must exist`);
+  }
+  const complete = await readFile(path.join(DIST, "examples/complete/index.html"), "utf8");
+  assert.match(complete, /GiteaIntegration/);
+  assert.match(complete, /BitbucketIntegration/);
+  assert.match(complete, /giteaClientSecret/);
+  assert.match(complete, /bitbucketApiToken/);
+  assert.doesNotMatch(complete, /bitbucketAppPassword/);
+});

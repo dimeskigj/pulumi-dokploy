@@ -61,6 +61,8 @@ This page embeds the tracked language programs produced by \`make gen_examples\`
 
 The generated examples use invalid placeholders for endpoints and credentials. Supply real values through secret configuration before deployment.
 
+The canonical program keeps Docker, generic Git, and raw Compose workloads active by default; neither Gitea nor Bitbucket adds a workload source. Gitea OAuth application setup and authorization are manual; see the [Gitea integrations guide](../../guides/gitea-integrations/). The canonical Bitbucket resource uses API-token mode with secret configuration; its legacy app-password mode has no current external acceptance guarantee; see the [Bitbucket integrations guide](../../guides/bitbucket-integrations/). If you use its managed GitLab integration, authorize GitLab in Dokploy before switching workloads to GitLab in a later deployment; see the [GitLab integrations guide](../../guides/gitlab-integrations/). GitHub integrations are import-only: set up and authorize the App in Dokploy, then import the \`githubId\` relation ID; see the [GitHub integrations guide](../../guides/github-integrations/).
+
 export const examples = ${serialized};
 
 <LanguageTabs examples={examples} />

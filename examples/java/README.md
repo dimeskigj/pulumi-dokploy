@@ -1,5 +1,16 @@
 # Dokploy MVP example source notes
 
+The canonical program also manages a Gitea integration configuration and a
+Bitbucket integration using API-token mode. The Gitea OAuth app must be created
+and authorized manually in Gitea and Dokploy before use; this provider resource
+does not authorize it, validate connectivity, provide readiness, or add a Gitea
+workload source. The canonical Bitbucket program uses only `apiToken`, supplied
+as secret Pulumi configuration; it does not set `appPassword`. Dokploy supports
+legacy app-password configuration, but current Bitbucket acceptance is not
+guaranteed. Both integrations export relation IDs and destroy only their Dokploy
+records, not external credentials/apps or workloads. See the [Gitea guide](https://dimeskigj.github.io/pulumi-dokploy/guides/gitea-integrations/)
+and [Bitbucket guide](https://dimeskigj.github.io/pulumi-dokploy/guides/bitbucket-integrations/).
+
 The `remoteServer` resource is registration-only, not a host bootstrap or readiness
 check. Its `192.0.2.10` address is reserved for documentation: replace it with an
 appropriate address only after separately preparing a dedicated remote host.
@@ -29,7 +40,7 @@ source:
 source:
   type: gitlab
   gitlab:
-    integrationId: ${gitlabIntegration}
+    integrationId: ${managedGitlabIntegration.gitlabId}
     projectId: ${gitlabProject}
     owner: ${gitlabOwner}
     namespace: ${gitlabNamespace}
@@ -39,8 +50,40 @@ source:
       type: nixpacks
 ```
 
-The canonical program deliberately enables the Docker and raw Compose sources
-instead; the alternatives above are documentation only.
+## GitHub integration import (opt-in)
+
+Set up the GitHub App and authorize the integration in Dokploy first. Import the
+Dokploy relation ID, `githubId`—not the GitHub App ID or parent provider ID:
+
+```sh
+pulumi import dokploy:index:GitHubIntegration integration <github-relation-id>
+```
+
+The canonical program intentionally has no GitHub integration resource. A
+dedicated Pulumi program may declare that resource with import options after
+setup; ordinary Create is unsupported. After import, manage its Dokploy name
+and app-name setting; a missing app name must be repaired with a nonempty value
+before update. Destroy removes only the Dokploy record, not the GitHub App,
+authorization, or workloads; check unmanaged workload references first.
+
+For an existing, externally managed integration, use
+`integrationId: ${gitlabIntegration}` instead of the managed `gitlabId` in
+either the Application or Compose GitLab source. This external ID is not
+created or managed by the canonical program; it must already exist in Dokploy.
+OAuth authorization is still required separately before deploying workloads
+with either integration.
+
+The canonical program deliberately enables Docker, generic Git, and raw Compose
+sources instead; the alternatives above are documentation only. The managed
+`GitLabIntegration` configures Dokploy but does not authorize GitLab OAuth.
+Create it first, authorize it in Dokploy's UI, then switch an Application or
+Compose source to GitLab in a second deployment. The Compose alternative uses
+the same `managedGitlabIntegration.gitlabId` relation ID.
+
+The OAuth application ID and callback URI use invalid example placeholders;
+`gitlabApplicationSecret` is a secret, empty configuration placeholder. Supply
+real values with secret-aware Pulumi configuration before deployment. Never
+put access or refresh tokens in configuration.
 
 The canonical program includes an `applicationPort` mapping. Port create, update,
 and delete only configure the mapping; they do not deploy or redeploy the application.

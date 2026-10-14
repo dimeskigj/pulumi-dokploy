@@ -11,6 +11,17 @@ outputs:
   gitlabRepository: ${gitlabRepository}
   gitBranch: ${gitBranch}
   remoteServerId: ${remoteServer.serverId}
+  managedGitlabIntegrationId: ${managedGitlabIntegration.gitlabId}
+  managedGiteaIntegrationId: ${managedGiteaIntegration.giteaId}
+  managedBitbucketIntegrationId: ${managedBitbucketIntegration.bitbucketId}
+
+# Opt-in only: after manually setting up and authorizing a GitHub App integration
+# in Dokploy, import its relation ID (not the App or parent provider ID):
+# githubId is the Pulumi identity for the Dokploy relation.
+# pulumi import dokploy:index:GitHubIntegration integration <github-relation-id>
+# Alternatively declare it only in a dedicated program using Pulumi import
+# options (import: "<github-relation-id>"); never enable a GitHub Create
+# resource in this canonical example.
 
 config:
   dokploy:endpoint: https://dokploy.example.invalid
@@ -41,6 +52,40 @@ config:
   gitBranch:
     type: string
     default: main
+  gitlabApplicationId:
+    type: string
+    default: replace-with-gitlab-oauth-application-id
+  gitlabApplicationSecret:
+    type: string
+    secret: true
+    default: ""
+  giteaClientId:
+    type: string
+    default: replace-with-gitea-oauth-client-id
+  giteaClientSecret:
+    type: string
+    secret: true
+    default: replace-with-gitea-oauth-client-secret
+  giteaInternalUrl:
+    type: string
+    secret: true
+    default: https://gitea.internal.example.invalid
+  giteaRedirectUri:
+    type: string
+    default: https://dokploy.example.invalid/api/auth/gitea/callback
+  bitbucketApiToken:
+    type: string
+    secret: true
+    default: replace-with-bitbucket-api-token
+  bitbucketEmail:
+    type: string
+    default: example@example.invalid
+  bitbucketWorkspaceName:
+    type: string
+    default: example-workspace
+  gitlabRedirectUri:
+    type: string
+    default: https://dokploy.example.invalid/api/providers/gitlab/callback
   sshPrivateKey:
     type: string
     secret: true
@@ -82,6 +127,40 @@ config:
     default: replace-with-a-destination-secret-access-key
 
 resources:
+  managedGitlabIntegration:
+    type: dokploy:index:GitLabIntegration
+    properties:
+      name: example-gitlab-integration
+      applicationId: ${gitlabApplicationId}
+      applicationSecret:
+        fn::secret: ${gitlabApplicationSecret}
+      redirectUri: ${gitlabRedirectUri}
+      gitlabUrl: https://gitlab.com
+
+  # Gitea's OAuth application setup and authorization happen manually outside Pulumi.
+  # This resource manages Dokploy configuration only; it does not authorize or test it.
+  managedGiteaIntegration:
+    type: dokploy:index:GiteaIntegration
+    properties:
+      name: example-gitea-integration
+      giteaUrl: https://gitea.example.invalid
+      clientId: ${giteaClientId}
+      clientSecret:
+        fn::secret: ${giteaClientSecret}
+      redirectUri: ${giteaRedirectUri}
+      giteaInternalUrl:
+        fn::secret: ${giteaInternalUrl}
+      organizationName: example-team
+
+  # Canonical Bitbucket mode is API-token only; app-password mode is documented separately.
+  managedBitbucketIntegration:
+    type: dokploy:index:BitbucketIntegration
+    properties:
+      name: example-bitbucket-integration
+      apiToken: ${bitbucketApiToken}
+      bitbucketEmail: ${bitbucketEmail}
+      bitbucketWorkspaceName: ${bitbucketWorkspaceName}
+
   project:
     type: dokploy:index:Project
     properties:
@@ -126,7 +205,19 @@ resources:
       # source:
       #   type: gitlab
       #   gitlab:
-      #     integrationId: ${config.gitlabIntegration}
+      #     integrationId: ${managedGitlabIntegration.gitlabId}
+      #     projectId: ${config.gitlabProject}
+      #     owner: ${config.gitlabOwner}
+      #     namespace: ${config.gitlabNamespace}
+      #     repository: ${config.gitlabRepository}
+      #     branch: ${config.gitBranch}
+      #     build:
+      #       type: nixpacks
+      # Or use an existing external integration (not managed by this program):
+      # source:
+      #   type: gitlab
+      #   gitlab:
+      #     integrationId: ${gitlabIntegration}
       #     projectId: ${config.gitlabProject}
       #     owner: ${config.gitlabOwner}
       #     namespace: ${config.gitlabNamespace}
@@ -200,6 +291,26 @@ resources:
       environment:
         fn::secret: COMPOSE_HOST=${composeHost}
       createEnvFile: true
+      # Stage-two alternative after authorizing managedGitlabIntegration in Dokploy:
+      # source:
+      #   type: gitlab
+      #   gitlab:
+      #     integrationId: ${managedGitlabIntegration.gitlabId}
+      #     projectId: ${config.gitlabProject}
+      #     owner: ${config.gitlabOwner}
+      #     namespace: ${config.gitlabNamespace}
+      #     repository: ${config.gitlabRepository}
+      #     branch: ${config.gitBranch}
+      # Or use an existing external integration (not managed by this program):
+      # source:
+      #   type: gitlab
+      #   gitlab:
+      #     integrationId: ${gitlabIntegration}
+      #     projectId: ${config.gitlabProject}
+      #     owner: ${config.gitlabOwner}
+      #     namespace: ${config.gitlabNamespace}
+      #     repository: ${config.gitlabRepository}
+      #     branch: ${config.gitBranch}
 
   sshKey:
     type: dokploy:index:SSHKey

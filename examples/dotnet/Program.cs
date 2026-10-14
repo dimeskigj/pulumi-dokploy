@@ -16,6 +16,16 @@ return await Deployment.RunAsync(() =>
     var gitlabNamespace = config.Get("gitlabNamespace") ?? "platform";
     var gitlabRepository = config.Get("gitlabRepository") ?? "application";
     var gitBranch = config.Get("gitBranch") ?? "main";
+    var gitlabApplicationId = config.Get("gitlabApplicationId") ?? "replace-with-gitlab-oauth-application-id";
+    var gitlabApplicationSecret = config.GetSecret("gitlabApplicationSecret") ?? Output.CreateSecret("");
+    var giteaClientId = config.Get("giteaClientId") ?? "replace-with-gitea-oauth-client-id";
+    var giteaClientSecret = config.GetSecret("giteaClientSecret") ?? Output.CreateSecret("replace-with-gitea-oauth-client-secret");
+    var giteaInternalUrl = config.GetSecret("giteaInternalUrl") ?? Output.CreateSecret("https://gitea.internal.example.invalid");
+    var giteaRedirectUri = config.Get("giteaRedirectUri") ?? "https://dokploy.example.invalid/api/auth/gitea/callback";
+    var bitbucketApiToken = config.GetSecret("bitbucketApiToken") ?? Output.CreateSecret("replace-with-bitbucket-api-token");
+    var bitbucketEmail = config.Get("bitbucketEmail") ?? "example@example.invalid";
+    var bitbucketWorkspaceName = config.Get("bitbucketWorkspaceName") ?? "example-workspace";
+    var gitlabRedirectUri = config.Get("gitlabRedirectUri") ?? "https://dokploy.example.invalid/api/providers/gitlab/callback";
     var sshPrivateKey = config.GetSecret("sshPrivateKey") ?? Output.CreateSecret("");
     var fileMountContent = config.GetSecret("fileMountContent") ?? Output.CreateSecret("");
     var registryPassword = config.GetSecret("registryPassword") ?? Output.CreateSecret("");
@@ -26,6 +36,34 @@ return await Deployment.RunAsync(() =>
     var redisPassword = config.GetSecret("redisPassword") ?? Output.CreateSecret("replace-with-a-redis-password");
     var destinationAccessKey = config.Get("destinationAccessKey") ?? "replace-with-a-destination-access-key";
     var destinationSecretAccessKey = config.GetSecret("destinationSecretAccessKey") ?? Output.CreateSecret("replace-with-a-destination-secret-access-key");
+    var managedGitlabIntegration = new Dokploy.GitLabIntegration("managedGitlabIntegration", new()
+    {
+        Name = "example-gitlab-integration",
+        ApplicationId = gitlabApplicationId,
+        ApplicationSecret = Output.CreateSecret(gitlabApplicationSecret),
+        RedirectUri = gitlabRedirectUri,
+        GitlabUrl = "https://gitlab.com",
+    });
+
+    var managedGiteaIntegration = new Dokploy.GiteaIntegration("managedGiteaIntegration", new()
+    {
+        Name = "example-gitea-integration",
+        GiteaUrl = "https://gitea.example.invalid",
+        ClientId = giteaClientId,
+        ClientSecret = Output.CreateSecret(giteaClientSecret),
+        RedirectUri = giteaRedirectUri,
+        GiteaInternalUrl = Output.CreateSecret(giteaInternalUrl),
+        OrganizationName = "example-team",
+    });
+
+    var managedBitbucketIntegration = new Dokploy.BitbucketIntegration("managedBitbucketIntegration", new()
+    {
+        Name = "example-bitbucket-integration",
+        ApiToken = bitbucketApiToken,
+        BitbucketEmail = bitbucketEmail,
+        BitbucketWorkspaceName = bitbucketWorkspaceName,
+    });
+
     var projectResource = new Dokploy.Project("project", new()
     {
         Name = "dokploy-mvp",
@@ -299,5 +337,8 @@ return await Deployment.RunAsync(() =>
         ["gitlabRepository"] = gitlabRepository,
         ["gitBranch"] = gitBranch,
         ["remoteServerId"] = remoteServer.ServerId,
+        ["managedGitlabIntegrationId"] = managedGitlabIntegration.GitlabId,
+        ["managedGiteaIntegrationId"] = managedGiteaIntegration.GiteaId,
+        ["managedBitbucketIntegrationId"] = managedBitbucketIntegration.BitbucketId,
     };
 });

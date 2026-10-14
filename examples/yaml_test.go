@@ -86,31 +86,34 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("canonical YAML has no resources")
 	}
-	if len(resources) != 26 {
-		t.Fatalf("canonical YAML has %d managed resources, want 26", len(resources))
+	if len(resources) != 29 {
+		t.Fatalf("canonical YAML has %d managed resources, want 29", len(resources))
 	}
 	want := map[string]int{
-		"dokploy:index:Project":      1,
-		"dokploy:index:Environment":  1,
-		"dokploy:index:Application":  2,
-		"dokploy:index:Compose":      1,
-		"dokploy:index:Postgres":     1,
-		"dokploy:index:MySQL":        1,
-		"dokploy:index:MariaDB":      1,
-		"dokploy:index:MongoDB":      1,
-		"dokploy:index:Redis":        1,
-		"dokploy:index:Domain":       2,
-		"dokploy:index:Destination":  1,
-		"dokploy:index:Backup":       1,
-		"dokploy:index:VolumeBackup": 2,
-		"dokploy:index:Schedule":     1,
-		"dokploy:index:SSHKey":       1,
-		"dokploy:index:Registry":     1,
-		"dokploy:index:Tag":          1,
-		"dokploy:index:ProjectTag":   1,
-		"dokploy:index:Mount":        3,
-		"dokploy:index:Port":         1,
-		"dokploy:index:Server":       1,
+		"dokploy:index:Project":           1,
+		"dokploy:index:Environment":       1,
+		"dokploy:index:Application":       2,
+		"dokploy:index:Compose":           1,
+		"dokploy:index:Postgres":          1,
+		"dokploy:index:MySQL":             1,
+		"dokploy:index:MariaDB":           1,
+		"dokploy:index:MongoDB":           1,
+		"dokploy:index:Redis":             1,
+		"dokploy:index:Domain":            2,
+		"dokploy:index:Destination":       1,
+		"dokploy:index:Backup":            1,
+		"dokploy:index:VolumeBackup":      2,
+		"dokploy:index:Schedule":          1,
+		"dokploy:index:SSHKey":            1,
+		"dokploy:index:Registry":          1,
+		"dokploy:index:Tag":               1,
+		"dokploy:index:ProjectTag":        1,
+		"dokploy:index:Mount":             3,
+		"dokploy:index:Port":              1,
+		"dokploy:index:Server":            1,
+		"dokploy:index:GitLabIntegration": 1,
+		"dokploy:index:GiteaIntegration":  1,
+		"dokploy:index:BitbucketIntegration": 1,
 	}
 	counts := map[string]int{}
 	for name, raw := range resources {
@@ -136,6 +139,122 @@ func TestCanonicalYAMLUsesGeneratedSchema(t *testing.T) {
 			t.Errorf("%s is not present in generated provider schema", typeName)
 		}
 	}
+}
+
+func TestCanonicalYAMLGiteaIntegration(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	resource, ok := resources["managedGiteaIntegration"].(map[string]any)
+	if !ok || resource["type"] != "dokploy:index:GiteaIntegration" {
+		t.Fatalf("managedGiteaIntegration must be a GiteaIntegration resource")
+	}
+	properties := resource["properties"].(map[string]any)
+	wantProperties := []string{"clientId", "clientSecret", "giteaInternalUrl", "giteaUrl", "name", "organizationName", "redirectUri"}
+	if got := sortedKeys(properties); !equalStrings(got, wantProperties) {
+		t.Fatalf("Gitea properties = %v, want %v", got, wantProperties)
+	}
+	clientSecret := properties["clientSecret"].(map[string]any)
+	internalURL := properties["giteaInternalUrl"].(map[string]any)
+	if clientSecret["fn::secret"] != "${giteaClientSecret}" || internalURL["fn::secret"] != "${giteaInternalUrl}" {
+		t.Errorf("Gitea credentials and internal URL must come from secret configuration: %#v", properties)
+	}
+	config := document["config"].(map[string]any)
+	for _, key := range []string{"giteaClientSecret", "giteaInternalUrl"} {
+		value, ok := config[key].(map[string]any)
+		if !ok || value["secret"] != true {
+			t.Errorf("config.%s must be secret", key)
+		}
+	}
+	outputs := document["outputs"].(map[string]any)
+	if outputs["managedGiteaIntegrationId"] != "${managedGiteaIntegration.giteaId}" {
+		t.Errorf("managedGiteaIntegrationId must export the relation giteaId")
+	}
+	if got := schemaInputNames(t, "dokploy:index:GiteaIntegration"); !equalStrings(got, wantProperties) {
+		t.Errorf("Gitea public inputs = %v, want %v", got, wantProperties)
+	}
+	if got := schemaRequiredInputNames(t, "dokploy:index:GiteaIntegration"); !equalStrings(got, []string{"clientId", "clientSecret", "giteaUrl", "name", "redirectUri"}) {
+		t.Errorf("Gitea required inputs = %v", got)
+	}
+}
+
+func TestCanonicalYAMLBitbucketIntegration(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	resources := document["resources"].(map[string]any)
+	resource, ok := resources["managedBitbucketIntegration"].(map[string]any)
+	if !ok || resource["type"] != "dokploy:index:BitbucketIntegration" {
+		t.Fatalf("managedBitbucketIntegration must be a BitbucketIntegration resource")
+	}
+	properties := resource["properties"].(map[string]any)
+	wantProperties := []string{"apiToken", "bitbucketEmail", "bitbucketWorkspaceName", "name"}
+	if got := sortedKeys(properties); !equalStrings(got, wantProperties) {
+		t.Fatalf("Bitbucket properties = %v, want canonical API-token-only fields %v", got, wantProperties)
+	}
+	if properties["apiToken"] != "${bitbucketApiToken}" {
+		t.Errorf("Bitbucket apiToken must come from secret configuration")
+	}
+	config := document["config"].(map[string]any)
+	secret, ok := config["bitbucketApiToken"].(map[string]any)
+	if !ok || secret["secret"] != true {
+		t.Errorf("bitbucketApiToken config must be secret")
+	}
+	if _, exists := config["bitbucketAppPassword"]; exists {
+		t.Error("canonical example must not configure the legacy app-password mode")
+	}
+	outputs := document["outputs"].(map[string]any)
+	if outputs["managedBitbucketIntegrationId"] != "${managedBitbucketIntegration.bitbucketId}" {
+		t.Errorf("managedBitbucketIntegrationId must export the relation bitbucketId")
+	}
+	if got := schemaInputNames(t, "dokploy:index:BitbucketIntegration"); !equalStrings(got, []string{"apiToken", "appPassword", "bitbucketEmail", "bitbucketUsername", "bitbucketWorkspaceName", "name"}) {
+		t.Errorf("Bitbucket public inputs = %v", got)
+	}
+	if got := schemaRequiredInputNames(t, "dokploy:index:BitbucketIntegration"); !equalStrings(got, []string{"name"}) {
+		t.Errorf("Bitbucket required inputs = %v", got)
+	}
+}
+
+func sortedKeys(values map[string]any) []string {
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func equalStrings(actual, expected []string) bool {
+	if len(actual) != len(expected) {
+		return false
+	}
+	for i := range actual {
+		if actual[i] != expected[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func schemaInputNames(t *testing.T, token string) []string {
+	t.Helper()
+	properties, ok := schemaResources(t)[token].(map[string]any)["inputProperties"].(map[string]any)
+	if !ok {
+		t.Fatalf("schema resource %s has no input properties", token)
+	}
+	return sortedKeys(properties)
+}
+
+func schemaRequiredInputNames(t *testing.T, token string) []string {
+	t.Helper()
+	resource := schemaResources(t)[token].(map[string]any)
+	values, ok := resource["requiredInputs"].([]any)
+	if !ok {
+		t.Fatalf("schema resource %s has no required inputs", token)
+	}
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		result = append(result, value.(string))
+	}
+	sort.Strings(result)
+	return result
 }
 
 func TestCanonicalYAMLPort(t *testing.T) {
@@ -433,6 +552,169 @@ func TestRemovedCacheTargetsAreUnavailable(t *testing.T) {
 				t.Fatalf("removed target remains available: %v\n%s", err, out)
 			}
 		})
+	}
+}
+
+func TestGenExamplesUsesIsolatedCanonicalGenerator(t *testing.T) {
+	root := filepath.Clean("..")
+	makefile, err := os.ReadFile(filepath.Join(root, "Makefile"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var targetRecipes int
+	for _, line := range strings.Split(string(makefile), "\n") {
+		if strings.HasPrefix(line, "gen_examples:") {
+			targetRecipes++
+		}
+	}
+	if targetRecipes != 1 {
+		t.Fatalf("Makefile must define one gen_examples recipe, found %d", targetRecipes)
+	}
+	if !strings.Contains(string(makefile), `scripts/gen-examples.sh`) {
+		t.Fatal("gen_examples does not invoke canonical script")
+	}
+	script, err := os.ReadFile(filepath.Join(root, "scripts/gen-examples.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, contract := range []string{"temporary_parent=${TMPDIR:-/tmp}", "yaml_converter_override=${PULUMI_YAML_CONVERTER_BINARY:-}", "configured YAML converter override is not executable", "export PULUMI_HOME=$cache", "install_plugin PULUMI_HOME=", "pulumi convert", "npm pkg set dependencies.@dimeskigj/pulumi-dokploy=file:../../sdk/nodejs", "-e ../../sdk/python", "use_local_dotnet_sdk.py", "use_local_java_sdk.py", "normalize-examples.py", "normalize-converted-examples.py", "yaml_converter_version=1.38.7", "pulumi plugin install converter yaml", "--file \"$yaml_converter_binary\"", "pulumi plugin ls", "lookup_test.go notification_test.go", "examples/go/$test_file\" \"$cache/go-tests/$test_file", "cp \"$test_file\" examples/go/"} {
+		if !strings.Contains(string(script), contract) {
+			t.Errorf("canonical generator missing %q", contract)
+		}
+	}
+	preflight := strings.Index(string(script), "pulumi plugin install converter yaml")
+	remove := strings.Index(string(script), "rm -rf examples/nodejs")
+	if preflight < 0 || remove < 0 || preflight > remove {
+		t.Fatal("pinned YAML converter preflight must complete before generated directories are removed")
+	}
+	if strings.Contains(string(script), "plugin install converter yaml\n") && strings.Contains(string(script), "plugin install converter yaml latest") {
+		t.Fatal("YAML converter must not use dynamic latest plugin discovery")
+	}
+}
+
+func TestGeneratedExamplesContainPortAndManagedGitLab(t *testing.T) {
+	contracts := map[string][]string{
+		"nodejs/index.ts": {`new dokploy.Port("applicationPort"`, `new dokploy.GitLabIntegration("managedGitlabIntegration"`, `export const managedGitlabIntegrationId = managedGitlabIntegration.gitlabId`},
+		"python/__main__.py": {`dokploy.Port("applicationPort"`, `dokploy.GitLabIntegration("managedGitlabIntegration"`, `pulumi.export("managedGitlabIntegrationId", managed_gitlab_integration.gitlab_id)`},
+		"go/main.go": {`dokploy.NewPort(ctx, "applicationPort"`, `dokploy.NewGitLabIntegration(ctx, "managedGitlabIntegration"`, `ctx.Export("managedGitlabIntegrationId", managedGitlabIntegration.GitlabId)`},
+		"dotnet/Program.cs": {`new Dokploy.Port("applicationPort"`, `new Dokploy.GitLabIntegration("managedGitlabIntegration"`, `["managedGitlabIntegrationId"] = managedGitlabIntegration.GitlabId`},
+		"java/src/main/java/generated_program/App.java": {`new Port("applicationPort"`, `new GitLabIntegration("managedGitlabIntegration"`, `ctx.export("managedGitlabIntegrationId", managedGitlabIntegration.gitlabId())`},
+	}
+	for path, fragments := range contracts {
+		t.Run(path, func(t *testing.T) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, fragment := range fragments {
+				if !strings.Contains(string(data), fragment) {
+					t.Errorf("generated example %s missing %q", path, fragment)
+				}
+			}
+		})
+	}
+}
+
+func TestCanonicalYAMLGitLabIntegration(t *testing.T) {
+	document := loadCanonicalYAML(t)
+	if err := validateYAMLResourceProperties(document, schemaResources(t)); err != nil {
+		t.Fatalf("canonical GitLab YAML does not bind against the generated schema: %v", err)
+	}
+	config, ok := document["config"].(map[string]any)
+	if !ok {
+		t.Fatal("canonical YAML has no config object")
+	}
+	secret, ok := config["gitlabApplicationSecret"].(map[string]any)
+	if !ok {
+		t.Fatal("GitLab application secret config is missing or malformed")
+	}
+	if secret["secret"] != true || secret["default"] != "" {
+		t.Fatalf("GitLab application secret config must be secret with an empty placeholder: %#v", secret)
+	}
+	resources, ok := document["resources"].(map[string]any)
+	if !ok {
+		t.Fatal("canonical YAML has no resources object")
+	}
+	managed, ok := resources["managedGitlabIntegration"].(map[string]any)
+	if !ok {
+		t.Fatal("managed GitLab integration resource is missing or malformed")
+	}
+	if managed["type"] != "dokploy:index:GitLabIntegration" {
+		t.Fatalf("managed integration type = %v", managed["type"])
+	}
+	properties, ok := managed["properties"].(map[string]any)
+	if !ok {
+		t.Fatal("managed GitLab integration properties are missing")
+	}
+	secretInput, ok := properties["applicationSecret"].(map[string]any)
+	if !ok || secretInput["fn::secret"] != "${gitlabApplicationSecret}" {
+		t.Fatalf("managed client secret must preserve secret taint through translation: %#v", properties["applicationSecret"])
+	}
+	if properties["applicationId"] != "${gitlabApplicationId}" || properties["redirectUri"] != "${gitlabRedirectUri}" || properties["gitlabUrl"] != "https://gitlab.com" {
+		t.Fatalf("managed integration properties are not mapped to safe config: %#v", properties)
+	}
+	for _, token := range []string{"accessToken", "refreshToken"} {
+		if _, ok := properties[token]; ok {
+			t.Fatalf("managed integration must not accept %s", token)
+		}
+	}
+	outputs, ok := document["outputs"].(map[string]any)
+	if !ok {
+		t.Fatal("canonical YAML has no outputs object")
+	}
+	if outputs["managedGitlabIntegrationId"] != "${managedGitlabIntegration.gitlabId}" {
+		t.Fatalf("managed integration output = %v", outputs["managedGitlabIntegrationId"])
+	}
+	canonical, err := os.ReadFile("yaml/Pulumi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Count(string(canonical), "integrationId: ${managedGitlabIntegration.gitlabId}"); got != 2 {
+		t.Fatalf("canonical Application and Compose alternatives reference managed relation ID %d times, want 2", got)
+	}
+	if !strings.Contains(string(canonical), "default: gitlab-integration-id") {
+		t.Fatal("existing external integration config alternative must remain documented")
+	}
+	if got := len(resources); got != 29 {
+		t.Fatalf("canonical YAML has %d resources, want 29", got)
+	}
+}
+
+func TestCanonicalYAMLGitLabSourceAlternatives(t *testing.T) {
+	canonical, err := os.ReadFile("yaml/Pulumi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	program := string(canonical)
+	for _, section := range []struct{ name, start, end string }{
+		{"Application", "  application:\n", "  applicationSchedule:\n"},
+		{"Compose", "  compose:\n", "  sshKey:\n"},
+	} {
+		start := strings.Index(program, section.start)
+		end := strings.Index(program, section.end)
+		if start < 0 || end <= start {
+			t.Fatalf("%s alternative section missing", section.name)
+		}
+		for _, reference := range []string{
+			"#     integrationId: ${managedGitlabIntegration.gitlabId}",
+			"#     integrationId: ${gitlabIntegration}",
+		} {
+			if !strings.Contains(program[start:end], reference) {
+				t.Errorf("%s alternative missing workload reference %q", section.name, reference)
+			}
+		}
+	}
+	readme, err := os.ReadFile("yaml/README.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, reference := range []string{
+		"integrationId: ${managedGitlabIntegration.gitlabId}",
+		"integrationId: ${gitlabIntegration}",
+	} {
+		if !strings.Contains(string(readme), reference) {
+			t.Errorf("README missing documented workload reference %q", reference)
+		}
 	}
 }
 

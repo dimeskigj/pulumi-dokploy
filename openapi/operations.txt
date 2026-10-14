@@ -34,6 +34,13 @@ environment.create
 environment.one
 environment.remove
 environment.update
+gitProvider.getAll
+gitProvider.remove
+github.one
+github.update
+gitlab.create
+gitlab.one
+gitlab.update
 mariadb.create
 mariadb.deploy
 mariadb.one
@@ -77,6 +84,7 @@ volumeBackups.create
 volumeBackups.delete
 volumeBackups.one
 volumeBackups.update
+user.get
 organization.active
 sshKey.create
 sshKey.all
@@ -137,3 +145,9 @@ server.create
 server.one
 server.remove
 server.update
+gitea.create
+gitea.one
+gitea.update
+bitbucket.create
+bitbucket.one
+bitbucket.update
