@@ -53,6 +53,7 @@ export default defineConfig({
             { label: "Lookups", link: "/guides/lookups/" },
             { label: "Troubleshooting", link: "/guides/troubleshooting/" },
             { label: "GitLab integrations", link: "/guides/gitlab-integrations/" },
+            { label: "GitHub integrations", link: "/guides/github-integrations/" },
           ],
         },
         {
@@ -81,6 +82,7 @@ export default defineConfig({
             { label: "Mount", link: "/reference/mount/" },
             { label: "Port", link: "/reference/port/" },
             { label: "GitLabIntegration", link: "/reference/git-lab-integration/" },
+            { label: "GitHubIntegration", link: "/reference/github-integration/" },
             { label: "Configuration", link: "/reference/configuration/" },
             { label: "Complex Types", link: "/reference/types/" },
           ],

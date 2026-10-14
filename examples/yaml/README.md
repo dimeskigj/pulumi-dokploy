@@ -39,6 +39,22 @@ source:
       type: nixpacks
 ```
 
+## GitHub integration import (opt-in)
+
+Set up the GitHub App and authorize the integration in Dokploy first. Import the
+Dokploy relation ID, `githubId`—not the GitHub App ID or parent provider ID:
+
+```sh
+pulumi import dokploy:index:GitHubIntegration integration <github-relation-id>
+```
+
+The canonical program intentionally has no GitHub integration resource. A
+dedicated Pulumi program may declare that resource with import options after
+setup; ordinary Create is unsupported. After import, manage its Dokploy name
+and app-name setting; a missing app name must be repaired with a nonempty value
+before update. Destroy removes only the Dokploy record, not the GitHub App,
+authorization, or workloads; check unmanaged workload references first.
+
 For an existing, externally managed integration, use
 `integrationId: ${gitlabIntegration}` instead of the managed `gitlabId` in
 either the Application or Compose GitLab source. This external ID is not
