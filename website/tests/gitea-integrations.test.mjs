@@ -14,6 +14,23 @@ test("Gitea guide documents manual authorization, secret configuration, and rela
   assert.doesNotMatch(guide, /Gitea(?:Integration)? source type/i);
 });
 
+test("Gitea setup orders external OAuth prerequisites, Pulumi configuration, and manual Dokploy authorization", () => {
+  const guide = read("../src/content/docs/guides/gitea-integrations.mdx");
+  const setupText = guide.match(/## Setup sequence([\s\S]*?)(?=\n## )/)?.[1];
+  assert.ok(setupText, "guide must describe the full setup sequence");
+  const setup = setupText.replace(/\s+/g, " ");
+  const externalApp = setup.indexOf("Create the OAuth application in Gitea");
+  const pulumiConfiguration = setup.indexOf("Pulumi creates and manages the Dokploy configuration");
+  const manualAuthorization = setup.indexOf("After the Dokploy configuration exists, complete authorization manually in Dokploy");
+  const workloadOperation = setup.indexOf("Only after authorization, use the integration in a separately supported workload operation");
+  assert.ok(externalApp >= 0, "the Gitea OAuth app is an external prerequisite");
+  assert.ok(externalApp < pulumiConfiguration, "the OAuth app must exist before Pulumi configuration");
+  assert.ok(pulumiConfiguration < manualAuthorization, "Dokploy authorization follows managed configuration");
+  assert.ok(manualAuthorization < workloadOperation, "authorization precedes a separate workload operation");
+  assert.match(setup, /normal create does not require a pre-created Dokploy integration record/i);
+  assert.doesNotMatch(guide, /complete authorization in Dokploy[^.]*before managing the integration/i);
+});
+
 test("Gitea guide and canonical source match the exact public and secret contract", () => {
   const schema = JSON.parse(read("../../provider/cmd/pulumi-resource-dokploy/schema.json"));
   const resource = schema.resources["dokploy:index:GiteaIntegration"];
@@ -36,7 +53,7 @@ test("Gitea guide and canonical source match the exact public and secret contrac
   assert.doesNotMatch(example, /authorization|readiness|source:/i);
   assert.match(guide, /pulumi config set --secret giteaClientSecret/);
   assert.match(guide, /pulumi config set --secret giteaInternalUrl/);
-  assert.match(guide, /does not perform either setup or authorization/i);
+  assert.match(guide, /does not perform this authorization step/i);
   assert.match(guide, /does not validate connectivity/i);
   assert.match(guide, /does not delete the external Gitea OAuth application[\s\S]*or delete workloads/i);
 });

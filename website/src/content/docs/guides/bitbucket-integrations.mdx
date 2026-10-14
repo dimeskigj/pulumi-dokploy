@@ -4,10 +4,22 @@ description: Manage Dokploy's configuration for a Bitbucket integration.
 ---
 
 `BitbucketIntegration` manages the Dokploy configuration for a Bitbucket
-integration. It does not authorize credentials, manage OAuth or session state,
-and does not validate connectivity or report readiness. Configure and authorize the integration
-outside Pulumi in Dokploy first. This resource does not guarantee that either
-credential mode is accepted by a live Bitbucket service.
+integration. Obtain the selected Bitbucket credential outside Pulumi, then use
+Pulumi to create or manage the Dokploy configuration. It does not automate OAuth,
+or manage session state. It does not validate connectivity or report readiness.
+No separate manual Dokploy integration setup or authorization step is required.
+This resource does not guarantee that either credential mode is accepted by a
+live Bitbucket service.
+
+## Setup sequence
+
+1. Obtain the API token or app password in Bitbucket outside Pulumi. For API-token
+   mode, use the account email; for app-password mode, use the Bitbucket username.
+   Legacy app-password support exists in Dokploy's configuration model, but
+   current Bitbucket acceptance is not guaranteed.
+2. Then use Pulumi to create or manage the Dokploy Bitbucket configuration with
+   the selected credential and its mode-specific identity. No separate manual
+   Dokploy integration or authorization step is required.
 
 ## Choose a credential mode
 

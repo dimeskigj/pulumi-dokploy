@@ -82,10 +82,10 @@ func (r BitbucketIntegration) Check(ctx context.Context, req infer.CheckRequest)
 	if !apiKnown.HasComputed() && !appKnown.HasComputed() && api == app {
 		add("apiToken", "exactly one of apiToken and appPassword must be nonempty")
 	}
-	if api && (in.BitbucketEmail == nil || *in.BitbucketEmail == "") {
+	if api && !req.NewInputs.Get("bitbucketEmail").HasComputed() && (in.BitbucketEmail == nil || *in.BitbucketEmail == "") {
 		add("bitbucketEmail", "bitbucketEmail is required for apiToken mode")
 	}
-	if app && (in.BitbucketUsername == nil || *in.BitbucketUsername == "") {
+	if app && !req.NewInputs.Get("bitbucketUsername").HasComputed() && (in.BitbucketUsername == nil || *in.BitbucketUsername == "") {
 		add("bitbucketUsername", "bitbucketUsername is required for appPassword mode")
 	}
 	return infer.CheckResponse[BitbucketIntegrationArgs]{Inputs: in, Failures: failures}, nil

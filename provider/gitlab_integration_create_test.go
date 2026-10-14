@@ -14,7 +14,9 @@ import (
 	"time"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
+	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
+	"github.com/pulumi/pulumi/sdk/v3/go/property"
 	"github.com/stretchr/testify/require"
 )
 
@@ -439,6 +441,63 @@ func TestGitLabIntegrationCreateUncertainTransportAndClose(t *testing.T) {
 			}
 			require.Equal(t, "gitlab-fixture", result.ID)
 		})
+	}
+}
+
+func TestGitLabCreateCancellationAfterVerifiedRenameRetainsPartialState(t *testing.T) {
+	for _, cause := range []error{context.Canceled, context.DeadlineExceeded} {
+		for _, registered := range []bool{false, true} {
+			name := "direct"
+			if registered {
+				name = "infer resource boundary"
+			}
+			t.Run(cause.Error()+"/"+name, func(t *testing.T) {
+				f := gitLabCreateServer(t)
+				ctx := newLifecycleCancelContext()
+				transport := gitLabCreateRoundTrip(func(req *http.Request) (*http.Response, error) {
+					response, err := http.DefaultTransport.RoundTrip(req)
+					if err == nil && req.URL.Path == "/api/gitlab.update" {
+						ctx.cancel(cause)
+					}
+					return response, err
+				})
+				api, err := client.New(f.server.URL, "fixture-key", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+				require.NoError(t, err)
+				resource := GitLabIntegration{client: fixedClient(api)}
+				if registered {
+					inferResource := infer.Resource(&resource)
+					inputs := property.NewMap(map[string]property.Value{
+						"name": property.New("requested-name"), "applicationId": property.New("app-fixture"),
+						"applicationSecret": property.New("secret-fixture").WithSecret(true),
+						"redirectUri":       property.New("https://example.test/callback"), "gitlabUrl": property.New("https://gitlab.com"),
+					})
+					response, callErr := inferResource.Create(ctx, p.CreateRequest{Urn: lifecycleURN("GitLabIntegration", "canceled-create"), Properties: inputs})
+					err = callErr
+					require.NotNil(t, response.PartialState)
+					require.Equal(t, "gitlab-fixture", response.ID)
+					require.Equal(t, "gitlab-fixture", response.Properties.Get("gitlabId").AsString())
+					require.Equal(t, "parent-fixture", response.Properties.Get("gitProviderId").AsString())
+					require.Equal(t, "org-fixture", response.Properties.Get("organizationId").AsString())
+					require.True(t, response.Properties.Get("applicationSecret").Secret())
+					require.False(t, response.Properties.Get("gitlabId").Secret())
+				} else {
+					created, callErr := resource.Create(ctx, infer.CreateRequest[GitLabIntegrationArgs]{Inputs: gitLabCreateArgs()})
+					err = callErr
+					require.Equal(t, "gitlab-fixture", created.ID)
+					require.Equal(t, "gitlab-fixture", created.Output.GitLabID)
+					require.Equal(t, "parent-fixture", created.Output.GitProviderID)
+					require.Equal(t, "org-fixture", created.Output.OrganizationID)
+					require.Equal(t, f.marker, created.Output.Name, "last verified marker state is retained")
+				}
+				require.ErrorIs(t, err, cause)
+				var partial infer.ResourceInitFailedError
+				require.ErrorAs(t, err, &partial)
+				require.Equal(t, []string{
+					"GET /api/organization.active", "GET /api/user.get", "GET /api/gitProvider.getAll",
+					"POST /api/gitlab.create", "GET /api/gitProvider.getAll", "GET /api/gitlab.one", "POST /api/gitlab.update",
+				}, f.requests, "no readback or mutation follows cancellation")
+			})
+		}
 	}
 }
 

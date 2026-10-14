@@ -189,7 +189,7 @@ func bitbucketCreateError(err error) error {
 func bitbucketCreatePartial(observed bitbucketObservation, err error) (infer.CreateResponse[BitbucketIntegrationState], error) {
 	safe := bitbucketCreateError(err)
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		safe = errors.Join(initFailed(safe), safe, err)
+		safe = errors.Join(initFailed(safe), safe)
 	} else {
 		safe = initFailed(safe)
 	}

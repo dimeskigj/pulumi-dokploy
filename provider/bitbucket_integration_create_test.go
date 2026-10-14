@@ -30,6 +30,7 @@ type bitbucketCreateFixture struct {
 	detail       string
 	readback     string
 	createStatus int
+	createBody   string
 	updateStatus int
 	renamed      bool
 	postLists    int
@@ -100,7 +101,11 @@ func (f *bitbucketCreateFixture) serve(w http.ResponseWriter, r *http.Request) {
 		if f.createStatus != 0 {
 			w.WriteHeader(f.createStatus)
 		}
-		_, _ = fmt.Fprint(w, "this acknowledgment body is intentionally not JSON")
+		acknowledgmentBody := f.createBody
+		if acknowledgmentBody == "" {
+			acknowledgmentBody = "this acknowledgment body is intentionally not JSON"
+		}
+		_, _ = fmt.Fprint(w, acknowledgmentBody)
 	case "/api/bitbucket.one":
 		if r.URL.Query().Get("bitbucketId") != "relation" {
 			f.t.Errorf("detail requested with unverified ID: %q", r.URL.Query().Get("bitbucketId"))
@@ -315,6 +320,42 @@ func TestBitbucketCreateDiscoveryBounds(t *testing.T) {
 	require.Equal(t, 1, f.postLists, "one post-create discovery must finish before the deadline")
 	require.Equal(t, 1, strings.Count(strings.Join(f.requests, ","), "POST /api/bitbucket.create"), "create is sent exactly once before cancellation")
 	require.Equal(t, 2, strings.Count(strings.Join(f.requests, ","), "GET /api/gitProvider.getAll"), "no discovery may follow cancellation")
+}
+
+func TestBitbucketCreateCancellationSanitizesUnsafeCreateError(t *testing.T) {
+	unsafe := []string{"raw-upstream-sentinel", "https://private.invalid/provider/private-record-123", "private-record-123"}
+	for _, cause := range []error{context.Canceled, context.DeadlineExceeded} {
+		t.Run(cause.Error(), func(t *testing.T) {
+			f := newBitbucketCreateFixture(t)
+			f.createStatus = http.StatusInternalServerError
+			f.createBody = `{"code":"SERVER_ERROR","message":"raw-upstream-sentinel at https://private.invalid/provider/private-record-123 credential=private-record-123"}`
+			ctx := newLifecycleCancelContext()
+			transport := bitbucketCreateRoundTripper(func(req *http.Request) (*http.Response, error) {
+				resp, err := http.DefaultTransport.RoundTrip(req)
+				if err == nil && req.URL.Path == "/api/gitProvider.getAll" && f.marker != "" {
+					ctx.cancel(cause)
+				}
+				return resp, err
+			})
+			api, err := client.New(f.server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+			require.NoError(t, err)
+			resource := BitbucketIntegration{client: fixedClient(api)}
+			result, err := resource.Create(ctx, infer.CreateRequest[BitbucketIntegrationArgs]{Inputs: bbCreateArgs()})
+			require.Empty(t, result.ID)
+			require.Empty(t, result.Output.BitbucketID)
+			require.ErrorIs(t, err, cause)
+			var initFailed infer.ResourceInitFailedError
+			require.ErrorAs(t, err, &initFailed)
+			require.Contains(t, err.Error(), "bitbucket integration HTTP 500", "the safe create classification must be retained")
+			combined := err.Error() + " " + strings.Join(initFailed.Reasons, " ")
+			for _, value := range unsafe {
+				require.NotContains(t, combined, value)
+			}
+			require.Equal(t, 1, f.postLists, "discovery stops after cancellation")
+			require.Equal(t, 1, strings.Count(strings.Join(f.requests, ","), "POST /api/bitbucket.create"), "create is never retried")
+			require.NotContains(t, f.requests, "GET /api/bitbucket.one", "no detail read follows cancellation")
+		})
+	}
 }
 
 func TestBitbucketCreateRenamePartialState(t *testing.T) {

@@ -19,6 +19,21 @@ test("Bitbucket guide documents exclusive secret modes and conditional identity"
   assert.doesNotMatch(guide, /current Bitbucket.{0,50}compatible/i);
 });
 
+test("Bitbucket setup obtains credentials externally before Pulumi manages Dokploy configuration", () => {
+  const guide = read("../src/content/docs/guides/bitbucket-integrations.mdx");
+  const setupText = guide.match(/## Setup sequence([\s\S]*?)(?=\n## )/)?.[1];
+  assert.ok(setupText, "guide must describe the setup sequence");
+  const setup = setupText.replace(/\s+/g, " ");
+  const credentials = setup.indexOf("Obtain the API token or app password in Bitbucket outside Pulumi");
+  const dokployConfiguration = setup.indexOf("Then use Pulumi to create or manage the Dokploy Bitbucket configuration");
+  assert.ok(credentials >= 0, "credentials are obtained from Bitbucket externally");
+  assert.ok(dokployConfiguration >= 0, "Pulumi manages the Dokploy configuration afterward");
+  assert.ok(credentials < dokployConfiguration, "external credentials precede Pulumi configuration");
+  assert.match(setup, /no separate manual Dokploy integration or authorization step is required/i);
+  assert.doesNotMatch(setup, /configure and authorize the integration outside Pulumi in Dokploy first/i);
+  assert.match(guide, /current Bitbucket acceptance is not guaranteed/i);
+});
+
 test("Bitbucket guide and canonical source match the public API-token contract", () => {
   const schema = JSON.parse(read("../../provider/cmd/pulumi-resource-dokploy/schema.json"));
   const resource = schema.resources["dokploy:index:BitbucketIntegration"];
