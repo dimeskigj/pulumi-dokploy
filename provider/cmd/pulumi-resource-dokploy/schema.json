@@ -1,7 +1,7 @@
 {
   "name": "dokploy",
   "displayName": "Dokploy",
-  "description": "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, GitLab integrations, tags, project-tag associations, mounts, schedules, notifications, servers, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
+  "description": "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, GitLab and GitHub integrations, tags, project-tag associations, mounts, schedules, notifications, servers, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
   "keywords": [
     "category/infrastructure",
     "kind/native",
@@ -1626,6 +1626,52 @@
       "requiredInputs": [
         "projectId",
         "name"
+      ]
+    },
+    "dokploy:index:GitHubIntegration": {
+      "description": "Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "description": "The stable Dokploy Git-provider parent ID."
+        },
+        "githubAppName": {
+          "type": "string",
+          "description": "The GitHub App name stored by Dokploy; this does not configure the GitHub-side App."
+        },
+        "githubId": {
+          "type": "string",
+          "description": "The stable Dokploy GitHub relation ID used as the Pulumi resource identity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The required Dokploy integration display name."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "The owning Dokploy organization ID."
+        }
+      },
+      "required": [
+        "name",
+        "githubAppName",
+        "githubId",
+        "gitProviderId",
+        "organizationId"
+      ],
+      "inputProperties": {
+        "githubAppName": {
+          "type": "string",
+          "description": "The GitHub App name stored by Dokploy; this does not configure the GitHub-side App."
+        },
+        "name": {
+          "type": "string",
+          "description": "The required Dokploy integration display name."
+        }
+      },
+      "requiredInputs": [
+        "name",
+        "githubAppName"
       ]
     },
     "dokploy:index:GitLabIntegration": {
