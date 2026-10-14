@@ -96,6 +96,7 @@ install_plugin: provider
 gen_examples: codegen
 	scripts/gen-examples.sh "$(MAKE)" "$(CURDIR)" "$(PROJECT)" "$(PACK)" "$(VERSION_GENERIC)"
 test_examples: install_plugin
+	$(MAKE) test_sdk_contracts
 	mise exec -- go test ./examples -tags=all -count=1
 	cd examples/go && go test . -count=1
 	python3 -m compileall -q examples/python
@@ -104,6 +105,10 @@ test_examples: install_plugin
 	cd examples/dotnet && dotnet build --nologo
 	cd sdk/java && $(JAVA11_EXEC) gradle publishToMavenLocal --no-daemon
 	cd examples/java && $(JAVA17_MAVEN_EXEC) mvn $(MAVEN_TLS_OPTS) package -DskipTests
+
+.PHONY: test_sdk_contracts
+test_sdk_contracts:
+	python3 scripts/test_sdk_contracts.py
 
 .PHONY: test_acceptance_runner
 test_acceptance_runner:
