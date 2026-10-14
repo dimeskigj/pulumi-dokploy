@@ -27,6 +27,7 @@ type ApplicationArgs struct {
 	BuildArgs       *string           `pulumi:"buildArgs,optional" provider:"secret"`
 	BuildSecrets    *string           `pulumi:"buildSecrets,optional" provider:"secret"`
 	CreateEnvFile   bool              `pulumi:"createEnvFile,optional"`
+	AutoDeploy      *bool             `pulumi:"autoDeploy,optional"`
 }
 
 type ApplicationState struct {
@@ -59,6 +60,7 @@ func (a *ApplicationArgs) Annotate(annotator infer.Annotator) {
 	annotator.Describe(&a.BuildArgs, "Build arguments for the application.")
 	annotator.Describe(&a.BuildSecrets, "Build secrets for the application.")
 	annotator.Describe(&a.CreateEnvFile, "Whether to create an environment file.")
+	annotator.Describe(&a.AutoDeploy, "Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.")
 }
 
 func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ApplicationArgs], error) {
@@ -119,6 +121,9 @@ func (r Application) Diff(_ context.Context, req infer.DiffRequest[ApplicationAr
 	if req.Inputs.CreateEnvFile != req.State.CreateEnvFile {
 		d["createEnvFile"] = p.PropertyDiff{Kind: p.Update}
 	}
+	if req.Inputs.AutoDeploy != nil && !sameOptionalBool(req.Inputs.AutoDeploy, req.State.AutoDeploy) {
+		d["autoDeploy"] = p.PropertyDiff{Kind: p.Update}
+	}
 	return infer.DiffResponse{HasChanges: len(d) > 0, DetailedDiff: d}, nil
 }
 
@@ -151,6 +156,12 @@ func (r Application) Create(ctx context.Context, req infer.CreateRequest[Applica
 			p.GetLogger(ctx).Warningf("application cleanup failed for %s: %s", state.ApplicationID, sanitizeApplicationError(cleanupErr, req.Inputs))
 		}
 		return infer.CreateResponse[ApplicationState]{ID: state.ApplicationID, Output: state}, setupErr
+	}
+	if req.Inputs.AutoDeploy != nil {
+		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: state.ApplicationID, AutoDeploy: nullable.NewNullableWithValue(*req.Inputs.AutoDeploy)}
+		if _, err := api.ApplicationUpdateWithResponse(ctx, body); err != nil {
+			return failSetup(sanitizeApplicationError(err, req.Inputs))
+		}
 	}
 	if err := configureApplicationSource(ctx, api, state.ApplicationID, req.Inputs.Source); err != nil {
 		return failSetup(sanitizeApplicationError(err, req.Inputs))
@@ -255,6 +266,9 @@ func (r Application) Read(ctx context.Context, req infer.ReadRequest[Application
 	args.AppName, args.Description, args.ServerID = a.AppName, a.Description, a.ServerId
 	args.RegistryID = stringPointer(readProperties, "registryId")
 	args.BuildRegistryID = stringPointer(readProperties, "buildRegistryId")
+	if autoDeploy, ok := readProperties["autoDeploy"].(bool); ok {
+		args.AutoDeploy = &autoDeploy
+	}
 	if a.CreateEnvFile != nil {
 		args.CreateEnvFile = *a.CreateEnvFile
 	}
@@ -280,6 +294,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		}
 	}
 	result := ApplicationSource{Type: ApplicationSourceType(kind)}
+	priorBuild, _ := prior.applicationBuild()
 	switch result.Type {
 	case SourceDocker:
 		image := stringValue(m, "image", "dockerImage")
@@ -297,7 +312,7 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 		if url == "" || branch == "" {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required git url or branch")
 		}
-		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: optionalStringPointer(m, "buildPath", "customGitBuildPath"), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.Git = &GitApplicationSource{URL: url, Branch: branch, BuildPath: sourceBuildPathPointer(m, "customGitBuildPath", "buildPath", true), SSHKeyID: stringPointer(m, "sshKeyId", "customGitSSHKeyId"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
 		if isRepositoryRootBuildPath(result.Git.BuildPath) {
 			if prior.Type != SourceGit || prior.Git == nil || prior.Git.BuildPath == nil {
 				result.Git.BuildPath = nil
@@ -305,23 +320,91 @@ func decodeApplicationSource(m map[string]interface{}, prior ApplicationSource) 
 				result.Git.BuildPath = prior.Git.BuildPath
 			}
 		}
-		result.Git.Build = decodeBuild(m)
+		result.Git.Build = decodeBuild(m, priorBuild)
 	case SourceGitLab:
 		integration := stringValue(m, "integrationId", "gitlabId")
 		owner, namespace, repo, branch := stringValue(m, "owner", "gitlabOwner"), stringValue(m, "namespace", "gitlabPathNamespace"), stringValue(m, "repository", "gitlabRepository"), stringValue(m, "branch", "gitlabBranch")
 		if integration == "" || owner == "" || namespace == "" || repo == "" || branch == "" {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab source fields")
 		}
-		result.GitLab = &GitLabAppSource{IntegrationID: integration, ProjectID: int(numberValue(m, "projectId", "gitlabProjectId")), Owner: owner, Namespace: namespace, Repository: repo, Branch: branch, BuildPath: stringPointer(m, "buildPath", "gitlabBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		result.GitLab = &GitLabAppSource{IntegrationID: integration, ProjectID: int(numberValue(m, "projectId", "gitlabProjectId")), Owner: owner, Namespace: namespace, Repository: repo, Branch: branch, BuildPath: sourceBuildPathPointer(m, "gitlabBuildPath", "buildPath", false), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
 		if result.GitLab.ProjectID == 0 {
 			return ApplicationSource{}, fmt.Errorf("application source data omits required gitlab projectId")
 		}
-		result.GitLab.Build = decodeBuild(m)
+		result.GitLab.Build = decodeBuild(m, priorBuild)
+	case SourceGitHub:
+		integration := stringValue(m, "githubId")
+		owner, repo, branch := stringValue(m, "owner"), stringValue(m, "repository"), stringValue(m, "branch")
+		if integration == "" || owner == "" || repo == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required github source fields")
+		}
+		github := &GitHubAppSource{IntegrationID: integration, Owner: owner, Repository: repo, Branch: branch, BuildPath: optionalStringPointer(m, "buildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		github.BuildPath = normalizeRepositoryBuildPath(github.BuildPath, prior, result.Type)
+		if trigger := stringValue(m, "triggerType"); trigger != "" && trigger != string(GitHubTriggerPush) {
+			if trigger != string(GitHubTriggerTag) {
+				return ApplicationSource{}, fmt.Errorf("application source data has unsupported github triggerType %q", trigger)
+			}
+			github.TriggerType = githubTriggerPointer(GitHubTriggerTag)
+		} else if prior.GitHub != nil && prior.GitHub.TriggerType != nil && *prior.GitHub.TriggerType == GitHubTriggerPush {
+			github.TriggerType = prior.GitHub.TriggerType
+		}
+		github.Build = decodeBuild(m, priorBuild)
+		result.GitHub = github
+	case SourceGitea:
+		integration, owner, repo, branch := stringValue(m, "giteaId"), stringValue(m, "giteaOwner"), stringValue(m, "giteaRepository"), stringValue(m, "giteaBranch")
+		if integration == "" || owner == "" || repo == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required gitea source fields")
+		}
+		gitea := &GiteaAppSource{IntegrationID: integration, Owner: owner, Repository: repo, Branch: branch, BuildPath: optionalStringPointer(m, "giteaBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		gitea.BuildPath = normalizeRepositoryBuildPath(gitea.BuildPath, prior, result.Type)
+		gitea.Build = decodeBuild(m, priorBuild)
+		result.Gitea = gitea
+	case SourceBitbucket:
+		integration, owner, repo, slug, branch := stringValue(m, "bitbucketId"), stringValue(m, "bitbucketOwner"), stringValue(m, "bitbucketRepository"), stringValue(m, "bitbucketRepositorySlug"), stringValue(m, "bitbucketBranch")
+		if integration == "" || owner == "" || repo == "" || slug == "" || branch == "" {
+			return ApplicationSource{}, fmt.Errorf("application source data omits required bitbucket source fields")
+		}
+		bitbucket := &BitbucketAppSource{IntegrationID: integration, Owner: owner, Repository: repo, RepositorySlug: slug, Branch: branch, BuildPath: optionalStringPointer(m, "bitbucketBuildPath"), WatchPaths: stringSlice(m, "watchPaths"), EnableSubmodules: boolValue(m, "enableSubmodules")}
+		bitbucket.BuildPath = normalizeRepositoryBuildPath(bitbucket.BuildPath, prior, result.Type)
+		bitbucket.Build = decodeBuild(m, priorBuild)
+		result.Bitbucket = bitbucket
 	default:
 		return ApplicationSource{}, fmt.Errorf("application source data has unsupported source.type %q", kind)
 	}
 	return result, nil
 }
+
+func normalizeRepositoryBuildPath(observed *string, prior ApplicationSource, kind ApplicationSourceType) *string {
+	if !isRepositoryDefaultBuildPath(observed) {
+		return observed
+	}
+	var priorPath *string
+	if prior.Type == kind {
+		switch kind {
+		case SourceGitHub:
+			if prior.GitHub != nil {
+				priorPath = prior.GitHub.BuildPath
+			}
+		case SourceGitea:
+			if prior.Gitea != nil {
+				priorPath = prior.Gitea.BuildPath
+			}
+		case SourceBitbucket:
+			if prior.Bitbucket != nil {
+				priorPath = prior.Bitbucket.BuildPath
+			}
+		}
+	}
+	if priorPath == nil {
+		return nil
+	}
+	if isRepositoryDefaultBuildPath(priorPath) {
+		return priorPath
+	}
+	return observed
+}
+
+func githubTriggerPointer(trigger GitHubTriggerType) *GitHubTriggerType { return &trigger }
 
 func isRepositoryRootBuildPath(path *string) bool {
 	if path == nil {
@@ -335,12 +418,52 @@ func isRepositoryRootBuildPath(path *string) bool {
 	}
 }
 
-func decodeBuild(m map[string]interface{}) ApplicationBuild {
-	b := ApplicationBuild{Type: BuildType(stringValue(m, "buildType")), Dockerfile: stringPointer(m, "dockerfile"), DockerContextPath: stringPointer(m, "dockerContextPath"), DockerBuildStage: stringPointer(m, "dockerBuildStage")}
+func isRepositoryDefaultBuildPath(path *string) bool {
+	return path != nil && *path == "" || isRepositoryRootBuildPath(path)
+}
+
+func decodeBuild(m map[string]interface{}, prior ApplicationBuild) ApplicationBuild {
+	b := ApplicationBuild{Type: BuildType(stringValue(m, "buildType"))}
 	if b.Type == "" {
 		b.Type = BuildNixpacks
 	}
+	if prior.Type != b.Type {
+		prior = ApplicationBuild{}
+	}
+	switch b.Type {
+	case BuildDockerfile:
+		b.Dockerfile = stringPointer(m, "dockerfile")
+		b.DockerContextPath = stringPointer(m, "dockerContextPath")
+		b.DockerBuildStage = stringPointer(m, "dockerBuildStage")
+	case BuildNixpacks:
+		b.PublishDirectory = optionalStringPointer(m, "publishDirectory")
+		b.IsStaticSpa = decodedStaticSpa(m, prior)
+	case BuildHerokuBuildpacks:
+		b.HerokuVersion = optionalStringPointer(m, "herokuVersion")
+	case BuildStatic:
+		b.IsStaticSpa = decodedStaticSpa(m, prior)
+	case BuildRailpack:
+		b.RailpackVersion = optionalStringPointer(m, "railpackVersion")
+	}
 	return b
+}
+
+func decodedStaticSpa(m map[string]interface{}, prior ApplicationBuild) *bool {
+	value, exists := m["isStaticSpa"]
+	if !exists || value == nil {
+		return nil
+	}
+	spa, ok := value.(bool)
+	if !ok {
+		return nil
+	}
+	if !spa && prior.IsStaticSpa != nil && !*prior.IsStaticSpa {
+		return prior.IsStaticSpa
+	}
+	if !spa {
+		return nil
+	}
+	return &spa
 }
 func stringValue(m map[string]interface{}, keys ...string) string {
 	for _, k := range keys {
@@ -396,17 +519,49 @@ func optionalStringPointer(m map[string]interface{}, keys ...string) *string {
 	return nil
 }
 
+// sourceBuildPathPointer prefers a provider-specific path and treats any
+// present selected field (including null or empty) as authoritative. The
+// simplified buildPath field is a compatibility alias only when that field is
+// absent. Generic Git preserves explicit empty strings; GitLab retains its
+// existing empty-as-unset behavior.
+func sourceBuildPathPointer(m map[string]interface{}, selectedField, legacyField string, preserveEmpty bool) *string {
+	value, present := m[selectedField]
+	if !present {
+		value, present = m[legacyField]
+	}
+	if !present {
+		return nil
+	}
+	path, ok := value.(string)
+	if !ok || (!preserveEmpty && path == "") {
+		return nil
+	}
+	return &path
+}
+
 func (r Application) Update(ctx context.Context, req infer.UpdateRequest[ApplicationArgs, ApplicationState]) (infer.UpdateResponse[ApplicationState], error) {
 	state := ApplicationState{ApplicationArgs: req.Inputs, ApplicationID: req.ID, Status: req.State.Status}
+	if state.AutoDeploy == nil {
+		state.AutoDeploy = req.State.AutoDeploy
+	}
 	if req.DryRun {
 		return infer.UpdateResponse[ApplicationState]{Output: state}, nil
 	}
 	metadataChanged := req.Inputs.Name != req.State.Name || !sameOptionalString(req.Inputs.AppName, req.State.AppName) || !sameOptionalString(req.Inputs.Description, req.State.Description)
 	registryChanged := !sameOptionalString(req.Inputs.RegistryID, req.State.RegistryID) || !sameOptionalString(req.Inputs.BuildRegistryID, req.State.BuildRegistryID)
+	autoDeployChanged := req.Inputs.AutoDeploy != nil && !sameOptionalBool(req.Inputs.AutoDeploy, req.State.AutoDeploy)
 	runtimeChanged := !reflect.DeepEqual(req.Inputs.Source, req.State.Source) || !sameOptionalString(req.Inputs.Environment, req.State.Environment) || !sameOptionalString(req.Inputs.BuildArgs, req.State.BuildArgs) || !sameOptionalString(req.Inputs.BuildSecrets, req.State.BuildSecrets) || req.Inputs.CreateEnvFile != req.State.CreateEnvFile || registryChanged
-	if metadataChanged || registryChanged {
-		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID, AppName: req.Inputs.AppName, Name: &req.Inputs.Name, Description: nullable.NewNullNullable[string]()}
-		if req.Inputs.Description != nil {
+	if metadataChanged || registryChanged || autoDeployChanged {
+		body := generated.ApplicationUpdateJSONRequestBody{ApplicationId: req.ID}
+		if metadataChanged || registryChanged {
+			body.AppName = req.Inputs.AppName
+			body.Name = &req.Inputs.Name
+			body.Description = nullable.NewNullNullable[string]()
+		}
+		if autoDeployChanged {
+			body.AutoDeploy = nullable.NewNullableWithValue(*req.Inputs.AutoDeploy)
+		}
+		if (metadataChanged || registryChanged) && req.Inputs.Description != nil {
 			body.Description = nullable.NewNullableWithValue(*req.Inputs.Description)
 		}
 		if registryChanged {
@@ -449,10 +604,11 @@ func (r Application) Delete(ctx context.Context, req infer.DeleteRequest[Applica
 
 func (r Application) WireDependencies(f infer.FieldSelector, args *ApplicationArgs, state *ApplicationState) {
 	deps := []infer.InputField{
-		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.RegistryID), f.InputField(&args.BuildRegistryID), f.InputField(&args.CreateEnvFile),
+		f.InputField(&args.Name), f.InputField(&args.AppName), f.InputField(&args.Description), f.InputField(&args.EnvironmentID), f.InputField(&args.ServerID), f.InputField(&args.RegistryID), f.InputField(&args.BuildRegistryID), f.InputField(&args.CreateEnvFile), f.InputField(&args.AutoDeploy),
 	}
 	f.OutputField(&state.ApplicationID).DependsOn(deps...)
 	f.OutputField(&state.Status).DependsOn(deps...)
+	f.OutputField(&state.AutoDeploy).DependsOn(f.InputField(&args.AutoDeploy))
 	f.OutputField(&state.Environment).DependsOn(f.InputField(&args.Environment).Secret())
 	f.OutputField(&state.BuildArgs).DependsOn(f.InputField(&args.BuildArgs).Secret())
 	f.OutputField(&state.BuildSecrets).DependsOn(f.InputField(&args.BuildSecrets).Secret())

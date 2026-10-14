@@ -20,6 +20,8 @@ __all__ = [
     'ApplicationBuildArgsDict',
     'ApplicationSourceArgs',
     'ApplicationSourceArgsDict',
+    'BitbucketAppSourceArgs',
+    'BitbucketAppSourceArgsDict',
     'ComposeSourceArgs',
     'ComposeSourceArgsDict',
     'DockerSourceArgs',
@@ -28,10 +30,14 @@ __all__ = [
     'GitApplicationSourceArgsDict',
     'GitComposeSourceArgs',
     'GitComposeSourceArgsDict',
+    'GitHubAppSourceArgs',
+    'GitHubAppSourceArgsDict',
     'GitLabAppSourceArgs',
     'GitLabAppSourceArgsDict',
     'GitLabComposeSourceArgs',
     'GitLabComposeSourceArgsDict',
+    'GiteaAppSourceArgs',
+    'GiteaAppSourceArgsDict',
     'NotificationCustomConfigArgs',
     'NotificationCustomConfigArgsDict',
     'NotificationDiscordConfigArgs',
@@ -82,6 +88,22 @@ class ApplicationBuildArgsDict(TypedDict):
     """
     The Dockerfile path.
     """
+    heroku_version: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The Heroku buildpack version.
+    """
+    is_static_spa: NotRequired[pulumi.Input[Optional[_builtins.bool]]]
+    """
+    Whether to configure static single-page-application routing.
+    """
+    publish_directory: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The static publish directory.
+    """
+    railpack_version: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The Railpack version.
+    """
 
 @pulumi.input_type
 class ApplicationBuildArgs:
@@ -89,7 +111,11 @@ class ApplicationBuildArgs:
                  type: pulumi.Input[_builtins.str],
                  docker_build_stage: pulumi.Input[Optional[_builtins.str]] = None,
                  docker_context_path: pulumi.Input[Optional[_builtins.str]] = None,
-                 dockerfile: pulumi.Input[Optional[_builtins.str]] = None):
+                 dockerfile: pulumi.Input[Optional[_builtins.str]] = None,
+                 heroku_version: pulumi.Input[Optional[_builtins.str]] = None,
+                 is_static_spa: pulumi.Input[Optional[_builtins.bool]] = None,
+                 publish_directory: pulumi.Input[Optional[_builtins.str]] = None,
+                 railpack_version: pulumi.Input[Optional[_builtins.str]] = None):
         """
         Application build configuration.
 
@@ -97,6 +123,10 @@ class ApplicationBuildArgs:
         :param pulumi.Input[_builtins.str] docker_build_stage: The Docker build stage.
         :param pulumi.Input[_builtins.str] docker_context_path: The Docker build context.
         :param pulumi.Input[_builtins.str] dockerfile: The Dockerfile path.
+        :param pulumi.Input[_builtins.str] heroku_version: The Heroku buildpack version.
+        :param pulumi.Input[_builtins.bool] is_static_spa: Whether to configure static single-page-application routing.
+        :param pulumi.Input[_builtins.str] publish_directory: The static publish directory.
+        :param pulumi.Input[_builtins.str] railpack_version: The Railpack version.
         """
         pulumi.set(__self__, "type", type)
         if docker_build_stage is not None:
@@ -105,6 +135,14 @@ class ApplicationBuildArgs:
             pulumi.set(__self__, "docker_context_path", docker_context_path)
         if dockerfile is not None:
             pulumi.set(__self__, "dockerfile", dockerfile)
+        if heroku_version is not None:
+            pulumi.set(__self__, "heroku_version", heroku_version)
+        if is_static_spa is not None:
+            pulumi.set(__self__, "is_static_spa", is_static_spa)
+        if publish_directory is not None:
+            pulumi.set(__self__, "publish_directory", publish_directory)
+        if railpack_version is not None:
+            pulumi.set(__self__, "railpack_version", railpack_version)
 
     @_builtins.property
     @pulumi.getter
@@ -154,6 +192,54 @@ class ApplicationBuildArgs:
     def dockerfile(self, value: pulumi.Input[Optional[_builtins.str]]):
         pulumi.set(self, "dockerfile", value)
 
+    @_builtins.property
+    @pulumi.getter(name="herokuVersion")
+    def heroku_version(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The Heroku buildpack version.
+        """
+        return pulumi.get(self, "heroku_version")
+
+    @heroku_version.setter
+    def heroku_version(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "heroku_version", value)
+
+    @_builtins.property
+    @pulumi.getter(name="isStaticSpa")
+    def is_static_spa(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Whether to configure static single-page-application routing.
+        """
+        return pulumi.get(self, "is_static_spa")
+
+    @is_static_spa.setter
+    def is_static_spa(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "is_static_spa", value)
+
+    @_builtins.property
+    @pulumi.getter(name="publishDirectory")
+    def publish_directory(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The static publish directory.
+        """
+        return pulumi.get(self, "publish_directory")
+
+    @publish_directory.setter
+    def publish_directory(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "publish_directory", value)
+
+    @_builtins.property
+    @pulumi.getter(name="railpackVersion")
+    def railpack_version(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The Railpack version.
+        """
+        return pulumi.get(self, "railpack_version")
+
+    @railpack_version.setter
+    def railpack_version(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "railpack_version", value)
+
 
 class ApplicationSourceArgsDict(TypedDict):
     """
@@ -163,6 +249,10 @@ class ApplicationSourceArgsDict(TypedDict):
     """
     The application source type.
     """
+    bitbucket: NotRequired[pulumi.Input[Optional['BitbucketAppSourceArgsDict']]]
+    """
+    Bitbucket source configuration.
+    """
     docker: NotRequired[pulumi.Input[Optional['DockerSourceArgsDict']]]
     """
     Docker source configuration.
@@ -170,6 +260,14 @@ class ApplicationSourceArgsDict(TypedDict):
     git: NotRequired[pulumi.Input[Optional['GitApplicationSourceArgsDict']]]
     """
     Git source configuration.
+    """
+    gitea: NotRequired[pulumi.Input[Optional['GiteaAppSourceArgsDict']]]
+    """
+    Gitea source configuration.
+    """
+    github: NotRequired[pulumi.Input[Optional['GitHubAppSourceArgsDict']]]
+    """
+    GitHub source configuration.
     """
     gitlab: NotRequired[pulumi.Input[Optional['GitLabAppSourceArgsDict']]]
     """
@@ -180,22 +278,34 @@ class ApplicationSourceArgsDict(TypedDict):
 class ApplicationSourceArgs:
     def __init__(__self__, *,
                  type: pulumi.Input[_builtins.str],
+                 bitbucket: pulumi.Input[Optional['BitbucketAppSourceArgs']] = None,
                  docker: pulumi.Input[Optional['DockerSourceArgs']] = None,
                  git: pulumi.Input[Optional['GitApplicationSourceArgs']] = None,
+                 gitea: pulumi.Input[Optional['GiteaAppSourceArgs']] = None,
+                 github: pulumi.Input[Optional['GitHubAppSourceArgs']] = None,
                  gitlab: pulumi.Input[Optional['GitLabAppSourceArgs']] = None):
         """
         Application source configuration.
 
         :param pulumi.Input[_builtins.str] type: The application source type.
+        :param pulumi.Input['BitbucketAppSourceArgs'] bitbucket: Bitbucket source configuration.
         :param pulumi.Input['DockerSourceArgs'] docker: Docker source configuration.
         :param pulumi.Input['GitApplicationSourceArgs'] git: Git source configuration.
+        :param pulumi.Input['GiteaAppSourceArgs'] gitea: Gitea source configuration.
+        :param pulumi.Input['GitHubAppSourceArgs'] github: GitHub source configuration.
         :param pulumi.Input['GitLabAppSourceArgs'] gitlab: GitLab source configuration.
         """
         pulumi.set(__self__, "type", type)
+        if bitbucket is not None:
+            pulumi.set(__self__, "bitbucket", bitbucket)
         if docker is not None:
             pulumi.set(__self__, "docker", docker)
         if git is not None:
             pulumi.set(__self__, "git", git)
+        if gitea is not None:
+            pulumi.set(__self__, "gitea", gitea)
+        if github is not None:
+            pulumi.set(__self__, "github", github)
         if gitlab is not None:
             pulumi.set(__self__, "gitlab", gitlab)
 
@@ -210,6 +320,18 @@ class ApplicationSourceArgs:
     @type.setter
     def type(self, value: pulumi.Input[_builtins.str]):
         pulumi.set(self, "type", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def bitbucket(self) -> pulumi.Input[Optional['BitbucketAppSourceArgs']]:
+        """
+        Bitbucket source configuration.
+        """
+        return pulumi.get(self, "bitbucket")
+
+    @bitbucket.setter
+    def bitbucket(self, value: pulumi.Input[Optional['BitbucketAppSourceArgs']]):
+        pulumi.set(self, "bitbucket", value)
 
     @_builtins.property
     @pulumi.getter
@@ -237,6 +359,30 @@ class ApplicationSourceArgs:
 
     @_builtins.property
     @pulumi.getter
+    def gitea(self) -> pulumi.Input[Optional['GiteaAppSourceArgs']]:
+        """
+        Gitea source configuration.
+        """
+        return pulumi.get(self, "gitea")
+
+    @gitea.setter
+    def gitea(self, value: pulumi.Input[Optional['GiteaAppSourceArgs']]):
+        pulumi.set(self, "gitea", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def github(self) -> pulumi.Input[Optional['GitHubAppSourceArgs']]:
+        """
+        GitHub source configuration.
+        """
+        return pulumi.get(self, "github")
+
+    @github.setter
+    def github(self, value: pulumi.Input[Optional['GitHubAppSourceArgs']]):
+        pulumi.set(self, "github", value)
+
+    @_builtins.property
+    @pulumi.getter
     def gitlab(self) -> pulumi.Input[Optional['GitLabAppSourceArgs']]:
         """
         GitLab source configuration.
@@ -246,6 +392,194 @@ class ApplicationSourceArgs:
     @gitlab.setter
     def gitlab(self, value: pulumi.Input[Optional['GitLabAppSourceArgs']]):
         pulumi.set(self, "gitlab", value)
+
+
+class BitbucketAppSourceArgsDict(TypedDict):
+    """
+    Bitbucket source configuration.
+    """
+    branch: pulumi.Input[_builtins.str]
+    """
+    The Bitbucket branch.
+    """
+    build: pulumi.Input['ApplicationBuildArgsDict']
+    """
+    The build configuration.
+    """
+    integration_id: pulumi.Input[_builtins.str]
+    """
+    The Bitbucket integration ID.
+    """
+    owner: pulumi.Input[_builtins.str]
+    """
+    The Bitbucket owner.
+    """
+    repository: pulumi.Input[_builtins.str]
+    """
+    The Bitbucket repository.
+    """
+    repository_slug: pulumi.Input[_builtins.str]
+    """
+    The Bitbucket repository slug.
+    """
+    build_path: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The build path.
+    """
+    enable_submodules: NotRequired[pulumi.Input[Optional[_builtins.bool]]]
+    """
+    Whether to enable submodules.
+    """
+    watch_paths: NotRequired[pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]]
+    """
+    Paths to watch.
+    """
+
+@pulumi.input_type
+class BitbucketAppSourceArgs:
+    def __init__(__self__, *,
+                 branch: pulumi.Input[_builtins.str],
+                 build: pulumi.Input['ApplicationBuildArgs'],
+                 integration_id: pulumi.Input[_builtins.str],
+                 owner: pulumi.Input[_builtins.str],
+                 repository: pulumi.Input[_builtins.str],
+                 repository_slug: pulumi.Input[_builtins.str],
+                 build_path: pulumi.Input[Optional[_builtins.str]] = None,
+                 enable_submodules: pulumi.Input[Optional[_builtins.bool]] = None,
+                 watch_paths: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]] = None):
+        """
+        Bitbucket source configuration.
+
+        :param pulumi.Input[_builtins.str] branch: The Bitbucket branch.
+        :param pulumi.Input['ApplicationBuildArgs'] build: The build configuration.
+        :param pulumi.Input[_builtins.str] integration_id: The Bitbucket integration ID.
+        :param pulumi.Input[_builtins.str] owner: The Bitbucket owner.
+        :param pulumi.Input[_builtins.str] repository: The Bitbucket repository.
+        :param pulumi.Input[_builtins.str] repository_slug: The Bitbucket repository slug.
+        :param pulumi.Input[_builtins.str] build_path: The build path.
+        :param pulumi.Input[_builtins.bool] enable_submodules: Whether to enable submodules.
+        :param pulumi.Input[Sequence[pulumi.Input[_builtins.str]]] watch_paths: Paths to watch.
+        """
+        pulumi.set(__self__, "branch", branch)
+        pulumi.set(__self__, "build", build)
+        pulumi.set(__self__, "integration_id", integration_id)
+        pulumi.set(__self__, "owner", owner)
+        pulumi.set(__self__, "repository", repository)
+        pulumi.set(__self__, "repository_slug", repository_slug)
+        if build_path is not None:
+            pulumi.set(__self__, "build_path", build_path)
+        if enable_submodules is not None:
+            pulumi.set(__self__, "enable_submodules", enable_submodules)
+        if watch_paths is not None:
+            pulumi.set(__self__, "watch_paths", watch_paths)
+
+    @_builtins.property
+    @pulumi.getter
+    def branch(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Bitbucket branch.
+        """
+        return pulumi.get(self, "branch")
+
+    @branch.setter
+    def branch(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "branch", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def build(self) -> pulumi.Input['ApplicationBuildArgs']:
+        """
+        The build configuration.
+        """
+        return pulumi.get(self, "build")
+
+    @build.setter
+    def build(self, value: pulumi.Input['ApplicationBuildArgs']):
+        pulumi.set(self, "build", value)
+
+    @_builtins.property
+    @pulumi.getter(name="integrationId")
+    def integration_id(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Bitbucket integration ID.
+        """
+        return pulumi.get(self, "integration_id")
+
+    @integration_id.setter
+    def integration_id(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "integration_id", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def owner(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Bitbucket owner.
+        """
+        return pulumi.get(self, "owner")
+
+    @owner.setter
+    def owner(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "owner", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def repository(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Bitbucket repository.
+        """
+        return pulumi.get(self, "repository")
+
+    @repository.setter
+    def repository(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "repository", value)
+
+    @_builtins.property
+    @pulumi.getter(name="repositorySlug")
+    def repository_slug(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Bitbucket repository slug.
+        """
+        return pulumi.get(self, "repository_slug")
+
+    @repository_slug.setter
+    def repository_slug(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "repository_slug", value)
+
+    @_builtins.property
+    @pulumi.getter(name="buildPath")
+    def build_path(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The build path.
+        """
+        return pulumi.get(self, "build_path")
+
+    @build_path.setter
+    def build_path(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "build_path", value)
+
+    @_builtins.property
+    @pulumi.getter(name="enableSubmodules")
+    def enable_submodules(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Whether to enable submodules.
+        """
+        return pulumi.get(self, "enable_submodules")
+
+    @enable_submodules.setter
+    def enable_submodules(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "enable_submodules", value)
+
+    @_builtins.property
+    @pulumi.getter(name="watchPaths")
+    def watch_paths(self) -> pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]:
+        """
+        Paths to watch.
+        """
+        return pulumi.get(self, "watch_paths")
+
+    @watch_paths.setter
+    def watch_paths(self, value: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]):
+        pulumi.set(self, "watch_paths", value)
 
 
 class ComposeSourceArgsDict(TypedDict):
@@ -717,6 +1051,195 @@ class GitComposeSourceArgs:
         pulumi.set(self, "watch_paths", value)
 
 
+class GitHubAppSourceArgsDict(TypedDict):
+    """
+    GitHub source configuration.
+    """
+    branch: pulumi.Input[_builtins.str]
+    """
+    The GitHub branch.
+    """
+    build: pulumi.Input['ApplicationBuildArgsDict']
+    """
+    The build configuration.
+    """
+    integration_id: pulumi.Input[_builtins.str]
+    """
+    The GitHub integration ID.
+    """
+    owner: pulumi.Input[_builtins.str]
+    """
+    The GitHub owner.
+    """
+    repository: pulumi.Input[_builtins.str]
+    """
+    The GitHub repository.
+    """
+    build_path: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The build path.
+    """
+    enable_submodules: NotRequired[pulumi.Input[Optional[_builtins.bool]]]
+    """
+    Whether to enable submodules.
+    """
+    trigger_type: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The GitHub trigger type; defaults to push.
+    """
+    watch_paths: NotRequired[pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]]
+    """
+    Paths to watch.
+    """
+
+@pulumi.input_type
+class GitHubAppSourceArgs:
+    def __init__(__self__, *,
+                 branch: pulumi.Input[_builtins.str],
+                 build: pulumi.Input['ApplicationBuildArgs'],
+                 integration_id: pulumi.Input[_builtins.str],
+                 owner: pulumi.Input[_builtins.str],
+                 repository: pulumi.Input[_builtins.str],
+                 build_path: pulumi.Input[Optional[_builtins.str]] = None,
+                 enable_submodules: pulumi.Input[Optional[_builtins.bool]] = None,
+                 trigger_type: pulumi.Input[Optional[_builtins.str]] = None,
+                 watch_paths: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]] = None):
+        """
+        GitHub source configuration.
+
+        :param pulumi.Input[_builtins.str] branch: The GitHub branch.
+        :param pulumi.Input['ApplicationBuildArgs'] build: The build configuration.
+        :param pulumi.Input[_builtins.str] integration_id: The GitHub integration ID.
+        :param pulumi.Input[_builtins.str] owner: The GitHub owner.
+        :param pulumi.Input[_builtins.str] repository: The GitHub repository.
+        :param pulumi.Input[_builtins.str] build_path: The build path.
+        :param pulumi.Input[_builtins.bool] enable_submodules: Whether to enable submodules.
+        :param pulumi.Input[_builtins.str] trigger_type: The GitHub trigger type; defaults to push.
+        :param pulumi.Input[Sequence[pulumi.Input[_builtins.str]]] watch_paths: Paths to watch.
+        """
+        pulumi.set(__self__, "branch", branch)
+        pulumi.set(__self__, "build", build)
+        pulumi.set(__self__, "integration_id", integration_id)
+        pulumi.set(__self__, "owner", owner)
+        pulumi.set(__self__, "repository", repository)
+        if build_path is not None:
+            pulumi.set(__self__, "build_path", build_path)
+        if enable_submodules is not None:
+            pulumi.set(__self__, "enable_submodules", enable_submodules)
+        if trigger_type is not None:
+            pulumi.set(__self__, "trigger_type", trigger_type)
+        if watch_paths is not None:
+            pulumi.set(__self__, "watch_paths", watch_paths)
+
+    @_builtins.property
+    @pulumi.getter
+    def branch(self) -> pulumi.Input[_builtins.str]:
+        """
+        The GitHub branch.
+        """
+        return pulumi.get(self, "branch")
+
+    @branch.setter
+    def branch(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "branch", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def build(self) -> pulumi.Input['ApplicationBuildArgs']:
+        """
+        The build configuration.
+        """
+        return pulumi.get(self, "build")
+
+    @build.setter
+    def build(self, value: pulumi.Input['ApplicationBuildArgs']):
+        pulumi.set(self, "build", value)
+
+    @_builtins.property
+    @pulumi.getter(name="integrationId")
+    def integration_id(self) -> pulumi.Input[_builtins.str]:
+        """
+        The GitHub integration ID.
+        """
+        return pulumi.get(self, "integration_id")
+
+    @integration_id.setter
+    def integration_id(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "integration_id", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def owner(self) -> pulumi.Input[_builtins.str]:
+        """
+        The GitHub owner.
+        """
+        return pulumi.get(self, "owner")
+
+    @owner.setter
+    def owner(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "owner", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def repository(self) -> pulumi.Input[_builtins.str]:
+        """
+        The GitHub repository.
+        """
+        return pulumi.get(self, "repository")
+
+    @repository.setter
+    def repository(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "repository", value)
+
+    @_builtins.property
+    @pulumi.getter(name="buildPath")
+    def build_path(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The build path.
+        """
+        return pulumi.get(self, "build_path")
+
+    @build_path.setter
+    def build_path(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "build_path", value)
+
+    @_builtins.property
+    @pulumi.getter(name="enableSubmodules")
+    def enable_submodules(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Whether to enable submodules.
+        """
+        return pulumi.get(self, "enable_submodules")
+
+    @enable_submodules.setter
+    def enable_submodules(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "enable_submodules", value)
+
+    @_builtins.property
+    @pulumi.getter(name="triggerType")
+    def trigger_type(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The GitHub trigger type; defaults to push.
+        """
+        return pulumi.get(self, "trigger_type")
+
+    @trigger_type.setter
+    def trigger_type(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "trigger_type", value)
+
+    @_builtins.property
+    @pulumi.getter(name="watchPaths")
+    def watch_paths(self) -> pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]:
+        """
+        Paths to watch.
+        """
+        return pulumi.get(self, "watch_paths")
+
+    @watch_paths.setter
+    def watch_paths(self, value: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]):
+        pulumi.set(self, "watch_paths", value)
+
+
 class GitLabAppSourceArgsDict(TypedDict):
     """
     GitLab source configuration.
@@ -1086,6 +1609,175 @@ class GitLabComposeSourceArgs:
     @compose_path.setter
     def compose_path(self, value: pulumi.Input[Optional[_builtins.str]]):
         pulumi.set(self, "compose_path", value)
+
+    @_builtins.property
+    @pulumi.getter(name="enableSubmodules")
+    def enable_submodules(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Whether to enable submodules.
+        """
+        return pulumi.get(self, "enable_submodules")
+
+    @enable_submodules.setter
+    def enable_submodules(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "enable_submodules", value)
+
+    @_builtins.property
+    @pulumi.getter(name="watchPaths")
+    def watch_paths(self) -> pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]:
+        """
+        Paths to watch.
+        """
+        return pulumi.get(self, "watch_paths")
+
+    @watch_paths.setter
+    def watch_paths(self, value: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]):
+        pulumi.set(self, "watch_paths", value)
+
+
+class GiteaAppSourceArgsDict(TypedDict):
+    """
+    Gitea source configuration.
+    """
+    branch: pulumi.Input[_builtins.str]
+    """
+    The Gitea branch.
+    """
+    build: pulumi.Input['ApplicationBuildArgsDict']
+    """
+    The build configuration.
+    """
+    integration_id: pulumi.Input[_builtins.str]
+    """
+    The Gitea integration ID.
+    """
+    owner: pulumi.Input[_builtins.str]
+    """
+    The Gitea owner.
+    """
+    repository: pulumi.Input[_builtins.str]
+    """
+    The Gitea repository.
+    """
+    build_path: NotRequired[pulumi.Input[Optional[_builtins.str]]]
+    """
+    The build path.
+    """
+    enable_submodules: NotRequired[pulumi.Input[Optional[_builtins.bool]]]
+    """
+    Whether to enable submodules.
+    """
+    watch_paths: NotRequired[pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]]]
+    """
+    Paths to watch.
+    """
+
+@pulumi.input_type
+class GiteaAppSourceArgs:
+    def __init__(__self__, *,
+                 branch: pulumi.Input[_builtins.str],
+                 build: pulumi.Input['ApplicationBuildArgs'],
+                 integration_id: pulumi.Input[_builtins.str],
+                 owner: pulumi.Input[_builtins.str],
+                 repository: pulumi.Input[_builtins.str],
+                 build_path: pulumi.Input[Optional[_builtins.str]] = None,
+                 enable_submodules: pulumi.Input[Optional[_builtins.bool]] = None,
+                 watch_paths: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]] = None):
+        """
+        Gitea source configuration.
+
+        :param pulumi.Input[_builtins.str] branch: The Gitea branch.
+        :param pulumi.Input['ApplicationBuildArgs'] build: The build configuration.
+        :param pulumi.Input[_builtins.str] integration_id: The Gitea integration ID.
+        :param pulumi.Input[_builtins.str] owner: The Gitea owner.
+        :param pulumi.Input[_builtins.str] repository: The Gitea repository.
+        :param pulumi.Input[_builtins.str] build_path: The build path.
+        :param pulumi.Input[_builtins.bool] enable_submodules: Whether to enable submodules.
+        :param pulumi.Input[Sequence[pulumi.Input[_builtins.str]]] watch_paths: Paths to watch.
+        """
+        pulumi.set(__self__, "branch", branch)
+        pulumi.set(__self__, "build", build)
+        pulumi.set(__self__, "integration_id", integration_id)
+        pulumi.set(__self__, "owner", owner)
+        pulumi.set(__self__, "repository", repository)
+        if build_path is not None:
+            pulumi.set(__self__, "build_path", build_path)
+        if enable_submodules is not None:
+            pulumi.set(__self__, "enable_submodules", enable_submodules)
+        if watch_paths is not None:
+            pulumi.set(__self__, "watch_paths", watch_paths)
+
+    @_builtins.property
+    @pulumi.getter
+    def branch(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Gitea branch.
+        """
+        return pulumi.get(self, "branch")
+
+    @branch.setter
+    def branch(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "branch", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def build(self) -> pulumi.Input['ApplicationBuildArgs']:
+        """
+        The build configuration.
+        """
+        return pulumi.get(self, "build")
+
+    @build.setter
+    def build(self, value: pulumi.Input['ApplicationBuildArgs']):
+        pulumi.set(self, "build", value)
+
+    @_builtins.property
+    @pulumi.getter(name="integrationId")
+    def integration_id(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Gitea integration ID.
+        """
+        return pulumi.get(self, "integration_id")
+
+    @integration_id.setter
+    def integration_id(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "integration_id", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def owner(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Gitea owner.
+        """
+        return pulumi.get(self, "owner")
+
+    @owner.setter
+    def owner(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "owner", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def repository(self) -> pulumi.Input[_builtins.str]:
+        """
+        The Gitea repository.
+        """
+        return pulumi.get(self, "repository")
+
+    @repository.setter
+    def repository(self, value: pulumi.Input[_builtins.str]):
+        pulumi.set(self, "repository", value)
+
+    @_builtins.property
+    @pulumi.getter(name="buildPath")
+    def build_path(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        The build path.
+        """
+        return pulumi.get(self, "build_path")
+
+    @build_path.setter
+    def build_path(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "build_path", value)
 
     @_builtins.property
     @pulumi.getter(name="enableSubmodules")

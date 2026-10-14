@@ -3,11 +3,20 @@ title: Sources
 description: Choose the source discriminator for applications and Compose stacks.
 ---
 
-Applications use one `ApplicationSource` discriminator:
+Applications use exactly one `ApplicationSource` discriminator:
 
 - `type: "docker"` with `docker` settings for a Docker image.
 - `type: "git"` with `git` settings for a public Git repository.
 - `type: "gitlab"` with `gitlab` settings for an existing GitLab integration and repository.
+- `type: "github"` with `github` settings for an existing GitHub integration and repository. Optional `triggerType` is `push` (default) or `tag`.
+- `type: "gitea"` with `gitea` settings for an existing Gitea integration and repository.
+- `type: "bitbucket"` with `bitbucket` settings for an existing Bitbucket integration and repository. `repositorySlug` is required.
+
+Generic Git is URL-based: provide the repository URL, branch, and build settings; it does not require a Dokploy integration or integration identity fields. An SSH-backed generic Git repository can also use `sshKeyId`.
+
+The GitHub, Gitea, Bitbucket, and GitLab variants use existing Dokploy integrations and require the relevant integration ID, owner, repository, branch, and build configuration. GitLab additionally requires `projectId` and `namespace`; Bitbucket also requires `repositorySlug`. Optional build path, watch paths, and submodule settings are available where supported. These integration records and credentials remain external and unmanaged by this provider.
+
+Repository sources support `dockerfile`, `nixpacks`, `heroku_buildpacks`, `paketo_buildpacks`, `static`, and `railpack`. `publishDirectory` is Nixpacks-only; `isStaticSpa` is valid for Nixpacks and Static; `herokuVersion` and `railpackVersion` apply only to their respective builders. Docker image sources do not send build configuration. See the [Applications guide](../../guides/applications/) for the option table and checked example.
 
 Compose stacks use one `ComposeSource` discriminator:
 
@@ -15,4 +24,4 @@ Compose stacks use one `ComposeSource` discriminator:
 - `type: "git"` with a Git repository and path.
 - `type: "gitlab"` with an existing GitLab integration and repository details.
 
-GitLab integrations are referenced, not managed, by this provider. SSH keys can be managed with an `SSHKey` resource and passed to a generic Git application through `sshKeyId`. Change a source discriminator only when you intend to replace the resource; source transitions are not in-place conversions. See the [Application](../../reference/application/), [Compose](../../reference/compose/), and [complex types](../../reference/types/) references.
+GitHub, Gitea, Bitbucket, and GitLab integrations are referenced, not managed, by this provider. SSH keys can be managed with an `SSHKey` resource and passed to a generic Git application through `sshKeyId`. Change a source discriminator only when you intend to replace the resource; source transitions are not in-place conversions. See the [Application](../../reference/application/), [Compose](../../reference/compose/), and [complex types](../../reference/types/) references.

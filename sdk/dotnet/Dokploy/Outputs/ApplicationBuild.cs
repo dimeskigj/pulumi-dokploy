@@ -30,6 +30,22 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         /// </summary>
         public readonly string? Dockerfile;
         /// <summary>
+        /// The Heroku buildpack version.
+        /// </summary>
+        public readonly string? HerokuVersion;
+        /// <summary>
+        /// Whether to configure static single-page-application routing.
+        /// </summary>
+        public readonly bool? IsStaticSpa;
+        /// <summary>
+        /// The static publish directory.
+        /// </summary>
+        public readonly string? PublishDirectory;
+        /// <summary>
+        /// The Railpack version.
+        /// </summary>
+        public readonly string? RailpackVersion;
+        /// <summary>
         /// The build type.
         /// </summary>
         public readonly string Type;
@@ -42,11 +58,23 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
 
             string? dockerfile,
 
+            string? herokuVersion,
+
+            bool? isStaticSpa,
+
+            string? publishDirectory,
+
+            string? railpackVersion,
+
             string type)
         {
             DockerBuildStage = dockerBuildStage;
             DockerContextPath = dockerContextPath;
             Dockerfile = dockerfile;
+            HerokuVersion = herokuVersion;
+            IsStaticSpa = isStaticSpa;
+            PublishDirectory = publishDirectory;
+            RailpackVersion = railpackVersion;
             Type = type;
         }
     }

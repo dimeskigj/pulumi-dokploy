@@ -34,6 +34,21 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
+     * Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     *
+     */
+    @Import(name="autoDeploy")
+    private @Nullable Output<Boolean> autoDeploy;
+
+    /**
+     * @return Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     *
+     */
+    public Optional<Output<Boolean>> autoDeploy() {
+        return Optional.ofNullable(this.autoDeploy);
+    }
+
+    /**
      * Build arguments for the application.
      *
      */
@@ -202,6 +217,7 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
 
     private ApplicationArgs(ApplicationArgs $) {
         this.appName = $.appName;
+        this.autoDeploy = $.autoDeploy;
         this.buildArgs = $.buildArgs;
         this.buildRegistryId = $.buildRegistryId;
         this.buildSecrets = $.buildSecrets;
@@ -252,6 +268,27 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder appName(String appName) {
             return appName(Output.of(appName));
+        }
+
+        /**
+         * @param autoDeploy Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+         *
+         * @return builder
+         *
+         */
+        public Builder autoDeploy(@Nullable Output<Boolean> autoDeploy) {
+            $.autoDeploy = autoDeploy;
+            return this;
+        }
+
+        /**
+         * @param autoDeploy Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+         *
+         * @return builder
+         *
+         */
+        public Builder autoDeploy(Boolean autoDeploy) {
+            return autoDeploy(Output.of(autoDeploy));
         }
 
         /**

@@ -320,6 +320,77 @@ test("provider guides enforce exact schema discriminators and lifecycle statemen
   assert.doesNotMatch(domains, /`environmentId`|`serverId`|deployment status/);
 });
 
+test("Application guide documents all builders, repository sources, and automatic deployment semantics", async () => {
+  const applications = await readFile(new URL("../src/content/docs/guides/applications.mdx", import.meta.url), "utf8");
+  const sources = await readFile(new URL("../src/content/docs/concepts/sources.mdx", import.meta.url), "utf8");
+  const readme = await readFile(new URL("../../README.md", import.meta.url), "utf8");
+
+  for (const builder of ["dockerfile", "nixpacks", "heroku_buildpacks", "paketo_buildpacks", "static", "railpack"]) {
+    assert.match(applications, new RegExp(`\\b${builder}\\b`), `Application guide must document ${builder}`);
+  }
+  assert.match(applications, /publishDirectory/);
+  assert.match(applications, /Nixpacks.{0,80}Static|Static.{0,80}Nixpacks/s);
+  assert.match(applications, /isStaticSpa/);
+  for (const option of ["herokuVersion", "railpackVersion"]) assert.match(applications, new RegExp(option));
+  for (const source of ["github", "gitea", "bitbucket"]) {
+    assert.ok(applications.includes(`\`${source}\``), `Application guide must explain ${source} sources`);
+    assert.match(sources, new RegExp(`type: \\"${source}\\"`));
+  }
+  assert.match(applications, /GitHub.{0,80}push.{0,80}tag|push.{0,80}tag.{0,80}GitHub/is);
+  assert.match(applications, /repositorySlug/);
+  assert.match(applications, /integration.*(?:not managed|external)|(?:not managed|external).*integration/i);
+  assert.match(applications, /autoDeploy/);
+  assert.match(applications, /omitt(?:ed|ing).{0,100}(?:unchanged|unmanaged|server default)|(?:unchanged|unmanaged|server default).{0,100}omitt/i);
+  assert.match(applications, /explicit.*deploy/i);
+  assert.match(applications, /configuration.only/i);
+  assert.match(applications, /clone|fetch|build|deploy/i);
+  assert.match(applications, /prerequisite|integration.*skip|skip.*integration/i);
+  assert.match(readme, /six.*builder|builder.*six/i);
+  assert.match(readme, /autoDeploy/);
+
+  const snippet = applications.match(/```(?:ts|typescript)\n([\s\S]*?)\n```/g)?.find((block) => block.includes("const builderExample"));
+  assert.ok(snippet, "Application guide must include a checked builder/source example");
+  const sourceCode = snippet.replace(/^```ts\n|\n```$/g, "");
+  const exampleDirectory = fileURLToPath(new URL("../../examples/nodejs/", import.meta.url));
+  const temporary = await mkdtemp(join(exampleDirectory, ".application-guide-test-"));
+  try {
+    await writeFile(join(temporary, "index.ts"), `import * as pulumi from "@pulumi/pulumi";\nimport * as dokploy from "@dimeskigj/pulumi-dokploy";\n${sourceCode}\n`);
+    await writeFile(join(temporary, "tsconfig.json"), JSON.stringify({
+      extends: "../tsconfig.json",
+      files: ["index.ts"],
+      compilerOptions: {
+        noEmit: true,
+        baseUrl: "..",
+        paths: { "@pulumi/pulumi": ["node_modules/@pulumi/pulumi"], "@pulumi/pulumi/*": ["node_modules/@pulumi/pulumi/*"] },
+      },
+    }));
+    const compiler = fileURLToPath(new URL("../../examples/nodejs/node_modules/typescript/bin/tsc", import.meta.url));
+    try {
+      await execFileAsync(process.execPath, [compiler, "--project", join(temporary, "tsconfig.json")], { cwd: exampleDirectory });
+    } catch (error) {
+      assert.fail(`Application guide TypeScript does not compile:\n${error.stdout || error.stderr || error.message}`);
+    }
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+  }
+});
+
+test("source concepts distinguish generic Git from integration-backed repository sources", async () => {
+  const sources = await readFile(new URL("../src/content/docs/concepts/sources.mdx", import.meta.url), "utf8");
+  assert.match(sources, /generic Git[^.]*URL[^.]*does not require[^.]*integration/i);
+  assert.match(sources, /GitHub[^.]*Gitea[^.]*Bitbucket[^.]*GitLab[^.]*existing Dokploy integrations/i);
+  assert.match(sources, /GitLab additionally requires `projectId` and `namespace`/);
+  assert.match(sources, /integration records and credentials remain external and unmanaged/i);
+});
+
+test("live Application configuration coverage promises no clone, build, or deployment operations", async () => {
+  const applications = await readFile(new URL("../src/content/docs/guides/applications.mdx", import.meta.url), "utf8");
+  const liveCoverage = applications.match(/The optional live Application configuration coverage[^.]*\./i)?.[0];
+  assert.ok(liveCoverage, "live configuration coverage must be described");
+  assert.match(liveCoverage, /configuration persistence only/i);
+  assert.match(liveCoverage, /never[^.]*clone[^.]*fetch[^.]*build[^.]*deploy[^.]*redeploy/i);
+});
+
 test("Compose raw quickstart nests composeFile under the raw source", async () => {
   const compose = await readFile(new URL("../src/content/docs/guides/compose.mdx", import.meta.url), "utf8");
   assert.match(compose, /source: \{ type: "raw", raw: \{ composeFile:/);

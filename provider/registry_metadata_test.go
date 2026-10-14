@@ -659,7 +659,7 @@ func TestRegistryMetadata(t *testing.T) {
 		"pulumi config set dokploy:endpoint https://dokploy.example.com",
 		"pulumi config set --secret dokploy:apiKey \"$DOKPLOY_API_KEY\"",
 		"Project owns the default environment", "Source type changes replace",
-		"referenced GitLab integration is not managed", "SSH keys can be managed using the `SSHKey` resource",
+		"Git-provider integrations are referenced, not managed", "SSH keys can be managed",
 		"Use an `SSHKey` output as the `sshKeyId`",
 		"deployment errors preserve partial state", "Compose volumes are preserved",
 		"SSHKey", "Registry", "Tag", "ProjectTag", "Mount", "registryPassword", "sshPrivateKey",
@@ -991,7 +991,11 @@ func TestOwnedWorkflow(t *testing.T) {
 		"DOKPLOY_REGISTRY_UPDATED_URL", "DOKPLOY_REGISTRY_UPDATED_USERNAME", "DOKPLOY_REGISTRY_UPDATED_PASSWORD", "DOKPLOY_REGISTRY_UPDATED_IMAGE_PREFIX",
 		"DOKPLOY_ACCEPTANCE_DESTINATION_UPDATED_PROVIDER", "DOKPLOY_GITLAB_INTEGRATION_ID", "DOKPLOY_GITLAB_PROJECT_ID",
 		"DOKPLOY_GITLAB_OWNER", "DOKPLOY_GITLAB_NAMESPACE", "DOKPLOY_GITLAB_REPOSITORY", "DOKPLOY_GITLAB_BRANCH",
-		"DOKPLOY_GITLAB_USERNAME", "DOKPLOY_GITLAB_TOKEN", "DOKPLOY_CUSTOM_CERT_RESOLVER",
+		"DOKPLOY_GITLAB_USERNAME", "DOKPLOY_GITLAB_TOKEN",
+		"DOKPLOY_GITHUB_INTEGRATION_ID", "DOKPLOY_GITHUB_OWNER", "DOKPLOY_GITHUB_REPOSITORY", "DOKPLOY_GITHUB_BRANCH",
+		"DOKPLOY_GITEA_INTEGRATION_ID", "DOKPLOY_GITEA_OWNER", "DOKPLOY_GITEA_REPOSITORY", "DOKPLOY_GITEA_BRANCH",
+		"DOKPLOY_BITBUCKET_INTEGRATION_ID", "DOKPLOY_BITBUCKET_OWNER", "DOKPLOY_BITBUCKET_REPOSITORY",
+		"DOKPLOY_BITBUCKET_REPOSITORY_SLUG", "DOKPLOY_BITBUCKET_BRANCH", "DOKPLOY_CUSTOM_CERT_RESOLVER",
 	} {
 		expectedEnv[name] = "${{ secrets." + name + " }}"
 	}

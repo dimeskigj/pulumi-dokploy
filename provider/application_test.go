@@ -199,7 +199,7 @@ func TestApplicationRuntimeSourceUpdateConfiguresProviderAndBuildBeforeEnvironme
 	t.Cleanup(func() { waitPollInterval = oldInterval })
 	s := newScriptedServer(t,
 		expectPOST("/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"src","customGitSSHKeyId":null,"customGitUrl":"https://example.test/repo","enableSubmodules":false,"watchPaths":null}`, `true`),
-		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`),
+		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
 		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
@@ -233,7 +233,7 @@ func TestApplicationRuntimeGitLabUpdateOrdersProviderBuildEnvironmentAndRedeploy
 	t.Cleanup(func() { waitPollInterval = oldInterval })
 	s := newScriptedServer(t,
 		expectPOST("/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":true,"gitlabBranch":"main","gitlabBuildPath":"app","gitlabId":"integration","gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabProjectId":42,"gitlabRepository":"repo","watchPaths":["app/**"]}`, `true`),
-		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"dockerfile","dockerBuildStage":"prod","dockerContextPath":".","dockerfile":"Containerfile","herokuVersion":null,"railpackVersion":null}`, `true`),
+		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"dockerfile","dockerBuildStage":"prod","dockerContextPath":".","dockerfile":"Containerfile","herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":true,"env":null}`, `true`),
 		expectPOST("/api/application.redeploy", `{"applicationId":"a1"}`, `"running"`),
 		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
@@ -320,7 +320,7 @@ func TestApplicationCreateGitLabOrdersProviderBuildEnvironmentAndDeploy(t *testi
 	s := newScriptedServer(t,
 		expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
 		expectPOST("/api/application.saveGitlabProvider", `{"applicationId":"a1","enableSubmodules":false,"gitlabBranch":"main","gitlabBuildPath":"app","gitlabId":"integration","gitlabOwner":"owner","gitlabPathNamespace":"namespace","gitlabProjectId":42,"gitlabRepository":"repo","watchPaths":null}`, `true`),
-		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"dockerfile","dockerBuildStage":"production","dockerContextPath":".","dockerfile":"Dockerfile","herokuVersion":null,"railpackVersion":null}`, `true`),
+		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"dockerfile","dockerBuildStage":"production","dockerContextPath":".","dockerfile":"Dockerfile","herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":false,"env":null}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`),
 		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
@@ -338,7 +338,7 @@ func TestApplicationCreateGitOrdersProviderBuildEnvironmentAndDeploy(t *testing.
 	s := newScriptedServer(t,
 		expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
 		expectPOST("/api/application.saveGitProvider", `{"applicationId":"a1","customGitBranch":"main","customGitBuildPath":"app","customGitSSHKeyId":null,"customGitUrl":"https://example.test/repo","enableSubmodules":true,"watchPaths":["src/**"]}`, `true`),
-		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`),
+		expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`, `true`),
 		expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":null,"buildSecrets":null,"createEnvFile":true,"env":null}`, `true`),
 		expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`),
 		expectGET("/api/application.one", map[string][]string{"applicationId": {"a1"}}, http.StatusOK, `{"applicationId":"a1","applicationStatus":"done"}`),
@@ -402,7 +402,7 @@ func TestApplicationCreateGitAndGitLabSetupFailuresCleanUp(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			const buildBody = `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`
+			const buildBody = `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`
 			const environmentBody = `{"applicationId":"a1","buildArgs":"ARGS-SECRET","buildSecrets":"BUILD-SECRET","createEnvFile":false,"env":"ENV-SECRET"}`
 			expectations := []scriptedRequest{
 				expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`),
@@ -449,7 +449,7 @@ func TestApplicationCreateGitAndGitLabDeployFailuresReturnPartialStateWithoutSec
 			oldInterval := waitPollInterval
 			waitPollInterval = 0
 			t.Cleanup(func() { waitPollInterval = oldInterval })
-			s := newScriptedServer(t, expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), expectPOST(tc.path, tc.body, `true`), expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`), expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"TOP-SECRET","buildSecrets":"TOP-SECRET","createEnvFile":false,"env":"TOP-SECRET"}`, `true`), scriptedRequest{Method: http.MethodPost, Path: "/api/application.deploy", Body: json.RawMessage(`{"applicationId":"a1"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"DEPLOY_FAILED","message":"TOP-SECRET"}`)})
+			s := newScriptedServer(t, expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), expectPOST(tc.path, tc.body, `true`), expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`, `true`), expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"TOP-SECRET","buildSecrets":"TOP-SECRET","createEnvFile":false,"env":"TOP-SECRET"}`, `true`), scriptedRequest{Method: http.MethodPost, Path: "/api/application.deploy", Body: json.RawMessage(`{"applicationId":"a1"}`), Status: http.StatusBadRequest, Response: []byte(`{"code":"DEPLOY_FAILED","message":"TOP-SECRET"}`)})
 			got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &secret, BuildArgs: &secret, BuildSecrets: &secret, Source: tc.source}})
 			require.Error(t, err)
 			require.Equal(t, "a1", got.ID)
@@ -473,7 +473,7 @@ func TestApplicationCreateGitAndGitLabPollFailuresRedactEnvironmentAndBuildValue
 			oldInterval := waitPollInterval
 			waitPollInterval = 0
 			t.Cleanup(func() { waitPollInterval = oldInterval })
-			s := newScriptedServer(t, expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), expectPOST(tc.path, tc.body, `true`), expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"railpackVersion":null}`, `true`), expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"TOP-SECRET","buildSecrets":"TOP-SECRET","createEnvFile":false,"env":"TOP-SECRET"}`, `true`), expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`), scriptedRequest{Method: http.MethodGet, Path: "/api/application.one", Query: map[string][]string{"applicationId": {"a1"}}, Status: http.StatusBadRequest, Response: []byte(`{"code":"POLL_FAILED","message":"TOP-SECRET"}`)})
+			s := newScriptedServer(t, expectPOST("/api/application.create", `{"name":"demo","environmentId":"e1"}`, `{"applicationId":"a1"}`), expectPOST(tc.path, tc.body, `true`), expectPOST("/api/application.saveBuildType", `{"applicationId":"a1","buildType":"nixpacks","dockerBuildStage":null,"dockerContextPath":null,"dockerfile":null,"herokuVersion":null,"isStaticSpa":null,"publishDirectory":null,"railpackVersion":null}`, `true`), expectPOST("/api/application.saveEnvironment", `{"applicationId":"a1","buildArgs":"TOP-SECRET","buildSecrets":"TOP-SECRET","createEnvFile":false,"env":"TOP-SECRET"}`, `true`), expectPOST("/api/application.deploy", `{"applicationId":"a1"}`, `"running"`), scriptedRequest{Method: http.MethodGet, Path: "/api/application.one", Query: map[string][]string{"applicationId": {"a1"}}, Status: http.StatusBadRequest, Response: []byte(`{"code":"POLL_FAILED","message":"TOP-SECRET"}`)})
 			got, err := (Application{client: fixedClient(s.API())}).Create(t.Context(), infer.CreateRequest[ApplicationArgs]{Inputs: ApplicationArgs{Name: "demo", EnvironmentID: "e1", Environment: &secret, BuildArgs: &secret, BuildSecrets: &secret, Source: tc.source}})
 			require.Error(t, err)
 			require.Equal(t, "a1", got.ID)

@@ -61,10 +61,20 @@ The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:En
 `Destination`. Both require a `Destination` (an S3-compatible storage target) to exist first.
 
 Project owns the default environment. Create explicit `Environment` resources for additional
-environments and use their IDs from dependent resources. Applications and Compose stacks can
-use Git, Docker, raw Compose, or private GitLab sources. A private GitLab reference records the
-integration/project/owner/namespace/repository/branch details. The referenced GitLab integration is not managed
-by this provider; SSH keys can be managed using the `SSHKey` resource.
+environments and use their IDs from dependent resources. Applications support Docker image sources
+and Git, GitLab, GitHub, Gitea, and Bitbucket repository sources; Compose supports raw, Git, and
+GitLab sources. Repository sources support all six builders: Dockerfile, Nixpacks, Heroku Buildpacks,
+Paketo Buildpacks, Static, and Railpack. Builder-specific options are documented in the
+[Applications guide](https://dimeskigj.github.io/pulumi-dokploy/guides/applications/). External
+Git-provider integrations are referenced, not managed, by this provider; SSH keys can be managed
+using the `SSHKey` resource.
+
+Application `autoDeploy` is optional: omission leaves Dokploy's value unmanaged, while an explicit
+boolean configures automatic triggers. This setting does not suppress the provider's explicit
+deployment during application create or runtime updates; changing only `autoDeploy` is
+configuration-only. Configuration-only live source coverage checks persistence rather than external
+clone/build/deploy compatibility, and optional integration cases skip when protected prerequisites
+are unavailable.
 
 Source type changes replace that resource rather than attempting an
 in-place conversion. Create and update operations for deploying workload resources

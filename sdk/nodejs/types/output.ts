@@ -25,6 +25,22 @@ export interface ApplicationBuild {
      */
     dockerfile?: string;
     /**
+     * The Heroku buildpack version.
+     */
+    herokuVersion?: string;
+    /**
+     * Whether to configure static single-page-application routing.
+     */
+    isStaticSpa?: boolean;
+    /**
+     * The static publish directory.
+     */
+    publishDirectory?: string;
+    /**
+     * The Railpack version.
+     */
+    railpackVersion?: string;
+    /**
      * The build type.
      */
     type: string;
@@ -35,6 +51,10 @@ export interface ApplicationBuild {
  */
 export interface ApplicationSource {
     /**
+     * Bitbucket source configuration.
+     */
+    bitbucket?: outputs.BitbucketAppSource;
+    /**
      * Docker source configuration.
      */
     docker?: outputs.DockerSource;
@@ -43,6 +63,14 @@ export interface ApplicationSource {
      */
     git?: outputs.GitApplicationSource;
     /**
+     * Gitea source configuration.
+     */
+    gitea?: outputs.GiteaAppSource;
+    /**
+     * GitHub source configuration.
+     */
+    github?: outputs.GitHubAppSource;
+    /**
      * GitLab source configuration.
      */
     gitlab?: outputs.GitLabAppSource;
@@ -50,6 +78,48 @@ export interface ApplicationSource {
      * The application source type.
      */
     type: string;
+}
+
+/**
+ * Bitbucket source configuration.
+ */
+export interface BitbucketAppSource {
+    /**
+     * The Bitbucket branch.
+     */
+    branch: string;
+    /**
+     * The build configuration.
+     */
+    build: outputs.ApplicationBuild;
+    /**
+     * The build path.
+     */
+    buildPath?: string;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: boolean;
+    /**
+     * The Bitbucket integration ID.
+     */
+    integrationId: string;
+    /**
+     * The Bitbucket owner.
+     */
+    owner: string;
+    /**
+     * The Bitbucket repository.
+     */
+    repository: string;
+    /**
+     * The Bitbucket repository slug.
+     */
+    repositorySlug: string;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: string[];
 }
 
 /**
@@ -161,6 +231,48 @@ export interface GitComposeSource {
 }
 
 /**
+ * GitHub source configuration.
+ */
+export interface GitHubAppSource {
+    /**
+     * The GitHub branch.
+     */
+    branch: string;
+    /**
+     * The build configuration.
+     */
+    build: outputs.ApplicationBuild;
+    /**
+     * The build path.
+     */
+    buildPath?: string;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: boolean;
+    /**
+     * The GitHub integration ID.
+     */
+    integrationId: string;
+    /**
+     * The GitHub owner.
+     */
+    owner: string;
+    /**
+     * The GitHub repository.
+     */
+    repository: string;
+    /**
+     * The GitHub trigger type; defaults to push.
+     */
+    triggerType?: string;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: string[];
+}
+
+/**
  * GitLab source configuration.
  */
 export interface GitLabAppSource {
@@ -240,6 +352,44 @@ export interface GitLabComposeSource {
     projectId: number;
     /**
      * The GitLab repository.
+     */
+    repository: string;
+    /**
+     * Paths to watch.
+     */
+    watchPaths?: string[];
+}
+
+/**
+ * Gitea source configuration.
+ */
+export interface GiteaAppSource {
+    /**
+     * The Gitea branch.
+     */
+    branch: string;
+    /**
+     * The build configuration.
+     */
+    build: outputs.ApplicationBuild;
+    /**
+     * The build path.
+     */
+    buildPath?: string;
+    /**
+     * Whether to enable submodules.
+     */
+    enableSubmodules?: boolean;
+    /**
+     * The Gitea integration ID.
+     */
+    integrationId: string;
+    /**
+     * The Gitea owner.
+     */
+    owner: string;
+    /**
+     * The Gitea repository.
      */
     repository: string;
     /**

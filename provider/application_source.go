@@ -15,18 +15,28 @@ type ApplicationSourceType string
 type BuildType string
 
 const (
-	SourceDocker    ApplicationSourceType = "docker"
-	SourceGit       ApplicationSourceType = "git"
-	SourceGitLab    ApplicationSourceType = "gitlab"
-	BuildNixpacks   BuildType             = "nixpacks"
-	BuildDockerfile BuildType             = "dockerfile"
+	SourceDocker          ApplicationSourceType = "docker"
+	SourceGit             ApplicationSourceType = "git"
+	SourceGitLab          ApplicationSourceType = "gitlab"
+	SourceGitHub          ApplicationSourceType = "github"
+	SourceGitea           ApplicationSourceType = "gitea"
+	SourceBitbucket       ApplicationSourceType = "bitbucket"
+	BuildNixpacks         BuildType             = "nixpacks"
+	BuildDockerfile       BuildType             = "dockerfile"
+	BuildHerokuBuildpacks BuildType             = "heroku_buildpacks"
+	BuildPaketoBuildpacks BuildType             = "paketo_buildpacks"
+	BuildStatic           BuildType             = "static"
+	BuildRailpack         BuildType             = "railpack"
 )
 
 type ApplicationSource struct {
-	Type   ApplicationSourceType `pulumi:"type"`
-	Docker *DockerSource         `pulumi:"docker,optional"`
-	Git    *GitApplicationSource `pulumi:"git,optional"`
-	GitLab *GitLabAppSource      `pulumi:"gitlab,optional"`
+	Type      ApplicationSourceType `pulumi:"type"`
+	Docker    *DockerSource         `pulumi:"docker,optional"`
+	Git       *GitApplicationSource `pulumi:"git,optional"`
+	GitLab    *GitLabAppSource      `pulumi:"gitlab,optional"`
+	GitHub    *GitHubAppSource      `pulumi:"github,optional"`
+	Gitea     *GiteaAppSource       `pulumi:"gitea,optional"`
+	Bitbucket *BitbucketAppSource   `pulumi:"bitbucket,optional"`
 }
 
 func (s *ApplicationSource) Annotate(a infer.Annotator) {
@@ -35,6 +45,9 @@ func (s *ApplicationSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.Docker, "Docker source configuration.")
 	a.Describe(&s.Git, "Git source configuration.")
 	a.Describe(&s.GitLab, "GitLab source configuration.")
+	a.Describe(&s.GitHub, "GitHub source configuration.")
+	a.Describe(&s.Gitea, "Gitea source configuration.")
+	a.Describe(&s.Bitbucket, "Bitbucket source configuration.")
 }
 
 type DockerSource struct {
@@ -105,6 +118,10 @@ type ApplicationBuild struct {
 	Dockerfile        *string   `pulumi:"dockerfile,optional"`
 	DockerContextPath *string   `pulumi:"dockerContextPath,optional"`
 	DockerBuildStage  *string   `pulumi:"dockerBuildStage,optional"`
+	HerokuVersion     *string   `pulumi:"herokuVersion,optional"`
+	RailpackVersion   *string   `pulumi:"railpackVersion,optional"`
+	PublishDirectory  *string   `pulumi:"publishDirectory,optional"`
+	IsStaticSpa       *bool     `pulumi:"isStaticSpa,optional"`
 }
 
 func (b *ApplicationBuild) Annotate(a infer.Annotator) {
@@ -113,6 +130,36 @@ func (b *ApplicationBuild) Annotate(a infer.Annotator) {
 	a.Describe(&b.Dockerfile, "The Dockerfile path.")
 	a.Describe(&b.DockerContextPath, "The Docker build context.")
 	a.Describe(&b.DockerBuildStage, "The Docker build stage.")
+	a.Describe(&b.HerokuVersion, "The Heroku buildpack version.")
+	a.Describe(&b.RailpackVersion, "The Railpack version.")
+	a.Describe(&b.PublishDirectory, "The static publish directory.")
+	a.Describe(&b.IsStaticSpa, "Whether to configure static single-page-application routing.")
+}
+
+func (s ApplicationSource) applicationBuild() (ApplicationBuild, bool) {
+	switch s.Type {
+	case SourceGit:
+		if s.Git != nil {
+			return s.Git.Build, true
+		}
+	case SourceGitLab:
+		if s.GitLab != nil {
+			return s.GitLab.Build, true
+		}
+	case SourceGitHub:
+		if s.GitHub != nil {
+			return s.GitHub.Build, true
+		}
+	case SourceGitea:
+		if s.Gitea != nil {
+			return s.Gitea.Build, true
+		}
+	case SourceBitbucket:
+		if s.Bitbucket != nil {
+			return s.Bitbucket.Build, true
+		}
+	}
+	return ApplicationBuild{}, false
 }
 
 func (s ApplicationSource) validate() error {
@@ -126,6 +173,15 @@ func (s ApplicationSource) validate() error {
 	if s.GitLab != nil {
 		count++
 	}
+	if s.GitHub != nil {
+		count++
+	}
+	if s.Gitea != nil {
+		count++
+	}
+	if s.Bitbucket != nil {
+		count++
+	}
 	switch s.Type {
 	case SourceDocker:
 		if s.Docker == nil {
@@ -136,6 +192,15 @@ func (s ApplicationSource) validate() error {
 		}
 		if s.GitLab != nil {
 			return fmt.Errorf("source.gitlab must be omitted when source.type is docker")
+		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is docker")
+		}
+		if s.Gitea != nil {
+			return fmt.Errorf("source.gitea must be omitted when source.type is docker")
+		}
+		if s.Bitbucket != nil {
+			return fmt.Errorf("source.bitbucket must be omitted when source.type is docker")
 		}
 		if s.Docker.Image == "" {
 			return fmt.Errorf("source.docker.image must not be empty")
@@ -150,6 +215,15 @@ func (s ApplicationSource) validate() error {
 		if s.GitLab != nil {
 			return fmt.Errorf("source.gitlab must be omitted when source.type is git")
 		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is git")
+		}
+		if s.Gitea != nil {
+			return fmt.Errorf("source.gitea must be omitted when source.type is git")
+		}
+		if s.Bitbucket != nil {
+			return fmt.Errorf("source.bitbucket must be omitted when source.type is git")
+		}
 		if err := validateGit("source.git", s.Git.URL, s.Git.Branch, s.Git.Build); err != nil {
 			return err
 		}
@@ -163,19 +237,64 @@ func (s ApplicationSource) validate() error {
 		if s.Git != nil {
 			return fmt.Errorf("source.git must be omitted when source.type is gitlab")
 		}
+		if s.GitHub != nil {
+			return fmt.Errorf("source.github must be omitted when source.type is gitlab")
+		}
+		if s.Gitea != nil {
+			return fmt.Errorf("source.gitea must be omitted when source.type is gitlab")
+		}
+		if s.Bitbucket != nil {
+			return fmt.Errorf("source.bitbucket must be omitted when source.type is gitlab")
+		}
 		if s.GitLab.IntegrationID == "" {
 			return fmt.Errorf("source.gitlab.integrationId must not be empty")
 		}
 		if s.GitLab.ProjectID == 0 {
 			return fmt.Errorf("source.gitlab.projectId must not be zero")
 		}
-		for name, value := range map[string]string{"owner": s.GitLab.Owner, "namespace": s.GitLab.Namespace, "repository": s.GitLab.Repository, "branch": s.GitLab.Branch} {
-			if value == "" {
-				return fmt.Errorf("source.gitlab.%s must not be empty", name)
+		for _, field := range []struct{ name, value string }{{"owner", s.GitLab.Owner}, {"namespace", s.GitLab.Namespace}, {"repository", s.GitLab.Repository}, {"branch", s.GitLab.Branch}} {
+			if field.value == "" {
+				return fmt.Errorf("source.gitlab.%s must not be empty", field.name)
 			}
 		}
 		if err := validateBuild("source.gitlab", s.GitLab.Build); err != nil {
 			return err
+		}
+	case SourceGitHub:
+		if s.GitHub == nil {
+			return fmt.Errorf("source.github is required when source.type is github")
+		}
+		if err := validateOtherVariants(s, SourceGitHub); err != nil {
+			return err
+		}
+		if err := validateIntegratedSource("source.github", s.GitHub.IntegrationID, s.GitHub.Owner, s.GitHub.Repository, s.GitHub.Branch, s.GitHub.Build); err != nil {
+			return err
+		}
+		if s.GitHub.TriggerType != nil && *s.GitHub.TriggerType != GitHubTriggerPush && *s.GitHub.TriggerType != GitHubTriggerTag {
+			return fmt.Errorf("source.github.triggerType must be one of push or tag")
+		}
+	case SourceGitea:
+		if s.Gitea == nil {
+			return fmt.Errorf("source.gitea is required when source.type is gitea")
+		}
+		if err := validateOtherVariants(s, SourceGitea); err != nil {
+			return err
+		}
+		if err := validateIntegratedSource("source.gitea", s.Gitea.IntegrationID, s.Gitea.Owner, s.Gitea.Repository, s.Gitea.Branch, s.Gitea.Build); err != nil {
+			return err
+		}
+	case SourceBitbucket:
+		if s.Bitbucket == nil {
+			return fmt.Errorf("source.bitbucket is required when source.type is bitbucket")
+		}
+		if err := validateOtherVariants(s, SourceBitbucket); err != nil {
+			return err
+		}
+		if err := validateIntegratedSource("source.bitbucket", s.Bitbucket.IntegrationID, s.Bitbucket.Owner, s.Bitbucket.Repository, s.Bitbucket.Branch, s.Bitbucket.Build); err != nil {
+			return err
+		}
+		if s.Bitbucket.RepositorySlug == "" {
+			return fmt.Errorf("source.bitbucket.repositorySlug must not be empty")
 		}
 	default:
 		if count == 0 {
@@ -184,7 +303,20 @@ func (s ApplicationSource) validate() error {
 		if count > 1 {
 			return fmt.Errorf("exactly one source variant must be set")
 		}
-		return fmt.Errorf("source.type must be one of docker, git, or gitlab")
+		return fmt.Errorf("source.type must be one of docker, git, gitlab, github, gitea, or bitbucket")
+	}
+	return nil
+}
+
+func validateOtherVariants(s ApplicationSource, selected ApplicationSourceType) error {
+	variants := []struct {
+		kind ApplicationSourceType
+		set  bool
+	}{{SourceDocker, s.Docker != nil}, {SourceGit, s.Git != nil}, {SourceGitLab, s.GitLab != nil}, {SourceGitHub, s.GitHub != nil}, {SourceGitea, s.Gitea != nil}, {SourceBitbucket, s.Bitbucket != nil}}
+	for _, variant := range variants {
+		if variant.kind != selected && variant.set {
+			return fmt.Errorf("source.%s must be omitted when source.type is %s", variant.kind, selected)
+		}
 	}
 	return nil
 }
@@ -200,6 +332,18 @@ func validateGit(prefix, url, branch string, build ApplicationBuild) error {
 }
 
 func validateBuild(prefix string, build ApplicationBuild) error {
+	invalidDockerOptions := func() error {
+		if build.Dockerfile != nil {
+			return fmt.Errorf("%s.build.dockerfile is only valid for dockerfile builds", prefix)
+		}
+		if build.DockerContextPath != nil {
+			return fmt.Errorf("%s.build.dockerContextPath is only valid for dockerfile builds", prefix)
+		}
+		if build.DockerBuildStage != nil {
+			return fmt.Errorf("%s.build.dockerBuildStage is only valid for dockerfile builds", prefix)
+		}
+		return nil
+	}
 	switch build.Type {
 	case BuildNixpacks:
 		if build.Dockerfile != nil {
@@ -211,12 +355,85 @@ func validateBuild(prefix string, build ApplicationBuild) error {
 		if build.DockerBuildStage != nil {
 			return fmt.Errorf("%s.build.dockerBuildStage must be omitted for nixpacks builds", prefix)
 		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
 	case BuildDockerfile:
 		if build.Dockerfile == nil || *build.Dockerfile == "" {
 			return fmt.Errorf("%s.build.dockerfile is required for dockerfile builds", prefix)
 		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
+	case BuildHerokuBuildpacks:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
+	case BuildPaketoBuildpacks:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
+	case BuildStatic:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.RailpackVersion != nil {
+			return fmt.Errorf("%s.build.railpackVersion is only valid for railpack builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+	case BuildRailpack:
+		if err := invalidDockerOptions(); err != nil {
+			return err
+		}
+		if build.HerokuVersion != nil {
+			return fmt.Errorf("%s.build.herokuVersion is only valid for heroku_buildpacks builds", prefix)
+		}
+		if build.PublishDirectory != nil {
+			return fmt.Errorf("%s.build.publishDirectory is only valid for nixpacks builds", prefix)
+		}
+		if build.IsStaticSpa != nil {
+			return fmt.Errorf("%s.build.isStaticSpa is only valid for nixpacks or static builds", prefix)
+		}
 	default:
-		return fmt.Errorf("%s.build.type must be one of nixpacks or dockerfile", prefix)
+		return fmt.Errorf("%s.build.type must be one of dockerfile, nixpacks, heroku_buildpacks, paketo_buildpacks, static, or railpack", prefix)
 	}
 	return nil
 }
@@ -254,6 +471,12 @@ func configureApplicationSource(ctx context.Context, api *client.Client, id stri
 			body.GitlabBuildPath = nullable.NewNullableWithValue(*s.BuildPath)
 		}
 		_, err = api.ApplicationSaveGitlabProviderWithResponse(ctx, body)
+	case SourceGitHub:
+		err = configureGitHubApplicationSource(ctx, api, id, source.GitHub)
+	case SourceGitea:
+		err = configureGiteaApplicationSource(ctx, api, id, source.Gitea)
+	case SourceBitbucket:
+		err = configureBitbucketApplicationSource(ctx, api, id, source.Bitbucket)
 	}
 	if source.Docker != nil && source.Docker.Password != nil {
 		return sanitizeError(err, *source.Docker.Password)
@@ -265,13 +488,11 @@ func configureApplicationBuild(ctx context.Context, api *client.Client, id strin
 	if source.Type == SourceDocker {
 		return nil
 	}
-	var b ApplicationBuild
-	if source.Type == SourceGit {
-		b = source.Git.Build
-	} else {
-		b = source.GitLab.Build
+	b, ok := source.applicationBuild()
+	if !ok {
+		return fmt.Errorf("cannot configure application build: source variant is missing or does not match source.type %q", source.Type)
 	}
-	body := generated.ApplicationSaveBuildTypeJSONRequestBody{ApplicationId: id, BuildType: generated.ApplicationSaveBuildTypeJSONBodyBuildType(b.Type), Dockerfile: nullable.NewNullNullable[string](), DockerContextPath: nullable.NewNullNullable[string](), DockerBuildStage: nullable.NewNullNullable[string](), HerokuVersion: nullable.NewNullNullable[string](), RailpackVersion: nullable.NewNullNullable[string]()}
+	body := generated.ApplicationSaveBuildTypeJSONRequestBody{ApplicationId: id, BuildType: generated.ApplicationSaveBuildTypeJSONBodyBuildType(b.Type), Dockerfile: nullable.NewNullNullable[string](), DockerContextPath: nullable.NewNullNullable[string](), DockerBuildStage: nullable.NewNullNullable[string](), HerokuVersion: nullable.NewNullNullable[string](), RailpackVersion: nullable.NewNullNullable[string](), PublishDirectory: nullable.NewNullNullable[string](), IsStaticSpa: nullable.NewNullNullable[bool]()}
 	if b.Dockerfile != nil {
 		body.Dockerfile = nullable.NewNullableWithValue(*b.Dockerfile)
 	}
@@ -280,6 +501,18 @@ func configureApplicationBuild(ctx context.Context, api *client.Client, id strin
 	}
 	if b.DockerBuildStage != nil {
 		body.DockerBuildStage = nullable.NewNullableWithValue(*b.DockerBuildStage)
+	}
+	if b.HerokuVersion != nil {
+		body.HerokuVersion = nullable.NewNullableWithValue(*b.HerokuVersion)
+	}
+	if b.RailpackVersion != nil {
+		body.RailpackVersion = nullable.NewNullableWithValue(*b.RailpackVersion)
+	}
+	if b.PublishDirectory != nil {
+		body.PublishDirectory = nullable.NewNullableWithValue(*b.PublishDirectory)
+	}
+	if b.IsStaticSpa != nil {
+		body.IsStaticSpa = nullable.NewNullableWithValue(*b.IsStaticSpa)
 	}
 	_, err := api.ApplicationSaveBuildTypeWithResponse(ctx, body)
 	return err
