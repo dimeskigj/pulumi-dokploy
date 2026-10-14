@@ -298,13 +298,23 @@ func TestBitbucketCreateDiscoveryBounds(t *testing.T) {
 	require.Equal(t, 1, strings.Count(strings.Join(f.requests, ","), "POST /api/bitbucket.create"))
 	f = newBitbucketCreateFixture(t)
 	f.list = `[]`
-	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Millisecond)
-	defer cancel()
-	_, err = (BitbucketIntegration{client: fixedClient(f.api())}).Create(ctx, infer.CreateRequest[BitbucketIntegrationArgs]{Inputs: bbCreateArgs()})
+	ctx := newLifecycleCancelContext()
+	transport := bitbucketCreateRoundTripper(func(req *http.Request) (*http.Response, error) {
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		if err == nil && req.URL.Path == "/api/gitProvider.getAll" && f.marker != "" {
+			ctx.cancel(context.DeadlineExceeded)
+		}
+		return resp, err
+	})
+	api, err := client.New(f.server.URL, "fixture", client.WithHTTPClient(&http.Client{Transport: transport}), client.WithRetryPolicy(client.RetryPolicy{Attempts: 1}))
+	require.NoError(t, err)
+	_, err = (BitbucketIntegration{client: fixedClient(api)}).Create(ctx, infer.CreateRequest[BitbucketIntegrationArgs]{Inputs: bbCreateArgs()})
 	require.ErrorIs(t, err, context.DeadlineExceeded)
 	var partial infer.ResourceInitFailedError
 	require.ErrorAs(t, err, &partial)
-	require.Less(t, f.postLists, 3)
+	require.Equal(t, 1, f.postLists, "one post-create discovery must finish before the deadline")
+	require.Equal(t, 1, strings.Count(strings.Join(f.requests, ","), "POST /api/bitbucket.create"), "create is sent exactly once before cancellation")
+	require.Equal(t, 2, strings.Count(strings.Join(f.requests, ","), "GET /api/gitProvider.getAll"), "no discovery may follow cancellation")
 }
 
 func TestBitbucketCreateRenamePartialState(t *testing.T) {

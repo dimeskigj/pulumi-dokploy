@@ -150,6 +150,11 @@ func TestBitbucketUpdatePartialState(t *testing.T) {
 			prior := bitbucketLifecycleState()
 			got, err := (BitbucketIntegration{client: func(context.Context) *client.Client { return api }}).Update(t.Context(), infer.UpdateRequest[BitbucketIntegrationArgs, BitbucketIntegrationState]{ID: "relation", State: prior, Inputs: bitbucketUpdateInputs()})
 			require.Error(t, err)
+			if tc.status == http.StatusOK {
+				var initFailed infer.ResourceInitFailedError
+				require.ErrorAs(t, err, &initFailed)
+				require.Equal(t, []string{"bitbucket integration request failed"}, initFailed.Reasons)
+			}
 			require.NotContains(t, err.Error(), "credential-sentinel")
 			require.NotContains(t, err.Error(), "private.invalid")
 			switch {
