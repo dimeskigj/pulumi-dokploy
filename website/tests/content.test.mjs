@@ -240,9 +240,9 @@ test("curated internal links stay relative and sidebar routes are canonical", as
   const canonicalRoutes = new Set([
     "/", "/getting-started/installation/", "/getting-started/first-deployment/",
     "/concepts/projects-and-environments/", "/concepts/sources/", "/concepts/lifecycle-and-state/", "/concepts/secrets/",
-    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/servers/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/",
+    "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/notifications/", "/guides/servers/", "/guides/ports/", "/guides/imports/", "/guides/lookups/", "/guides/troubleshooting/", "/guides/github-integrations/",
     "/examples/", "/examples/complete/",
-    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/git-lab-integration/", "/reference/configuration/", "/reference/types/",
+    "/reference/project/", "/reference/environment/", "/reference/application/", "/reference/compose/", "/reference/postgres/", "/reference/mysql/", "/reference/mariadb/", "/reference/mongodb/", "/reference/redis/", "/reference/domain/", "/reference/destination/", "/reference/backup/", "/reference/volume-backup/", "/reference/sshkey/", "/reference/registry/", "/reference/tag/", "/reference/project-tag/", "/reference/mount/", "/reference/port/", "/reference/notification/", "/reference/server/", "/reference/git-lab-integration/", "/reference/github-integration/", "/reference/configuration/", "/reference/types/",
     "/guides/applications/", "/guides/compose/", "/guides/databases/", "/guides/domains/", "/guides/backups/", "/guides/schedules/", "/guides/imports/", "/guides/troubleshooting/", "/guides/gitlab-integrations/",
     "/examples/", "/examples/complete/",
     "/contributing/",
@@ -254,7 +254,7 @@ test("curated internal links stay relative and sidebar routes are canonical", as
     assert.match(route, /^\/(?:[^/]+\/)*$/);
     assert.ok(canonicalRoutes.has(route), `sidebar route must be a canonical Starlight page: ${route}`);
   }
-  assert.equal((config.match(/link: "\//g) ?? []).length, 60);
+  assert.equal((config.match(/link: "\//g) ?? []).length, 62);
   assert.equal(curatedFiles.length, 20);
 });
 

@@ -55,7 +55,8 @@ The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:Backup`, `dokploy:index:VolumeBackup`, `dokploy:index:Schedule`, `dokploy:index:SSHKey`,
 `dokploy:index:Registry`, `dokploy:index:Tag`, `dokploy:index:ProjectTag`,
 `dokploy:index:Mount`, `dokploy:index:Port`, `dokploy:index:Notification`,
-`dokploy:index:Server`, and `dokploy:index:GitLabIntegration`.
+`dokploy:index:Server`, `dokploy:index:GitLabIntegration`, and
+`dokploy:index:GitHubIntegration`.
 
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
@@ -71,6 +72,11 @@ Manage GitLab integration configuration with `GitLabIntegration` or continue usi
 relation ID; a referenced GitLab integration is not managed unless you declare that resource.
 The provider does not perform OAuth: authorize in Dokploy before deploying GitLab-backed
 workloads. See the [GitLab integrations guide](https://dimeskigj.github.io/pulumi-dokploy/guides/gitlab-integrations/).
+`GitHubIntegration` manages only an existing Dokploy GitHub App integration;
+set it up and authorize it in Dokploy, then import by the `githubId` relation
+ID. Create is unsupported; destroy removes only Dokploy's record, not the App,
+upstream authorization, or workloads. See the
+[GitHub integrations guide](https://dimeskigj.github.io/pulumi-dokploy/guides/github-integrations/).
 SSH keys can be managed using the `SSHKey` resource.
 
 Application `autoDeploy` is optional: omission leaves Dokploy's value unmanaged, while an explicit
@@ -137,7 +143,13 @@ pulumi import dokploy:index:Mount mount <mount-id>
 pulumi import dokploy:index:Port mapping <port-id>
 pulumi import dokploy:index:Notification notification <notification-id>
 pulumi import dokploy:index:Server server <server-id>
+pulumi import dokploy:index:GitHubIntegration integration <github-relation-id>
 ```
+
+The GitHub integration ID is Dokploy's `githubId` relation ID, not a GitHub
+App ID or parent provider ID. Set up and authorize the App in Dokploy first;
+GitHub integration creation is unsupported. Destroy removes the Dokploy record
+only. Review unmanaged workloads referencing it before deletion.
 
 An imported Notification may have required secrets omitted from Dokploy's response;
 resupply them via secret configuration before update. Never use empty imported credentials.
