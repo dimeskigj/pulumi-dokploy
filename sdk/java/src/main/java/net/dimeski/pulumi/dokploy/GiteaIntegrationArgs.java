@@ -316,6 +316,8 @@ public final class GiteaIntegrationArgs extends com.pulumi.resources.ResourceArg
             if ($.redirectUri == null) {
                 throw new MissingRequiredPropertyException("GiteaIntegrationArgs", "redirectUri");
             }
+            $.clientSecret = Codegen.stringProp("clientSecret").secret().arg($.clientSecret).getNullable();
+            $.giteaInternalUrl = Codegen.stringProp("giteaInternalUrl").secret().arg($.giteaInternalUrl).getNullable();
             return $;
         }
     }

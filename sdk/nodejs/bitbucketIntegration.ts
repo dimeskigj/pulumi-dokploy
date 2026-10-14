@@ -85,8 +85,8 @@ export class BitbucketIntegration extends pulumi.CustomResource {
             if (args?.name === undefined && !opts.urn) {
                 throw new Error("Missing required property 'name'");
             }
-            resourceInputs["apiToken"] = args?.apiToken ? pulumi.secret(args.apiToken) : undefined;
-            resourceInputs["appPassword"] = args?.appPassword ? pulumi.secret(args.appPassword) : undefined;
+            resourceInputs["apiToken"] = args?.apiToken !== undefined ? pulumi.secret(args.apiToken) : undefined;
+            resourceInputs["appPassword"] = args?.appPassword !== undefined ? pulumi.secret(args.appPassword) : undefined;
             resourceInputs["bitbucketEmail"] = args?.bitbucketEmail;
             resourceInputs["bitbucketUsername"] = args?.bitbucketUsername;
             resourceInputs["bitbucketWorkspaceName"] = args?.bitbucketWorkspaceName;
