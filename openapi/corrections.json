@@ -149,14 +149,22 @@
     "gitlab.create": "",
     "gitlab.one": "GitLabIntegrationRecord",
     "gitlab.update": "",
-    "user.get": "AuthenticatedGitProviderMember"
+    "user.get": "AuthenticatedGitProviderMember",
+    "gitea.create": "GiteaCreateAcknowledgment",
+    "gitea.one": "GiteaIntegrationRecord",
+    "gitea.update": "",
+    "bitbucket.create": "",
+    "bitbucket.one": "BitbucketIntegrationRecord",
+    "bitbucket.update": ""
   },
   "requests": {
     "registry.update": "RegistryUpdateRequest",
     "server.create": "ServerCreateRequest",
     "server.update": "ServerUpdateRequest",
     "gitlab.create": "GitLabCreateRequest",
-    "gitlab.update": "GitLabUpdateRequest"
+    "gitlab.update": "GitLabUpdateRequest",
+    "gitea.create": "GiteaCreateRequest",
+    "gitea.update": "GiteaUpdateRequest"
   },
   "requestSchemaAdditions": {
     "notification.createGotify": {
@@ -1937,6 +1945,16 @@
               "type": "null"
             }
           ]
+        },
+        "bitbucket": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/BitbucketProviderSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -2164,6 +2182,322 @@
         "gitlabId",
         "gitlabUrl",
         "gitProviderId"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaProviderIdentity": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "providerType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "gitProviderId",
+        "name",
+        "providerType",
+        "organizationId",
+        "userId"
+      ],
+      "additionalProperties": true
+    },
+    "BitbucketProviderIdentity": {
+      "type": "object",
+      "properties": {
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "providerType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "gitProviderId",
+        "name",
+        "providerType",
+        "organizationId",
+        "userId"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaCreateAcknowledgment": {
+      "type": "object",
+      "properties": {
+        "giteaId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "giteaUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "giteaId",
+        "clientId",
+        "giteaUrl"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaIntegrationRecord": {
+      "type": "object",
+      "properties": {
+        "giteaId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "giteaUrl": {
+          "type": "string"
+        },
+        "gitProvider": {
+          "$ref": "#/components/schemas/GiteaProviderIdentity"
+        },
+        "clientId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "clientSecret": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "redirectUri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "giteaInternalUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "organizationName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "giteaId",
+        "gitProviderId",
+        "giteaUrl",
+        "gitProvider"
+      ],
+      "additionalProperties": true
+    },
+    "BitbucketProviderSummary": {
+      "type": "object",
+      "properties": {
+        "bitbucketId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bitbucketUsername": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isConfigured": {
+          "type": "boolean"
+        },
+        "isDeprecated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bitbucketId",
+        "bitbucketUsername",
+        "isConfigured",
+        "isDeprecated"
+      ],
+      "additionalProperties": true
+    },
+    "BitbucketIntegrationRecord": {
+      "type": "object",
+      "properties": {
+        "bitbucketId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProvider": {
+          "$ref": "#/components/schemas/BitbucketProviderIdentity"
+        },
+        "bitbucketUsername": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bitbucketEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bitbucketWorkspaceName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "apiToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "appPassword": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "bitbucketId",
+        "gitProviderId",
+        "gitProvider"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaCreateRequest": {
+      "type": "object",
+      "properties": {
+        "giteaUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "giteaInternalUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "organizationName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "giteaUrl",
+        "name"
+      ],
+      "additionalProperties": true
+    },
+    "GiteaUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "giteaId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gitProviderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "giteaUrl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "giteaInternalUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "organizationName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "giteaId",
+        "gitProviderId",
+        "giteaUrl",
+        "name"
       ],
       "additionalProperties": true
     }
