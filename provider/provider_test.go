@@ -32,6 +32,7 @@ var (
 	_ infer.ExplicitDependencies[MountArgs, MountState]                         = Mount{}
 	_ infer.ExplicitDependencies[GitLabIntegrationArgs, GitLabIntegrationState] = GitLabIntegration{}
 	_ infer.ExplicitDependencies[GitHubIntegrationArgs, GitHubIntegrationState] = GitHubIntegration{}
+	_ infer.ExplicitDependencies[GiteaIntegrationArgs, GiteaIntegrationState]   = GiteaIntegration{}
 )
 
 func TestProviderSchema(t *testing.T) {
@@ -61,6 +62,9 @@ func TestProviderRegistersProjectAndEnvironmentResources(t *testing.T) {
 	require.Contains(t, tokens, "dokploy:index:Environment")
 	require.Contains(t, tokens, "dokploy:index:SSHKey")
 	require.Contains(t, tokens, "dokploy:index:GitHubIntegration")
+	require.Contains(t, tokens, "dokploy:index:GiteaIntegration")
+	require.Len(t, tokens, 25)
+	require.Len(t, spec.Functions, 12)
 }
 
 func TestProviderHasLookupFunctionsAndNoComponents(t *testing.T) {

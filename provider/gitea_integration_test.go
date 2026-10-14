@@ -29,7 +29,12 @@ func TestGiteaIntegrationCheck(t *testing.T) {
 		"redirectUri": property.New("https://example.com/callback"),
 	})})
 	require.NoError(t, err)
-	require.ElementsMatch(t, []string{"name", "giteaUrl"}, []string{computed.Failures[0].Property, computed.Failures[1].Property})
+	require.Len(t, computed.Failures, 2)
+	failureProperties := make([]string, 0, len(computed.Failures))
+	for _, failure := range computed.Failures {
+		failureProperties = append(failureProperties, failure.Property)
+	}
+	require.ElementsMatch(t, []string{"name", "giteaUrl"}, failureProperties)
 
 	typ := reflect.TypeOf(GiteaIntegrationArgs{})
 	for _, field := range []string{"ClientSecret", "GiteaInternalURL"} {
@@ -42,6 +47,32 @@ func TestGiteaIntegrationCheck(t *testing.T) {
 		require.Equal(t, tag, f.Tag.Get("pulumi"))
 		require.Empty(t, f.Tag.Get("provider"))
 	}
+}
+
+func TestGiteaIntegrationCheckRequiredFieldsAndMixedComputedValues(t *testing.T) {
+	for _, field := range []string{"name", "giteaUrl", "clientId", "clientSecret", "redirectUri"} {
+		t.Run("empty "+field, func(t *testing.T) {
+			inputs := map[string]property.Value{
+				"name": property.New("display"), "giteaUrl": property.New("https://gitea.example"),
+				"clientId": property.New("client"), "clientSecret": property.New("secret"),
+				"redirectUri": property.New("https://dokploy.example/callback"),
+			}
+			inputs[field] = property.New("")
+			checked, err := (GiteaIntegration{}).Check(t.Context(), infer.CheckRequest{NewInputs: property.NewMap(inputs)})
+			require.NoError(t, err)
+			require.Len(t, checked.Failures, 1)
+			require.Equal(t, field, checked.Failures[0].Property)
+		})
+	}
+	computed := property.NewMap(map[string]property.Value{
+		"name": property.New(property.Computed), "giteaUrl": property.New("not-a-url"),
+		"clientId": property.New(property.Computed), "clientSecret": property.New(property.Computed),
+		"redirectUri": property.New("https://dokploy.example/callback"),
+	})
+	checked, err := (GiteaIntegration{}).Check(t.Context(), infer.CheckRequest{NewInputs: computed})
+	require.NoError(t, err)
+	require.Len(t, checked.Failures, 1)
+	require.Equal(t, "giteaUrl", checked.Failures[0].Property)
 }
 
 func TestGiteaIntegrationURLValidation(t *testing.T) {

@@ -35,6 +35,8 @@ func (s *GiteaIntegrationState) Annotate(a infer.Annotator) {
 
 type GiteaIntegration struct{ client clientFactory }
 
+const giteaRedirectURIField = "redirectUri"
+
 func (r *GiteaIntegration) Annotate(a infer.Annotator) {
 	a.SetToken("index", "GiteaIntegration")
 	a.Describe(&r, "A Dokploy Gitea OAuth integration configured manually by the operator.")
@@ -60,20 +62,23 @@ func (r GiteaIntegration) Check(ctx context.Context, req infer.CheckRequest) (in
 		in.OrganizationName = ""
 	}
 	add := func(name, reason string) { failures = append(failures, p.CheckFailure{Property: name, Reason: reason}) }
-	for _, field := range []struct{ name, value string }{{"name", in.Name}, {"clientId", in.ClientID}, {"clientSecret", in.ClientSecret}, {"redirectUri", in.RedirectURI}} {
+	for _, field := range []struct{ name, value string }{{"name", in.Name}, {"clientId", in.ClientID}, {"clientSecret", in.ClientSecret}, {giteaRedirectURIField, in.RedirectURI}} {
 		if v := req.NewInputs.Get(field.name); !v.HasComputed() && field.value == "" {
 			add(field.name, field.name+" must not be empty")
 		}
 	}
-	for _, name := range []string{"giteaUrl", "redirectUri"} {
+	for _, name := range []string{"giteaUrl", giteaRedirectURIField} {
 		v, specified := req.NewInputs.GetOk(name)
 		if v.HasComputed() {
 			continue
 		}
+		if name == giteaRedirectURIField && in.RedirectURI == "" {
+			continue // The required-field check already reports the empty value.
+		}
 		value := in.GiteaURL
 		valid := validateGiteaIntegrationBaseURL(value)
-		if name == "redirectUri" {
-			value, valid = in.RedirectURI, validWebURL(in.RedirectURI, false)
+		if name == giteaRedirectURIField {
+			valid = validWebURL(in.RedirectURI, false)
 		}
 		if (specified && (v.IsNull() || (v.IsString() && v.AsString() == ""))) || !valid {
 			add(name, name+" must be an absolute HTTP(S) URL with a host and no userinfo, query, or fragment")
