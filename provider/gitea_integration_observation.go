@@ -29,9 +29,9 @@ func sanitizeGiteaIntegrationError(err error) error {
 	}
 	var apiErr *client.APIError
 	if errors.As(err, &apiErr) {
-		return fmt.Errorf("Gitea integration HTTP %d", apiErr.StatusCode)
+		return fmt.Errorf("gitea integration HTTP %d", apiErr.StatusCode)
 	}
-	return errors.New("Gitea integration request failed")
+	return errors.New("gitea integration request failed")
 }
 
 func giteaMalformed() error                   { return errors.New("gitea.one: incomplete or inconsistent response") }

@@ -61,6 +61,8 @@ func TestGiteaIntegrationDiagnostics(t *testing.T) {
 	err := sanitizeGiteaIntegrationError(fmt.Errorf("credential-sentinel https://private.example/id"))
 	require.NotContains(t, err.Error(), "credential-sentinel")
 	require.NotContains(t, err.Error(), "private.example")
+	require.EqualError(t, sanitizeGiteaIntegrationError(&client.APIError{StatusCode: http.StatusForbidden}), "gitea integration HTTP 403")
+	require.EqualError(t, sanitizeGiteaIntegrationError(fmt.Errorf("unsafe response details")), "gitea integration request failed")
 	require.ErrorIs(t, sanitizeGiteaIntegrationError(context.Canceled), context.Canceled)
 }
 
