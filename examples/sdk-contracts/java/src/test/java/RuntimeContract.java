@@ -2,6 +2,7 @@ import com.pulumi.core.Output;
 import com.pulumi.core.internal.OutputInternal;
 import net.dimeski.pulumi.dokploy.BitbucketIntegrationArgs;
 import net.dimeski.pulumi.dokploy.GiteaIntegrationArgs;
+import net.dimeski.pulumi.dokploy.GitLabIntegrationArgs;
 
 public final class RuntimeContract {
     private RuntimeContract() {}
@@ -42,6 +43,39 @@ public final class RuntimeContract {
                 .build();
         if (omittedInternalUrl.giteaInternalUrl().isPresent()) {
             throw new AssertionError("omitted Gitea internal URL must remain absent");
+        }
+
+        var gitlab = GitLabIntegrationArgs.builder()
+                .name(Output.of("ordinary-name"))
+                .applicationId(Output.of("ordinary-application-id"))
+                .applicationSecret(Output.of("ordinary-application-secret"))
+                .redirectUri(Output.of("https://dokploy.example.test/callback"))
+                .gitlabInternalUrl(Output.of(""))
+                .build();
+        requireSecret(gitlab.applicationSecret(), "GitLab applicationSecret Output");
+        requireSecret(gitlab.gitlabInternalUrl().orElseThrow(), "GitLab empty internal URL Output");
+        requirePlaintext(gitlab.name(), "GitLab name");
+        requirePlaintext(gitlab.applicationId(), "GitLab application ID");
+        requirePlaintext(gitlab.redirectUri(), "GitLab redirect URI");
+
+        var literalGitLab = GitLabIntegrationArgs.builder()
+                .name("ordinary-name")
+                .applicationId("ordinary-application-id")
+                .applicationSecret("")
+                .redirectUri("https://dokploy.example.test/callback")
+                .gitlabInternalUrl("")
+                .build();
+        requireSecret(literalGitLab.applicationSecret(), "GitLab literal empty applicationSecret");
+        requireSecret(literalGitLab.gitlabInternalUrl().orElseThrow(), "GitLab literal empty internal URL");
+
+        var omittedGitLabInternalUrl = GitLabIntegrationArgs.builder()
+                .name("ordinary-name")
+                .applicationId("ordinary-application-id")
+                .applicationSecret("credential")
+                .redirectUri("https://dokploy.example.test/callback")
+                .build();
+        if (omittedGitLabInternalUrl.gitlabInternalUrl().isPresent()) {
+            throw new AssertionError("omitted GitLab internal URL must remain absent");
         }
 
         var bitbucket = BitbucketIntegrationArgs.builder()
