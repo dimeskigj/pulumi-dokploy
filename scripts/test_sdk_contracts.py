@@ -27,7 +27,7 @@ def main():
     run("nodejs", ["npm", "install", "--package-lock=false", "--ignore-scripts", "--no-audit", "--no-fund"])
     run("nodejs", ["npx", "tsc", "--noEmit"])
     run("nodejs", ["node", "runtime-contract.mjs"])
-    with tempfile.TemporaryDirectory(prefix="dokploy-sdk-contract-", dir="/tmp/opencode") as directory:
+    with tempfile.TemporaryDirectory(prefix="dokploy-sdk-contract-") as directory:
         venv = Path(directory) / "python-env"
         python = venv / "bin" / "python"
         pip = venv / "bin" / "pip"
@@ -37,7 +37,7 @@ def main():
         run("python", [str(python), "-c", "import contract"])
     run("dotnet", ["dotnet", "build", "Contract.csproj", "--nologo"])
     run("java", ["mise", "exec", "java@temurin-17.0.20+8", "maven@3.9.11", "--", "mvn", "-q", "package", "-DskipTests"])
-    with tempfile.TemporaryDirectory(prefix="dokploy-java-runtime-", dir="/tmp/opencode") as directory:
+    with tempfile.TemporaryDirectory(prefix="dokploy-java-runtime-") as directory:
         classpath_file = Path(directory) / "classpath.txt"
         run("java", ["mise", "exec", "java@temurin-17.0.20+8", "maven@3.9.11", "--", "mvn", "-q",
                       "test-compile", "dependency:build-classpath", f"-Dmdep.outputFile={classpath_file}"])

@@ -21,16 +21,24 @@ class SDKContractRunnerTests(unittest.TestCase):
     def test_runs_all_contracts_without_safe_launcher_and_sanitizes_runtime_env(self):
         tmp = self.make_temp()
         env = {"PATH": "/usr/bin", "TMPDIR": str(tmp), "DOKPLOY_TOKEN": "secret", "OTHER": "ok"}
-        with patch.dict(os.environ, env, clear=True), patch.object(runner.subprocess, "run") as execute:
+
+        def execute(command, **kwargs):
+            classpath_arg = next((arg for arg in command if arg.startswith("-Dmdep.outputFile=")), None)
+            if classpath_arg:
+                Path(classpath_arg.split("=", 1)[1]).write_text("mock-classpath")
+
+        with patch.dict(os.environ, env, clear=True), \
+             patch.object(runner.tempfile, "tempdir", None), \
+             patch.object(runner.subprocess, "run", side_effect=execute) as execute_mock:
             runner.main()
-        calls = execute.call_args_list
+        calls = execute_mock.call_args_list
         commands = [call.args[0] for call in calls]
         self.assertEqual(sum("go" in command and "test" in command for command in commands), 1)
         self.assertEqual(sum("tsc" in command for command in commands), 1)
         self.assertEqual(sum("py_compile" in command for command in commands), 1)
         self.assertEqual(sum("import contract" in command for command in commands), 1)
         self.assertEqual(sum("dotnet" in command for command in commands), 1)
-        self.assertEqual(sum("mvn" in command for command in commands), 1)
+        self.assertEqual(sum("mvn" in command for command in commands), 2)
         for call in calls:
             child_env = call.kwargs.get("env")
             if child_env:
@@ -38,16 +46,33 @@ class SDKContractRunnerTests(unittest.TestCase):
                 self.assertNotIn("DOKPLOY_TOKEN", child_env)
         self.assertTrue(all(not str(c[0][0]).startswith("/tmp/opencode") for c in calls))
 
-    def test_python_environment_uses_caller_tmpdir_and_is_isolated_per_run(self):
+    def test_runtime_temporary_directories_honor_caller_tmpdir_and_cleanup(self):
         tmp = self.make_temp()
-        with patch.dict(os.environ, {"TMPDIR": str(tmp)}, clear=True), patch.object(runner.tempfile, "tempdir", None), patch.object(runner.subprocess, "run") as execute:
+        calls = []
+
+        def execute(command, **kwargs):
+            calls.append(command)
+            classpath_arg = next((arg for arg in command if arg.startswith("-Dmdep.outputFile=")), None)
+            if classpath_arg:
+                Path(classpath_arg.split("=", 1)[1]).write_text("mock-classpath")
+
+        with patch.dict(os.environ, {"TMPDIR": str(tmp)}, clear=True), \
+             patch.object(runner.tempfile, "tempdir", None), \
+             patch.object(runner.subprocess, "run", side_effect=execute):
             runner.main()
             runner.main()
-        venvs = [Path(c.args[0][-1]) for c in execute.call_args_list if "venv" in c.args[0]]
+        venvs = [Path(command[-1]) for command in calls if "venv" in command]
+        classpaths = [Path(arg.split("=", 1)[1]) for command in calls for arg in command
+                      if arg.startswith("-Dmdep.outputFile=")]
         self.assertEqual(len(venvs), 2)
+        self.assertEqual(len(classpaths), 2)
         self.assertNotEqual(venvs[0], venvs[1])
+        self.assertNotEqual(classpaths[0].parent, classpaths[1].parent)
         self.assertTrue(all(path.parent.parent == tmp for path in venvs))
-        self.assertTrue(all(not path.exists() for path in venvs))
+        self.assertTrue(all(path.parent.parent == tmp for path in classpaths))
+        self.assertTrue(all(not path.parent.exists() for path in venvs))
+        self.assertTrue(all(not path.parent.exists() for path in classpaths))
+        self.assertEqual(list(tmp.iterdir()), [])
 
     def test_failure_propagates(self):
         import subprocess
