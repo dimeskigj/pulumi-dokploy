@@ -596,7 +596,7 @@ func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
 		require.True(t, ok, "missing path %s", operation.path)
 		require.NotNil(t, path.Methods[operation.method], "missing %s operation at %s", operation.method, operation.path)
 	}
-	require.Len(t, d.Paths, 153, "the current inventory includes both three-operation provider APIs")
+	require.Len(t, d.Paths, 156, "the current inventory includes integration APIs and application provider sources")
 	require.Equal(t, "#/components/schemas/GitLabIntegrationRecord", responseSchema(t, d, "/gitlab.one", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/GitProviderList", responseSchema(t, d, "/gitProvider.getAll", httpMethodGet, "200").Ref)
 	require.Equal(t, "#/components/schemas/AuthenticatedGitProviderMember", responseSchema(t, d, "/user.get", httpMethodGet, "200").Ref)
@@ -640,7 +640,7 @@ func TestGitLabIntegrationOpenAPIContract(t *testing.T) {
 
 func TestGitHubIntegrationOpenAPIContract(t *testing.T) {
 	d := normalizeRealContract(t)
-	baseCount := 151 // Captured inventory includes common, GitLab, and both provider API selections.
+	baseCount := 154 // Captured inventory includes common, GitLab, both provider APIs, and application provider sources.
 	for _, operation := range []struct{ path, method string }{
 		{"/github.one", httpMethodGet}, {"/github.update", httpMethodPost},
 		{"/organization.active", httpMethodGet}, {"/gitProvider.remove", httpMethodPost},
@@ -801,7 +801,7 @@ func TestGiteaIntegrationOpenAPIContract(t *testing.T) {
 		require.True(t, ok, "missing %s", op.path)
 		require.NotNil(t, item.Methods[op.method])
 	}
-	require.Len(t, d.Paths, 153)
+	require.Len(t, d.Paths, 156)
 	require.Equal(t, "#/components/schemas/GiteaCreateAcknowledgment", responseSchema(t, d, "/gitea.create", httpMethodPost, "200").Ref)
 	require.Equal(t, "#/components/schemas/GiteaIntegrationRecord", responseSchema(t, d, "/gitea.one", httpMethodGet, "200").Ref)
 	ack := componentSchema(t, d, "GiteaCreateAcknowledgment")
@@ -831,7 +831,7 @@ func TestBitbucketIntegrationOpenAPIContract(t *testing.T) {
 		require.True(t, ok, "missing %s", op.path)
 		require.NotNil(t, item.Methods[op.method])
 	}
-	require.Len(t, d.Paths, 153)
+	require.Len(t, d.Paths, 156)
 	require.Equal(t, "#/components/schemas/BitbucketIntegrationRecord", responseSchema(t, d, "/bitbucket.one", httpMethodGet, "200").Ref)
 	record := componentSchema(t, d, "BitbucketIntegrationRecord")
 	require.ElementsMatch(t, []any{"bitbucketId", "gitProviderId", "gitProvider"}, record["required"])

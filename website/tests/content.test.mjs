@@ -383,7 +383,9 @@ test("source concepts distinguish generic Git from integration-backed repository
   assert.match(sources, /generic Git[^.]*URL[^.]*does not require[^.]*integration/i);
   assert.match(sources, /GitHub[^.]*Gitea[^.]*Bitbucket[^.]*GitLab[^.]*existing Dokploy integrations/i);
   assert.match(sources, /GitLab additionally requires `projectId` and `namespace`/);
-  assert.match(sources, /integration records and credentials remain external and unmanaged/i);
+  assert.match(sources, /Referencing an integration does not adopt its configuration/i);
+  assert.match(sources, /manage it separately or supply an external ID/i);
+  assert.match(sources, /GitLab integrations can be managed with `GitLabIntegration`/);
 });
 
 test("live Application configuration coverage promises no clone, build, or deployment operations", async () => {
