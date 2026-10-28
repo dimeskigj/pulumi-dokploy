@@ -13,7 +13,7 @@ import net.dimeski.pulumi.dokploy.GitHubIntegrationArgs;
 import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
- * Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
+ * Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
  *
  */
 @ResourceType(type="dokploy:index:GitHubIntegration")

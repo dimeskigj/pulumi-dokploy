@@ -16,7 +16,7 @@ import net.dimeski.pulumi.dokploy.inputs.ApplicationBuildArgs;
 
 
 /**
- * Bitbucket source configuration.
+ * Beta. Bitbucket source configuration.
  *
  */
 public final class BitbucketAppSourceArgs extends com.pulumi.resources.ResourceArgs {

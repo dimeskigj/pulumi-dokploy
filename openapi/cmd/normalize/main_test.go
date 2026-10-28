@@ -298,10 +298,11 @@ func TestRealContractIncludesScheduleCRUD(t *testing.T) {
 		require.NotNil(t, p.Methods[operation.method], "missing %s method at %s", operation.method, operation.path)
 	}
 	require.Equal(t, "#/components/schemas/Schedule", responseSchema(t, d, "/schedule.one", "get", "200").Ref)
+	require.Equal(t, "#/components/schemas/Schedule", responseSchema(t, d, "/schedule.create", "post", "200").Ref)
 	schedule := componentSchema(t, d, "Schedule")
 	require.Equal(t, []any{"scheduleId"}, schedule["required"])
 	require.Equal(t, true, schedule["additionalProperties"])
-	for _, operation := range []string{"schedule.create", "schedule.update", "schedule.delete"} {
+	for _, operation := range []string{"schedule.update", "schedule.delete"} {
 		responses := d.Paths["/"+operation].Post.Raw["responses"].(map[string]any)
 		ack := responses["200"].(map[string]any)
 		require.NotContains(t, ack, "content", "%s acknowledgment must be bodyless", operation)

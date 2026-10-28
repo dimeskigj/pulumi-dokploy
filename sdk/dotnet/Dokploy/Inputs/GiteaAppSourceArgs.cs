@@ -12,7 +12,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 {
 
     /// <summary>
-    /// Gitea source configuration.
+    /// Beta. Gitea source configuration.
     /// </summary>
     public sealed class GiteaAppSourceArgs : global::Pulumi.ResourceArgs
     {

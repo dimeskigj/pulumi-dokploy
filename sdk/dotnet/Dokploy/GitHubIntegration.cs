@@ -11,7 +11,7 @@ using Pulumi;
 namespace Dimeskigj.Pulumi.Dokploy
 {
     /// <summary>
-    /// Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
+    /// Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
     /// </summary>
     [DokployResourceType("dokploy:index:GitHubIntegration")]
     public partial class GitHubIntegration : global::Pulumi.CustomResource

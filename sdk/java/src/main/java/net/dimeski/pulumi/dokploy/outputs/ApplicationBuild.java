@@ -29,27 +29,27 @@ public final class ApplicationBuild {
      */
     private @Nullable String dockerfile;
     /**
-     * @return The Heroku buildpack version.
+     * @return Beta. The Heroku buildpack version.
      *
      */
     private @Nullable String herokuVersion;
     /**
-     * @return Whether to configure static single-page-application routing.
+     * @return Beta. Whether to configure static single-page-application routing.
      *
      */
     private @Nullable Boolean isStaticSpa;
     /**
-     * @return The static publish directory.
+     * @return Beta. The static publish directory.
      *
      */
     private @Nullable String publishDirectory;
     /**
-     * @return The Railpack version.
+     * @return Beta. The Railpack version.
      *
      */
     private @Nullable String railpackVersion;
     /**
-     * @return The build type.
+     * @return The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
      *
      */
     private String type;
@@ -77,35 +77,35 @@ public final class ApplicationBuild {
         return Optional.ofNullable(this.dockerfile);
     }
     /**
-     * @return The Heroku buildpack version.
+     * @return Beta. The Heroku buildpack version.
      *
      */
     public Optional<String> herokuVersion() {
         return Optional.ofNullable(this.herokuVersion);
     }
     /**
-     * @return Whether to configure static single-page-application routing.
+     * @return Beta. Whether to configure static single-page-application routing.
      *
      */
     public Optional<Boolean> isStaticSpa() {
         return Optional.ofNullable(this.isStaticSpa);
     }
     /**
-     * @return The static publish directory.
+     * @return Beta. The static publish directory.
      *
      */
     public Optional<String> publishDirectory() {
         return Optional.ofNullable(this.publishDirectory);
     }
     /**
-     * @return The Railpack version.
+     * @return Beta. The Railpack version.
      *
      */
     public Optional<String> railpackVersion() {
         return Optional.ofNullable(this.railpackVersion);
     }
     /**
-     * @return The build type.
+     * @return The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
      *
      */
     public String type() {

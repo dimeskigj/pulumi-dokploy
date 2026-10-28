@@ -12,7 +12,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
+// Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
 type GitLabIntegration struct {
 	pulumi.CustomResourceState
 

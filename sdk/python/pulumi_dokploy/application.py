@@ -41,7 +41,7 @@ class ApplicationArgs:
         :param pulumi.Input[_builtins.str] name: The application name.
         :param pulumi.Input['ApplicationSourceArgs'] source: The application source configuration.
         :param pulumi.Input[_builtins.str] app_name: The optional deployed application name.
-        :param pulumi.Input[_builtins.bool] auto_deploy: Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        :param pulumi.Input[_builtins.bool] auto_deploy: Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
         :param pulumi.Input[_builtins.str] build_args: Build arguments for the application.
         :param pulumi.Input[_builtins.str] build_registry_id: The optional build registry ID.
         :param pulumi.Input[_builtins.str] build_secrets: Build secrets for the application.
@@ -127,7 +127,7 @@ class ApplicationArgs:
     @pulumi.getter(name="autoDeploy")
     def auto_deploy(self) -> pulumi.Input[Optional[_builtins.bool]]:
         """
-        Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
         """
         return pulumi.get(self, "auto_deploy")
 
@@ -258,7 +258,7 @@ class Application(pulumi.CustomResource):
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[_builtins.str] app_name: The optional deployed application name.
-        :param pulumi.Input[_builtins.bool] auto_deploy: Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        :param pulumi.Input[_builtins.bool] auto_deploy: Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
         :param pulumi.Input[_builtins.str] build_args: Build arguments for the application.
         :param pulumi.Input[_builtins.str] build_registry_id: The optional build registry ID.
         :param pulumi.Input[_builtins.str] build_secrets: Build secrets for the application.
@@ -401,7 +401,7 @@ class Application(pulumi.CustomResource):
     @pulumi.getter(name="autoDeploy")
     def auto_deploy(self) -> pulumi.Output[Optional[_builtins.bool]]:
         """
-        Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
         """
         return pulumi.get(self, "auto_deploy")
 

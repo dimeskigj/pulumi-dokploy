@@ -12,7 +12,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
 {
 
     /// <summary>
-    /// GitHub source configuration.
+    /// Beta. GitHub source configuration.
     /// </summary>
     [OutputType]
     public sealed class GitHubAppSource

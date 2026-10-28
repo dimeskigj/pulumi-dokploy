@@ -11,7 +11,7 @@ using Pulumi;
 namespace Dimeskigj.Pulumi.Dokploy
 {
     /// <summary>
-    /// Manages a Dokploy Bitbucket integration using an API token or legacy app password.
+    /// Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.
     /// </summary>
     [DokployResourceType("dokploy:index:BitbucketIntegration")]
     public partial class BitbucketIntegration : global::Pulumi.CustomResource

@@ -88,14 +88,14 @@ class ApplicationBuild(dict):
         """
         Application build configuration.
 
-        :param _builtins.str type: The build type.
+        :param _builtins.str type: The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
         :param _builtins.str docker_build_stage: The Docker build stage.
         :param _builtins.str docker_context_path: The Docker build context.
         :param _builtins.str dockerfile: The Dockerfile path.
-        :param _builtins.str heroku_version: The Heroku buildpack version.
-        :param _builtins.bool is_static_spa: Whether to configure static single-page-application routing.
-        :param _builtins.str publish_directory: The static publish directory.
-        :param _builtins.str railpack_version: The Railpack version.
+        :param _builtins.str heroku_version: Beta. The Heroku buildpack version.
+        :param _builtins.bool is_static_spa: Beta. Whether to configure static single-page-application routing.
+        :param _builtins.str publish_directory: Beta. The static publish directory.
+        :param _builtins.str railpack_version: Beta. The Railpack version.
         """
         pulumi.set(__self__, "type", type)
         if docker_build_stage is not None:
@@ -117,7 +117,7 @@ class ApplicationBuild(dict):
     @pulumi.getter
     def type(self) -> _builtins.str:
         """
-        The build type.
+        The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
         """
         return pulumi.get(self, "type")
 
@@ -149,7 +149,7 @@ class ApplicationBuild(dict):
     @pulumi.getter(name="herokuVersion")
     def heroku_version(self) -> Optional[_builtins.str]:
         """
-        The Heroku buildpack version.
+        Beta. The Heroku buildpack version.
         """
         return pulumi.get(self, "heroku_version")
 
@@ -157,7 +157,7 @@ class ApplicationBuild(dict):
     @pulumi.getter(name="isStaticSpa")
     def is_static_spa(self) -> Optional[_builtins.bool]:
         """
-        Whether to configure static single-page-application routing.
+        Beta. Whether to configure static single-page-application routing.
         """
         return pulumi.get(self, "is_static_spa")
 
@@ -165,7 +165,7 @@ class ApplicationBuild(dict):
     @pulumi.getter(name="publishDirectory")
     def publish_directory(self) -> Optional[_builtins.str]:
         """
-        The static publish directory.
+        Beta. The static publish directory.
         """
         return pulumi.get(self, "publish_directory")
 
@@ -173,7 +173,7 @@ class ApplicationBuild(dict):
     @pulumi.getter(name="railpackVersion")
     def railpack_version(self) -> Optional[_builtins.str]:
         """
-        The Railpack version.
+        Beta. The Railpack version.
         """
         return pulumi.get(self, "railpack_version")
 
@@ -195,11 +195,11 @@ class ApplicationSource(dict):
         Application source configuration.
 
         :param _builtins.str type: The application source type.
-        :param 'BitbucketAppSource' bitbucket: Bitbucket source configuration.
+        :param 'BitbucketAppSource' bitbucket: Beta. Bitbucket source configuration.
         :param 'DockerSource' docker: Docker source configuration.
         :param 'GitApplicationSource' git: Git source configuration.
-        :param 'GiteaAppSource' gitea: Gitea source configuration.
-        :param 'GitHubAppSource' github: GitHub source configuration.
+        :param 'GiteaAppSource' gitea: Beta. Gitea source configuration.
+        :param 'GitHubAppSource' github: Beta. GitHub source configuration.
         :param 'GitLabAppSource' gitlab: GitLab source configuration.
         """
         pulumi.set(__self__, "type", type)
@@ -228,7 +228,7 @@ class ApplicationSource(dict):
     @pulumi.getter
     def bitbucket(self) -> Optional['outputs.BitbucketAppSource']:
         """
-        Bitbucket source configuration.
+        Beta. Bitbucket source configuration.
         """
         return pulumi.get(self, "bitbucket")
 
@@ -252,7 +252,7 @@ class ApplicationSource(dict):
     @pulumi.getter
     def gitea(self) -> Optional['outputs.GiteaAppSource']:
         """
-        Gitea source configuration.
+        Beta. Gitea source configuration.
         """
         return pulumi.get(self, "gitea")
 
@@ -260,7 +260,7 @@ class ApplicationSource(dict):
     @pulumi.getter
     def github(self) -> Optional['outputs.GitHubAppSource']:
         """
-        GitHub source configuration.
+        Beta. GitHub source configuration.
         """
         return pulumi.get(self, "github")
 
@@ -276,7 +276,7 @@ class ApplicationSource(dict):
 @pulumi.output_type
 class BitbucketAppSource(dict):
     """
-    Bitbucket source configuration.
+    Beta. Bitbucket source configuration.
     """
     @staticmethod
     def __key_warning(key: str):
@@ -314,7 +314,7 @@ class BitbucketAppSource(dict):
                  enable_submodules: Optional[_builtins.bool] = None,
                  watch_paths: Optional[Sequence[_builtins.str]] = None):
         """
-        Bitbucket source configuration.
+        Beta. Bitbucket source configuration.
 
         :param _builtins.str branch: The Bitbucket branch.
         :param 'ApplicationBuild' build: The build configuration.
@@ -771,7 +771,7 @@ class GitComposeSource(dict):
 @pulumi.output_type
 class GitHubAppSource(dict):
     """
-    GitHub source configuration.
+    Beta. GitHub source configuration.
     """
     @staticmethod
     def __key_warning(key: str):
@@ -809,7 +809,7 @@ class GitHubAppSource(dict):
                  trigger_type: Optional[_builtins.str] = None,
                  watch_paths: Optional[Sequence[_builtins.str]] = None):
         """
-        GitHub source configuration.
+        Beta. GitHub source configuration.
 
         :param _builtins.str branch: The GitHub branch.
         :param 'ApplicationBuild' build: The build configuration.
@@ -1200,7 +1200,7 @@ class GitLabComposeSource(dict):
 @pulumi.output_type
 class GiteaAppSource(dict):
     """
-    Gitea source configuration.
+    Beta. Gitea source configuration.
     """
     @staticmethod
     def __key_warning(key: str):
@@ -1235,7 +1235,7 @@ class GiteaAppSource(dict):
                  enable_submodules: Optional[_builtins.bool] = None,
                  watch_paths: Optional[Sequence[_builtins.str]] = None):
         """
-        Gitea source configuration.
+        Beta. Gitea source configuration.
 
         :param _builtins.str branch: The Gitea branch.
         :param 'ApplicationBuild' build: The build configuration.

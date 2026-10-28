@@ -39,7 +39,7 @@ const giteaRedirectURIField = "redirectUri"
 
 func (r *GiteaIntegration) Annotate(a infer.Annotator) {
 	a.SetToken("index", "GiteaIntegration")
-	a.Describe(&r, "A Dokploy Gitea OAuth integration configured manually by the operator.")
+	a.Describe(&r, "Beta. A Dokploy Gitea OAuth integration configured manually by the operator.")
 }
 
 func (a *GiteaIntegrationArgs) Annotate(n infer.Annotator) {

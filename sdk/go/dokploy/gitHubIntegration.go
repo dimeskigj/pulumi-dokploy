@@ -12,7 +12,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
+// Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
 type GitHubIntegration struct {
 	pulumi.CustomResourceState
 

@@ -5,7 +5,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 /**
- * A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
+ * Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
  */
 export class GitLabIntegration extends pulumi.CustomResource {
     /**

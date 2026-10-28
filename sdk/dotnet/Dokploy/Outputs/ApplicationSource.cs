@@ -18,7 +18,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
     public sealed class ApplicationSource
     {
         /// <summary>
-        /// Bitbucket source configuration.
+        /// Beta. Bitbucket source configuration.
         /// </summary>
         public readonly Outputs.BitbucketAppSource? Bitbucket;
         /// <summary>
@@ -30,11 +30,11 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         /// </summary>
         public readonly Outputs.GitApplicationSource? Git;
         /// <summary>
-        /// Gitea source configuration.
+        /// Beta. Gitea source configuration.
         /// </summary>
         public readonly Outputs.GiteaAppSource? Gitea;
         /// <summary>
-        /// GitHub source configuration.
+        /// Beta. GitHub source configuration.
         /// </summary>
         public readonly Outputs.GitHubAppSource? Github;
         /// <summary>

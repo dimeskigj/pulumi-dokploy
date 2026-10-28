@@ -16,7 +16,7 @@ import net.dimeski.pulumi.dokploy.inputs.ApplicationBuildArgs;
 
 
 /**
- * GitHub source configuration.
+ * Beta. GitHub source configuration.
  *
  */
 public final class GitHubAppSourceArgs extends com.pulumi.resources.ResourceArgs {

@@ -8,7 +8,6 @@ import (
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
 	"github.com/dimeskigj/pulumi-dokploy/internal/client/generated"
-	"github.com/google/uuid"
 	"github.com/oapi-codegen/nullable"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
@@ -23,10 +22,10 @@ func scheduleNullable(v *string, clear bool) nullable.Nullable[string] {
 	return nil
 }
 
-func scheduleCreateBody(id string, a ScheduleArgs) generated.ScheduleCreateJSONRequestBody {
+func scheduleCreateBody(a ScheduleArgs) generated.ScheduleCreateJSONRequestBody {
 	typ := generated.ScheduleCreateJSONBodyScheduleType(a.ScheduleType)
 	b := generated.ScheduleCreateJSONRequestBody{
-		ScheduleId: &id, Name: a.Name, Command: a.Command, CronExpression: a.CronExpression,
+		Name: a.Name, Command: a.Command, CronExpression: a.CronExpression,
 		ScheduleType: &typ, Enabled: &a.Enabled, AppName: a.AppName,
 		ApplicationId: scheduleNullable(a.ApplicationID, false), ComposeId: scheduleNullable(a.ComposeID, false),
 		ServerId: scheduleNullable(a.ServerID, false), Description: scheduleNullable(a.Description, false),
@@ -156,22 +155,21 @@ func (r Schedule) Create(ctx context.Context, req infer.CreateRequest[ScheduleAr
 	if req.DryRun {
 		return infer.CreateResponse[ScheduleState]{Output: state}, nil
 	}
-	id := uuid.NewString()
 	api := r.client(ctx)
-	// The create contract is bodyless. Use the generated raw request method:
-	// parsing even an unused body can fail after successful response headers,
-	// losing the acknowledged identity. The client transport rejects non-2xx.
-	resp, err := api.ScheduleCreate(ctx, scheduleCreateBody(id, req.Inputs))
+	// Dokploy ignores a client-supplied scheduleId and returns the schedule it created.
+	resp, err := api.ScheduleCreateWithResponse(ctx, scheduleCreateBody(req.Inputs))
 	if err != nil {
 		return infer.CreateResponse[ScheduleState]{}, fmt.Errorf("schedule.create failed: %w", sanitizeScheduleError(err, req.Inputs))
 	}
-	// Body/close failures cannot undo acknowledgment; confirm the exact ID below.
-	_ = resp.Body.Close()
+	if resp.JSON200 == nil || resp.JSON200.ScheduleId == "" {
+		return infer.CreateResponse[ScheduleState]{}, fmt.Errorf("schedule.create returned incomplete schedule")
+	}
+	id := resp.JSON200.ScheduleId
 	state.ScheduleID = id
 	observed, err := readSchedule(ctx, api, id, req.Inputs)
 	if err != nil {
 		// An acknowledged creation is never retried or automatically deleted.
-		// Persist the attempted identity without adopting any unrelated response.
+		// Persist the server-assigned identity without adopting any unrelated response.
 		return infer.CreateResponse[ScheduleState]{ID: id, Output: state}, initFailed(fmt.Errorf("schedule.create was acknowledged but ownership could not be confirmed; inspect the partial resource state before retrying: %w", sanitizeScheduleError(err, req.Inputs)))
 	}
 	return infer.CreateResponse[ScheduleState]{ID: id, Output: observed}, nil

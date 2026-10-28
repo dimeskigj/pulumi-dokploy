@@ -28,6 +28,8 @@ const gitApp = new dokploy.Application("git-web", {
 
 ## Repository sources and builders
 
+The GitHub, Gitea, and Bitbucket source variants are **Beta**. Managed `GitLabIntegration`, `GitHubIntegration`, `GiteaIntegration`, and `BitbucketIntegration` resources are also **Beta**; existing GitLab source support is unchanged.
+
 Use exactly one source variant. `github`, `gitea`, `bitbucket`, and `gitlab` refer to existing Dokploy integrations. For an existing GitLab integration, set `type: "gitlab"` and provide the project metadata. Supply an external integration ID or the `gitlabId` output of a managed `GitLabIntegration`. GitHub's optional `triggerType` accepts `push` (the default) or `tag`. Bitbucket requires `repositorySlug` in addition to the integration, owner, repository, and branch. Keep integration and repository identifiers in Pulumi configuration rather than source code.
 
 All six builders are available for Git, GitLab, GitHub, Gitea, and Bitbucket repository sources. Builder-specific options are:
@@ -35,11 +37,11 @@ All six builders are available for Git, GitLab, GitHub, Gitea, and Bitbucket rep
 | Builder (`build.type`) | Options |
 | --- | --- |
 | `dockerfile` | Required `dockerfile`; optional `dockerContextPath` and `dockerBuildStage` |
-| `nixpacks` | Optional `publishDirectory` and `isStaticSpa` |
-| `heroku_buildpacks` | Optional `herokuVersion` |
-| `paketo_buildpacks` | No builder-specific options |
-| `static` | Optional `isStaticSpa` |
-| `railpack` | Optional `railpackVersion` |
+| `nixpacks` | Optional `publishDirectory` and `isStaticSpa` (**Beta**) |
+| `heroku_buildpacks` (**Beta**) | Optional `herokuVersion` (**Beta**) |
+| `paketo_buildpacks` (**Beta**) | No builder-specific options |
+| `static` (**Beta**) | Optional `isStaticSpa` (**Beta**) |
+| `railpack` (**Beta**) | Optional `railpackVersion` (**Beta**) |
 
 `publishDirectory` applies to Nixpacks; `isStaticSpa` is supported by Nixpacks and Static. Do not pass options belonging to a different builder. Docker image sources do not use repository build settings.
 
@@ -81,7 +83,7 @@ const gitlabExample = new dokploy.Application("gitlab-example", {
 });
 ```
 
-`autoDeploy` is optional. Omitting it leaves Dokploy's current/default value unmanaged; setting `false` disables automatic deployment triggers, and setting `true` enables them. This does not suppress the provider's explicit deployment during create or runtime source/build updates. Changing only `autoDeploy` is configuration-only and does not fetch, build, deploy, or redeploy the application. GitHub `push`/`tag` selects the integration trigger; it is distinct from the provider's explicit deployment lifecycle.
+`autoDeploy` (**Beta**) is optional. Omitting it leaves Dokploy's current/default value unmanaged; setting `false` disables automatic deployment triggers, and setting `true` enables them. This does not suppress the provider's explicit deployment during create or runtime source/build updates. Changing only `autoDeploy` is configuration-only and does not fetch, build, deploy, or redeploy the application. GitHub `push`/`tag` selects the integration trigger; it is distinct from the provider's explicit deployment lifecycle.
 
 Creates and runtime source/build updates fetch the selected source and wait for deployment completion. A source discriminator change replaces the Application; `environmentId` and `serverId` are also replacement-only. Other metadata and source settings update through the normal Pulumi diff. The Project/Environment is a dependency; external integrations remain unmanaged, while SSH keys can be managed by this provider. See [sources](../../concepts/sources/) and the [Application reference](../../reference/application/).
 

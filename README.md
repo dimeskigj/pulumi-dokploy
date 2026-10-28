@@ -59,6 +59,18 @@ The provider exposes these resources: `dokploy:index:Project`, `dokploy:index:En
 `dokploy:index:GitHubIntegration`, `dokploy:index:GiteaIntegration`, and
 `dokploy:index:BitbucketIntegration`.
 
+### Beta
+
+| Feature | Status |
+| --- | --- |
+| `GitLabIntegration`, `GitHubIntegration` (import-only), `GiteaIntegration`, `BitbucketIntegration` | Beta |
+| Application sources: GitHub, Gitea, Bitbucket | Beta |
+| Builders: Heroku Buildpacks, Paketo Buildpacks, Static, Railpack | Beta |
+| Build options: `herokuVersion`, `railpackVersion`, `publishDirectory`, `isStaticSpa` | Beta |
+| Application `autoDeploy` | Beta |
+
+### Resource behavior
+
 `Backup` schedules database backups (Postgres, MySQL, MariaDB, or MongoDB) to a `Destination`.
 `VolumeBackup` schedules Docker volume backups for an `Application` or `Compose` service to a
 `Destination`. Both require a `Destination` (an S3-compatible storage target) to exist first.

@@ -8,9 +8,9 @@ Applications use exactly one `ApplicationSource` discriminator:
 - `type: "docker"` with `docker` settings for a Docker image.
 - `type: "git"` with `git` settings for a public Git repository.
 - `type: "gitlab"` with `gitlab` settings for an existing GitLab integration and repository.
-- `type: "github"` with `github` settings for an existing GitHub integration and repository. Optional `triggerType` is `push` (default) or `tag`.
-- `type: "gitea"` with `gitea` settings for an existing Gitea integration and repository.
-- `type: "bitbucket"` with `bitbucket` settings for an existing Bitbucket integration and repository. `repositorySlug` is required.
+- `type: "github"` (**Beta**) with `github` settings for an existing GitHub integration and repository. Optional `triggerType` is `push` (default) or `tag`.
+- `type: "gitea"` (**Beta**) with `gitea` settings for an existing Gitea integration and repository.
+- `type: "bitbucket"` (**Beta**) with `bitbucket` settings for an existing Bitbucket integration and repository. `repositorySlug` is required.
 
 Generic Git is URL-based: provide the repository URL, branch, and build settings; it does not require a Dokploy integration or integration identity fields. An SSH-backed generic Git repository can also use `sshKeyId`.
 
@@ -18,13 +18,15 @@ The GitHub, Gitea, Bitbucket, and GitLab variants use existing Dokploy integrati
 
 Repository sources support `dockerfile`, `nixpacks`, `heroku_buildpacks`, `paketo_buildpacks`, `static`, and `railpack`. `publishDirectory` is Nixpacks-only; `isStaticSpa` is valid for Nixpacks and Static; `herokuVersion` and `railpackVersion` apply only to their respective builders. Docker image sources do not send build configuration. See the [Applications guide](../../guides/applications/) for the option table and checked example.
 
+Heroku Buildpacks, Paketo Buildpacks, Static, Railpack, and the `herokuVersion`, `railpackVersion`, `publishDirectory`, and `isStaticSpa` options are **Beta**. Application `autoDeploy` is **Beta**.
+
 Compose stacks use one `ComposeSource` discriminator:
 
 - `type: "raw"` with Compose content in the configuration.
 - `type: "git"` with a Git repository and path.
 - `type: "gitlab"` with an existing GitLab integration and repository details.
 
-GitLab integrations can be managed with `GitLabIntegration` or supplied as an
+GitLab integrations can be managed with `GitLabIntegration` (**Beta**) or supplied as an
 external relation ID. Managed configuration does not authorize OAuth: configure
 the integration, authorize it in Dokploy, then add GitLab-backed workloads as a
 second stage. See the [GitLab integrations guide](../../guides/gitlab-integrations/).

@@ -65,7 +65,7 @@ class GitHubIntegration(pulumi.CustomResource):
                  name: pulumi.Input[Optional[_builtins.str]] = None,
                  __props__=None):
         """
-        Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
+        Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
@@ -79,7 +79,7 @@ class GitHubIntegration(pulumi.CustomResource):
                  args: GitHubIntegrationArgs,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
-        Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
+        Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
 
         :param str resource_name: The name of the resource.
         :param GitHubIntegrationArgs args: The arguments to use to populate this resource's properties.

@@ -11,7 +11,7 @@ using Pulumi;
 namespace Dimeskigj.Pulumi.Dokploy
 {
     /// <summary>
-    /// A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
+    /// Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
     /// </summary>
     [DokployResourceType("dokploy:index:GitLabIntegration")]
     public partial class GitLabIntegration : global::Pulumi.CustomResource

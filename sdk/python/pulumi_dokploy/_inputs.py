@@ -74,7 +74,7 @@ class ApplicationBuildArgsDict(TypedDict):
     """
     type: pulumi.Input[_builtins.str]
     """
-    The build type.
+    The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
     """
     docker_build_stage: NotRequired[pulumi.Input[Optional[_builtins.str]]]
     """
@@ -90,19 +90,19 @@ class ApplicationBuildArgsDict(TypedDict):
     """
     heroku_version: NotRequired[pulumi.Input[Optional[_builtins.str]]]
     """
-    The Heroku buildpack version.
+    Beta. The Heroku buildpack version.
     """
     is_static_spa: NotRequired[pulumi.Input[Optional[_builtins.bool]]]
     """
-    Whether to configure static single-page-application routing.
+    Beta. Whether to configure static single-page-application routing.
     """
     publish_directory: NotRequired[pulumi.Input[Optional[_builtins.str]]]
     """
-    The static publish directory.
+    Beta. The static publish directory.
     """
     railpack_version: NotRequired[pulumi.Input[Optional[_builtins.str]]]
     """
-    The Railpack version.
+    Beta. The Railpack version.
     """
 
 @pulumi.input_type
@@ -119,14 +119,14 @@ class ApplicationBuildArgs:
         """
         Application build configuration.
 
-        :param pulumi.Input[_builtins.str] type: The build type.
+        :param pulumi.Input[_builtins.str] type: The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
         :param pulumi.Input[_builtins.str] docker_build_stage: The Docker build stage.
         :param pulumi.Input[_builtins.str] docker_context_path: The Docker build context.
         :param pulumi.Input[_builtins.str] dockerfile: The Dockerfile path.
-        :param pulumi.Input[_builtins.str] heroku_version: The Heroku buildpack version.
-        :param pulumi.Input[_builtins.bool] is_static_spa: Whether to configure static single-page-application routing.
-        :param pulumi.Input[_builtins.str] publish_directory: The static publish directory.
-        :param pulumi.Input[_builtins.str] railpack_version: The Railpack version.
+        :param pulumi.Input[_builtins.str] heroku_version: Beta. The Heroku buildpack version.
+        :param pulumi.Input[_builtins.bool] is_static_spa: Beta. Whether to configure static single-page-application routing.
+        :param pulumi.Input[_builtins.str] publish_directory: Beta. The static publish directory.
+        :param pulumi.Input[_builtins.str] railpack_version: Beta. The Railpack version.
         """
         pulumi.set(__self__, "type", type)
         if docker_build_stage is not None:
@@ -148,7 +148,7 @@ class ApplicationBuildArgs:
     @pulumi.getter
     def type(self) -> pulumi.Input[_builtins.str]:
         """
-        The build type.
+        The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
         """
         return pulumi.get(self, "type")
 
@@ -196,7 +196,7 @@ class ApplicationBuildArgs:
     @pulumi.getter(name="herokuVersion")
     def heroku_version(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
-        The Heroku buildpack version.
+        Beta. The Heroku buildpack version.
         """
         return pulumi.get(self, "heroku_version")
 
@@ -208,7 +208,7 @@ class ApplicationBuildArgs:
     @pulumi.getter(name="isStaticSpa")
     def is_static_spa(self) -> pulumi.Input[Optional[_builtins.bool]]:
         """
-        Whether to configure static single-page-application routing.
+        Beta. Whether to configure static single-page-application routing.
         """
         return pulumi.get(self, "is_static_spa")
 
@@ -220,7 +220,7 @@ class ApplicationBuildArgs:
     @pulumi.getter(name="publishDirectory")
     def publish_directory(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
-        The static publish directory.
+        Beta. The static publish directory.
         """
         return pulumi.get(self, "publish_directory")
 
@@ -232,7 +232,7 @@ class ApplicationBuildArgs:
     @pulumi.getter(name="railpackVersion")
     def railpack_version(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
-        The Railpack version.
+        Beta. The Railpack version.
         """
         return pulumi.get(self, "railpack_version")
 
@@ -251,7 +251,7 @@ class ApplicationSourceArgsDict(TypedDict):
     """
     bitbucket: NotRequired[pulumi.Input[Optional['BitbucketAppSourceArgsDict']]]
     """
-    Bitbucket source configuration.
+    Beta. Bitbucket source configuration.
     """
     docker: NotRequired[pulumi.Input[Optional['DockerSourceArgsDict']]]
     """
@@ -263,11 +263,11 @@ class ApplicationSourceArgsDict(TypedDict):
     """
     gitea: NotRequired[pulumi.Input[Optional['GiteaAppSourceArgsDict']]]
     """
-    Gitea source configuration.
+    Beta. Gitea source configuration.
     """
     github: NotRequired[pulumi.Input[Optional['GitHubAppSourceArgsDict']]]
     """
-    GitHub source configuration.
+    Beta. GitHub source configuration.
     """
     gitlab: NotRequired[pulumi.Input[Optional['GitLabAppSourceArgsDict']]]
     """
@@ -288,11 +288,11 @@ class ApplicationSourceArgs:
         Application source configuration.
 
         :param pulumi.Input[_builtins.str] type: The application source type.
-        :param pulumi.Input['BitbucketAppSourceArgs'] bitbucket: Bitbucket source configuration.
+        :param pulumi.Input['BitbucketAppSourceArgs'] bitbucket: Beta. Bitbucket source configuration.
         :param pulumi.Input['DockerSourceArgs'] docker: Docker source configuration.
         :param pulumi.Input['GitApplicationSourceArgs'] git: Git source configuration.
-        :param pulumi.Input['GiteaAppSourceArgs'] gitea: Gitea source configuration.
-        :param pulumi.Input['GitHubAppSourceArgs'] github: GitHub source configuration.
+        :param pulumi.Input['GiteaAppSourceArgs'] gitea: Beta. Gitea source configuration.
+        :param pulumi.Input['GitHubAppSourceArgs'] github: Beta. GitHub source configuration.
         :param pulumi.Input['GitLabAppSourceArgs'] gitlab: GitLab source configuration.
         """
         pulumi.set(__self__, "type", type)
@@ -325,7 +325,7 @@ class ApplicationSourceArgs:
     @pulumi.getter
     def bitbucket(self) -> pulumi.Input[Optional['BitbucketAppSourceArgs']]:
         """
-        Bitbucket source configuration.
+        Beta. Bitbucket source configuration.
         """
         return pulumi.get(self, "bitbucket")
 
@@ -361,7 +361,7 @@ class ApplicationSourceArgs:
     @pulumi.getter
     def gitea(self) -> pulumi.Input[Optional['GiteaAppSourceArgs']]:
         """
-        Gitea source configuration.
+        Beta. Gitea source configuration.
         """
         return pulumi.get(self, "gitea")
 
@@ -373,7 +373,7 @@ class ApplicationSourceArgs:
     @pulumi.getter
     def github(self) -> pulumi.Input[Optional['GitHubAppSourceArgs']]:
         """
-        GitHub source configuration.
+        Beta. GitHub source configuration.
         """
         return pulumi.get(self, "github")
 
@@ -396,7 +396,7 @@ class ApplicationSourceArgs:
 
 class BitbucketAppSourceArgsDict(TypedDict):
     """
-    Bitbucket source configuration.
+    Beta. Bitbucket source configuration.
     """
     branch: pulumi.Input[_builtins.str]
     """
@@ -448,7 +448,7 @@ class BitbucketAppSourceArgs:
                  enable_submodules: pulumi.Input[Optional[_builtins.bool]] = None,
                  watch_paths: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]] = None):
         """
-        Bitbucket source configuration.
+        Beta. Bitbucket source configuration.
 
         :param pulumi.Input[_builtins.str] branch: The Bitbucket branch.
         :param pulumi.Input['ApplicationBuildArgs'] build: The build configuration.
@@ -1053,7 +1053,7 @@ class GitComposeSourceArgs:
 
 class GitHubAppSourceArgsDict(TypedDict):
     """
-    GitHub source configuration.
+    Beta. GitHub source configuration.
     """
     branch: pulumi.Input[_builtins.str]
     """
@@ -1105,7 +1105,7 @@ class GitHubAppSourceArgs:
                  trigger_type: pulumi.Input[Optional[_builtins.str]] = None,
                  watch_paths: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]] = None):
         """
-        GitHub source configuration.
+        Beta. GitHub source configuration.
 
         :param pulumi.Input[_builtins.str] branch: The GitHub branch.
         :param pulumi.Input['ApplicationBuildArgs'] build: The build configuration.
@@ -1637,7 +1637,7 @@ class GitLabComposeSourceArgs:
 
 class GiteaAppSourceArgsDict(TypedDict):
     """
-    Gitea source configuration.
+    Beta. Gitea source configuration.
     """
     branch: pulumi.Input[_builtins.str]
     """
@@ -1684,7 +1684,7 @@ class GiteaAppSourceArgs:
                  enable_submodules: pulumi.Input[Optional[_builtins.bool]] = None,
                  watch_paths: pulumi.Input[Optional[Sequence[pulumi.Input[_builtins.str]]]] = None):
         """
-        Gitea source configuration.
+        Beta. Gitea source configuration.
 
         :param pulumi.Input[_builtins.str] branch: The Gitea branch.
         :param pulumi.Input['ApplicationBuildArgs'] build: The build configuration.

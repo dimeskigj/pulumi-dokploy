@@ -12,7 +12,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
 {
 
     /// <summary>
-    /// Gitea source configuration.
+    /// Beta. Gitea source configuration.
     /// </summary>
     [OutputType]
     public sealed class GiteaAppSource

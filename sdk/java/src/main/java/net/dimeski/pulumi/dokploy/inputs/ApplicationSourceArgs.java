@@ -27,14 +27,14 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
     public static final ApplicationSourceArgs Empty = new ApplicationSourceArgs();
 
     /**
-     * Bitbucket source configuration.
+     * Beta. Bitbucket source configuration.
      *
      */
     @Import(name="bitbucket")
     private @Nullable Output<BitbucketAppSourceArgs> bitbucket;
 
     /**
-     * @return Bitbucket source configuration.
+     * @return Beta. Bitbucket source configuration.
      *
      */
     public Optional<Output<BitbucketAppSourceArgs>> bitbucket() {
@@ -72,14 +72,14 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
     }
 
     /**
-     * Gitea source configuration.
+     * Beta. Gitea source configuration.
      *
      */
     @Import(name="gitea")
     private @Nullable Output<GiteaAppSourceArgs> gitea;
 
     /**
-     * @return Gitea source configuration.
+     * @return Beta. Gitea source configuration.
      *
      */
     public Optional<Output<GiteaAppSourceArgs>> gitea() {
@@ -87,14 +87,14 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
     }
 
     /**
-     * GitHub source configuration.
+     * Beta. GitHub source configuration.
      *
      */
     @Import(name="github")
     private @Nullable Output<GitHubAppSourceArgs> github;
 
     /**
-     * @return GitHub source configuration.
+     * @return Beta. GitHub source configuration.
      *
      */
     public Optional<Output<GitHubAppSourceArgs>> github() {
@@ -162,7 +162,7 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
         }
 
         /**
-         * @param bitbucket Bitbucket source configuration.
+         * @param bitbucket Beta. Bitbucket source configuration.
          *
          * @return builder
          *
@@ -173,7 +173,7 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
         }
 
         /**
-         * @param bitbucket Bitbucket source configuration.
+         * @param bitbucket Beta. Bitbucket source configuration.
          *
          * @return builder
          *
@@ -225,7 +225,7 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
         }
 
         /**
-         * @param gitea Gitea source configuration.
+         * @param gitea Beta. Gitea source configuration.
          *
          * @return builder
          *
@@ -236,7 +236,7 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
         }
 
         /**
-         * @param gitea Gitea source configuration.
+         * @param gitea Beta. Gitea source configuration.
          *
          * @return builder
          *
@@ -246,7 +246,7 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
         }
 
         /**
-         * @param github GitHub source configuration.
+         * @param github Beta. GitHub source configuration.
          *
          * @return builder
          *
@@ -257,7 +257,7 @@ public final class ApplicationSourceArgs extends com.pulumi.resources.ResourceAr
         }
 
         /**
-         * @param github GitHub source configuration.
+         * @param github Beta. GitHub source configuration.
          *
          * @return builder
          *

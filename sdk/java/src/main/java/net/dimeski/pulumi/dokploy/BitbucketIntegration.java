@@ -15,7 +15,7 @@ import net.dimeski.pulumi.dokploy.BitbucketIntegrationArgs;
 import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
- * Manages a Dokploy Bitbucket integration using an API token or legacy app password.
+ * Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.
  *
  */
 @ResourceType(type="dokploy:index:BitbucketIntegration")

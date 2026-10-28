@@ -19,7 +19,7 @@ import net.dimeski.pulumi.dokploy.outputs.GiteaAppSource;
 @CustomType
 public final class ApplicationSource {
     /**
-     * @return Bitbucket source configuration.
+     * @return Beta. Bitbucket source configuration.
      *
      */
     private @Nullable BitbucketAppSource bitbucket;
@@ -34,12 +34,12 @@ public final class ApplicationSource {
      */
     private @Nullable GitApplicationSource git;
     /**
-     * @return Gitea source configuration.
+     * @return Beta. Gitea source configuration.
      *
      */
     private @Nullable GiteaAppSource gitea;
     /**
-     * @return GitHub source configuration.
+     * @return Beta. GitHub source configuration.
      *
      */
     private @Nullable GitHubAppSource github;
@@ -56,7 +56,7 @@ public final class ApplicationSource {
 
     private ApplicationSource() {}
     /**
-     * @return Bitbucket source configuration.
+     * @return Beta. Bitbucket source configuration.
      *
      */
     public Optional<BitbucketAppSource> bitbucket() {
@@ -77,14 +77,14 @@ public final class ApplicationSource {
         return Optional.ofNullable(this.git);
     }
     /**
-     * @return Gitea source configuration.
+     * @return Beta. Gitea source configuration.
      *
      */
     public Optional<GiteaAppSource> gitea() {
         return Optional.ofNullable(this.gitea);
     }
     /**
-     * @return GitHub source configuration.
+     * @return Beta. GitHub source configuration.
      *
      */
     public Optional<GitHubAppSource> github() {

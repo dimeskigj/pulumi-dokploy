@@ -60,7 +60,7 @@ func (a *ApplicationArgs) Annotate(annotator infer.Annotator) {
 	annotator.Describe(&a.BuildArgs, "Build arguments for the application.")
 	annotator.Describe(&a.BuildSecrets, "Build secrets for the application.")
 	annotator.Describe(&a.CreateEnvFile, "Whether to create an environment file.")
-	annotator.Describe(&a.AutoDeploy, "Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.")
+	annotator.Describe(&a.AutoDeploy, "Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.")
 }
 
 func (r Application) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[ApplicationArgs], error) {

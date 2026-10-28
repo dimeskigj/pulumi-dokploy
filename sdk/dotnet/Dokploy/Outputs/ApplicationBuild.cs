@@ -30,23 +30,23 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
         /// </summary>
         public readonly string? Dockerfile;
         /// <summary>
-        /// The Heroku buildpack version.
+        /// Beta. The Heroku buildpack version.
         /// </summary>
         public readonly string? HerokuVersion;
         /// <summary>
-        /// Whether to configure static single-page-application routing.
+        /// Beta. Whether to configure static single-page-application routing.
         /// </summary>
         public readonly bool? IsStaticSpa;
         /// <summary>
-        /// The static publish directory.
+        /// Beta. The static publish directory.
         /// </summary>
         public readonly string? PublishDirectory;
         /// <summary>
-        /// The Railpack version.
+        /// Beta. The Railpack version.
         /// </summary>
         public readonly string? RailpackVersion;
         /// <summary>
-        /// The build type.
+        /// The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
         /// </summary>
         public readonly string Type;
 

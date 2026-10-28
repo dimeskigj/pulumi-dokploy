@@ -5,7 +5,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 /**
- * Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
+ * Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.
  */
 export class GitHubIntegration extends pulumi.CustomResource {
     /**

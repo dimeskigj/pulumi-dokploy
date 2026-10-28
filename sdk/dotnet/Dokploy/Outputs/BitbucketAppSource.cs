@@ -12,7 +12,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Outputs
 {
 
     /// <summary>
-    /// Bitbucket source configuration.
+    /// Beta. Bitbucket source configuration.
     /// </summary>
     [OutputType]
     public sealed class BitbucketAppSource

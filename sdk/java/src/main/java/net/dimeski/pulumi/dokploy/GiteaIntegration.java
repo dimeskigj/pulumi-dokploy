@@ -15,7 +15,7 @@ import net.dimeski.pulumi.dokploy.GiteaIntegrationArgs;
 import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
- * A Dokploy Gitea OAuth integration configured manually by the operator.
+ * Beta. A Dokploy Gitea OAuth integration configured manually by the operator.
  *
  */
 @ResourceType(type="dokploy:index:GiteaIntegration")

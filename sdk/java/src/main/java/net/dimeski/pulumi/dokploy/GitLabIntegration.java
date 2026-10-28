@@ -16,7 +16,7 @@ import net.dimeski.pulumi.dokploy.GitLabIntegrationArgs;
 import net.dimeski.pulumi.dokploy.Utilities;
 
 /**
- * A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
+ * Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
  *
  */
 @ResourceType(type="dokploy:index:GitLabIntegration")

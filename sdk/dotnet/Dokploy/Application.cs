@@ -29,7 +29,7 @@ namespace Dimeskigj.Pulumi.Dokploy
         public Output<string> ApplicationId { get; private set; } = null!;
 
         /// <summary>
-        /// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        /// Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
         /// </summary>
         [Output("autoDeploy")]
         public Output<bool?> AutoDeploy { get; private set; } = null!;
@@ -170,7 +170,7 @@ namespace Dimeskigj.Pulumi.Dokploy
         public Input<string>? AppName { get; set; }
 
         /// <summary>
-        /// Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+        /// Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
         /// </summary>
         [Input("autoDeploy")]
         public Input<bool>? AutoDeploy { get; set; }

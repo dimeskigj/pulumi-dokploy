@@ -34,14 +34,14 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
-     * Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     * Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
      *
      */
     @Import(name="autoDeploy")
     private @Nullable Output<Boolean> autoDeploy;
 
     /**
-     * @return Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     * @return Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
      *
      */
     public Optional<Output<Boolean>> autoDeploy() {
@@ -271,7 +271,7 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param autoDeploy Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+         * @param autoDeploy Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
          *
          * @return builder
          *
@@ -282,7 +282,7 @@ public final class ApplicationArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param autoDeploy Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+         * @param autoDeploy Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
          *
          * @return builder
          *

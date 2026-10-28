@@ -12,7 +12,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// Manages a Dokploy Bitbucket integration using an API token or legacy app password.
+// Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.
 type BitbucketIntegration struct {
 	pulumi.CustomResourceState
 

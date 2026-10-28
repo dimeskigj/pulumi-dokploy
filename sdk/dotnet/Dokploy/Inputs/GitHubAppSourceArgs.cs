@@ -12,7 +12,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 {
 
     /// <summary>
-    /// GitHub source configuration.
+    /// Beta. GitHub source configuration.
     /// </summary>
     public sealed class GitHubAppSourceArgs : global::Pulumi.ResourceArgs
     {

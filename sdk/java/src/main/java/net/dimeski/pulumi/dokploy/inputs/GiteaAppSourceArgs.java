@@ -16,7 +16,7 @@ import net.dimeski.pulumi.dokploy.inputs.ApplicationBuildArgs;
 
 
 /**
- * Gitea source configuration.
+ * Beta. Gitea source configuration.
  *
  */
 public final class GiteaAppSourceArgs extends com.pulumi.resources.ResourceArgs {

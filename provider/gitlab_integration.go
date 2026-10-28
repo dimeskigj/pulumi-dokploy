@@ -41,7 +41,7 @@ type GitLabIntegration struct{ client clientFactory }
 
 func (r *GitLabIntegration) Annotate(a infer.Annotator) {
 	a.SetToken("index", "GitLabIntegration")
-	a.Describe(&r, "A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.")
+	a.Describe(&r, "Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.")
 }
 
 func (a *GitLabIntegrationArgs) Annotate(n infer.Annotator) {

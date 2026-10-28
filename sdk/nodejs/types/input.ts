@@ -25,23 +25,23 @@ export interface ApplicationBuildArgs {
      */
     dockerfile?: pulumi.Input<string | undefined>;
     /**
-     * The Heroku buildpack version.
+     * Beta. The Heroku buildpack version.
      */
     herokuVersion?: pulumi.Input<string | undefined>;
     /**
-     * Whether to configure static single-page-application routing.
+     * Beta. Whether to configure static single-page-application routing.
      */
     isStaticSpa?: pulumi.Input<boolean | undefined>;
     /**
-     * The static publish directory.
+     * Beta. The static publish directory.
      */
     publishDirectory?: pulumi.Input<string | undefined>;
     /**
-     * The Railpack version.
+     * Beta. The Railpack version.
      */
     railpackVersion?: pulumi.Input<string | undefined>;
     /**
-     * The build type.
+     * The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
      */
     type: pulumi.Input<string>;
 }
@@ -51,7 +51,7 @@ export interface ApplicationBuildArgs {
  */
 export interface ApplicationSourceArgs {
     /**
-     * Bitbucket source configuration.
+     * Beta. Bitbucket source configuration.
      */
     bitbucket?: pulumi.Input<inputs.BitbucketAppSourceArgs | undefined>;
     /**
@@ -63,11 +63,11 @@ export interface ApplicationSourceArgs {
      */
     git?: pulumi.Input<inputs.GitApplicationSourceArgs | undefined>;
     /**
-     * Gitea source configuration.
+     * Beta. Gitea source configuration.
      */
     gitea?: pulumi.Input<inputs.GiteaAppSourceArgs | undefined>;
     /**
-     * GitHub source configuration.
+     * Beta. GitHub source configuration.
      */
     github?: pulumi.Input<inputs.GitHubAppSourceArgs | undefined>;
     /**
@@ -81,7 +81,7 @@ export interface ApplicationSourceArgs {
 }
 
 /**
- * Bitbucket source configuration.
+ * Beta. Bitbucket source configuration.
  */
 export interface BitbucketAppSourceArgs {
     /**
@@ -231,7 +231,7 @@ export interface GitComposeSourceArgs {
 }
 
 /**
- * GitHub source configuration.
+ * Beta. GitHub source configuration.
  */
 export interface GitHubAppSourceArgs {
     /**
@@ -361,7 +361,7 @@ export interface GitLabComposeSourceArgs {
 }
 
 /**
- * Gitea source configuration.
+ * Beta. Gitea source configuration.
  */
 export interface GiteaAppSourceArgs {
     /**

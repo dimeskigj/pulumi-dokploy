@@ -134,7 +134,7 @@ class BitbucketIntegration(pulumi.CustomResource):
                  name: pulumi.Input[Optional[_builtins.str]] = None,
                  __props__=None):
         """
-        Manages a Dokploy Bitbucket integration using an API token or legacy app password.
+        Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
@@ -152,7 +152,7 @@ class BitbucketIntegration(pulumi.CustomResource):
                  args: BitbucketIntegrationArgs,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
-        Manages a Dokploy Bitbucket integration using an API token or legacy app password.
+        Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.
 
         :param str resource_name: The name of the resource.
         :param BitbucketIntegrationArgs args: The arguments to use to populate this resource's properties.

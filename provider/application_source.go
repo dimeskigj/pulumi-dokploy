@@ -45,9 +45,9 @@ func (s *ApplicationSource) Annotate(a infer.Annotator) {
 	a.Describe(&s.Docker, "Docker source configuration.")
 	a.Describe(&s.Git, "Git source configuration.")
 	a.Describe(&s.GitLab, "GitLab source configuration.")
-	a.Describe(&s.GitHub, "GitHub source configuration.")
-	a.Describe(&s.Gitea, "Gitea source configuration.")
-	a.Describe(&s.Bitbucket, "Bitbucket source configuration.")
+	a.Describe(&s.GitHub, "Beta. GitHub source configuration.")
+	a.Describe(&s.Gitea, "Beta. Gitea source configuration.")
+	a.Describe(&s.Bitbucket, "Beta. Bitbucket source configuration.")
 }
 
 type DockerSource struct {
@@ -126,14 +126,14 @@ type ApplicationBuild struct {
 
 func (b *ApplicationBuild) Annotate(a infer.Annotator) {
 	a.Describe(&b, "Application build configuration.")
-	a.Describe(&b.Type, "The build type.")
+	a.Describe(&b.Type, "The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.")
 	a.Describe(&b.Dockerfile, "The Dockerfile path.")
 	a.Describe(&b.DockerContextPath, "The Docker build context.")
 	a.Describe(&b.DockerBuildStage, "The Docker build stage.")
-	a.Describe(&b.HerokuVersion, "The Heroku buildpack version.")
-	a.Describe(&b.RailpackVersion, "The Railpack version.")
-	a.Describe(&b.PublishDirectory, "The static publish directory.")
-	a.Describe(&b.IsStaticSpa, "Whether to configure static single-page-application routing.")
+	a.Describe(&b.HerokuVersion, "Beta. The Heroku buildpack version.")
+	a.Describe(&b.RailpackVersion, "Beta. The Railpack version.")
+	a.Describe(&b.PublishDirectory, "Beta. The static publish directory.")
+	a.Describe(&b.IsStaticSpa, "Beta. Whether to configure static single-page-application routing.")
 }
 
 func (s ApplicationSource) applicationBuild() (ApplicationBuild, bool) {

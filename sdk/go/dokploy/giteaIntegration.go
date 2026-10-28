@@ -12,7 +12,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// A Dokploy Gitea OAuth integration configured manually by the operator.
+// Beta. A Dokploy Gitea OAuth integration configured manually by the operator.
 type GiteaIntegration struct {
 	pulumi.CustomResourceState
 

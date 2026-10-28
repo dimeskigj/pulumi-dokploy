@@ -51,14 +51,14 @@ public class Application extends com.pulumi.resources.CustomResource {
         return this.applicationId;
     }
     /**
-     * Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     * Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
      *
      */
     @Export(name="autoDeploy", refs={Boolean.class}, tree="[0]")
     private Output</* @Nullable */ Boolean> autoDeploy;
 
     /**
-     * @return Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     * @return Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
      *
      */
     public Output<Optional<Boolean>> autoDeploy() {

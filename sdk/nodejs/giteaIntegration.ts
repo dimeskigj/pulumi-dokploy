@@ -5,7 +5,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 /**
- * A Dokploy Gitea OAuth integration configured manually by the operator.
+ * Beta. A Dokploy Gitea OAuth integration configured manually by the operator.
  */
 export class GiteaIntegration extends pulumi.CustomResource {
     /**

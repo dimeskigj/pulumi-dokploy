@@ -67,14 +67,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
     }
 
     /**
-     * The Heroku buildpack version.
+     * Beta. The Heroku buildpack version.
      *
      */
     @Import(name="herokuVersion")
     private @Nullable Output<String> herokuVersion;
 
     /**
-     * @return The Heroku buildpack version.
+     * @return Beta. The Heroku buildpack version.
      *
      */
     public Optional<Output<String>> herokuVersion() {
@@ -82,14 +82,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
     }
 
     /**
-     * Whether to configure static single-page-application routing.
+     * Beta. Whether to configure static single-page-application routing.
      *
      */
     @Import(name="isStaticSpa")
     private @Nullable Output<Boolean> isStaticSpa;
 
     /**
-     * @return Whether to configure static single-page-application routing.
+     * @return Beta. Whether to configure static single-page-application routing.
      *
      */
     public Optional<Output<Boolean>> isStaticSpa() {
@@ -97,14 +97,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
     }
 
     /**
-     * The static publish directory.
+     * Beta. The static publish directory.
      *
      */
     @Import(name="publishDirectory")
     private @Nullable Output<String> publishDirectory;
 
     /**
-     * @return The static publish directory.
+     * @return Beta. The static publish directory.
      *
      */
     public Optional<Output<String>> publishDirectory() {
@@ -112,14 +112,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
     }
 
     /**
-     * The Railpack version.
+     * Beta. The Railpack version.
      *
      */
     @Import(name="railpackVersion")
     private @Nullable Output<String> railpackVersion;
 
     /**
-     * @return The Railpack version.
+     * @return Beta. The Railpack version.
      *
      */
     public Optional<Output<String>> railpackVersion() {
@@ -127,14 +127,14 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
     }
 
     /**
-     * The build type.
+     * The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
      *
      */
     @Import(name="type", required=true)
     private Output<String> type;
 
     /**
-     * @return The build type.
+     * @return The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
      *
      */
     public Output<String> type() {
@@ -236,7 +236,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param herokuVersion The Heroku buildpack version.
+         * @param herokuVersion Beta. The Heroku buildpack version.
          *
          * @return builder
          *
@@ -247,7 +247,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param herokuVersion The Heroku buildpack version.
+         * @param herokuVersion Beta. The Heroku buildpack version.
          *
          * @return builder
          *
@@ -257,7 +257,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param isStaticSpa Whether to configure static single-page-application routing.
+         * @param isStaticSpa Beta. Whether to configure static single-page-application routing.
          *
          * @return builder
          *
@@ -268,7 +268,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param isStaticSpa Whether to configure static single-page-application routing.
+         * @param isStaticSpa Beta. Whether to configure static single-page-application routing.
          *
          * @return builder
          *
@@ -278,7 +278,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param publishDirectory The static publish directory.
+         * @param publishDirectory Beta. The static publish directory.
          *
          * @return builder
          *
@@ -289,7 +289,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param publishDirectory The static publish directory.
+         * @param publishDirectory Beta. The static publish directory.
          *
          * @return builder
          *
@@ -299,7 +299,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param railpackVersion The Railpack version.
+         * @param railpackVersion Beta. The Railpack version.
          *
          * @return builder
          *
@@ -310,7 +310,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param railpackVersion The Railpack version.
+         * @param railpackVersion Beta. The Railpack version.
          *
          * @return builder
          *
@@ -320,7 +320,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param type The build type.
+         * @param type The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
          *
          * @return builder
          *
@@ -331,7 +331,7 @@ public final class ApplicationBuildArgs extends com.pulumi.resources.ResourceArg
         }
 
         /**
-         * @param type The build type.
+         * @param type The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
          *
          * @return builder
          *

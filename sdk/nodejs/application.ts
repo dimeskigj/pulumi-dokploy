@@ -46,7 +46,7 @@ export class Application extends pulumi.CustomResource {
      */
     declare public /*out*/ readonly applicationId: pulumi.Output<string>;
     /**
-     * Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     * Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
      */
     declare public readonly autoDeploy: pulumi.Output<boolean | undefined>;
     /**
@@ -168,7 +168,7 @@ export interface ApplicationArgs {
      */
     appName?: pulumi.Input<string | undefined>;
     /**
-     * Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
+     * Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged.
      */
     autoDeploy?: pulumi.Input<boolean | undefined>;
     /**

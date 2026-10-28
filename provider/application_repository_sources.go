@@ -30,7 +30,7 @@ type GitHubAppSource struct {
 }
 
 func (s *GitHubAppSource) Annotate(a infer.Annotator) {
-	a.Describe(&s, "GitHub source configuration.")
+	a.Describe(&s, "Beta. GitHub source configuration.")
 	a.Describe(&s.IntegrationID, "The GitHub integration ID.")
 	a.Describe(&s.Owner, "The GitHub owner.")
 	a.Describe(&s.Repository, "The GitHub repository.")
@@ -54,7 +54,7 @@ type GiteaAppSource struct {
 }
 
 func (s *GiteaAppSource) Annotate(a infer.Annotator) {
-	a.Describe(&s, "Gitea source configuration.")
+	a.Describe(&s, "Beta. Gitea source configuration.")
 	a.Describe(&s.IntegrationID, "The Gitea integration ID.")
 	a.Describe(&s.Owner, "The Gitea owner.")
 	a.Describe(&s.Repository, "The Gitea repository.")
@@ -78,7 +78,7 @@ type BitbucketAppSource struct {
 }
 
 func (s *BitbucketAppSource) Annotate(a infer.Annotator) {
-	a.Describe(&s, "Bitbucket source configuration.")
+	a.Describe(&s, "Beta. Bitbucket source configuration.")
 	a.Describe(&s.IntegrationID, "The Bitbucket integration ID.")
 	a.Describe(&s.Owner, "The Bitbucket owner.")
 	a.Describe(&s.Repository, "The Bitbucket repository.")

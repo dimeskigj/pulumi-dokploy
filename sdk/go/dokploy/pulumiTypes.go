@@ -21,15 +21,15 @@ type ApplicationBuild struct {
 	DockerContextPath *string `pulumi:"dockerContextPath"`
 	// The Dockerfile path.
 	Dockerfile *string `pulumi:"dockerfile"`
-	// The Heroku buildpack version.
+	// Beta. The Heroku buildpack version.
 	HerokuVersion *string `pulumi:"herokuVersion"`
-	// Whether to configure static single-page-application routing.
+	// Beta. Whether to configure static single-page-application routing.
 	IsStaticSpa *bool `pulumi:"isStaticSpa"`
-	// The static publish directory.
+	// Beta. The static publish directory.
 	PublishDirectory *string `pulumi:"publishDirectory"`
-	// The Railpack version.
+	// Beta. The Railpack version.
 	RailpackVersion *string `pulumi:"railpackVersion"`
-	// The build type.
+	// The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
 	Type string `pulumi:"type"`
 }
 
@@ -52,15 +52,15 @@ type ApplicationBuildArgs struct {
 	DockerContextPath pulumi.StringPtrInput `pulumi:"dockerContextPath"`
 	// The Dockerfile path.
 	Dockerfile pulumi.StringPtrInput `pulumi:"dockerfile"`
-	// The Heroku buildpack version.
+	// Beta. The Heroku buildpack version.
 	HerokuVersion pulumi.StringPtrInput `pulumi:"herokuVersion"`
-	// Whether to configure static single-page-application routing.
+	// Beta. Whether to configure static single-page-application routing.
 	IsStaticSpa pulumi.BoolPtrInput `pulumi:"isStaticSpa"`
-	// The static publish directory.
+	// Beta. The static publish directory.
 	PublishDirectory pulumi.StringPtrInput `pulumi:"publishDirectory"`
-	// The Railpack version.
+	// Beta. The Railpack version.
 	RailpackVersion pulumi.StringPtrInput `pulumi:"railpackVersion"`
-	// The build type.
+	// The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
 	Type pulumi.StringInput `pulumi:"type"`
 }
 
@@ -157,27 +157,27 @@ func (o ApplicationBuildOutput) Dockerfile() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ApplicationBuild) *string { return v.Dockerfile }).(pulumi.StringPtrOutput)
 }
 
-// The Heroku buildpack version.
+// Beta. The Heroku buildpack version.
 func (o ApplicationBuildOutput) HerokuVersion() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ApplicationBuild) *string { return v.HerokuVersion }).(pulumi.StringPtrOutput)
 }
 
-// Whether to configure static single-page-application routing.
+// Beta. Whether to configure static single-page-application routing.
 func (o ApplicationBuildOutput) IsStaticSpa() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v ApplicationBuild) *bool { return v.IsStaticSpa }).(pulumi.BoolPtrOutput)
 }
 
-// The static publish directory.
+// Beta. The static publish directory.
 func (o ApplicationBuildOutput) PublishDirectory() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ApplicationBuild) *string { return v.PublishDirectory }).(pulumi.StringPtrOutput)
 }
 
-// The Railpack version.
+// Beta. The Railpack version.
 func (o ApplicationBuildOutput) RailpackVersion() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ApplicationBuild) *string { return v.RailpackVersion }).(pulumi.StringPtrOutput)
 }
 
-// The build type.
+// The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
 func (o ApplicationBuildOutput) Type() pulumi.StringOutput {
 	return o.ApplyT(func(v ApplicationBuild) string { return v.Type }).(pulumi.StringOutput)
 }
@@ -236,7 +236,7 @@ func (o ApplicationBuildPtrOutput) Dockerfile() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
-// The Heroku buildpack version.
+// Beta. The Heroku buildpack version.
 func (o ApplicationBuildPtrOutput) HerokuVersion() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *ApplicationBuild) *string {
 		if v == nil {
@@ -246,7 +246,7 @@ func (o ApplicationBuildPtrOutput) HerokuVersion() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
-// Whether to configure static single-page-application routing.
+// Beta. Whether to configure static single-page-application routing.
 func (o ApplicationBuildPtrOutput) IsStaticSpa() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v *ApplicationBuild) *bool {
 		if v == nil {
@@ -256,7 +256,7 @@ func (o ApplicationBuildPtrOutput) IsStaticSpa() pulumi.BoolPtrOutput {
 	}).(pulumi.BoolPtrOutput)
 }
 
-// The static publish directory.
+// Beta. The static publish directory.
 func (o ApplicationBuildPtrOutput) PublishDirectory() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *ApplicationBuild) *string {
 		if v == nil {
@@ -266,7 +266,7 @@ func (o ApplicationBuildPtrOutput) PublishDirectory() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
-// The Railpack version.
+// Beta. The Railpack version.
 func (o ApplicationBuildPtrOutput) RailpackVersion() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *ApplicationBuild) *string {
 		if v == nil {
@@ -276,7 +276,7 @@ func (o ApplicationBuildPtrOutput) RailpackVersion() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
-// The build type.
+// The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
 func (o ApplicationBuildPtrOutput) Type() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v *ApplicationBuild) *string {
 		if v == nil {
@@ -288,15 +288,15 @@ func (o ApplicationBuildPtrOutput) Type() pulumi.StringPtrOutput {
 
 // Application source configuration.
 type ApplicationSource struct {
-	// Bitbucket source configuration.
+	// Beta. Bitbucket source configuration.
 	Bitbucket *BitbucketAppSource `pulumi:"bitbucket"`
 	// Docker source configuration.
 	Docker *DockerSource `pulumi:"docker"`
 	// Git source configuration.
 	Git *GitApplicationSource `pulumi:"git"`
-	// Gitea source configuration.
+	// Beta. Gitea source configuration.
 	Gitea *GiteaAppSource `pulumi:"gitea"`
-	// GitHub source configuration.
+	// Beta. GitHub source configuration.
 	Github *GitHubAppSource `pulumi:"github"`
 	// GitLab source configuration.
 	Gitlab *GitLabAppSource `pulumi:"gitlab"`
@@ -317,15 +317,15 @@ type ApplicationSourceInput interface {
 
 // Application source configuration.
 type ApplicationSourceArgs struct {
-	// Bitbucket source configuration.
+	// Beta. Bitbucket source configuration.
 	Bitbucket BitbucketAppSourcePtrInput `pulumi:"bitbucket"`
 	// Docker source configuration.
 	Docker DockerSourcePtrInput `pulumi:"docker"`
 	// Git source configuration.
 	Git GitApplicationSourcePtrInput `pulumi:"git"`
-	// Gitea source configuration.
+	// Beta. Gitea source configuration.
 	Gitea GiteaAppSourcePtrInput `pulumi:"gitea"`
-	// GitHub source configuration.
+	// Beta. GitHub source configuration.
 	Github GitHubAppSourcePtrInput `pulumi:"github"`
 	// GitLab source configuration.
 	Gitlab GitLabAppSourcePtrInput `pulumi:"gitlab"`
@@ -360,7 +360,7 @@ func (o ApplicationSourceOutput) ToApplicationSourceOutputWithContext(ctx contex
 	return o
 }
 
-// Bitbucket source configuration.
+// Beta. Bitbucket source configuration.
 func (o ApplicationSourceOutput) Bitbucket() BitbucketAppSourcePtrOutput {
 	return o.ApplyT(func(v ApplicationSource) *BitbucketAppSource { return v.Bitbucket }).(BitbucketAppSourcePtrOutput)
 }
@@ -375,12 +375,12 @@ func (o ApplicationSourceOutput) Git() GitApplicationSourcePtrOutput {
 	return o.ApplyT(func(v ApplicationSource) *GitApplicationSource { return v.Git }).(GitApplicationSourcePtrOutput)
 }
 
-// Gitea source configuration.
+// Beta. Gitea source configuration.
 func (o ApplicationSourceOutput) Gitea() GiteaAppSourcePtrOutput {
 	return o.ApplyT(func(v ApplicationSource) *GiteaAppSource { return v.Gitea }).(GiteaAppSourcePtrOutput)
 }
 
-// GitHub source configuration.
+// Beta. GitHub source configuration.
 func (o ApplicationSourceOutput) Github() GitHubAppSourcePtrOutput {
 	return o.ApplyT(func(v ApplicationSource) *GitHubAppSource { return v.Github }).(GitHubAppSourcePtrOutput)
 }
@@ -395,7 +395,7 @@ func (o ApplicationSourceOutput) Type() pulumi.StringOutput {
 	return o.ApplyT(func(v ApplicationSource) string { return v.Type }).(pulumi.StringOutput)
 }
 
-// Bitbucket source configuration.
+// Beta. Bitbucket source configuration.
 type BitbucketAppSource struct {
 	// The Bitbucket branch.
 	Branch string `pulumi:"branch"`
@@ -428,7 +428,7 @@ type BitbucketAppSourceInput interface {
 	ToBitbucketAppSourceOutputWithContext(context.Context) BitbucketAppSourceOutput
 }
 
-// Bitbucket source configuration.
+// Beta. Bitbucket source configuration.
 type BitbucketAppSourceArgs struct {
 	// The Bitbucket branch.
 	Branch pulumi.StringInput `pulumi:"branch"`
@@ -503,7 +503,7 @@ func (i *bitbucketAppSourcePtrType) ToBitbucketAppSourcePtrOutputWithContext(ctx
 	return pulumi.ToOutputWithContext(ctx, i).(BitbucketAppSourcePtrOutput)
 }
 
-// Bitbucket source configuration.
+// Beta. Bitbucket source configuration.
 type BitbucketAppSourceOutput struct{ *pulumi.OutputState }
 
 func (BitbucketAppSourceOutput) ElementType() reflect.Type {
@@ -1455,7 +1455,7 @@ func (o GitComposeSourcePtrOutput) WatchPaths() pulumi.StringArrayOutput {
 	}).(pulumi.StringArrayOutput)
 }
 
-// GitHub source configuration.
+// Beta. GitHub source configuration.
 type GitHubAppSource struct {
 	// The GitHub branch.
 	Branch string `pulumi:"branch"`
@@ -1488,7 +1488,7 @@ type GitHubAppSourceInput interface {
 	ToGitHubAppSourceOutputWithContext(context.Context) GitHubAppSourceOutput
 }
 
-// GitHub source configuration.
+// Beta. GitHub source configuration.
 type GitHubAppSourceArgs struct {
 	// The GitHub branch.
 	Branch pulumi.StringInput `pulumi:"branch"`
@@ -1563,7 +1563,7 @@ func (i *gitHubAppSourcePtrType) ToGitHubAppSourcePtrOutputWithContext(ctx conte
 	return pulumi.ToOutputWithContext(ctx, i).(GitHubAppSourcePtrOutput)
 }
 
-// GitHub source configuration.
+// Beta. GitHub source configuration.
 type GitHubAppSourceOutput struct{ *pulumi.OutputState }
 
 func (GitHubAppSourceOutput) ElementType() reflect.Type {
@@ -2350,7 +2350,7 @@ func (o GitLabComposeSourcePtrOutput) WatchPaths() pulumi.StringArrayOutput {
 	}).(pulumi.StringArrayOutput)
 }
 
-// Gitea source configuration.
+// Beta. Gitea source configuration.
 type GiteaAppSource struct {
 	// The Gitea branch.
 	Branch string `pulumi:"branch"`
@@ -2381,7 +2381,7 @@ type GiteaAppSourceInput interface {
 	ToGiteaAppSourceOutputWithContext(context.Context) GiteaAppSourceOutput
 }
 
-// Gitea source configuration.
+// Beta. Gitea source configuration.
 type GiteaAppSourceArgs struct {
 	// The Gitea branch.
 	Branch pulumi.StringInput `pulumi:"branch"`
@@ -2454,7 +2454,7 @@ func (i *giteaAppSourcePtrType) ToGiteaAppSourcePtrOutputWithContext(ctx context
 	return pulumi.ToOutputWithContext(ctx, i).(GiteaAppSourcePtrOutput)
 }
 
-// Gitea source configuration.
+// Beta. Gitea source configuration.
 type GiteaAppSourceOutput struct{ *pulumi.OutputState }
 
 func (GiteaAppSourceOutput) ElementType() reflect.Type {

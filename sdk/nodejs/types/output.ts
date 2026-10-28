@@ -25,23 +25,23 @@ export interface ApplicationBuild {
      */
     dockerfile?: string;
     /**
-     * The Heroku buildpack version.
+     * Beta. The Heroku buildpack version.
      */
     herokuVersion?: string;
     /**
-     * Whether to configure static single-page-application routing.
+     * Beta. Whether to configure static single-page-application routing.
      */
     isStaticSpa?: boolean;
     /**
-     * The static publish directory.
+     * Beta. The static publish directory.
      */
     publishDirectory?: string;
     /**
-     * The Railpack version.
+     * Beta. The Railpack version.
      */
     railpackVersion?: string;
     /**
-     * The build type.
+     * The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta.
      */
     type: string;
 }
@@ -51,7 +51,7 @@ export interface ApplicationBuild {
  */
 export interface ApplicationSource {
     /**
-     * Bitbucket source configuration.
+     * Beta. Bitbucket source configuration.
      */
     bitbucket?: outputs.BitbucketAppSource;
     /**
@@ -63,11 +63,11 @@ export interface ApplicationSource {
      */
     git?: outputs.GitApplicationSource;
     /**
-     * Gitea source configuration.
+     * Beta. Gitea source configuration.
      */
     gitea?: outputs.GiteaAppSource;
     /**
-     * GitHub source configuration.
+     * Beta. GitHub source configuration.
      */
     github?: outputs.GitHubAppSource;
     /**
@@ -81,7 +81,7 @@ export interface ApplicationSource {
 }
 
 /**
- * Bitbucket source configuration.
+ * Beta. Bitbucket source configuration.
  */
 export interface BitbucketAppSource {
     /**
@@ -231,7 +231,7 @@ export interface GitComposeSource {
 }
 
 /**
- * GitHub source configuration.
+ * Beta. GitHub source configuration.
  */
 export interface GitHubAppSource {
     /**
@@ -361,7 +361,7 @@ export interface GitLabComposeSource {
 }
 
 /**
- * Gitea source configuration.
+ * Beta. Gitea source configuration.
  */
 export interface GiteaAppSource {
     /**

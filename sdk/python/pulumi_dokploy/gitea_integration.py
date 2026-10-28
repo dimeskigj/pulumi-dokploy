@@ -149,7 +149,7 @@ class GiteaIntegration(pulumi.CustomResource):
                  redirect_uri: pulumi.Input[Optional[_builtins.str]] = None,
                  __props__=None):
         """
-        A Dokploy Gitea OAuth integration configured manually by the operator.
+        Beta. A Dokploy Gitea OAuth integration configured manually by the operator.
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
@@ -168,7 +168,7 @@ class GiteaIntegration(pulumi.CustomResource):
                  args: GiteaIntegrationArgs,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
-        A Dokploy Gitea OAuth integration configured manually by the operator.
+        Beta. A Dokploy Gitea OAuth integration configured manually by the operator.
 
         :param str resource_name: The name of the resource.
         :param GiteaIntegrationArgs args: The arguments to use to populate this resource's properties.

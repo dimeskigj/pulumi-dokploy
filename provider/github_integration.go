@@ -36,7 +36,7 @@ type GitHubIntegration struct{ client clientFactory }
 
 func (r *GitHubIntegration) Annotate(a infer.Annotator) {
 	a.SetToken("index", "GitHubIntegration")
-	a.Describe(&r, "Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.")
+	a.Describe(&r, "Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.")
 }
 func (r GitHubIntegration) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[GitHubIntegrationArgs], error) {
 	in, failures, err := infer.DefaultCheck[GitHubIntegrationArgs](ctx, req.NewInputs)

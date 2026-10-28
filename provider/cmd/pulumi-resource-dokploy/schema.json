@@ -82,23 +82,23 @@
         },
         "herokuVersion": {
           "type": "string",
-          "description": "The Heroku buildpack version."
+          "description": "Beta. The Heroku buildpack version."
         },
         "isStaticSpa": {
           "type": "boolean",
-          "description": "Whether to configure static single-page-application routing."
+          "description": "Beta. Whether to configure static single-page-application routing."
         },
         "publishDirectory": {
           "type": "string",
-          "description": "The static publish directory."
+          "description": "Beta. The static publish directory."
         },
         "railpackVersion": {
           "type": "string",
-          "description": "The Railpack version."
+          "description": "Beta. The Railpack version."
         },
         "type": {
           "type": "string",
-          "description": "The build type."
+          "description": "The build type. heroku_buildpacks, paketo_buildpacks, static, and railpack are Beta."
         }
       },
       "type": "object",
@@ -111,7 +111,7 @@
       "properties": {
         "bitbucket": {
           "$ref": "#/types/dokploy:index:BitbucketAppSource",
-          "description": "Bitbucket source configuration."
+          "description": "Beta. Bitbucket source configuration."
         },
         "docker": {
           "$ref": "#/types/dokploy:index:DockerSource",
@@ -123,11 +123,11 @@
         },
         "gitea": {
           "$ref": "#/types/dokploy:index:GiteaAppSource",
-          "description": "Gitea source configuration."
+          "description": "Beta. Gitea source configuration."
         },
         "github": {
           "$ref": "#/types/dokploy:index:GitHubAppSource",
-          "description": "GitHub source configuration."
+          "description": "Beta. GitHub source configuration."
         },
         "gitlab": {
           "$ref": "#/types/dokploy:index:GitLabAppSource",
@@ -144,7 +144,7 @@
       ]
     },
     "dokploy:index:BitbucketAppSource": {
-      "description": "Bitbucket source configuration.",
+      "description": "Beta. Bitbucket source configuration.",
       "properties": {
         "branch": {
           "type": "string",
@@ -327,7 +327,7 @@
       ]
     },
     "dokploy:index:GitHubAppSource": {
-      "description": "GitHub source configuration.",
+      "description": "Beta. GitHub source configuration.",
       "properties": {
         "branch": {
           "type": "string",
@@ -490,7 +490,7 @@
       ]
     },
     "dokploy:index:GiteaAppSource": {
-      "description": "Gitea source configuration.",
+      "description": "Beta. Gitea source configuration.",
       "properties": {
         "branch": {
           "type": "string",
@@ -980,7 +980,7 @@
         },
         "autoDeploy": {
           "type": "boolean",
-          "description": "Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged."
+          "description": "Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged."
         },
         "buildArgs": {
           "type": "string",
@@ -1050,7 +1050,7 @@
         },
         "autoDeploy": {
           "type": "boolean",
-          "description": "Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged."
+          "description": "Beta. Whether Dokploy automatically deploys the application when its source changes. Omit to leave the server setting unmanaged."
         },
         "buildArgs": {
           "type": "string",
@@ -1224,7 +1224,7 @@
       ]
     },
     "dokploy:index:BitbucketIntegration": {
-      "description": "Manages a Dokploy Bitbucket integration using an API token or legacy app password.",
+      "description": "Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.",
       "properties": {
         "apiToken": {
           "type": "string",
@@ -1709,7 +1709,7 @@
       ]
     },
     "dokploy:index:GitHubIntegration": {
-      "description": "Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.",
+      "description": "Beta. Manages an existing Dokploy GitHub integration after setup and authorization in Dokploy; import-only.",
       "properties": {
         "gitProviderId": {
           "type": "string",
@@ -1755,7 +1755,7 @@
       ]
     },
     "dokploy:index:GitLabIntegration": {
-      "description": "A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.",
+      "description": "Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.",
       "properties": {
         "applicationId": {
           "type": "string",
@@ -1860,7 +1860,7 @@
       ]
     },
     "dokploy:index:GiteaIntegration": {
-      "description": "A Dokploy Gitea OAuth integration configured manually by the operator.",
+      "description": "Beta. A Dokploy Gitea OAuth integration configured manually by the operator.",
       "properties": {
         "clientId": {
           "type": "string",

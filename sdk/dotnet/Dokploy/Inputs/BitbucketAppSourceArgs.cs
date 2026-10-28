@@ -12,7 +12,7 @@ namespace Dimeskigj.Pulumi.Dokploy.Inputs
 {
 
     /// <summary>
-    /// Bitbucket source configuration.
+    /// Beta. Bitbucket source configuration.
     /// </summary>
     public sealed class BitbucketAppSourceArgs : global::Pulumi.ResourceArgs
     {

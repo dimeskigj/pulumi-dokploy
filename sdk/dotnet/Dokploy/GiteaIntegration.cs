@@ -11,7 +11,7 @@ using Pulumi;
 namespace Dimeskigj.Pulumi.Dokploy
 {
     /// <summary>
-    /// A Dokploy Gitea OAuth integration configured manually by the operator.
+    /// Beta. A Dokploy Gitea OAuth integration configured manually by the operator.
     /// </summary>
     [DokployResourceType("dokploy:index:GiteaIntegration")]
     public partial class GiteaIntegration : global::Pulumi.CustomResource

@@ -5,7 +5,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 /**
- * Manages a Dokploy Bitbucket integration using an API token or legacy app password.
+ * Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.
  */
 export class BitbucketIntegration extends pulumi.CustomResource {
     /**

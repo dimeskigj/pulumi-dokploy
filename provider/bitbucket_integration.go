@@ -44,7 +44,7 @@ type BitbucketIntegration struct{ client clientFactory }
 
 func (r *BitbucketIntegration) Annotate(a infer.Annotator) {
 	a.SetToken("index", "BitbucketIntegration")
-	a.Describe(&r, "Manages a Dokploy Bitbucket integration using an API token or legacy app password.")
+	a.Describe(&r, "Beta. Manages a Dokploy Bitbucket integration using an API token or legacy app password.")
 }
 
 func (r BitbucketIntegration) Check(ctx context.Context, req infer.CheckRequest) (infer.CheckResponse[BitbucketIntegrationArgs], error) {

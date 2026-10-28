@@ -152,7 +152,7 @@ class GitLabIntegration(pulumi.CustomResource):
                  redirect_uri: pulumi.Input[Optional[_builtins.str]] = None,
                  __props__=None):
         """
-        A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
+        Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
@@ -171,7 +171,7 @@ class GitLabIntegration(pulumi.CustomResource):
                  args: GitLabIntegrationArgs,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
-        A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
+        Beta. A Dokploy GitLab OAuth integration. Configure OAuth manually in GitLab and Dokploy; readiness does not verify connectivity or authorization.
 
         :param str resource_name: The name of the resource.
         :param GitLabIntegrationArgs args: The arguments to use to populate this resource's properties.
