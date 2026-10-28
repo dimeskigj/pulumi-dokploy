@@ -107,7 +107,7 @@
     "port.one": "Port",
     "port.update": "Port",
     "port.delete": "Port",
-    "schedule.create": "",
+    "schedule.create": "Schedule",
     "schedule.update": "",
     "schedule.delete": "",
     "schedule.one": "Schedule",

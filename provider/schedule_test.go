@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/dimeskigj/pulumi-dokploy/internal/client"
-	"github.com/google/uuid"
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
 	"github.com/pulumi/pulumi/sdk/v3/go/property"
@@ -44,7 +43,7 @@ func TestScheduleCreateAndImportAllTypes(t *testing.T) {
 			case "server":
 				a.ServerID = ptr("placeholder-server")
 			}
-			var id string
+			id := "placeholder-server-assigned-id"
 			var observed map[string]any
 			calls := 0
 			r := scheduleTestResource(t, func(w http.ResponseWriter, req *http.Request) {
@@ -54,9 +53,8 @@ func TestScheduleCreateAndImportAllTypes(t *testing.T) {
 					require.Equal(t, "/api/schedule.create", req.URL.Path)
 					require.Equal(t, http.MethodPost, req.Method)
 					require.NoError(t, json.NewDecoder(req.Body).Decode(&observed))
-					id, _ = observed["scheduleId"].(string)
-					_, err := uuid.Parse(id)
-					require.True(t, err == nil)
+					_, present := observed["scheduleId"]
+					require.False(t, present, "Dokploy ignores a client-supplied scheduleId")
 					require.True(t, observed["enabled"] == false && observed["scheduleType"] == typ)
 					for k, v := range map[string]any{"name": a.Name, "cronExpression": a.CronExpression, "command": a.Command, "script": *a.Script, "description": *a.Description, "timezone": *a.Timezone, "organizationId": *a.OrganizationID, "appName": *a.AppName, "serviceName": *a.ServiceName, "shellType": *a.ShellType} {
 						require.True(t, observed[k] == v, "incorrect field: %s", k)
@@ -69,9 +67,11 @@ func TestScheduleCreateAndImportAllTypes(t *testing.T) {
 							require.True(t, observed[k] == *v)
 						}
 					}
-					_, present := observed["createdAt"]
+					_, present = observed["createdAt"]
 					require.False(t, present)
-					return // Bodyless acknowledgment must work with the actual typed client.
+					observed["scheduleId"] = id
+					require.NoError(t, json.NewEncoder(w).Encode(observed))
+					return
 				}
 				require.Equal(t, "/api/schedule.one", req.URL.Path)
 				require.Equal(t, http.MethodGet, req.Method)
@@ -102,53 +102,31 @@ func TestScheduleCreateDryRunNoCalls(t *testing.T) {
 	require.Equal(t, "placeholder-id", up.Output.ScheduleID)
 }
 
-func TestScheduleCreateBrokenAcknowledgmentBody(t *testing.T) {
-	for _, confirmed := range []bool{false, true} {
-		t.Run(map[bool]string{false: "partial-state", true: "confirmed"}[confirmed], func(t *testing.T) {
+func TestScheduleCreateIncompleteResponse(t *testing.T) {
+	for _, body := range []string{"truncated", "", "null", "{}", `{"scheduleId":""}`} {
+		t.Run(body, func(t *testing.T) {
 			calls := 0
-			var id string
-			var body map[string]any
 			r := scheduleTestResource(t, func(w http.ResponseWriter, req *http.Request) {
 				calls++
-				switch calls {
-				case 1:
-					require.Equal(t, "/api/schedule.create", req.URL.Path)
-					require.Equal(t, http.MethodPost, req.Method)
-					require.NoError(t, json.NewDecoder(req.Body).Decode(&body))
-					id, _ = body["scheduleId"].(string)
-					// Acknowledged headers, but a truncated body makes the generated
-					// response parser's io.ReadAll fail with unexpected EOF.
+				require.Equal(t, "/api/schedule.create", req.URL.Path)
+				w.Header().Set("Content-Type", "application/json")
+				if body == "truncated" {
+					// A truncated body makes the generated response parser's io.ReadAll fail.
 					w.Header().Set("Content-Length", "100")
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte("{"))
-				case 2:
-					require.Equal(t, "/api/schedule.one", req.URL.Path)
-					require.Equal(t, http.MethodGet, req.Method)
-					require.True(t, req.URL.Query().Get("scheduleId") == id)
-					if !confirmed {
-						w.WriteHeader(http.StatusNotFound)
-						return
-					}
-					w.Header().Set("Content-Type", "application/json")
-					require.NoError(t, json.NewEncoder(w).Encode(body))
-				default:
-					t.Error("unexpected request: creation must not retry or delete")
+					return
 				}
+				_, _ = w.Write([]byte(body))
 			})
 			a := scheduleTestArgs()
 			got, err := r.Create(t.Context(), infer.CreateRequest[ScheduleArgs]{Inputs: a})
-			if confirmed {
-				require.NoError(t, err)
-			} else {
-				var partial infer.ResourceInitFailedError
-				require.ErrorAs(t, err, &partial)
-				for _, secret := range []string{id, a.Command, *a.Script} {
-					require.False(t, strings.Contains(err.Error(), secret))
-				}
+			require.Error(t, err)
+			require.Empty(t, got.ID)
+			for _, secret := range []string{a.Command, *a.Script} {
+				require.False(t, strings.Contains(err.Error(), secret))
 			}
-			require.True(t, id != "" && got.ID == id && got.Output.ScheduleID == id)
-			require.True(t, got.Output.Command == a.Command && got.Output.Script != nil && *got.Output.Script == *a.Script)
-			require.Equal(t, 2, calls)
+			require.Equal(t, 1, calls, "creation must not retry or delete")
 		})
 	}
 }
@@ -157,14 +135,13 @@ func TestScheduleCreateReadbackFailuresKeepPartialID(t *testing.T) {
 	for _, body := range []string{"404", "null", "", "{}", `{"scheduleId":"unrelated"}`, "transport"} {
 		t.Run(body, func(t *testing.T) {
 			calls := 0
-			id := ""
+			id := "placeholder-server-assigned-id"
 			r := scheduleTestResource(t, func(w http.ResponseWriter, req *http.Request) {
 				calls++
 				w.Header().Set("Content-Type", "application/json")
 				if calls == 1 {
-					var b map[string]any
-					require.NoError(t, json.NewDecoder(req.Body).Decode(&b))
-					id, _ = b["scheduleId"].(string)
+					require.Equal(t, "/api/schedule.create", req.URL.Path)
+					_, _ = w.Write([]byte(`{"scheduleId":"` + id + `"}`))
 					return
 				}
 				require.Equal(t, 2, calls)
@@ -184,7 +161,7 @@ func TestScheduleCreateReadbackFailuresKeepPartialID(t *testing.T) {
 			got, err := r.Create(t.Context(), infer.CreateRequest[ScheduleArgs]{Inputs: scheduleTestArgs()})
 			var partial infer.ResourceInitFailedError
 			require.ErrorAs(t, err, &partial)
-			require.True(t, id != "" && got.ID == id && got.Output.ScheduleID == id)
+			require.True(t, got.ID == id && got.Output.ScheduleID == id)
 			require.False(t, strings.Contains(err.Error(), id))
 			require.Equal(t, 2, calls)
 			require.True(t, got.Output.Command == scheduleTestArgs().Command)
@@ -361,12 +338,11 @@ func TestScheduleErrorsAreRedacted(t *testing.T) {
 			r := scheduleTestResource(t, func(w http.ResponseWriter, req *http.Request) {
 				calls++
 				w.Header().Set("Content-Type", "application/json")
-				if phase == "create" || phase == "create-readback" && calls == 1 {
-					var b map[string]any
-					require.NoError(t, json.NewDecoder(req.Body).Decode(&b))
-					id, _ = b["scheduleId"].(string)
+				if phase == "create-readback" && calls == 1 {
+					_, _ = w.Write([]byte(`{"scheduleId":"` + id + `"}`))
+					return
 				}
-				if (phase == "update-readback" || phase == "create-readback") && calls == 1 {
+				if phase == "update-readback" && calls == 1 {
 					return
 				}
 				w.WriteHeader(400)
