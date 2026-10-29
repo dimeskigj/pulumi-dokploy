@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	p "github.com/pulumi/pulumi-go-provider"
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -16,6 +17,13 @@ import (
 )
 
 const registryLogoURL = "https://raw.githubusercontent.com/dimeskigj/pulumi-dokploy/main/website/public/logo.svg"
+
+func TestSchemaDescriptionFitsPyPISummary(t *testing.T) {
+	description := providerSchema(t).Description
+	require.NotEmpty(t, description)
+	require.LessOrEqual(t, utf8.RuneCountInString(description), 512, "package description becomes Python's Summary metadata")
+	require.NotContains(t, description, "\n", "Summary must be a single line")
+}
 
 func providerSchema(t *testing.T) schema.PackageSpec {
 	t.Helper()

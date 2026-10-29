@@ -24,7 +24,7 @@ func Provider() p.Provider {
 	provider := infer.Provider(infer.Options{
 		Metadata: schema.Metadata{
 			DisplayName:       "Dokploy",
-			Description:       "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, GitLab, GitHub, Gitea, and Bitbucket integrations, tags, project-tag associations, mounts, schedules, notifications, servers, backup destinations, database backups, and volume backups. Read-only lookups reference existing projects, environments, workloads, databases, servers, registries, and SSH keys by ID without managing their lifecycle.",
+			Description:       "Pulumi provider for managing Dokploy projects, environments, applications, application ports, Compose stacks, Postgres, MySQL, MariaDB, MongoDB, and Redis databases, domains, SSH keys, registries, GitLab, GitHub, Gitea, and Bitbucket integrations, tags, project-tag associations, mounts, schedules, notifications, servers, backup destinations, database backups, and volume backups. Includes read-only resource lookups.",
 			PluginDownloadURL: "github://api.github.com/dimeskigj/pulumi-dokploy",
 			LogoURL:           "https://raw.githubusercontent.com/dimeskigj/pulumi-dokploy/main/website/public/logo.svg",
 			Keywords:          []string{"category/infrastructure", "kind/native", "dokploy", "deployment", "self-hosted", "paas"},

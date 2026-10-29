@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.4.2 — 2026-10-29
+
+### Fixed
+
+- Shorten package summary metadata to satisfy PyPI's 512-character limit, unblocking Python publication and the dependent Go SDK release.
+
 ## 0.4.1 — 2026-10-28
 
 ### Fixed
