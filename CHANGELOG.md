@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Stop provider configuration diffs from replacing every Dokploy resource. Upgrading the provider plugin (for example 0.4.0 to 0.4.2) or changing `endpoint`/`apiKey` previously planned a replace of all managed resources; these changes now reconfigure the provider in place.
+
 ## 0.4.2 — 2026-10-29
 
 ### Fixed
