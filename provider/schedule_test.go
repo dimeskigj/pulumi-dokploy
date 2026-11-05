@@ -472,6 +472,16 @@ func TestScheduleDiffReplacementAndUpdates(t *testing.T) {
 	require.False(t, equal.HasChanges)
 }
 
+func TestScheduleDiffIgnoresGeneratedAppName(t *testing.T) {
+	old := scheduleTestArgs()
+	old.AppName = ptr("schedule-generated-abc123")
+	next := old
+	next.AppName = nil
+	got, err := (Schedule{}).Diff(t.Context(), infer.DiffRequest[ScheduleArgs, ScheduleState]{Inputs: next, State: ScheduleState{ScheduleArgs: old}})
+	require.NoError(t, err)
+	require.False(t, got.HasChanges)
+}
+
 func TestScheduleDiffFieldMatrix(t *testing.T) {
 	for _, tc := range []struct {
 		field   string

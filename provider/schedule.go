@@ -92,11 +92,12 @@ func (r Schedule) Check(ctx context.Context, req infer.CheckRequest) (infer.Chec
 }
 func (r Schedule) Diff(_ context.Context, req infer.DiffRequest[ScheduleArgs, ScheduleState]) (infer.DiffResponse, error) {
 	a, b := req.Inputs, req.State.ScheduleArgs
+	// Dokploy generates appName when omitted; an unset input adopts it instead of replacing.
 	d := map[string]p.PropertyDiff{}
 	fields := []struct {
 		name             string
 		changed, replace bool
-	}{{"name", a.Name != b.Name, false}, {"cronExpression", a.CronExpression != b.CronExpression, false}, {"command", a.Command != b.Command, false}, {"scheduleType", a.ScheduleType != b.ScheduleType, true}, {"description", !sameOptionalString(a.Description, b.Description), false}, {"appName", !sameOptionalString(a.AppName, b.AppName), true}, {"serviceName", !sameOptionalString(a.ServiceName, b.ServiceName), true}, {"shellType", !sameOptionalString(a.ShellType, b.ShellType), false}, {"script", !sameOptionalString(a.Script, b.Script), false}, {"timezone", !sameOptionalString(a.Timezone, b.Timezone), false}, {"organizationId", !sameOptionalString(a.OrganizationID, b.OrganizationID), false}, {"applicationId", !sameOptionalString(a.ApplicationID, b.ApplicationID), true}, {"composeId", !sameOptionalString(a.ComposeID, b.ComposeID), true}, {"serverId", !sameOptionalString(a.ServerID, b.ServerID), true}, {"enabled", a.Enabled != b.Enabled, false}}
+	}{{"name", a.Name != b.Name, false}, {"cronExpression", a.CronExpression != b.CronExpression, false}, {"command", a.Command != b.Command, false}, {"scheduleType", a.ScheduleType != b.ScheduleType, true}, {"description", !sameOptionalString(a.Description, b.Description), false}, {"appName", a.AppName != nil && !sameOptionalString(a.AppName, b.AppName), true}, {"serviceName", !sameOptionalString(a.ServiceName, b.ServiceName), true}, {"shellType", !sameOptionalString(a.ShellType, b.ShellType), false}, {"script", !sameOptionalString(a.Script, b.Script), false}, {"timezone", !sameOptionalString(a.Timezone, b.Timezone), false}, {"organizationId", !sameOptionalString(a.OrganizationID, b.OrganizationID), false}, {"applicationId", !sameOptionalString(a.ApplicationID, b.ApplicationID), true}, {"composeId", !sameOptionalString(a.ComposeID, b.ComposeID), true}, {"serverId", !sameOptionalString(a.ServerID, b.ServerID), true}, {"enabled", a.Enabled != b.Enabled, false}}
 	for _, f := range fields {
 		if f.changed {
 			kind := p.Update
