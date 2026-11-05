@@ -1,9 +1,0 @@
-{
-  extends: ["github>pulumi/renovate-config-pulumi:default.json5"],
-  packageRules: [
-    {
-      matchManagers: ["gomod"],
-      groupName: "Go dependencies",
-    },
-  ],
-}
